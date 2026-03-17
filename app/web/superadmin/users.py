@@ -6,6 +6,10 @@ from sqlalchemy.orm import joinedload
 
 from app.core.database import SessionLocal
 from app.core.security import get_password_hash
+from app.models.activity_log import ActivityLog
+from app.models.api_token import ApiToken
+from app.models.backup import Backup
+from app.models.notification import Notification
 from app.models.tenant import Tenant
 from app.models.user import User, UserRole
 from app.web.auth.decorators import login_required
@@ -61,7 +65,6 @@ def _tenant_options(db):
 @login_required
 def list_users():
     q = (request.args.get("q") or "").strip()
-    scope = (request.args.get("scope") or "all").strip().lower()
     status = (request.args.get("status") or "all").strip().lower()
     role_filter = (request.args.get("role") or "all").strip()
     tenant_filter = (request.args.get("tenant") or "").strip()
@@ -69,12 +72,15 @@ def list_users():
     db = SessionLocal()
     try:
         query = db.query(User).options(joinedload(User.tenant))
-        if scope == "platform":
+
+        if tenant_filter == "__platform__":
             query = query.filter(User.tenant_id.is_(None))
-        elif scope == "tenant":
-            query = query.filter(User.tenant_id.isnot(None))
         else:
-            scope = "all"
+            tenant_uuid = _parse_uuid(tenant_filter)
+            if tenant_filter and tenant_uuid:
+                query = query.filter(User.tenant_id == tenant_uuid)
+            elif tenant_filter:
+                tenant_filter = ""
 
         if status == "active":
             query = query.filter(User.is_active.is_(True))
@@ -89,12 +95,6 @@ def list_users():
             role_filter = parsed_role.value
         else:
             role_filter = "all"
-
-        tenant_uuid = _parse_uuid(tenant_filter)
-        if tenant_filter and tenant_uuid:
-            query = query.filter(User.tenant_id == tenant_uuid)
-        elif tenant_filter:
-            tenant_filter = ""
 
         if q:
             term = f"%{q}%"
@@ -115,8 +115,8 @@ def list_users():
                 {
                     "user": user,
                     "role_label": ROLE_LABELS.get(user.role, user.role.value),
-                    "tenant_name": user.tenant.name if user.tenant else "Plataforma",
-                    "tenant_slug": user.tenant.slug if user.tenant else "-",
+                    "tenant_name": user.tenant.name if user.tenant else "ADMIN",
+                    "tenant_slug": user.tenant.slug if user.tenant else "admin",
                 }
             )
 
@@ -139,7 +139,6 @@ def list_users():
             role_options=role_options,
             tenant_options=_tenant_options(db),
             q=q,
-            scope=scope,
             status=status,
             role_filter=role_filter,
             tenant_filter=tenant_filter,
@@ -393,6 +392,19 @@ def delete_user(user_id):
             if super_admin_count <= 1:
                 flash("Nao e permitido apagar o ultimo super admin da plataforma.", "error")
                 return redirect(url_for("superadmin_users.list_users"))
+
+        # Preserva historico e remove dependencias que impedem exclusao fisica.
+        db.query(ActivityLog).filter(ActivityLog.user_id == user.id).update(
+            {ActivityLog.user_id: None},
+            synchronize_session=False,
+        )
+        db.query(Backup).filter(Backup.triggered_by_user_id == user.id).update(
+            {Backup.triggered_by_user_id: None},
+            synchronize_session=False,
+        )
+        db.query(ApiToken).filter(ApiToken.user_id == user.id).delete(synchronize_session=False)
+        db.query(Notification).filter(Notification.user_id == user.id).delete(synchronize_session=False)
+        db.flush()
 
         user_label = user.full_name or user.email
         db.delete(user)
