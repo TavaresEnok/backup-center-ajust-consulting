@@ -6,10 +6,13 @@ from flask import Blueprint, flash, redirect, render_template, request, session,
 from sqlalchemy import case, func, select
 from sqlalchemy.orm import joinedload
 
+from app.models.activity_log import ActivityLog
 from app.core.database import SessionLocal
 from app.core.security import get_password_hash
 from app.models.backup import Backup, BackupStatus
 from app.models.device import Device
+from app.models.device_group import DeviceGroup
+from app.models.invoice import Invoice, InvoiceStatus
 from app.models.tenant import Tenant
 from app.models.user import User, UserRole
 
@@ -188,6 +191,196 @@ def list_tenants():
             page=page,
             total=total,
             total_pages=total_pages,
+        )
+    finally:
+        db.close()
+
+
+@bp.route("/<tenant_id>")
+def view_tenant(tenant_id):
+    db = SessionLocal()
+    try:
+        try:
+            tenant_uuid = uuid.UUID(str(tenant_id))
+        except Exception:
+            flash("Tenant inválido.", "error")
+            return redirect(url_for("superadmin_tenants.list_tenants"))
+
+        tenant = (
+            db.query(Tenant)
+            .options(joinedload(Tenant.plan))
+            .filter(Tenant.id == tenant_uuid)
+            .first()
+        )
+        if not tenant:
+            flash("Tenant não encontrado.", "error")
+            return redirect(url_for("superadmin_tenants.list_tenants"))
+
+        now = datetime.utcnow()
+        window_24h = now - timedelta(hours=24)
+        window_30d = now - timedelta(days=30)
+
+        device_count = db.query(func.count(Device.id)).filter(Device.tenant_id == tenant.id).scalar() or 0
+        active_device_count = (
+            db.query(func.count(Device.id))
+            .filter(Device.tenant_id == tenant.id, Device.is_active.is_(True))
+            .scalar()
+            or 0
+        )
+        scheduled_device_count = (
+            db.query(func.count(Device.id))
+            .filter(Device.tenant_id == tenant.id, Device.backup_scheduled.is_(True))
+            .scalar()
+            or 0
+        )
+        group_count = db.query(func.count(DeviceGroup.id)).filter(DeviceGroup.tenant_id == tenant.id).scalar() or 0
+        user_count = db.query(func.count(User.id)).filter(User.tenant_id == tenant.id).scalar() or 0
+        admin_user_count = (
+            db.query(func.count(User.id))
+            .filter(User.tenant_id == tenant.id, User.role.in_([UserRole.TENANT_OWNER, UserRole.TENANT_ADMIN]))
+            .scalar()
+            or 0
+        )
+
+        backup_success_24h = (
+            db.query(func.count(Backup.id))
+            .join(Device, Backup.device_id == Device.id)
+            .filter(
+                Device.tenant_id == tenant.id,
+                Backup.created_at >= window_24h,
+                Backup.status == BackupStatus.SUCCESS,
+            )
+            .scalar()
+            or 0
+        )
+        backup_failed_24h = (
+            db.query(func.count(Backup.id))
+            .join(Device, Backup.device_id == Device.id)
+            .filter(
+                Device.tenant_id == tenant.id,
+                Backup.created_at >= window_24h,
+                Backup.status == BackupStatus.FAILED,
+            )
+            .scalar()
+            or 0
+        )
+        backup_success_30d = (
+            db.query(func.count(Backup.id))
+            .join(Device, Backup.device_id == Device.id)
+            .filter(
+                Device.tenant_id == tenant.id,
+                Backup.created_at >= window_30d,
+                Backup.status == BackupStatus.SUCCESS,
+            )
+            .scalar()
+            or 0
+        )
+        backup_failed_30d = (
+            db.query(func.count(Backup.id))
+            .join(Device, Backup.device_id == Device.id)
+            .filter(
+                Device.tenant_id == tenant.id,
+                Backup.created_at >= window_30d,
+                Backup.status == BackupStatus.FAILED,
+            )
+            .scalar()
+            or 0
+        )
+
+        invoices_paid = (
+            db.query(func.count(Invoice.id))
+            .filter(Invoice.tenant_id == tenant.id, Invoice.status == InvoiceStatus.PAID)
+            .scalar()
+            or 0
+        )
+        invoices_pending = (
+            db.query(func.count(Invoice.id))
+            .filter(Invoice.tenant_id == tenant.id, Invoice.status == InvoiceStatus.PENDING)
+            .scalar()
+            or 0
+        )
+        invoices_failed = (
+            db.query(func.count(Invoice.id))
+            .filter(Invoice.tenant_id == tenant.id, Invoice.status == InvoiceStatus.FAILED)
+            .scalar()
+            or 0
+        )
+        open_invoices_amount = (
+            db.query(func.coalesce(func.sum(Invoice.amount), 0))
+            .filter(
+                Invoice.tenant_id == tenant.id,
+                Invoice.status.in_([InvoiceStatus.PENDING, InvoiceStatus.FAILED]),
+            )
+            .scalar()
+            or 0
+        )
+        next_due = (
+            db.query(func.min(Invoice.due_date))
+            .filter(
+                Invoice.tenant_id == tenant.id,
+                Invoice.status.in_([InvoiceStatus.PENDING, InvoiceStatus.FAILED]),
+            )
+            .scalar()
+        )
+
+        recent_users = (
+            db.query(User)
+            .filter(User.tenant_id == tenant.id)
+            .order_by(User.created_at.desc())
+            .limit(8)
+            .all()
+        )
+        recent_invoices = (
+            db.query(Invoice)
+            .filter(Invoice.tenant_id == tenant.id)
+            .order_by(Invoice.created_at.desc())
+            .limit(8)
+            .all()
+        )
+        recent_backups = (
+            db.query(Backup, Device.name)
+            .join(Device, Backup.device_id == Device.id)
+            .filter(Device.tenant_id == tenant.id)
+            .order_by(Backup.created_at.desc())
+            .limit(12)
+            .all()
+        )
+        recent_activities = (
+            db.query(ActivityLog)
+            .options(joinedload(ActivityLog.user))
+            .filter(ActivityLog.tenant_id == tenant.id)
+            .order_by(ActivityLog.created_at.desc())
+            .limit(15)
+            .all()
+        )
+
+        stats = {
+            "device_count": int(device_count),
+            "active_device_count": int(active_device_count),
+            "scheduled_device_count": int(scheduled_device_count),
+            "group_count": int(group_count),
+            "user_count": int(user_count),
+            "admin_user_count": int(admin_user_count),
+            "backup_success_24h": int(backup_success_24h),
+            "backup_failed_24h": int(backup_failed_24h),
+            "backup_success_30d": int(backup_success_30d),
+            "backup_failed_30d": int(backup_failed_30d),
+            "invoices_paid": int(invoices_paid),
+            "invoices_pending": int(invoices_pending),
+            "invoices_failed": int(invoices_failed),
+            "open_invoices_amount": float(open_invoices_amount or 0) / 100.0,
+            "mrr": float((tenant.plan.price_monthly if tenant.plan else 0) or 0) / 100.0,
+            "next_due": next_due,
+        }
+
+        return render_template(
+            "superadmin/tenants/detail.html",
+            tenant=tenant,
+            stats=stats,
+            recent_users=recent_users,
+            recent_invoices=recent_invoices,
+            recent_backups=recent_backups,
+            recent_activities=recent_activities,
         )
     finally:
         db.close()

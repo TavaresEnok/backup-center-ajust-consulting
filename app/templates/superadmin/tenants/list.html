@@ -285,8 +285,12 @@
                             {% endif %}
                         </td>
                         <td class="text-right">
-                            <a href="{{ url_for('superadmin_users.list_users', scope='tenant', tenant=t.id) }}"
+                            <a href="{{ url_for('superadmin_tenants.view_tenant', tenant_id=t.id) }}"
                                 class="rounded-lg border border-[var(--card-border)] px-2.5 py-1.5 text-xs font-medium text-[var(--text-main)] hover:bg-[var(--line-color)]">
+                                Visao 360
+                            </a>
+                            <a href="{{ url_for('superadmin_users.list_users', scope='tenant', tenant=t.id) }}"
+                                class="ml-1 rounded-lg border border-[var(--card-border)] px-2.5 py-1.5 text-xs font-medium text-[var(--text-main)] hover:bg-[var(--line-color)]">
                                 Usuários
                             </a>
                             <a href="{{ url_for('superadmin_billing.list_billing', q=t.name) }}"

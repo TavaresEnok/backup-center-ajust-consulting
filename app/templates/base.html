@@ -243,6 +243,20 @@
     <script>
         lucide.createIcons();
 
+        document.addEventListener('keydown', function (event) {
+            const searchInput = document.getElementById('superadmin-global-search');
+            if (!searchInput) {
+                return;
+            }
+            const isShortcut = (event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k';
+            if (!isShortcut) {
+                return;
+            }
+            event.preventDefault();
+            searchInput.focus();
+            searchInput.select();
+        });
+
         // Auto-dismiss flash messages after 5 seconds
         document.addEventListener('DOMContentLoaded', function () {
             const alerts = document.querySelectorAll('[role="alert"]');

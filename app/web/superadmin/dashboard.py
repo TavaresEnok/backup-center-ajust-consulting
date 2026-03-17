@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 
 from flask import Blueprint, redirect, render_template, request, session, url_for
 from sqlalchemy import case, func
+from sqlalchemy import or_
 from sqlalchemy.orm import joinedload
 
 from app.core.config import settings
@@ -9,6 +10,7 @@ from app.core.database import SessionLocal
 from app.models.activity_log import ActivityLog
 from app.models.backup import Backup, BackupStatus
 from app.models.device import Device
+from app.models.device_type import DeviceType
 from app.models.invoice import Invoice, InvoiceStatus
 from app.models.payment import Subscription, SubscriptionStatus
 from app.models.plan import Plan
@@ -616,6 +618,167 @@ def dashboard():
             charts=charts,
             links=links,
             tenant_rows=tenant_rows,
+        )
+    finally:
+        db.close()
+
+
+@bp.route("/")
+def admin_root():
+    if session.get("user_role") != UserRole.SUPER_ADMIN.value:
+        return redirect(url_for("auth.login"))
+    return redirect(url_for("superadmin_dashboard.dashboard"))
+
+
+@bp.route("/search")
+def search():
+    if session.get("user_role") != UserRole.SUPER_ADMIN.value:
+        return redirect(url_for("auth.login"))
+
+    q = (request.args.get("q") or "").strip()
+    db = SessionLocal()
+    try:
+        tenant_results = []
+        user_results = []
+        plan_results = []
+        type_results = []
+        invoice_results = []
+
+        if q:
+            term = f"%{q}%"
+            tenants = (
+                db.query(Tenant)
+                .filter(
+                    or_(
+                        Tenant.name.ilike(term),
+                        Tenant.slug.ilike(term),
+                        Tenant.company_name.ilike(term),
+                        Tenant.email.ilike(term),
+                    )
+                )
+                .order_by(Tenant.name.asc())
+                .limit(8)
+                .all()
+            )
+            tenant_results = [
+                {
+                    "title": tenant.name,
+                    "subtitle": f"{tenant.slug} • {tenant.email}",
+                    "url": url_for("superadmin_tenants.view_tenant", tenant_id=tenant.id),
+                }
+                for tenant in tenants
+            ]
+
+            users = (
+                db.query(User)
+                .options(joinedload(User.tenant))
+                .outerjoin(Tenant, User.tenant_id == Tenant.id)
+                .filter(
+                    or_(
+                        User.full_name.ilike(term),
+                        User.email.ilike(term),
+                        Tenant.name.ilike(term),
+                        Tenant.slug.ilike(term),
+                    )
+                )
+                .order_by(User.created_at.desc())
+                .limit(8)
+                .all()
+            )
+            user_results = [
+                {
+                    "title": user.full_name,
+                    "subtitle": f"{user.email} • {(user.tenant.name if user.tenant else 'Plataforma')}",
+                    "url": url_for("superadmin_users.edit_user", user_id=user.id),
+                }
+                for user in users
+            ]
+
+            plans = (
+                db.query(Plan)
+                .filter(
+                    or_(
+                        Plan.name.ilike(term),
+                        Plan.slug.ilike(term),
+                        Plan.description.ilike(term),
+                    )
+                )
+                .order_by(Plan.name.asc())
+                .limit(6)
+                .all()
+            )
+            plan_results = [
+                {
+                    "title": plan.name,
+                    "subtitle": f"{plan.slug} • R$ {float(plan.price_monthly or 0) / 100.0:.2f}/mes",
+                    "url": url_for("superadmin_plans.edit_plan", plan_id=plan.id),
+                }
+                for plan in plans
+            ]
+
+            device_types = (
+                db.query(DeviceType)
+                .filter(
+                    or_(
+                        DeviceType.name.ilike(term),
+                        DeviceType.slug.ilike(term),
+                        DeviceType.script_name.ilike(term),
+                    )
+                )
+                .order_by(DeviceType.name.asc())
+                .limit(8)
+                .all()
+            )
+            type_results = [
+                {
+                    "title": dev_type.name,
+                    "subtitle": f"{dev_type.script_name} • {'Telnet' if dev_type.use_telnet else 'SSH'}",
+                    "url": url_for("superadmin_device_types.edit_type", type_id=dev_type.id),
+                }
+                for dev_type in device_types
+            ]
+
+            invoices = (
+                db.query(Invoice)
+                .options(joinedload(Invoice.tenant))
+                .outerjoin(Tenant, Invoice.tenant_id == Tenant.id)
+                .filter(
+                    or_(
+                        Invoice.invoice_number.ilike(term),
+                        Tenant.name.ilike(term),
+                        Tenant.slug.ilike(term),
+                    )
+                )
+                .order_by(Invoice.created_at.desc())
+                .limit(8)
+                .all()
+            )
+            invoice_results = [
+                {
+                    "title": invoice.invoice_number,
+                    "subtitle": f"{invoice.tenant.name if invoice.tenant else '-'} • {invoice.status.value}",
+                    "url": url_for("superadmin_billing.list_billing", q=invoice.invoice_number),
+                }
+                for invoice in invoices
+            ]
+
+        total_results = (
+            len(tenant_results)
+            + len(user_results)
+            + len(plan_results)
+            + len(type_results)
+            + len(invoice_results)
+        )
+
+        return render_template(
+            "superadmin/search.html",
+            q=q,
+            total_results=total_results,
+            tenant_results=tenant_results,
+            user_results=user_results,
+            plan_results=plan_results,
+            type_results=type_results,
+            invoice_results=invoice_results,
         )
     finally:
         db.close()

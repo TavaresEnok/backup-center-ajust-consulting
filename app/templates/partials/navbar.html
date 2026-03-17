@@ -13,14 +13,30 @@
 
             <!-- Search Bar -->
             {% set is_superadmin_page = request.endpoint and request.endpoint.startswith('superadmin_') %}
-            {% set hide_nav_search = request.endpoint in [
+            {% set hide_tenant_nav_search = request.endpoint in [
                 'tenant_devices.list_devices',
                 'tenant_groups.list_groups',
                 'tenant_operations.index',
                 'tenant_backups.list_backups',
                 'tenant_schedules.list_schedules'
-            ] or is_superadmin_page %}
-            {% if not hide_nav_search %}
+            ] %}
+            {% if is_superadmin_page %}
+            <div class="hidden md:block">
+                <form action="{{ url_for('superadmin_dashboard.search') }}" method="GET" class="relative">
+                    <button type="submit" class="absolute left-3 top-1/2 -translate-y-1/2 z-10">
+                        <i data-lucide="search"
+                            class="w-5 h-5 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"></i>
+                    </button>
+                    <input id="superadmin-global-search" type="text" name="q" value="{{ request.args.get('q', '') }}"
+                        placeholder="Buscar tenant, usuario, plano, fatura..."
+                        class="input-premium h-11 pl-11 pr-16 xl:w-[520px]" />
+                    <span
+                        class="pointer-events-none absolute right-3 top-1/2 hidden -translate-y-1/2 rounded-md border border-[var(--line-color)] px-2 py-0.5 text-[11px] font-semibold text-[var(--text-muted)] xl:inline-flex">
+                        Ctrl K
+                    </span>
+                </form>
+            </div>
+            {% elif not hide_tenant_nav_search %}
             <div class="hidden sm:block">
                 <form
                     action="{{ url_for('tenant_devices.list_devices', tenant_slug=tenant_slug) if tenant_slug else '#' }}"

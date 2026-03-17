@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block title %}Busca Global | Super Admin{% endblock %}
+
+{% block content %}
+<style>
+    html.dark body {
+        background-color: #061126 !important;
+    }
+
+    .search-shell {
+        max-width: 1560px;
+        margin: 0 auto;
+        --ux-hero-bg:
+            radial-gradient(circle at top right, rgba(59, 130, 246, 0.18), transparent 44%),
+            linear-gradient(180deg, rgba(239, 246, 255, 0.92), rgba(219, 234, 254, 0.74));
+        --ux-surface-bg: linear-gradient(180deg, rgba(239, 246, 255, 0.92), rgba(224, 242, 254, 0.72));
+        --ux-border: rgba(59, 130, 246, 0.22);
+    }
+
+    html.dark .search-shell {
+        --ux-hero-bg:
+            radial-gradient(circle at top right, rgba(96, 165, 250, 0.2), transparent 48%),
+            linear-gradient(180deg, rgba(14, 30, 58, 0.94), rgba(9, 22, 46, 0.86));
+        --ux-surface-bg: linear-gradient(180deg, rgba(12, 28, 54, 0.92), rgba(9, 22, 44, 0.82));
+        --ux-border: rgba(96, 165, 250, 0.22);
+    }
+
+    .search-hero,
+    .result-section,
+    .result-card {
+        border: 1px solid var(--ux-border);
+        border-radius: 1rem;
+    }
+
+    .search-hero {
+        background: var(--ux-hero-bg);
+    }
+
+    .result-section,
+    .result-card {
+        background: var(--ux-surface-bg);
+    }
+
+    .result-card {
+        transition: border-color .15s ease, transform .15s ease;
+    }
+
+    .result-card:hover {
+        border-color: rgba(59, 130, 246, .42);
+        transform: translateY(-1px);
+    }
+</style>
+
+{% set sections = [
+    ('Tenants', tenant_results, 'building-2'),
+    ('Usuarios', user_results, 'users'),
+    ('Planos', plan_results, 'credit-card'),
+    ('Tipos', type_results, 'cpu'),
+    ('Faturas', invoice_results, 'receipt-text')
+] %}
+
+<div class="search-shell space-y-6 pb-4">
+    <section class="search-hero p-6">
+        <div class="flex flex-wrap items-start justify-between gap-3">
+            <div>
+                <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-blue-400">Busca Global</p>
+                <h1 class="mt-1 text-3xl font-extrabold tracking-tight text-[var(--text-main)]">Super Admin Search</h1>
+                <p class="mt-2 text-sm text-[var(--text-muted)]">Busca cruzada por tenant, usuario, plano, tipo de dispositivo e fatura.</p>
+            </div>
+            <form action="{{ url_for('superadmin_dashboard.search') }}" method="GET" class="flex w-full max-w-xl gap-2">
+                <input type="text" name="q" value="{{ q }}" placeholder="Ex.: Ajust, backupcenter, fatura, admin..."
+                    class="w-full rounded-xl border border-[var(--card-border)] bg-[var(--card-bg)] px-4 py-3 text-sm text-[var(--text-main)]">
+                <button type="submit" class="rounded-xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white hover:bg-blue-700">
+                    Buscar
+                </button>
+            </form>
+        </div>
+        <div class="mt-4 flex flex-wrap gap-2 text-xs text-[var(--text-muted)]">
+            <span class="rounded-lg border border-[var(--line-color)] bg-[var(--line-color)] px-2.5 py-1">Resultados: {{ total_results }}</span>
+            {% if q %}
+            <span class="rounded-lg border border-[var(--line-color)] px-2.5 py-1">Consulta: "{{ q }}"</span>
+            {% else %}
+            <span class="rounded-lg border border-[var(--line-color)] px-2.5 py-1">Digite um termo para iniciar.</span>
+            {% endif %}
+        </div>
+    </section>
+
+    {% if not q %}
+    <section class="result-section p-8 text-center">
+        <p class="text-sm font-semibold text-[var(--text-main)]">Nada pesquisado ainda.</p>
+        <p class="mt-2 text-sm text-[var(--text-muted)]">Use a busca para localizar rapidamente dados operacionais sem navegar por varios menus.</p>
+    </section>
+    {% else %}
+    <div class="grid grid-cols-1 gap-4 xl:grid-cols-2">
+        {% for title, items, icon in sections %}
+        <section class="result-section p-4">
+            <div class="mb-3 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="{{ icon }}" class="h-4 w-4 text-blue-400"></i>
+                    <h2 class="text-sm font-semibold uppercase tracking-[0.14em] text-[var(--text-muted)]">{{ title }}</h2>
+                </div>
+                <span class="text-xs text-[var(--text-muted)]">{{ items|length }}</span>
+            </div>
+            <div class="space-y-3">
+                {% for item in items %}
+                <a href="{{ item.url }}" class="result-card block p-4">
+                    <p class="text-sm font-semibold text-[var(--text-main)]">{{ item.title }}</p>
+                    <p class="mt-1 text-xs text-[var(--text-muted)]">{{ item.subtitle }}</p>
+                </a>
+                {% else %}
+                <div class="rounded-xl border border-dashed border-[var(--line-color)] p-4 text-sm text-[var(--text-muted)]">
+                    Nenhum resultado em {{ title|lower }}.
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

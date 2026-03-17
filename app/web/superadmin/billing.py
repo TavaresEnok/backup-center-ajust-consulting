@@ -75,7 +75,15 @@ def list_billing():
                     func.sum(case((Invoice.status == InvoiceStatus.PAID, 1), else_=0)).label("paid"),
                     func.sum(case((Invoice.status == InvoiceStatus.PENDING, 1), else_=0)).label("pending"),
                     func.sum(case((Invoice.status == InvoiceStatus.FAILED, 1), else_=0)).label("failed"),
-                    func.max(Invoice.due_date).label("next_due"),
+                    func.min(
+                        case(
+                            (
+                                Invoice.status.in_([InvoiceStatus.PENDING, InvoiceStatus.FAILED]),
+                                Invoice.due_date,
+                            ),
+                            else_=None,
+                        )
+                    ).label("next_due"),
                 )
                 .filter(Invoice.tenant_id.in_(tenant_ids))
                 .group_by(Invoice.tenant_id)
