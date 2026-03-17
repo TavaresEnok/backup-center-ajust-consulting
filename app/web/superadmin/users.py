@@ -361,3 +361,47 @@ def toggle_active(user_id):
         return redirect(url_for("superadmin_users.list_users"))
     finally:
         db.close()
+
+
+@bp.route("/<user_id>/delete", methods=["POST"])
+@login_required
+def delete_user(user_id):
+    db = SessionLocal()
+    try:
+        user_uuid = _parse_uuid(user_id)
+        if not user_uuid:
+            flash("Usuario invalido.", "error")
+            return redirect(url_for("superadmin_users.list_users"))
+
+        user = db.query(User).options(joinedload(User.tenant)).filter(User.id == user_uuid).first()
+        if not user:
+            flash("Usuario nao encontrado.", "error")
+            return redirect(url_for("superadmin_users.list_users"))
+
+        current_user_id = session.get("user_id")
+        if current_user_id and str(user.id) == str(current_user_id):
+            flash("Nao e permitido apagar o usuario logado.", "error")
+            return redirect(url_for("superadmin_users.list_users"))
+
+        if user.role == UserRole.SUPER_ADMIN:
+            super_admin_count = (
+                db.query(func.count(User.id))
+                .filter(User.role == UserRole.SUPER_ADMIN)
+                .scalar()
+                or 0
+            )
+            if super_admin_count <= 1:
+                flash("Nao e permitido apagar o ultimo super admin da plataforma.", "error")
+                return redirect(url_for("superadmin_users.list_users"))
+
+        user_label = user.full_name or user.email
+        db.delete(user)
+        db.commit()
+        flash(f"Usuario {user_label} removido com sucesso.", "success")
+        return redirect(url_for("superadmin_users.list_users"))
+    except Exception as exc:
+        db.rollback()
+        flash(f"Erro ao apagar usuario: {str(exc)}", "error")
+        return redirect(url_for("superadmin_users.list_users"))
+    finally:
+        db.close()
