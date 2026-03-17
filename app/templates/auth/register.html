@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="flex items-center justify-center min-h-[80vh] px-4 py-10">
+    <div class="card w-full max-w-lg bg-base-100 shadow-2xl border border-base-300">
+        <div class="card-body">
+            <h2 class="card-title text-2xl font-bold text-center justify-center mb-4">Criar Conta</h2>
+            <form action="{{ url_for('auth.register') }}" method="POST" class="space-y-4">
+            {% include 'partials/csrf.html' %}
+                <div class="form-control">
+                    <label class="label"><span class="label-text">Nome Completo</span></label>
+                    <input type="text" name="full_name" placeholder="João Silva" class="input input-bordered"
+                        required />
+                </div>
+                <div class="form-control">
+                    <label class="label"><span class="label-text">Email</span></label>
+                    <input type="email" name="email" placeholder="seu@email.com" class="input input-bordered"
+                        required />
+                </div>
+                <div class="form-control">
+                    <label class="label"><span class="label-text">Nome da Empresa</span></label>
+                    <input type="text" name="company_name" placeholder="Sua Empresa LTDA" class="input input-bordered"
+                        required />
+                </div>
+                <div class="form-control">
+                    <label class="label"><span class="label-text">Senha</span></label>
+                    <input type="password" name="password" placeholder="••••••••" class="input input-bordered"
+                        required />
+                    <label class="label-text-alt opacity-50 px-1 mt-1">Mínimo 8 caracteres</label>
+                </div>
+                <div class="form-control mt-6">
+                    <button type="submit" class="btn-premium">Começar Teste Grátis</button>
+                </div>
+            </form>
+            <p class="text-center text-sm mt-4">Já tem uma contac <a href="{{ url_for('auth.login') }}"
+                    class="link link-primary font-bold">Faça Login</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}

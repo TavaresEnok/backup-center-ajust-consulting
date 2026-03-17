@@ -1,0 +1,286 @@
+{% extends "base.html" %}
+
+{% block title %}{{ device.name }} | Dispositivos{% endblock %}
+
+{% block content %}
+{% include 'partials/breadcrumb.html' %}
+
+<div class="space-y-6">
+
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <div class="flex items-center gap-3">
+                <h1 class="text-3xl font-bold text-gray-900 dark:text-white">{{ device.name }}</h1>
+                <span
+                    class="px-2.5 py-0.5 rounded-full text-xs font-medium 
+                    {% if device.is_active %}bg-success-100 text-success-800 dark:bg-success-900/30 dark:text-success-400{% else %}bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400{% endif %}">
+                    {{ 'Ativo' if device.is_active else 'Inativo' }}
+                </span>
+            </div>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ device.ip_address }}:{{ device.port }} • {{
+                device.description or 'Sem descrição' }}</p>
+        </div>
+        <div class="flex gap-3">
+            <form id="form-backup-{{ device.id }}" action="{{ url_for('tenant_devices.run_backup', tenant_slug=tenant.slug, device_id=device.id) }}"
+                method="POST" class="inline">
+            {% include 'partials/csrf.html' %}
+                <button type="submit"
+                    data-run-backup-live
+                    data-form-id="form-backup-{{ device.id }}"
+                    class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors">
+                    <i data-lucide="play" class="w-4 h-4"></i> Backup Agora
+                </button>
+            </form>
+            <form id="form-test-connection-{{ device.id }}"
+                action="{{ url_for('tenant_devices.test_connection', tenant_slug=tenant.slug, device_id=device.id) }}"
+                method="POST"
+                class="inline">
+                {% include 'partials/csrf.html' %}
+                <button type="button"
+                    id="btn-test-connection-{{ device.id }}"
+                    class="inline-flex items-center gap-2 px-4 py-2 bg-amber-50 border border-amber-300 rounded-lg text-sm font-medium text-amber-700 hover:bg-amber-100 dark:bg-amber-900/20 dark:border-amber-700 dark:text-amber-300 dark:hover:bg-amber-900/40 transition-colors">
+                    <i data-lucide="plug-zap" class="w-4 h-4"></i>
+                    <span data-test-label>Testar Conexão</span>
+                    <span data-test-loading class="hidden">Testando...</span>
+                </button>
+            </form>
+            <a href="{{ url_for('tenant_devices.edit_device', tenant_slug=tenant.slug, device_id=device.id) }}"
+                class="inline-flex items-center gap-2 px-4 py-2 bg-brand-600 text-white rounded-lg text-sm font-medium hover:bg-brand-700 shadow-lg shadow-brand-500/20 transition-colors">
+                <i data-lucide="edit" class="w-4 h-4"></i> Editar
+            </a>
+            <a href="{{ url_for('tenant_compare.compare_backups', tenant_slug=tenant.slug, device_id=device.id) }}"
+                class="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 shadow-lg shadow-indigo-500/20 transition-colors">
+                <i data-lucide="git-compare" class="w-4 h-4"></i> Comparar
+            </a>
+        </div>
+    </div>
+
+    <!-- Info Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="p-5 bg-white border border-gray-200 rounded-xl dark:bg-gray-800 dark:border-gray-700">
+            <h3 class="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400 mb-2">Detalhes</h3>
+            <div class="space-y-2">
+                <div class="flex justify-between text-sm">
+                    <span class="text-gray-500">Tipo:</span>
+                    <span class="font-medium text-gray-900 dark:text-white">{{ device.type.name if device.type else
+                        'Genérico' }}</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                    <span class="text-gray-500">Grupo:</span>
+                    <span class="font-medium text-gray-900 dark:text-white">{{ device.group.name if device.group else
+                        '-' }}</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                    <span class="text-gray-500">Usuário:</span>
+                    <span class="font-mono text-gray-900 dark:text-white">{{ device.username }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="p-5 bg-white border border-gray-200 rounded-xl dark:bg-gray-800 dark:border-gray-700">
+            <h3 class="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400 mb-2">Agendamento</h3>
+            <div class="flex items-center gap-3">
+                <div
+                    class="p-2 rounded-lg {{ 'bg-brand-50 text-brand-600' if device.backup_scheduled else 'bg-gray-100 text-gray-400' }}">
+                    <i data-lucide="calendar-clock" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    {% if device.backup_scheduled %}
+                    <p class="font-medium text-gray-900 dark:text-white">Ativo</p>
+                    <p class="text-xs text-gray-500">Verificar rotina em Agendamentos</p>
+                    {% else %}
+                    <p class="font-medium text-gray-900 dark:text-white">Desativado</p>
+                    <p class="text-xs text-gray-500">Nenhum backup automático</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="p-5 bg-white border border-gray-200 rounded-xl dark:bg-gray-800 dark:border-gray-700">
+            <h3 class="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400 mb-2">Último Status</h3>
+            <div class="flex items-center gap-3">
+                <div class="p-2 rounded-lg 
+                    {% if device.last_backup_status == 'success' %}bg-success-50 text-success-600
+                    {% elif device.last_backup_status == 'failure' %}bg-error-50 text-error-600
+                    {% else %}bg-gray-100 text-gray-400{% endif %}">
+                    <i data-lucide="activity" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    {% if device.last_backup_at %}
+                    <p class="font-medium text-gray-900 dark:text-white">{{ (device.last_backup_at|localtime).strftime('%d/%m
+                        %H:%M') }}</p>
+                    <p class="text-xs text-capitalize text-gray-500">{{ device.last_backup_status or 'Desconhecido' }}
+                    </p>
+                    {% else %}
+                    <p class="font-medium text-gray-900 dark:text-white">Nunca executado</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Histórico -->
+    <div class="bg-white border border-gray-200 rounded-xl overflow-hidden dark:bg-gray-800 dark:border-gray-700">
+        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+            <h3 class="font-semibold text-gray-900 dark:text-white">Histórico de Backups</h3>
+            <a href="{{ url_for('tenant_backups.list_backups', tenant_slug=tenant.slug) }}?device_id={{ device.id }}"
+                class="text-sm text-brand-600 hover:text-brand-500 hover:underline">Ver todos</a>
+        </div>
+        <table class="w-full text-left text-sm">
+            <thead class="bg-gray-50 dark:bg-gray-700/50">
+                <tr>
+                    <th class="px-6 py-3 font-medium text-gray-500 dark:text-gray-400">Data</th>
+                    <th class="px-6 py-3 font-medium text-gray-500 dark:text-gray-400">Status</th>
+                    <th class="px-6 py-3 font-medium text-gray-500 dark:text-gray-400">Arquivo</th>
+                    <th class="px-6 py-3 font-medium text-gray-500 dark:text-gray-400 text-right">Ações</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                {% for backup in backups %}
+                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                    <td class="px-6 py-3 text-gray-900 dark:text-white">{{ (backup.created_at|localtime).strftime('%d/%m/%Y
+                        %H:%M:%S') }}</td>
+                    <td class="px-6 py-3">
+                        {% set status_val = backup.status_value or backup.status %}
+                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium capitalize
+                            {% if status_val == 'success' %}bg-success-50 text-success-700 dark:bg-success-900/30 dark:text-success-400
+                            {% elif status_val == 'failed' %}bg-error-50 text-error-700 dark:bg-error-900/30 dark:text-error-400
+                            {% else %}bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300{% endif %}">
+                            {{ status_val }}
+                        </span>
+                    </td>
+                    <td class="px-6 py-3 text-gray-500 font-mono text-xs">{{ backup.file_path or '-' }}</td>
+                    <td class="px-6 py-3 text-right space-x-2">
+                        {% if backup.file_path %}
+                        <a href="{{ url_for('tenant_backups.download_backup', tenant_slug=tenant.slug, backup_id=backup.id) }}"
+                            class="text-brand-600 hover:text-brand-800" title="Baixar">
+                            <i data-lucide="download" class="w-4 h-4 inline"></i>
+                        </a>
+                        {% endif %}
+                        <a href="{{ url_for('tenant_backups.view_backup', tenant_slug=tenant.slug, backup_id=backup.id) }}"
+                            class="text-gray-400 hover:text-gray-600" title="Detalhes">
+                            <i data-lucide="eye" class="w-4 h-4 inline"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="4" class="px-6 py-8 text-center text-gray-500">Nenhum backup registrado.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</div>
+{% include 'partials/backup_live_modal.html' %}
+
+<div id="connection-test-modal" class="fixed inset-0 z-[9999] hidden items-center justify-center bg-black/60 p-4">
+    <div class="w-full max-w-lg rounded-2xl border border-gray-200 bg-white p-6 shadow-2xl dark:border-gray-700 dark:bg-gray-900">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Resultado do teste de conexão</h3>
+            <button type="button" id="connection-test-close" class="text-gray-400 hover:text-gray-700 dark:hover:text-gray-200">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+        </div>
+        <div class="space-y-3 text-sm">
+            <div class="flex items-center justify-between">
+                <span class="text-gray-500">Dispositivo</span>
+                <span id="connection-test-device" class="font-medium text-gray-900 dark:text-white">{{ device.name }}</span>
+            </div>
+            <div class="flex items-center justify-between">
+                <span class="text-gray-500">Protocolo</span>
+                <span id="connection-test-protocol" class="font-medium text-gray-900 dark:text-white">-</span>
+            </div>
+            <div class="flex items-center justify-between">
+                <span class="text-gray-500">Tempo</span>
+                <span id="connection-test-elapsed" class="font-medium text-gray-900 dark:text-white">-</span>
+            </div>
+            <div class="pt-2">
+                <p id="connection-test-status" class="text-sm font-semibold"></p>
+                <p id="connection-test-message" class="mt-1 text-sm text-gray-600 dark:text-gray-300"></p>
+            </div>
+        </div>
+        <div class="mt-6 flex justify-end">
+            <button type="button" id="connection-test-ok"
+                class="inline-flex items-center rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700">
+                Fechar
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.getElementById('form-test-connection-{{ device.id }}');
+        const button = document.getElementById('btn-test-connection-{{ device.id }}');
+        const label = button?.querySelector('[data-test-label]');
+        const loading = button?.querySelector('[data-test-loading]');
+        const modal = document.getElementById('connection-test-modal');
+        const closeButton = document.getElementById('connection-test-close');
+        const okButton = document.getElementById('connection-test-ok');
+
+        const deviceEl = document.getElementById('connection-test-device');
+        const protocolEl = document.getElementById('connection-test-protocol');
+        const elapsedEl = document.getElementById('connection-test-elapsed');
+        const statusEl = document.getElementById('connection-test-status');
+        const messageEl = document.getElementById('connection-test-message');
+
+        if (!form || !button) return;
+
+        const openModal = () => {
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            if (window.lucide) lucide.createIcons();
+        };
+        const closeModal = () => {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        };
+        closeButton?.addEventListener('click', closeModal);
+        okButton?.addEventListener('click', closeModal);
+        modal?.addEventListener('click', (event) => {
+            if (event.target === modal) closeModal();
+        });
+
+        button.addEventListener('click', async function () {
+            button.disabled = true;
+            label?.classList.add('hidden');
+            loading?.classList.remove('hidden');
+            try {
+                const resp = await fetch(form.action, {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json',
+                    },
+                    body: new FormData(form),
+                });
+                const data = await resp.json();
+                const ok = !!data.ok;
+                deviceEl.textContent = data.device_name || '{{ device.name }}';
+                protocolEl.textContent = (data.protocol || '-').toUpperCase();
+                elapsedEl.textContent = Number.isFinite(data.elapsed_ms) ? `${data.elapsed_ms} ms` : '-';
+                statusEl.textContent = ok ? 'Conectividade validada' : 'Falha na conectividade';
+                statusEl.className = ok
+                    ? 'text-sm font-semibold text-emerald-600 dark:text-emerald-400'
+                    : 'text-sm font-semibold text-red-600 dark:text-red-400';
+                messageEl.textContent = data.message || (ok ? 'Conexão validada.' : 'Falha no teste de conexão.');
+                openModal();
+            } catch (err) {
+                statusEl.textContent = 'Erro na validação';
+                statusEl.className = 'text-sm font-semibold text-red-600 dark:text-red-400';
+                messageEl.textContent = 'Não foi possível comunicar com o servidor para testar a conexão.';
+                protocolEl.textContent = '-';
+                elapsedEl.textContent = '-';
+                openModal();
+            } finally {
+                button.disabled = false;
+                label?.classList.remove('hidden');
+                loading?.classList.add('hidden');
+            }
+        });
+    });
+</script>
+{% endblock %}

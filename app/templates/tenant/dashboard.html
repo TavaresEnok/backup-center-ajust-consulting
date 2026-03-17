@@ -1,0 +1,869 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard | Backup Center{% endblock %}
+
+{% block content %}
+<!-- Fonts: Plus Jakarta Sans + Space Grotesk for numbers -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link
+    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet">
+
+<style>
+
+
+    .font-mono-nums {
+        font-family: 'Space Grotesk', monospace;
+    }
+
+    /* ------------------------------------------------------------------
+       CANVAS BACKGROUND
+       ------------------------------------------------------------------ */
+    #bg-canvas {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 0;
+        pointer-events: none;
+        opacity: 0.6;
+    }
+
+    /* ------------------------------------------------------------------
+       LAYOUT
+       ------------------------------------------------------------------ */
+    .dashboard-container {
+        position: relative;
+        z-index: 1;
+        min-height: 100vh;
+        margin: 0;
+        padding: 0.25rem;
+    }
+
+    /* ------------------------------------------------------------------
+       GLASS CARDS & TILT
+       ------------------------------------------------------------------ */
+    .tilt-card {
+        transition: transform 0.1s ease;
+        transform-style: preserve-3d;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .tilt-card::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: var(--glass-highlight);
+        z-index: 1;
+        pointer-events: none;
+    }
+
+    /* Inner glow effect on hover */
+    .tilt-card::after {
+        content: '';
+        position: absolute;
+        inset: -1px;
+        border-radius: 20px;
+        padding: 1px;
+        background: linear-gradient(to bottom, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0));
+        -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+        -webkit-mask-composite: xor;
+        mask-composite: exclude;
+        opacity: 0.5;
+        transition: opacity 0.3s ease;
+    }
+
+    .tilt-card:hover::after {
+        opacity: 1;
+    }
+
+    /* Card Contents */
+    .card-body {
+        position: relative;
+        z-index: 2;
+        padding: 1.5rem;
+        transform: translateZ(20px);
+        /* 3D Pop */
+    }
+
+    /* ------------------------------------------------------------------
+       COMPONENTS
+       ------------------------------------------------------------------ */
+    /* Icon Box */
+    .icon-box {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+
+    .icon-box::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: 12px;
+        background: currentColor;
+        opacity: 0.15;
+        filter: blur(4px);
+    }
+
+    /* Variants */
+    .theme-blue {
+        color: var(--primary);
+    }
+
+    .theme-green {
+        color: var(--success);
+    }
+
+    .theme-red {
+        color: var(--danger);
+    }
+
+    .theme-amber {
+        color: var(--warning);
+    }
+
+    .theme-cyan {
+        color: var(--info);
+    }
+
+    .theme-purple {
+        color: var(--purple);
+    }
+
+    /* Stats */
+    .stat-val {
+        font-size: 2.5rem;
+        font-weight: 700;
+        letter-spacing: -0.03em;
+        line-height: 1.1;
+        background: linear-gradient(180deg, #fff 0%, #94a3b8 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-family: 'Space Grotesk', sans-serif;
+    }
+
+    .stat-lbl {
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        font-weight: 600;
+        color: #64748b;
+        margin-top: 0.25rem;
+    }
+
+    /* Live Pulse */
+    .live-dot {
+        width: 8px;
+        height: 8px;
+        background-color: var(--success);
+        border-radius: 50%;
+        box-shadow: 0 0 10px var(--success);
+        animation: pulse-live 2s infinite;
+    }
+
+    @keyframes pulse-live {
+        0% {
+            box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+        }
+
+        70% {
+            box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);
+        }
+
+        100% {
+            box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+        }
+    }
+
+    /* New Table Styling */
+    .tech-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0 4px;
+    }
+
+    .tech-table th {
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: #64748b;
+        padding: 0 1.25rem 1rem 1.25rem;
+        text-align: left;
+        font-weight: 700;
+    }
+
+    .tech-table td {
+        background: rgba(255, 255, 255, 0.015);
+        padding: 1rem 1.25rem;
+        font-size: 0.875rem;
+        border-top: 1px solid transparent;
+        border-bottom: 1px solid transparent;
+        transition: all 0.2s;
+    }
+
+    .tech-table tr td:first-child {
+        border-top-left-radius: 12px;
+        border-bottom-left-radius: 12px;
+    }
+
+    .tech-table tr td:last-child {
+        border-top-right-radius: 12px;
+        border-bottom-right-radius: 12px;
+    }
+
+    .tech-table tr:hover td {
+        background: rgba(255, 255, 255, 0.04);
+        transform: scale(1.005);
+        border-color: rgba(255, 255, 255, 0.05);
+    }
+
+    .kpi-section-title {
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        font-weight: 700;
+        color: #94a3b8;
+        margin-bottom: 0.5rem;
+    }
+
+    .kpi-critical {
+        border-left: 4px solid rgba(239, 68, 68, 0.9);
+        background: linear-gradient(180deg, rgba(239, 68, 68, 0.06), rgba(239, 68, 68, 0.02));
+    }
+
+    .kpi-attention {
+        border-left: 4px solid rgba(245, 158, 11, 0.95);
+        background: linear-gradient(180deg, rgba(245, 158, 11, 0.06), rgba(245, 158, 11, 0.02));
+    }
+
+    .kpi-normal {
+        border-left: 4px solid rgba(59, 130, 246, 0.85);
+    }
+
+    .sparkline-wrap {
+        margin-top: 0.5rem;
+        width: 100%;
+        border: 1px solid var(--line-color);
+        border-radius: 10px;
+        padding: 0.35rem 0.45rem;
+        background: rgba(255, 255, 255, 0.02);
+    }
+</style>
+
+<!-- Canvas Background -->
+<canvas id="bg-canvas"></canvas>
+
+<div class="dashboard-container">
+
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row justify-between items-end mb-10 pb-6 border-b border-[var(--line-color)]">
+        <div>
+            <div class="flex items-center gap-2 mb-1">
+                <div class="live-dot"></div>
+                <span class="text-xs font-bold text-emerald-400 tracking-wider uppercase">Sistema operacional</span>
+            </div>
+            <h1 class="text-4xl font-extrabold text-[var(--text-main)] tracking-tight mb-1">
+                Centro de Controle
+            </h1>
+            <p class="text-[var(--text-muted)]">Monitoramento em tempo real da infraestrutura de rede</p>
+            <p class="text-xs text-[var(--text-muted)] mt-2">
+                {{ stats.total_devices }} dispositivos ativos no cadastro • Proxima janela: {{ next_backup_time }}
+            </p>
+            <p class="text-xs text-[var(--text-muted)] mt-1">
+                Base agendados: Ping OK {{ conn_ping_ok_scheduled }} • Login OK {{ conn_login_ok_scheduled }} • Ping sem login {{ conn_ping_ok_login_fail_scheduled }} • Sem ping {{ conn_no_ping_scheduled }}
+            </p>
+        </div>
+
+        <div class="flex items-center gap-4">
+            <div class="text-right">
+                <div class="text-2xl font-mono-nums font-bold text-[var(--text-main)] tracking-tight" id="clock">00:00:00</div>
+                <div class="text-xs text-[var(--text-muted)] uppercase tracking-widest font-semibold">
+                    {{ (current_time|localtime).strftime('%d/%m/%Y') }}
+                </div>
+            </div>
+
+            <form action="{{ url_for('tenant.refresh_status', tenant_slug=tenant_slug) }}" method="POST">
+                {% include 'partials/csrf.html' %}
+                <button type="submit"
+                    class="ml-4 h-12 w-12 rounded-xl bg-gradient-to-br from-blue-600 to-blue-700 flex items-center justify-center text-[var(--text-main)] shadow-lg shadow-blue-600/30 hover:shadow-blue-600/50 hover:scale-105 active:scale-95 transition-all">
+                    <i data-lucide="refresh-cw" class="w-5 h-5"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <p class="kpi-section-title">Visão por prioridade</p>
+    <!-- KPI Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+
+        <!-- Pending -->
+        <a href="{{ url_for('tenant_devices.list_devices', tenant_slug=tenant_slug, due='1', auto='enabled') }}" class="block h-full">
+        <div class="premium-card tilt-card theme-amber h-full cursor-pointer kpi-critical">
+            <div class="card-body">
+                <div class="flex justify-between items-start mb-4">
+                    <div class="icon-box theme-amber bg-amber-500/10">
+                        <i data-lucide="clock"></i>
+                    </div>
+                </div>
+                <div class="stat-val counter" data-target="{{ pending_backups }}">{{ pending_backups }}</div>
+                <div class="stat-lbl">Tarefas pendentes</div>
+                <!-- Mini progress bar -->
+                <div class="w-full h-1 bg-[var(--line-color)] rounded-full mt-4 overflow-hidden">
+                    <div class="h-full bg-amber-500 rounded-full shadow-[0_0_10px_#f59e0b]"
+                        style="width: {{ pending_progress }}%;"></div>
+                </div>
+            </div>
+        </div>
+        </a>
+
+        <!-- Sem backup -->
+        <a href="{{ url_for('tenant_devices.list_devices', tenant_slug=tenant_slug) }}?history=without_history" class="block h-full">
+        <div class="premium-card tilt-card theme-red cursor-pointer h-full kpi-critical">
+            <div class="card-body h-full">
+                <div class="flex justify-between items-start mb-4">
+                    <div class="icon-box theme-red bg-red-500/10">
+                        <i data-lucide="database-x"></i>
+                    </div>
+                    {% if no_history_count > 0 %}
+                    <span
+                        class="px-2 py-1 rounded bg-red-500/10 border border-red-500/20 text-[10px] font-bold text-red-400 uppercase tracking-wider animate-pulse">Alerta</span>
+                    {% endif %}
+                </div>
+                <div class="stat-val counter" data-target="{{ no_history_count }}">{{ no_history_count }}
+                </div>
+                <div class="stat-lbl">Dispositivos sem backup</div>
+                {% if total_scheduled > 0 %}
+                <div class="mt-1 text-[11px] text-[var(--text-muted)]">
+                    {{ total_scheduled }} agendados no total
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        </a>
+
+        <!-- Success 24h -->
+        <div class="premium-card tilt-card theme-blue kpi-normal">
+            <div class="card-body">
+                <div class="flex justify-between items-start mb-4">
+                    <div class="icon-box theme-blue bg-blue-500/10">
+                        <i data-lucide="check-circle-2"></i>
+                    </div>
+                </div>
+                <div class="stat-val counter" data-target="{{ success_24h }}">{{ success_24h }}</div>
+                <div class="stat-lbl">Sucesso (24h)</div>
+                <div class="w-full h-1 bg-[var(--line-color)] rounded-full mt-4 overflow-hidden">
+                    <div class="h-full bg-blue-500 rounded-full shadow-[0_0_10px_#3b82f6]"
+                        style="width: {{ (success_24h * 100 // (backups_24h or 1)) if backups_24h else 0 }}%;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Failures -->
+        <div class="premium-card tilt-card theme-purple kpi-critical">
+            <div class="card-body">
+                <div class="flex justify-between items-start mb-4">
+                    <div class="icon-box theme-purple bg-purple-500/10">
+                        <i data-lucide="shield-alert"></i>
+                    </div>
+                </div>
+                <div class="stat-val counter" data-target="{{ failed_24h }}">{{ failed_24h }}</div>
+                <div class="stat-lbl">Falhas (24h)</div>
+                <!-- Mini chart svg decoration -->
+                <svg class="absolute bottom-0 right-0 w-24 h-12 opacity-20 text-purple-500" viewBox="0 0 100 40">
+                    <path d="M0 40 L20 30 L40 35 L60 10 L80 25 L100 20 V40 H0 Z" fill="currentColor" />
+                </svg>
+            </div>
+        </div>
+
+        <!-- Storage -->
+        <div class="premium-card tilt-card theme-green kpi-normal">
+            <div class="card-body">
+                <div class="flex justify-between items-start mb-4">
+                    <div class="icon-box theme-green bg-emerald-500/10">
+                        <i data-lucide="database"></i>
+                    </div>
+                    <span
+                        class="px-2 py-1 rounded bg-emerald-500/10 border border-emerald-500/20 text-[10px] font-bold text-emerald-400 uppercase tracking-wider">Saúde</span>
+                </div>
+                <div class="stat-val" style="font-size: 2rem;">{{ stats.storage_used }}</div>
+                <div class="stat-lbl">Armazenamento usado</div>
+            </div>
+        </div>
+    </div>
+
+    <p class="kpi-section-title">Atenção e Saúde Operacional</p>
+    <!-- Connection + Backup quick health -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+        <a href="{{ url_for('tenant_devices.list_devices', tenant_slug=tenant_slug, audit='ping_ok', auto='enabled') }}" class="block h-full">
+        <div class="premium-card tilt-card theme-cyan h-full cursor-pointer kpi-normal">
+            <div class="card-body">
+                <div class="flex justify-between items-start mb-4">
+                    <div class="icon-box theme-cyan bg-cyan-500/10">
+                        <i data-lucide="wifi"></i>
+                    </div>
+                </div>
+                <div class="stat-val counter" data-target="{{ conn_ping_ok_scheduled }}">{{ conn_ping_ok_scheduled }}</div>
+                <div class="stat-lbl">Ping OK (agendados)</div>
+                <div class="mt-1 text-[11px] text-[var(--text-muted)]">
+                    Total ativos no teste: <span class="font-semibold text-cyan-400">{{ conn_ping_ok }}</span> • Login falhou (agendados): <span class="font-semibold text-amber-400">{{ conn_ping_ok_login_fail_scheduled }}</span>
+                </div>
+            </div>
+        </div>
+        </a>
+        <a href="{{ url_for('tenant_devices.list_devices', tenant_slug=tenant_slug, audit='login_ok', auto='enabled') }}" class="block h-full">
+        <div class="premium-card tilt-card theme-blue h-full cursor-pointer kpi-normal">
+            <div class="card-body">
+                <div class="flex justify-between items-start mb-4">
+                    <div class="icon-box theme-blue bg-blue-500/10">
+                        <i data-lucide="key-round"></i>
+                    </div>
+                </div>
+                <div class="stat-val counter" data-target="{{ conn_login_ok_scheduled }}">{{ conn_login_ok_scheduled }}</div>
+                <div class="stat-lbl">Login OK (agendados)</div>
+                <div class="mt-1 text-[11px] text-[var(--text-muted)]">
+                    Total ativos no teste: <span class="font-semibold text-blue-400">{{ conn_login_ok }}</span>
+                </div>
+            </div>
+        </div>
+        </a>
+        <a href="{{ url_for('tenant_devices.list_devices', tenant_slug=tenant_slug, audit='ping_login_fail', auto='enabled') }}" class="block h-full">
+        <div class="premium-card tilt-card theme-amber h-full cursor-pointer kpi-attention">
+            <div class="card-body">
+                <div class="flex justify-between items-start mb-4">
+                    <div class="icon-box theme-amber bg-amber-500/10">
+                        <i data-lucide="user-x"></i>
+                    </div>
+                </div>
+                <div class="stat-val counter" data-target="{{ conn_ping_ok_login_fail_scheduled }}">{{ conn_ping_ok_login_fail_scheduled }}</div>
+                <div class="stat-lbl">Ping OK, login falhou (agendados)</div>
+                <div class="mt-1 text-[11px] text-[var(--text-muted)]">
+                    Sem ping (agendados): <span class="font-semibold text-red-400">{{ conn_no_ping_scheduled }}</span>
+                </div>
+            </div>
+        </div>
+        </a>
+        <a href="{{ url_for('tenant_devices.list_devices', tenant_slug=tenant_slug, result='success') }}" class="block h-full">
+        <div class="premium-card tilt-card theme-green h-full cursor-pointer kpi-normal">
+            <div class="card-body">
+                <div class="flex justify-between items-start mb-4">
+                    <div class="icon-box theme-green bg-emerald-500/10">
+                        <i data-lucide="badge-check"></i>
+                    </div>
+                </div>
+                <div class="stat-val counter" data-target="{{ success_count }}">{{ success_count }}</div>
+                <div class="stat-lbl">Dispositivos com backup</div>
+                <div class="mt-1 text-[11px] text-[var(--text-muted)]">
+                    Nao representa o resultado do ultimo backup em massa
+                </div>
+            </div>
+        </div>
+        </a>
+        <a href="{{ url_for('tenant_devices.list_devices', tenant_slug=tenant_slug, result='failed') }}" class="block h-full">
+        <div class="premium-card tilt-card theme-red h-full cursor-pointer kpi-attention">
+            <div class="card-body">
+                <div class="flex justify-between items-start mb-4">
+                    <div class="icon-box theme-red bg-red-500/10">
+                        <i data-lucide="shield-x"></i>
+                    </div>
+                </div>
+                <div class="stat-val counter" data-target="{{ failed_count }}">{{ failed_count }}</div>
+                <div class="stat-lbl">Dispositivos com backup falha (ultimo status)</div>
+                <div class="mt-1 text-[11px] text-[var(--text-muted)]">
+                    Nao representa o resultado do ultimo backup em massa
+                </div>
+            </div>
+        </div>
+        </a>
+    </div>
+    <div class="mb-8 text-xs text-[var(--text-muted)]">
+        Resumo do ultimo teste (ativos): {{ conn_last_test_at }} • Testados: {{ conn_tested_total }} • Sem ping: {{ conn_no_ping }} • Ping OK sem login: {{ conn_ping_ok_login_fail }}
+    </div>
+
+    <!-- Middle Section: Main Charts & Gauge -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8">
+
+        <!-- Weekly Trends (8 cols) -->
+        <div class="lg:col-span-8 premium-card tilt-card">
+            <div class="card-body">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-sm font-bold text-[var(--text-main)] uppercase tracking-wider flex items-center gap-2">
+                        <i data-lucide="bar-chart-2" class="text-blue-500"></i> Histórico de desempenho
+                    </h3>
+                </div>
+                <div class="h-[280px] w-full">
+                    <canvas id="mainChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gauge & Circulars (4 cols) -->
+        <div class="lg:col-span-4 flex flex-col gap-6">
+
+            <div class="premium-card tilt-card flex-1">
+                <div class="card-body flex flex-col items-center justify-center">
+                    <h3 class="text-xs font-bold text-[var(--text-muted)] uppercase tracking-widest mb-4">Taxa de sucesso (processados)</h3>
+
+                    <div class="relative w-48 h-48">
+                        <svg viewBox="0 0 200 200" class="w-full h-full -rotate-90 transform origin-center">
+                            <!-- Background Circle -->
+                            <circle cx="100" cy="100" r="80" fill="none" stroke="#1e293b" stroke-width="12" />
+                            <!-- Progress Circle -->
+                            <circle cx="100" cy="100" r="80" fill="none" stroke="url(#gradientCircle)" stroke-width="12"
+                                stroke-linecap="round" stroke-dasharray="502"
+                                stroke-dashoffset="{{ ((100 - backup_progress) / 100 * 502)|int }}"
+                                class="drop-shadow-[0_0_15px_rgba(59,130,246,0.6)]" />
+                            <defs>
+                                <linearGradient id="gradientCircle" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" stop-color="#3b82f6" />
+                                    <stop offset="100%" stop-color="#8b5cf6" />
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                        <div class="absolute inset-0 flex flex-col items-center justify-center">
+                            <span class="text-5xl font-mono-nums font-bold text-[var(--text-main)]">{{ backup_progress }}%</span>
+                            <span
+                                class="text-xs text-[var(--text-muted)] font-semibold uppercase mt-1 tracking-widest">Sucesso</span>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 text-center text-xs text-[var(--text-muted)]">
+                        Cobertura: <span class="font-semibold text-[var(--text-main)]">{{ processed_backups }}/{{ total_scheduled }}</span>
+                        ({{ coverage_progress }}%)
+                        {% if no_history_count > 0 %}
+                        • Sem histórico: <span class="font-semibold text-amber-400">{{ no_history_count }}</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="mt-3 w-full text-xs">
+                        <div class="flex items-center justify-between">
+                            <span class="text-[var(--text-muted)]">Meta</span>
+                            <span class="font-semibold text-[var(--text-main)]">{{ backup_target_rate|round(0)|int }}%</span>
+                        </div>
+                        <div class="flex items-center justify-between mt-1">
+                            <span class="text-[var(--text-muted)]">Delta semanal</span>
+                            {% if weekly_delta_rate > 0 %}
+                            <span class="font-semibold text-emerald-400">↑ +{{ weekly_delta_rate }}pp</span>
+                            {% elif weekly_delta_rate < 0 %}
+                            <span class="font-semibold text-red-400">↓ {{ weekly_delta_rate }}pp</span>
+                            {% else %}
+                            <span class="font-semibold text-slate-300">0pp</span>
+                            {% endif %}
+                        </div>
+                        <div class="mt-1 text-[11px] text-[var(--text-muted)]">
+                            Semana atual: {{ weekly_success_rate }}% • Semana anterior: {{ weekly_prev_rate }}%
+                        </div>
+                        <div class="sparkline-wrap">
+                            <svg viewBox="0 0 140 36" class="h-9 w-full">
+                                <polyline fill="none" stroke="#334155" stroke-width="1.5"
+                                    points="2,34 138,34"></polyline>
+                                <polyline fill="none" stroke="#3b82f6" stroke-width="2.5"
+                                    stroke-linecap="round" stroke-linejoin="round"
+                                    points="{{ success_rate_trend_points }}"></polyline>
+                            </svg>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 w-full mt-8 gap-4">
+                        <div class="p-3 rounded-xl bg-[var(--line-color)] border border-[var(--line-color)] text-center">
+                            <div class="text-[10px] uppercase text-emerald-400 font-bold mb-1">Sucesso</div>
+                            <div class="text-xl font-mono-nums font-bold text-[var(--text-main)]">{{ success_count }}</div>
+                        </div>
+                        <div class="p-3 rounded-xl bg-[var(--line-color)] border border-[var(--line-color)] text-center">
+                            <div class="text-[10px] uppercase text-red-400 font-bold mb-1">Falhas</div>
+                            <div class="text-xl font-mono-nums font-bold text-[var(--text-main)]">{{ failed_count }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Activity Table -->
+    <div class="premium-card premium-card tilt-card">
+        <div class="card-body p-0">
+            <div class="p-6 flex items-center justify-between border-b border-[var(--line-color)]">
+                <h3 class="text-sm font-bold text-[var(--text-main)] uppercase tracking-wider flex items-center gap-2">
+                    <i data-lucide="activity" class="text-emerald-500"></i> Atividade recente
+                </h3>
+                <a href="{{ url_for('tenant_backups.list_backups', tenant_slug=tenant.slug) }}"
+                    class="text-xs font-bold text-blue-500 hover:text-blue-400 uppercase tracking-widest transition-colors">
+                    Ver histórico completo
+                </a>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="tech-table">
+                    <thead>
+                        <tr>
+                            <th class="pl-6">Dispositivo</th>
+                            <th>Tipo</th>
+                            <th>Data/Hora</th>
+                            <th>Tamanho</th>
+                            <th>Status</th>
+                            <th class="pr-6 text-right">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for backup in recent_backups %}
+                        <tr>
+                            <td class="pl-6">
+                                <div class="flex items-center gap-3">
+                                    <div
+                                        class="w-8 h-8 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
+                                        <i data-lucide="server" class="w-4 h-4"></i>
+                                    </div>
+                                    <div>
+                                        <div class="font-bold text-[var(--text-main)] text-sm">{{ backup.device.name }}</div>
+                                        <div class="text-[10px] text-[var(--text-muted)] font-mono tracking-wide">{{
+                                            backup.device.ip_address }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="text-xs font-medium text-[var(--text-muted)] bg-[var(--line-color)] px-2 py-1 rounded">
+                                    {{ backup.device.type.name if backup.device.type else 'Rede' }}
+                                </span>
+                            </td>
+                            <td class="text-xs font-mono-nums text-[var(--text-muted)]">
+                                {{ (backup.started_at|localtime).strftime('%H:%M:%S') if backup.started_at else '--' }}<br>
+                                <span class="text-[10px] opacity-50">{{ (backup.started_at|localtime).strftime('%Y-%m-%d') if
+                                    backup.started_at else '' }}</span>
+                            </td>
+                            <td class="font-mono-nums text-sm text-[var(--text-main)]">
+                                {{ (backup.file_size_bytes / 1024)|int if backup.file_size_bytes else 0 }} <span
+                                    class="text-xs text-slate-700 dark:text-slate-600">KB</span>
+                            </td>
+                            <td>
+                                {% if backup.status_value == 'success' %}
+                                <span
+                                    class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-bold uppercase tracking-wider box-shadow-glow">
+                                    Sucesso
+                                </span>
+                                {% elif backup.status_value == 'failed' %}
+                                <span
+                                    class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-red-500/10 border border-red-500/20 text-red-400 text-[10px] font-bold uppercase tracking-wider">
+                                    Falha
+                                </span>
+                                {% else %}
+                                <span
+                                    class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-amber-500/10 border border-amber-500/20 text-amber-400 text-[10px] font-bold uppercase tracking-wider">
+                                    Pendente
+                                </span>
+                                {% endif %}
+                            </td>
+                            <td class="pr-6 text-right">
+                                <a href="{{ url_for('tenant_backups.view_backup', tenant_slug=tenant.slug, backup_id=backup.id) }}"
+                                    class="inline-flex p-2 hover:bg-white/10 rounded-lg transition-colors text-[var(--text-muted)] hover:text-white"
+                                    title="Ver backup">
+                                    <i data-lucide="external-link" class="w-4 h-4"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center py-8 text-[var(--text-muted)]">Sem atividades recentes.
+                                Aguarde o próximo ciclo de backups.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ------------------------------------------------------------------
+    // CANVAS PARTICLE SYSTEM
+    // ------------------------------------------------------------------
+    const canvas = document.getElementById('bg-canvas');
+    const ctx = canvas.getContext('2d');
+    let width, height;
+    let particles = [];
+
+    function resize() {
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    class Particle {
+        constructor() {
+            this.x = Math.random() * width;
+            this.y = Math.random() * height;
+            this.vx = (Math.random() - 0.5) * 0.5;
+            this.vy = (Math.random() - 0.5) * 0.5;
+            this.size = Math.random() * 2;
+        }
+        update() {
+            this.x += this.vx;
+            this.y += this.vy;
+            if (this.x < 0) this.x = width;
+            if (this.x > width) this.x = 0;
+            if (this.y < 0) this.y = height;
+            if (this.y > height) this.y = 0;
+        }
+        draw() {
+            ctx.fillStyle = document.documentElement.classList.contains('dark') ? 'rgba(56, 189, 248, 0.2)' : 'rgba(59, 130, 246, 0.15)';
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+            ctx.fill();
+        }
+    }
+
+    // Init Particles
+    for (let i = 0; i < 50; i++) particles.push(new Particle());
+
+    function animate() {
+        ctx.clearRect(0, 0, width, height);
+
+        // Update & Draw
+        particles.forEach((p, index) => {
+            p.update();
+            p.draw();
+
+            // Connect
+            for (let j = index + 1; j < particles.length; j++) {
+                const p2 = particles[j];
+                const dx = p.x - p2.x;
+                const dy = p.y - p2.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+
+                if (dist < 150) {
+                    ctx.strokeStyle = document.documentElement.classList.contains('dark') ? `rgba(56, 189, 248, ${0.1 * (1 - dist / 150)})` : `rgba(59, 130, 246, ${0.15 * (1 - dist / 150)})`;
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.moveTo(p.x, p.y);
+                    ctx.lineTo(p2.x, p2.y);
+                    ctx.stroke();
+                }
+            }
+        });
+        requestAnimationFrame(animate);
+    }
+    animate();
+
+
+    // ------------------------------------------------------------------
+    // VANILLA 3D TILT LOGIC
+    // ------------------------------------------------------------------
+    document.querySelectorAll('.tilt-card').forEach(card => {
+        card.addEventListener('mousemove', (e) => {
+            const rect = card.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+
+            const rotateX = ((y - centerY) / centerY) * -2; // Max deg
+            const rotateY = ((x - centerX) / centerX) * 2;
+
+            card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+        });
+
+        card.addEventListener('mouseleave', () => {
+            card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0)';
+        });
+    });
+
+    // ------------------------------------------------------------------
+    // CLOCK
+    // ------------------------------------------------------------------
+    setInterval(() => {
+        const now = new Date();
+        document.getElementById('clock').innerText = now.toLocaleTimeString('pt-BR', { hour12: false });
+    }, 1000);
+
+    // ------------------------------------------------------------------
+    // NUMBER ANIMATION
+    // ------------------------------------------------------------------
+    document.querySelectorAll('.counter').forEach(el => {
+        const target = parseInt(el.getAttribute('data-target'));
+        let count = 0;
+        const inc = target / 20;
+        const interval = setInterval(() => {
+            count += inc;
+            if (count >= target) {
+                el.innerText = target;
+                clearInterval(interval);
+            } else {
+                el.innerText = Math.ceil(count);
+            }
+        }, 30);
+    });
+
+    // ------------------------------------------------------------------
+    // CHART JS CONFIG
+    // ------------------------------------------------------------------
+    const chartData = JSON.parse('{{ chart_data|safe }}');
+
+    // Main Chart (Weekly)
+    const ctxMain = document.getElementById('mainChart').getContext('2d');
+    const gradBlue = ctxMain.createLinearGradient(0, 0, 0, 300);
+    gradBlue.addColorStop(0, 'rgba(59, 130, 246, 0.5)');
+    gradBlue.addColorStop(1, 'rgba(59, 130, 246, 0)');
+
+    const gradRed = ctxMain.createLinearGradient(0, 0, 0, 300);
+    gradRed.addColorStop(0, 'rgba(239, 68, 68, 0.5)');
+    gradRed.addColorStop(1, 'rgba(239, 68, 68, 0)');
+
+    new Chart(ctxMain, {
+        type: 'line',
+        data: {
+            labels: chartData.dates,
+            datasets: [
+                {
+                    label: 'Sucesso',
+                    data: chartData.success,
+                    borderColor: '#3b82f6',
+                    backgroundColor: gradBlue,
+                    fill: true,
+                    tension: 0.4,
+                    borderWidth: 2,
+                    pointRadius: 0,
+                    pointHoverRadius: 6
+                },
+                {
+                    label: 'Falhas',
+                    data: chartData.failed,
+                    borderColor: '#ef4444',
+                    backgroundColor: gradRed,
+                    fill: true,
+                    tension: 0.4,
+                    borderWidth: 2,
+                    pointRadius: 0,
+                    pointHoverRadius: 6
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: true, labels: { color: '#94a3b8' } } },
+            scales: {
+                y: { grid: { color: 'rgba(255,255,255,0.05)' }, border: { display: false } },
+                x: { grid: { display: false }, border: { display: false } }
+            },
+            interaction: {
+                mode: 'index',
+                intersect: false,
+            },
+        }
+    });
+
+    lucide.createIcons();
+</script>
+{% endblock %}

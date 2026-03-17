@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+
+{% block title %}Logs de Atividade | Backup Center{% endblock %}
+
+{% block content %}
+{% set is_alerts_view = (view_mode|default('logs')) == 'alerts' %}
+{% set page_title = "Alertas" if is_alerts_view else "Logs de Sistema" %}
+{% include 'partials/breadcrumb.html' %}
+
+<div class="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
+    {% if live_mode %}
+    <div class="mb-6 rounded-xl border border-gray-200 bg-gray-950 p-4 dark:border-gray-700">
+        <div class="mb-3 flex items-center justify-between gap-3">
+            <div>
+                <h3 class="text-sm font-semibold text-gray-100">{% if is_alerts_view %}Alertas em Tempo Real{% else %}Atividade de Backups em Tempo Real{% endif %}</h3>
+                <p class="text-xs text-gray-400">{% if is_alerts_view %}Exibindo apenas eventos de aviso/erro/falha.{% else %}Logs ao vivo de tarefas enfileiradas e em execução.{% endif %}</p>
+            </div>
+            <span id="globalLiveStatus"
+                class="inline-flex items-center rounded-full bg-amber-500/20 px-2.5 py-1 text-xs font-medium text-amber-300">
+                Conectando...
+            </span>
+        </div>
+        <div id="global-live-log-stream"
+            class="h-60 overflow-y-auto rounded-lg border border-gray-800 bg-black/70 p-3 font-mono text-xs text-gray-200"></div>
+    </div>
+    {% endif %}
+
+    <div class="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
+        <div>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{% if is_alerts_view %}Registro de Alertas{% else %}Registro de Atividades{% endif %}</h3>
+            <p class="text-sm text-gray-500">{% if is_alerts_view %}Eventos críticos e avisos do sistema.{% else %}Histórico de ações realizadas no sistema.{% endif %}</p>
+        </div>
+        <div class="flex gap-2">
+            <a href="{{ url_for('tenant_activity.list_activity', tenant_slug=tenant.slug, live=1, view='logs') }}"
+                class="px-3 py-2 text-sm font-medium rounded-lg transition-colors {% if not is_alerts_view %}bg-blue-500/20 text-blue-400 border border-blue-500/30{% else %}text-gray-600 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700{% endif %}">
+                Tudo
+            </a>
+            <a href="{{ url_for('tenant_activity.list_activity', tenant_slug=tenant.slug, live=1, view='alerts') }}"
+                class="px-3 py-2 text-sm font-medium rounded-lg transition-colors {% if is_alerts_view %}bg-amber-500/20 text-amber-300 border border-amber-500/30{% else %}text-gray-600 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700{% endif %}">
+                Somente alertas
+            </a>
+        </div>
+    </div>
+
+    <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+            <thead>
+                <tr class="border-b border-gray-100 dark:border-gray-800">
+                    <th class="py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Data/Hora</th>
+                    <th class="py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Usuário</th>
+                    <th class="py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Ação</th>
+                    <th class="py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Detalhes</th>
+                    <th class="py-3 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">IP</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+                {% for log in logs %}
+                {% set user_name = log.user.full_name if log.user and log.user.full_name else 'Sistema' %}
+                <tr class="hover:bg-gray-50 dark:hover:bg-white/[0.02] transition-colors">
+                    <td class="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">
+                        {{ (log.created_at|localtime).strftime('%d/%m/%Y %H:%M:%S') }}
+                    </td>
+                    <td class="py-3 px-4 text-sm font-medium text-gray-900 dark:text-white">
+                        <div class="flex items-center gap-2">
+                            <div
+                                class="w-6 h-6 rounded-full bg-brand-100 text-brand-600 flex items-center justify-center text-xs font-bold dark:bg-brand-500/20 dark:text-brand-400">
+                                {{ user_name[0] }}
+                            </div>
+                            {{ user_name }}
+                        </div>
+                    </td>
+                    <td class="py-3 px-4">
+                        <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-md 
+                            {% if 'ERROR' in log.action or 'FAIL' in log.action %}bg-red-50 text-red-600 dark:bg-red-500/10 dark:text-red-400
+                            {% elif 'LOGIN' in log.action %}bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400
+                            {% elif 'CREATE' in log.action or 'UPDATE' in log.action %}bg-green-50 text-green-600 dark:bg-green-500/10 dark:text-green-400
+                            {% else %}bg-gray-50 text-gray-600 dark:bg-gray-800 dark:text-gray-400{% endif %}">
+                            {{ log.action }}
+                        </span>
+                    </td>
+                    <td class="py-3 px-4 text-sm text-gray-500 dark:text-gray-400 truncate max-w-xs"
+                        title="{{ log.details }}">
+                        {{ log.details or '-' }}
+                    </td>
+                    <td class="py-3 px-4 text-xs text-mono text-gray-500 dark:text-gray-500">
+                        {{ log.ip_address or '127.0.0.1' }}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" class="py-8 text-center text-gray-500 dark:text-gray-400">
+                        Nenhuma atividade registrada recentemente.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    (function () {
+        const alertsOnly = {{ 'true' if is_alerts_view else 'false' }};
+        const stream = document.getElementById('global-live-log-stream');
+        const status = document.getElementById('globalLiveStatus');
+        if (!stream || !status) return;
+
+        let pollTimer = null;
+        let lastSeq = 0;
+
+        function setStatus(text, mode) {
+            status.textContent = text;
+            if (mode === 'ok') {
+                status.className = 'inline-flex items-center rounded-full bg-emerald-500/20 px-2.5 py-1 text-xs font-medium text-emerald-300';
+                return;
+            }
+            if (mode === 'error') {
+                status.className = 'inline-flex items-center rounded-full bg-red-500/20 px-2.5 py-1 text-xs font-medium text-red-300';
+                return;
+            }
+            status.className = 'inline-flex items-center rounded-full bg-amber-500/20 px-2.5 py-1 text-xs font-medium text-amber-300';
+        }
+
+        function appendLog(entry) {
+            const row = document.createElement('div');
+            let color = 'text-gray-200';
+            if (entry.level === 'success') color = 'text-emerald-300';
+            if (entry.level === 'error') color = 'text-red-300';
+            if (entry.level === 'warning') color = 'text-amber-300';
+            row.className = `mb-1 ${color}`;
+            row.textContent = `[${entry.timestamp || '--:--:--'}] [${(entry.level || 'info').toUpperCase()}] [${entry.device_name || 'Sistema'}] ${entry.message || ''}`;
+            stream.appendChild(row);
+
+            const maxLines = 300;
+            while (stream.childElementCount > maxLines) {
+                stream.removeChild(stream.firstChild);
+            }
+            stream.scrollTop = stream.scrollHeight;
+        }
+
+        async function poll() {
+            try {
+                const response = await fetch(`{{ url_for('tenant_backups.global_backup_logs', tenant_slug=tenant.slug) }}?after=${lastSeq}`, {
+                    headers: { 'Accept': 'application/json' }
+                });
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                const data = await response.json();
+                if (Array.isArray(data.entries)) {
+                    data.entries.forEach((entry) => {
+                        if (!alertsOnly) {
+                            appendLog(entry);
+                            return;
+                        }
+                        const level = (entry.level || '').toLowerCase();
+                        const msg = (entry.message || '').toLowerCase();
+                        const isAlert = level === 'warning' || level === 'error' || msg.includes('falha') || msg.includes('erro');
+                        if (isAlert) appendLog(entry);
+                    });
+                }
+                lastSeq = Number(data.last_seq || lastSeq || 0);
+                setStatus('Conectado', 'ok');
+            } catch (error) {
+                setStatus('Reconectando...', 'error');
+            }
+        }
+
+        poll();
+        pollTimer = setInterval(poll, 1500);
+        window.addEventListener('beforeunload', () => {
+            if (pollTimer) clearInterval(pollTimer);
+        });
+    })();
+</script>
+{% endblock %}

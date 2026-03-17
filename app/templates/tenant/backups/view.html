@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+
+{% block title %}Detalhes do Backup | Backup Center{% endblock %}
+
+{% block content %}
+{% set page_title = "Detalhes do Backup" %}
+{% include 'partials/breadcrumb.html' %}
+
+<div class="grid grid-cols-12 gap-6">
+
+    <!-- Back Link -->
+    <div class="col-span-12">
+        <a href="{{ url_for('tenant_backups.list_backups', tenant_slug=tenant.slug) }}"
+            class="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
+            <i data-lucide="arrow-left" class="w-4 h-4"></i>
+            Voltar ao Histórico
+        </a>
+    </div>
+
+    <!-- Main Content -->
+    <div class="col-span-12 lg:col-span-8">
+        <div class="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
+            <div class="flex items-start justify-between mb-6">
+                <div class="flex items-center gap-4">
+                    <div
+                        class="flex h-14 w-14 items-center justify-center rounded-xl 
+                        {% if backup.status_value == 'success' %}bg-success-50 dark:bg-success-500/10{% else %}bg-error-50 dark:bg-error-500/10{% endif %}">
+                        <i data-lucide="{% if backup.status_value == 'success' %}check-circle{% else %}x-circle{% endif %}"
+                            class="w-7 h-7 {% if backup.status_value == 'success' %}text-success-600 dark:text-success-400{% else %}text-error-600 dark:text-error-400{% endif %}"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold text-gray-900 dark:text-white">{{ backup.device.name }}</h2>
+                        <p class="text-sm text-gray-500">{{ backup.device.ip_address }}</p>
+                    </div>
+                </div>
+
+                {% if backup.file_path %}
+                <a href="{{ url_for('tenant_backups.download_backup', tenant_slug=tenant.slug, backup_id=backup.id) }}"
+                    class="inline-flex items-center gap-2 rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white hover:bg-brand-600 transition-colors">
+                    <i data-lucide="download" class="w-4 h-4"></i>
+                    Download
+                </a>
+                {% endif %}
+            </div>
+
+            <!-- Info Grid -->
+            <div class="grid grid-cols-2 gap-4 mb-6">
+                <div class="rounded-lg bg-gray-50 dark:bg-gray-800 p-4">
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Status</p>
+                    <p
+                        class="font-semibold {% if backup.status_value == 'success' %}text-success-600{% else %}text-error-600{% endif %}">
+                        {{ backup.status_value|title }}
+                    </p>
+                </div>
+                <div class="rounded-lg bg-gray-50 dark:bg-gray-800 p-4">
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Data/Hora</p>
+                    <p class="font-semibold text-gray-900 dark:text-white">
+                        {{ (backup.created_at|localtime).strftime('%d/%m/%Y às %H:%M:%S') if backup.created_at else '-' }}
+                    </p>
+                </div>
+                <div class="rounded-lg bg-gray-50 dark:bg-gray-800 p-4">
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Tamanho</p>
+                    <p class="font-semibold text-gray-900 dark:text-white">
+                        {% if backup.file_size_bytes %}
+                        {% if backup.file_size_bytes > 1048576 %}
+                        {{ (backup.file_size_bytes / 1048576)|round(2) }} MB
+                        {% else %}
+                        {{ (backup.file_size_bytes / 1024)|round(1) }} KB
+                        {% endif %}
+                        {% else %}
+                        -
+                        {% endif %}
+                    </p>
+                </div>
+                <div class="rounded-lg bg-gray-50 dark:bg-gray-800 p-4">
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Duração</p>
+                    <p class="font-semibold text-gray-900 dark:text-white">
+                        {% if backup.duration_seconds %}{{ backup.duration_seconds }} segundos{% else %}-{% endif %}
+                    </p>
+                </div>
+            </div>
+
+            <!-- Error Message -->
+            {% if backup.error_message %}
+            <div
+                class="rounded-lg border border-error-200 bg-error-50 dark:border-error-500/30 dark:bg-error-500/10 p-4">
+                <div class="flex items-start gap-3">
+                    <i data-lucide="alert-triangle" class="w-5 h-5 text-error-600 dark:text-error-400 mt-0.5"></i>
+                    <div>
+                        <p class="font-medium text-error-700 dark:text-error-400">Mensagem de Erro:</p>
+                        <p class="text-sm text-error-600 dark:text-error-300 mt-1 font-mono">{{ backup.error_message }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- File Path -->
+            {% if backup.file_path %}
+            <div class="mt-6 pt-6 border-t border-gray-200 dark:border-gray-800">
+                <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Caminho do Arquivo:</p>
+                <p class="font-mono text-sm text-gray-700 dark:text-gray-300 break-all">{{ backup.file_path }}</p>
+            </div>
+            {% endif %}
+
+            <!-- Hash -->
+            {% if backup.hash_sha256 %}
+            <div class="mt-4">
+                <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">SHA256:</p>
+                <p class="font-mono text-xs text-gray-600 dark:text-gray-400 break-all">{{ backup.hash_sha256 }}</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="col-span-12 lg:col-span-4 space-y-6">
+        <!-- Device Info -->
+        <div class="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
+            <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Dispositivo</h4>
+            <div class="space-y-3">
+                <div class="flex justify-between text-sm">
+                    <span class="text-gray-500">Nome</span>
+                    <span class="font-medium text-gray-900 dark:text-white">{{ backup.device.name }}</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                    <span class="text-gray-500">IP</span>
+                    <span class="font-mono text-gray-900 dark:text-white">{{ backup.device.ip_address }}</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                    <span class="text-gray-500">Porta</span>
+                    <span class="font-mono text-gray-900 dark:text-white">{{ backup.device.port }}</span>
+                </div>
+                {% if backup.device.type %}
+                <div class="flex justify-between text-sm">
+                    <span class="text-gray-500">Tipo</span>
+                    <span class="text-gray-900 dark:text-white">{{ backup.device.type.name }}</span>
+                </div>
+                {% endif %}
+            </div>
+            <a href="{{ url_for('tenant_devices.view_device', tenant_slug=tenant.slug, device_id=backup.device.id) }}"
+                class="mt-4 inline-flex items-center gap-1 text-sm text-brand-600 hover:underline dark:text-brand-400">
+                Ver dispositivo <i data-lucide="arrow-right" class="w-3 h-3"></i>
+            </a>
+        </div>
+
+        <!-- Actions -->
+        <div class="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
+            <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Ações</h4>
+            <div class="space-y-2">
+                <a href="{{ url_for('tenant_devices.run_backup', tenant_slug=tenant.slug, device_id=backup.device.id) }}"
+                    class="flex items-center gap-2 w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors">
+                    <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                    Executar Novo Backup
+                </a>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block title %}Dispositivos com Falha | Backup Center{% endblock %}
+
+{% macro table_rows(items) -%}
+    {% if items %}
+    <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead class="bg-gray-50 dark:bg-gray-800/60">
+                <tr>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Dispositivo</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Grupo</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Data do Erro</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Causa</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Mensagem</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+                {% for backup in items %}
+                <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/40">
+                    <td class="px-4 py-3">
+                        <a class="text-sm font-semibold text-brand-600 hover:underline dark:text-brand-300"
+                            href="{{ url_for('tenant_devices.view_device', tenant_slug=tenant.slug, device_id=backup.device.id) }}">
+                            {{ backup.device.name }}
+                        </a>
+                    </td>
+                    <td class="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
+                        {{ backup.device.group.name if backup.device.group else 'Sem grupo' }}
+                    </td>
+                    <td class="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
+                        {{ (backup.created_at|localtime).strftime('%d/%m/%Y %H:%M:%S') if backup.created_at else '-' }}
+                    </td>
+                    <td class="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
+                        <span class="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700 dark:bg-gray-800 dark:text-gray-300">
+                            {{ backup._failure_label if backup._failure_label else 'Outros' }}
+                        </span>
+                    </td>
+                    <td class="px-4 py-3 text-sm text-red-700 dark:text-red-300">
+                        {{ backup.error_message or 'Falha sem mensagem detalhada.' }}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800 dark:border-emerald-800/50 dark:bg-emerald-900/20 dark:text-emerald-300">
+        Nenhuma falha nesta categoria.
+    </div>
+    {% endif %}
+{%- endmacro %}
+
+{% block content %}
+{% set page_title = "Dispositivos com Falha" %}
+{% include 'partials/breadcrumb.html' %}
+
+<div class="space-y-6">
+    <div class="rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
+        <h2 class="text-xl font-bold text-gray-900 dark:text-white">Último backup com erro por dispositivo</h2>
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Separado por tipo de falha para acelerar a correção.</p>
+    </div>
+
+    <div class="grid grid-cols-1 gap-3 md:grid-cols-3">
+        <div class="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-white/[0.03]">
+            <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">Autenticação</p>
+            <p class="mt-2 text-2xl font-bold text-red-600 dark:text-red-400">{{ auth_errors|length }}</p>
+        </div>
+        <div class="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-white/[0.03]">
+            <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">Conexão/Timeout</p>
+            <p class="mt-2 text-2xl font-bold text-amber-600 dark:text-amber-400">{{ conn_errors|length }}</p>
+        </div>
+        <div class="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-white/[0.03]">
+            <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">Outros Erros</p>
+            <p class="mt-2 text-2xl font-bold text-purple-600 dark:text-purple-400">{{ other_errors|length }}</p>
+        </div>
+    </div>
+
+    {% if detailed_breakdown %}
+    <div class="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-white/[0.03]">
+        <h3 class="mb-3 text-sm font-semibold uppercase tracking-wide text-gray-500">Quebra detalhada da causa</h3>
+        <div class="grid grid-cols-2 gap-2 md:grid-cols-4">
+            {% for item in detailed_breakdown %}
+            <div class="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-xs dark:border-gray-700 dark:bg-gray-800/50">
+                <p class="font-semibold text-gray-700 dark:text-gray-200">{{ item.label }}</p>
+                <p class="mt-1 text-gray-500 dark:text-gray-400">{{ item.count }} dispositivo(s)</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="space-y-4">
+        <div class="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-white/[0.03]">
+            <h3 class="mb-3 text-sm font-semibold uppercase tracking-wide text-gray-500">Autenticação</h3>
+            {{ table_rows(auth_errors) }}
+        </div>
+        <div class="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-white/[0.03]">
+            <h3 class="mb-3 text-sm font-semibold uppercase tracking-wide text-gray-500">Conexão/Timeout</h3>
+            {{ table_rows(conn_errors) }}
+        </div>
+        <div class="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-white/[0.03]">
+            <h3 class="mb-3 text-sm font-semibold uppercase tracking-wide text-gray-500">Outros Erros</h3>
+            {{ table_rows(other_errors) }}
+        </div>
+    </div>
+</div>
+{% endblock %}

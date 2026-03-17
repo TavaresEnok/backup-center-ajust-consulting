@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+
+{% block title %}Relatorios | Backup Center{% endblock %}
+
+{% block content %}
+{% set page_title = "Relatorios Agendados" %}
+{% include 'partials/breadcrumb.html' %}
+
+<div class="space-y-6 pb-4">
+    <div class="grid grid-cols-12 gap-6">
+        {% set settings_section = 'reports' %}
+        {% include 'tenant/settings/_settings_nav.html' %}
+
+        <div class="col-span-12 space-y-6 lg:col-span-9">
+            <div class="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
+                <div class="flex flex-wrap items-center justify-between gap-4">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Relatorios Agendados</h2>
+                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                            Configure envios automaticos por e-mail para reduzir monitoramento manual.
+                        </p>
+                    </div>
+                    <button onclick="document.getElementById('add-report-modal').classList.remove('hidden')"
+                        class="inline-flex items-center gap-2 rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-brand-600">
+                        <i data-lucide="plus" class="h-4 w-4"></i>
+                        Novo Relatorio
+                    </button>
+                </div>
+            </div>
+
+            {% if reports %}
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                {% for report in reports %}
+                <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
+                    <div class="mb-4 flex items-start justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-50 dark:bg-brand-500/10">
+                                <i data-lucide="file-text" class="h-5 w-5 text-brand-600 dark:text-brand-400"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-gray-900 dark:text-white">{{ report.name }}</h4>
+                                <p class="text-xs text-gray-500">{{ report.report_type.value|replace('_', ' ')|title }}</p>
+                            </div>
+                        </div>
+                        <span
+                            class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium {% if report.is_active %}bg-success-100 text-success-700 dark:bg-success-500/20 dark:text-success-400{% else %}bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400{% endif %}">
+                            {{ 'Ativo' if report.is_active else 'Inativo' }}
+                        </span>
+                    </div>
+
+                    <div class="space-y-2 text-sm">
+                        <div class="flex justify-between">
+                            <span class="text-gray-500">Frequencia:</span>
+                            <span class="text-gray-900 dark:text-white">{{ report.schedule.value|title }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-500">Destinatarios:</span>
+                            <span class="text-gray-900 dark:text-white">{{ report.recipients|length }} e-mail(s)</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-500">Ultimo envio:</span>
+                            <span class="text-gray-900 dark:text-white">{{ (report.last_sent_at|localtime).strftime('%d/%m/%Y') if report.last_sent_at else 'Nunca' }}</span>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 flex gap-2 border-t border-gray-200 pt-4 dark:border-gray-800">
+                        <button
+                            class="flex-1 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700">
+                            Editar
+                        </button>
+                        <button
+                            class="rounded-lg border border-brand-500 bg-brand-50 px-3 py-1.5 text-sm font-medium text-brand-600 transition-colors hover:bg-brand-100 dark:bg-brand-500/10 dark:text-brand-400 dark:hover:bg-brand-500/20">
+                            Enviar Agora
+                        </button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="rounded-2xl border-2 border-dashed border-gray-300 bg-white p-12 text-center dark:border-gray-700 dark:bg-gray-800">
+                <div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gray-200 dark:bg-gray-700">
+                    <i data-lucide="file-bar-chart" class="h-8 w-8 text-gray-400"></i>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Nenhum relatorio configurado</h3>
+                <p class="mt-1 text-sm text-gray-500">Comece com um envio automatico para acompanhar o ambiente sem abrir o painel todo dia.</p>
+                <button onclick="document.getElementById('add-report-modal').classList.remove('hidden')"
+                    class="mt-4 inline-flex items-center gap-2 rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-brand-600">
+                    <i data-lucide="plus" class="h-4 w-4"></i>
+                    Criar Primeiro Relatorio
+                </button>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div id="add-report-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/50">
+    <div class="mx-4 w-full max-w-md rounded-2xl bg-white p-6 shadow-xl dark:bg-gray-900">
+        <div class="mb-6 flex items-center justify-between">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Novo Relatorio</h3>
+            <button onclick="document.getElementById('add-report-modal').classList.add('hidden')"
+                class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                <i data-lucide="x" class="h-5 w-5"></i>
+            </button>
+        </div>
+        <form method="POST" action="{{ url_for('tenant_settings.create_report', tenant_slug=tenant.slug) }}">
+            {% include 'partials/csrf.html' %}
+            <div class="space-y-4">
+                <div>
+                    <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Nome</label>
+                    <input type="text" name="name" required
+                        class="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm dark:border-gray-700 dark:bg-gray-800 dark:text-white">
+                </div>
+                <div>
+                    <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Tipo</label>
+                    <select name="report_type"
+                        class="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm dark:border-gray-700 dark:bg-gray-800 dark:text-white">
+                        <option value="daily_summary">Resumo Diario</option>
+                        <option value="weekly_report">Relatorio Semanal</option>
+                        <option value="monthly_report">Relatorio Mensal</option>
+                        <option value="failure_alert">Alerta de Falhas</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Frequencia</label>
+                    <select name="schedule"
+                        class="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm dark:border-gray-700 dark:bg-gray-800 dark:text-white">
+                        <option value="daily">Diario</option>
+                        <option value="weekly">Semanal</option>
+                        <option value="monthly">Mensal</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Destinatarios (separados por virgula)</label>
+                    <input type="text" name="recipients" placeholder="email1@exemplo.com, email2@exemplo.com"
+                        class="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm dark:border-gray-700 dark:bg-gray-800 dark:text-white">
+                </div>
+            </div>
+            <div class="mt-6 flex gap-3">
+                <button type="button" onclick="document.getElementById('add-report-modal').classList.add('hidden')"
+                    class="flex-1 rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800">
+                    Cancelar
+                </button>
+                <button type="submit"
+                    class="flex-1 rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white hover:bg-brand-600">
+                    Criar Relatorio
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

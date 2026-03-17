@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | Backup Center</title>
+
+    <link href="{{ url_for('static', filename='css/output.css') }}?v=17384" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <style>
+        [x-cloak] {
+            display: none !important;
+        }
+
+        :root {
+            --bg-a: #06111f;
+            --bg-b: #11273f;
+            --shell: rgba(8, 20, 37, 0.78);
+            --shell-border: rgba(148, 163, 184, 0.24);
+            --panel: rgba(10, 24, 42, 0.7);
+            --panel-soft: rgba(15, 30, 52, 0.58);
+            --line: rgba(148, 163, 184, 0.2);
+            --text-main: #e2e8f0;
+            --text-muted: #94a3b8;
+        }
+
+        body {
+            min-height: 100vh;
+            color: var(--text-main);
+            background:
+                radial-gradient(circle at 8% 15%, rgba(34, 211, 238, 0.14), transparent 34%),
+                radial-gradient(circle at 92% 86%, rgba(14, 165, 233, 0.18), transparent 35%),
+                linear-gradient(145deg, var(--bg-a), var(--bg-b));
+        }
+
+        .auth-shell {
+            background: var(--shell);
+            border: 1px solid var(--shell-border);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            box-shadow: 0 30px 90px -45px rgba(15, 23, 42, 0.95);
+        }
+
+        .panel {
+            background: var(--panel);
+        }
+
+        .panel-soft {
+            background: var(--panel-soft);
+            border: 1px solid var(--line);
+        }
+
+        .fade-up {
+            animation: fade-up .5s ease both;
+        }
+
+        @keyframes fade-up {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body class="font-outfit">
+    <main class="min-h-screen flex items-center justify-center p-4 sm:p-8 lg:p-10">
+        <div class="auth-shell w-full max-w-5xl rounded-3xl overflow-hidden fade-up">
+            <div class="grid lg:grid-cols-2">
+                <aside class="panel p-7 sm:p-9 lg:p-10 border-b lg:border-b-0 lg:border-r border-slate-600/30">
+                    <div class="inline-flex items-center gap-3 px-4 py-2 rounded-xl panel-soft">
+                        <div class="h-9 w-9 rounded-lg bg-cyan-500/20 border border-cyan-300/30 flex items-center justify-center">
+                            <i data-lucide="shield-check" class="h-5 w-5 text-cyan-300"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm font-semibold text-slate-100">Backup Center</p>
+                            <p class="text-xs text-slate-400">Plataforma para operacao ISP</p>
+                        </div>
+                    </div>
+
+                    <div class="mt-8 space-y-4">
+                        <h1 class="text-3xl sm:text-4xl font-bold leading-tight text-slate-100">
+                            Seu ambiente de backup, em um unico painel.
+                        </h1>
+                        <p class="text-slate-300/90 leading-relaxed">
+                            Monitore execucoes, valide historicos e mantenha a recuperacao pronta para incidentes.
+                        </p>
+                    </div>
+
+                    <div class="mt-8 grid sm:grid-cols-3 lg:grid-cols-1 gap-3">
+                        <div class="panel-soft rounded-xl p-4">
+                            <p class="text-xs uppercase tracking-wide text-slate-400">Disponibilidade</p>
+                            <p class="mt-1 text-xl font-semibold text-slate-100">99.95%</p>
+                        </div>
+                        <div class="panel-soft rounded-xl p-4">
+                            <p class="text-xs uppercase tracking-wide text-slate-400">Backups diarios</p>
+                            <p class="mt-1 text-xl font-semibold text-slate-100">+12 mil</p>
+                        </div>
+                        <div class="panel-soft rounded-xl p-4">
+                            <p class="text-xs uppercase tracking-wide text-slate-400">Integridade</p>
+                            <p class="mt-1 text-xl font-semibold text-slate-100">SHA-256</p>
+                        </div>
+                    </div>
+                </aside>
+
+                <section class="p-7 sm:p-9 lg:p-10" x-data="{ showPassword: false }">
+                    <header>
+                        <h2 class="text-2xl sm:text-3xl font-bold text-slate-100">Entrar</h2>
+                        <p class="mt-2 text-sm text-slate-400">Informe suas credenciais para acessar o painel.</p>
+                    </header>
+
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                    <div class="space-y-2 mt-6">
+                        {% for category, message in messages %}
+                        <div class="rounded-xl p-3 text-sm border {% if category == 'success' %}bg-emerald-500/10 border-emerald-400/30 text-emerald-200{% elif category == 'warning' %}bg-amber-500/10 border-amber-400/30 text-amber-200{% elif category == 'info' %}bg-sky-500/10 border-sky-400/30 text-sky-200{% else %}bg-red-500/10 border-red-400/30 text-red-200{% endif %}">
+                            {{ message }}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    {% endwith %}
+
+                    <form action="" method="POST" class="mt-6 space-y-5">
+                        {% include 'partials/csrf.html' %}
+
+                        <div class="space-y-1.5">
+                            <label for="email" class="text-sm font-medium text-slate-200">E-mail</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                                    <i data-lucide="mail" class="h-5 w-5 text-slate-500"></i>
+                                </div>
+                                <input id="email" name="email" type="email" required autocomplete="email"
+                                    class="w-full h-12 pl-11 pr-4 rounded-xl bg-slate-950/55 border border-slate-700 text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-400/40 focus:border-cyan-300 transition"
+                                    placeholder="admin@suaempresa.com" />
+                            </div>
+                        </div>
+
+                        <div class="space-y-1.5">
+                            <div class="flex items-center justify-between">
+                                <label for="password" class="text-sm font-medium text-slate-200">Senha</label>
+                                <a href="{{ url_for('auth.forgot_password') }}"
+                                    class="text-sm text-cyan-300 hover:text-cyan-200 transition-colors">Esqueci minha senha</a>
+                            </div>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                                    <i data-lucide="lock" class="h-5 w-5 text-slate-500"></i>
+                                </div>
+                                <input id="password" name="password" :type="showPassword ? 'text' : 'password'" required
+                                    autocomplete="current-password"
+                                    class="w-full h-12 pl-11 pr-12 rounded-xl bg-slate-950/55 border border-slate-700 text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-400/40 focus:border-cyan-300 transition"
+                                    placeholder="••••••••" />
+                                <button type="button" @click="showPassword = !showPassword"
+                                    class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-500 hover:text-slate-300 transition-colors"
+                                    :aria-label="showPassword ? 'Ocultar senha' : 'Mostrar senha'">
+                                    <i :data-lucide="showPassword ? 'eye-off' : 'eye'" class="h-5 w-5"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <button type="submit"
+                            class="w-full h-12 rounded-xl font-semibold text-slate-950 bg-gradient-to-r from-cyan-300 to-sky-300 hover:from-cyan-200 hover:to-sky-200 transition-all shadow-[0_14px_34px_-16px_rgba(34,211,238,0.86)] active:scale-[0.99]">
+                            Acessar conta
+                        </button>
+                    </form>
+
+                    <footer class="mt-6 pt-5 border-t border-slate-700/70 flex items-center justify-between text-xs text-slate-400">
+                        <span>Acesso protegido</span>
+                        <span class="inline-flex items-center gap-1.5 text-emerald-300">
+                            <i data-lucide="check-circle-2" class="h-3.5 w-3.5"></i>
+                            TLS ativo
+                        </span>
+                    </footer>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+
+</html>

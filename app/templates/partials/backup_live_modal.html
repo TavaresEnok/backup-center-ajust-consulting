@@ -1,0 +1,660 @@
+<div id="live-backup-modal" class="fixed inset-0 z-[9999] hidden items-center justify-center bg-black/60 p-4">
+    <div class="w-full max-w-4xl overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl dark:border-gray-700 dark:bg-gray-900">
+        <div class="flex items-center justify-between border-b border-gray-200 px-5 py-4 dark:border-gray-700">
+            <div>
+                <p class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Backup ao vivo</p>
+                <h3 id="live-backup-title" class="text-lg font-semibold text-gray-900 dark:text-white">Aguardando tarefa...</h3>
+                <p id="live-backup-task-id" class="text-xs font-mono text-gray-500 dark:text-gray-400"></p>
+            </div>
+            <div class="flex items-center gap-2">
+                <button id="live-backup-stop" type="button"
+                    class="hidden inline-flex items-center gap-1 rounded-lg border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700 hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-red-700 dark:bg-red-900/20 dark:text-red-300 dark:hover:bg-red-900/40">
+                    <i data-lucide="square" class="h-4 w-4"></i>
+                    Parar lote
+                </button>
+                <button id="live-backup-close" type="button"
+                    class="inline-flex items-center gap-1 rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="x" class="h-4 w-4"></i>
+                    Fechar
+                </button>
+            </div>
+        </div>
+
+        <div class="space-y-4 p-5">
+            <div class="grid grid-cols-1 gap-3 md:grid-cols-3">
+                <div class="rounded-xl border border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-800/70 md:col-span-2">
+                    <div class="mb-2 flex items-center justify-between">
+                        <span class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Progresso</span>
+                        <span id="live-backup-progress-label" class="text-sm font-semibold text-gray-800 dark:text-gray-200">0%</span>
+                    </div>
+                    <div class="h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
+                        <div id="live-backup-progress-bar" class="h-2 w-0 rounded-full bg-brand-500 transition-all duration-500"></div>
+                    </div>
+                    <p id="live-backup-status-message" class="mt-2 text-xs text-gray-600 dark:text-gray-400">Aguardando inicio no worker...</p>
+                </div>
+                <div class="rounded-xl border border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-800/70">
+                    <p class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Status</p>
+                    <div id="live-backup-status-chip"
+                        class="mt-2 inline-flex items-center rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-700 dark:bg-amber-500/20 dark:text-amber-300">
+                        Em fila
+                    </div>
+                </div>
+            </div>
+
+            <div id="live-backup-bulk-panel" class="hidden rounded-xl border border-blue-200 bg-blue-50/70 p-3 dark:border-blue-800/40 dark:bg-blue-900/10">
+                <div class="mb-2 flex items-center justify-between">
+                    <p class="text-xs font-semibold uppercase tracking-wide text-blue-700 dark:text-blue-300">Resumo do lote</p>
+                    <span id="live-bulk-total-devices"
+                        class="rounded-full bg-white/80 px-2 py-0.5 text-[11px] font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">0 dispositivos</span>
+                </div>
+                <div class="grid grid-cols-2 gap-2 md:grid-cols-4">
+                    <div class="rounded-md bg-white px-2 py-1.5 text-xs text-gray-700 dark:bg-gray-900/50 dark:text-gray-300">Tasks totais: <span id="live-bulk-total-tasks" class="font-semibold">0</span></div>
+                    <div class="rounded-md bg-white px-2 py-1.5 text-xs text-gray-700 dark:bg-gray-900/50 dark:text-gray-300">Concluidas: <span id="live-bulk-done-tasks" class="font-semibold">0</span></div>
+                    <div class="rounded-md bg-emerald-50 px-2 py-1.5 text-xs text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300"><span id="live-bulk-success-tasks-label">Sucesso</span>: <span id="live-bulk-success-tasks" class="font-semibold">0</span></div>
+                    <div class="rounded-md bg-red-50 px-2 py-1.5 text-xs text-red-700 dark:bg-red-500/10 dark:text-red-300"><span id="live-bulk-failed-tasks-label">Falhas</span>: <span id="live-bulk-failed-tasks" class="font-semibold">0</span></div>
+                </div>
+                <div class="mt-2 grid grid-cols-2 gap-2 md:grid-cols-4">
+                    <div class="rounded-md bg-white px-2 py-1.5 text-xs text-gray-700 dark:bg-gray-900/50 dark:text-gray-300">Disp. concluidos: <span id="live-bulk-done-devices" class="font-semibold">0</span></div>
+                    <div class="rounded-md bg-emerald-50 px-2 py-1.5 text-xs text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">Disp. sucesso: <span id="live-bulk-success-devices" class="font-semibold">0</span></div>
+                    <div class="rounded-md bg-red-50 px-2 py-1.5 text-xs text-red-700 dark:bg-red-500/10 dark:text-red-300">Disp. falha: <span id="live-bulk-failed-devices" class="font-semibold">0</span></div>
+                    <div class="rounded-md bg-white px-2 py-1.5 text-xs text-gray-700 dark:bg-gray-900/50 dark:text-gray-300">Total disp.: <span id="live-bulk-total-devices-count" class="font-semibold">0</span></div>
+                </div>
+                <div class="mt-2 grid grid-cols-2 gap-2 md:grid-cols-4">
+                    <div class="rounded-md bg-white px-2 py-1.5 text-xs text-gray-700 dark:bg-gray-900/50 dark:text-gray-300">Em execucao: <span id="live-bulk-running-tasks" class="font-semibold">0</span></div>
+                    <div class="rounded-md bg-white px-2 py-1.5 text-xs text-gray-700 dark:bg-gray-900/50 dark:text-gray-300">Em fila: <span id="live-bulk-queued-tasks" class="font-semibold">0</span></div>
+                    <div class="rounded-md bg-white px-2 py-1.5 text-xs text-gray-700 dark:bg-gray-900/50 dark:text-gray-300">Diretos: <span id="live-bulk-queued-direct" class="font-semibold">0</span></div>
+                    <div class="rounded-md bg-white px-2 py-1.5 text-xs text-gray-700 dark:bg-gray-900/50 dark:text-gray-300">Grupos VPN: <span id="live-bulk-queued-vpn" class="font-semibold">0</span></div>
+                </div>
+                <div class="mt-2 grid grid-cols-1 gap-2">
+                    <div class="rounded-md bg-white px-2 py-1.5 text-xs text-gray-700 dark:bg-gray-900/50 dark:text-gray-300">
+                        Pulados (sem ping+login recente): <span id="live-bulk-skipped-not-ready" class="font-semibold">0</span>
+                    </div>
+                </div>
+                <div id="live-bulk-connection-panel" class="mt-2 hidden grid grid-cols-1 gap-2 md:grid-cols-3">
+                    <div class="rounded-md bg-red-50 px-2 py-1.5 text-xs text-red-700 dark:bg-red-500/10 dark:text-red-300">Sem ping: <span id="live-bulk-no-ping-devices" class="font-semibold">0</span></div>
+                    <div class="rounded-md bg-amber-50 px-2 py-1.5 text-xs text-amber-700 dark:bg-amber-500/10 dark:text-amber-300">Ping OK, login falhou: <span id="live-bulk-ping-login-fail-devices" class="font-semibold">0</span></div>
+                    <div class="rounded-md bg-emerald-50 px-2 py-1.5 text-xs text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">Ping + login OK: <span id="live-bulk-ping-login-ok-devices" class="font-semibold">0</span></div>
+                </div>
+                <div id="live-bulk-failure-breakdown" class="mt-2 hidden rounded-md bg-white px-2 py-1.5 text-xs text-gray-700 dark:bg-gray-900/50 dark:text-gray-300">
+                    Falhas por causa:
+                    <span id="live-bulk-failure-breakdown-text" class="font-semibold text-gray-600 dark:text-gray-300">-</span>
+                </div>
+            </div>
+
+            <div class="rounded-xl border border-gray-200 bg-gray-950 p-3 dark:border-gray-700">
+                <div class="mb-2 flex items-center justify-between">
+                    <p class="text-xs font-semibold uppercase tracking-wide text-gray-300">Logs em tempo real</p>
+                    <button id="live-backup-clear" type="button"
+                        class="inline-flex items-center gap-1 rounded-md border border-gray-700 px-2 py-1 text-[11px] text-gray-300 hover:bg-gray-800">
+                        <i data-lucide="eraser" class="h-3.5 w-3.5"></i>
+                        Limpar
+                    </button>
+                </div>
+                <div id="live-backup-log-stream"
+                    class="h-[320px] overflow-y-auto rounded-lg border border-gray-800 bg-black/70 p-3 font-mono text-xs text-gray-200"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="live-bulk-control" class="fixed bottom-4 right-4 z-[9998] hidden">
+    <div class="rounded-xl border border-gray-300 bg-white/95 p-3 shadow-xl backdrop-blur dark:border-gray-700 dark:bg-gray-900/95">
+        <p class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Backup em massa</p>
+        <p id="live-bulk-control-task" class="mt-1 max-w-[280px] truncate font-mono text-[11px] text-gray-600 dark:text-gray-300">-</p>
+        <div class="mt-2 flex items-center gap-2">
+            <button id="live-bulk-control-open" type="button"
+                class="inline-flex items-center gap-1 rounded-md border border-gray-300 px-2.5 py-1.5 text-xs text-gray-700 hover:bg-gray-100 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800">
+                <i data-lucide="activity" class="h-3.5 w-3.5"></i>
+                Monitorar
+            </button>
+            <button id="live-bulk-control-stop" type="button"
+                class="inline-flex items-center gap-1 rounded-md border border-red-300 bg-red-50 px-2.5 py-1.5 text-xs text-red-700 hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-red-700 dark:bg-red-900/20 dark:text-red-300 dark:hover:bg-red-900/40">
+                <i data-lucide="square" class="h-3.5 w-3.5"></i>
+                Parar
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function () {
+        if (window.__backupLiveModalInitialized) return;
+        window.__backupLiveModalInitialized = true;
+
+        const modal = document.getElementById('live-backup-modal');
+        const closeBtn = document.getElementById('live-backup-close');
+        const stopBtn = document.getElementById('live-backup-stop');
+        const clearBtn = document.getElementById('live-backup-clear');
+        const titleEl = document.getElementById('live-backup-title');
+        const taskEl = document.getElementById('live-backup-task-id');
+        const statusChip = document.getElementById('live-backup-status-chip');
+        const statusMsg = document.getElementById('live-backup-status-message');
+        const progressBar = document.getElementById('live-backup-progress-bar');
+        const progressLabel = document.getElementById('live-backup-progress-label');
+        const logStream = document.getElementById('live-backup-log-stream');
+        const bulkPanel = document.getElementById('live-backup-bulk-panel');
+        const bulkTotalDevices = document.getElementById('live-bulk-total-devices');
+        const bulkTotalTasks = document.getElementById('live-bulk-total-tasks');
+        const bulkDoneTasks = document.getElementById('live-bulk-done-tasks');
+        const bulkSuccessTasksLabel = document.getElementById('live-bulk-success-tasks-label');
+        const bulkSuccessTasks = document.getElementById('live-bulk-success-tasks');
+        const bulkFailedTasksLabel = document.getElementById('live-bulk-failed-tasks-label');
+        const bulkFailedTasks = document.getElementById('live-bulk-failed-tasks');
+        const bulkDoneDevices = document.getElementById('live-bulk-done-devices');
+        const bulkSuccessDevices = document.getElementById('live-bulk-success-devices');
+        const bulkFailedDevices = document.getElementById('live-bulk-failed-devices');
+        const bulkTotalDevicesCount = document.getElementById('live-bulk-total-devices-count');
+        const bulkRunningTasks = document.getElementById('live-bulk-running-tasks');
+        const bulkQueuedTasks = document.getElementById('live-bulk-queued-tasks');
+        const bulkQueuedDirect = document.getElementById('live-bulk-queued-direct');
+        const bulkQueuedVpn = document.getElementById('live-bulk-queued-vpn');
+        const bulkSkippedNotReady = document.getElementById('live-bulk-skipped-not-ready');
+        const bulkConnectionPanel = document.getElementById('live-bulk-connection-panel');
+        const bulkFailureBreakdown = document.getElementById('live-bulk-failure-breakdown');
+        const bulkFailureBreakdownText = document.getElementById('live-bulk-failure-breakdown-text');
+        const bulkNoPingDevices = document.getElementById('live-bulk-no-ping-devices');
+        const bulkPingLoginFailDevices = document.getElementById('live-bulk-ping-login-fail-devices');
+        const bulkPingLoginOkDevices = document.getElementById('live-bulk-ping-login-ok-devices');
+        const bulkControl = document.getElementById('live-bulk-control');
+        const bulkControlTask = document.getElementById('live-bulk-control-task');
+        const bulkControlOpenBtn = document.getElementById('live-bulk-control-open');
+        const bulkControlStopBtn = document.getElementById('live-bulk-control-stop');
+
+        let pollTimer = null;
+        let currentTaskId = null;
+        let currentCancelUrl = null;
+        let currentIsBulk = false;
+        let currentStatusUrl = null;
+        let currentLogsUrl = null;
+        let currentDeviceName = null;
+        let currentCompleted = false;
+        let lastLogSeq = 0;
+        let lastProgressValue = 0;
+        let pollInFlight = false;
+        const STORAGE_KEY = 'backup_live_bulk_control_v1';
+
+        const statusChipClasses = {
+            queued: 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300',
+            running: 'bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300',
+            success: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300',
+            failed: 'bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-300',
+            retry: 'bg-orange-100 text-orange-700 dark:bg-orange-500/20 dark:text-orange-300',
+            stopping: 'bg-orange-100 text-orange-700 dark:bg-orange-500/20 dark:text-orange-300',
+            stopped: 'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-200',
+        };
+
+        function setChipStatus(status, text) {
+            const allClasses = Object.values(statusChipClasses).join(' ');
+            statusChip.className = `mt-2 inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ${statusChipClasses[status] || statusChipClasses.queued}`;
+            statusChip.textContent = text;
+            if (!statusChip.className.includes('bg-')) {
+                statusChip.className += ` ${allClasses}`;
+            }
+        }
+
+        function appendLog(entry) {
+            const row = document.createElement('div');
+            let color = 'text-gray-200';
+            if (entry.level === 'success') color = 'text-emerald-300';
+            if (entry.level === 'error') color = 'text-red-300';
+            if (entry.level === 'warning') color = 'text-amber-300';
+            row.className = `mb-1 ${color}`;
+            row.textContent = `[${entry.timestamp || '--:--:--'}] [${(entry.level || 'info').toUpperCase()}] [${entry.device_name || 'Sistema'}] ${entry.message || ''}`;
+            logStream.appendChild(row);
+            logStream.scrollTop = logStream.scrollHeight;
+        }
+
+        function resetBulkPanel(payload) {
+            const isBulk = Boolean(payload && payload.is_bulk);
+            bulkPanel.classList.toggle('hidden', !isBulk);
+            if (!isBulk) return;
+            const operationKind = String((payload && payload.operation_kind) || 'backup_bulk').toLowerCase();
+            const isConnectionAudit = operationKind === 'connection_audit';
+            bulkTotalDevices.textContent = `${Number(payload.total_devices || 0)} dispositivos`;
+            bulkTotalTasks.textContent = String(Number(payload.total_tasks || 0));
+            bulkDoneTasks.textContent = String(Number(payload.done_tasks || 0));
+            bulkSuccessTasks.textContent = String(Number(payload.success_tasks || 0));
+            bulkFailedTasks.textContent = String(Number(payload.failed_tasks || 0));
+            bulkDoneDevices.textContent = String(Number(payload.done_devices || 0));
+            bulkSuccessDevices.textContent = String(Number(payload.success_devices || 0));
+            bulkFailedDevices.textContent = String(Number(payload.failed_devices || 0));
+            bulkTotalDevicesCount.textContent = String(Number(payload.total_devices || 0));
+            bulkRunningTasks.textContent = String(Number(payload.running_tasks || 0));
+            bulkQueuedTasks.textContent = String(Number(payload.queued_tasks || 0));
+            bulkQueuedDirect.textContent = String(Number(payload.queued_direct || 0));
+            bulkQueuedVpn.textContent = String(Number(payload.queued_vpn_groups || 0));
+            if (bulkSkippedNotReady) bulkSkippedNotReady.textContent = String(Number(payload.skipped_not_ready || 0));
+            if (bulkSuccessTasksLabel) bulkSuccessTasksLabel.textContent = isConnectionAudit ? 'Aptos' : 'Sucesso';
+            if (bulkFailedTasksLabel) bulkFailedTasksLabel.textContent = isConnectionAudit ? 'Com falha' : 'Falhas';
+            if (bulkConnectionPanel) {
+                bulkConnectionPanel.classList.toggle('hidden', !isConnectionAudit);
+            }
+            const failureCounts = (payload && payload.failure_category_counts) ? payload.failure_category_counts : {};
+            const failureParts = [];
+            const humanMap = {
+                auth: 'Auth',
+                timeout: 'Timeout',
+                port_refused: 'Porta',
+                vpn: 'VPN',
+                no_ping: 'Sem ping',
+                connection: 'Conexao',
+                script: 'Script',
+                unknown: 'Outros',
+            };
+            Object.keys(humanMap).forEach((k) => {
+                const val = Number(failureCounts[k] || 0);
+                if (val > 0) {
+                    failureParts.push(`${humanMap[k]}=${val}`);
+                }
+            });
+            if (bulkFailureBreakdown && bulkFailureBreakdownText) {
+                const showBreakdown = !isConnectionAudit && failureParts.length > 0;
+                bulkFailureBreakdown.classList.toggle('hidden', !showBreakdown);
+                bulkFailureBreakdownText.textContent = showBreakdown ? failureParts.join(' • ') : '-';
+            }
+            if (bulkNoPingDevices) bulkNoPingDevices.textContent = String(Number(payload.no_ping_devices || 0));
+            if (bulkPingLoginFailDevices) bulkPingLoginFailDevices.textContent = String(Number(payload.ping_ok_login_fail_devices || 0));
+            if (bulkPingLoginOkDevices) bulkPingLoginOkDevices.textContent = String(Number(payload.ping_login_ok_devices || 0));
+        }
+
+        function resetModal(taskId, deviceName, payload = {}) {
+            titleEl.textContent = deviceName || 'Backup em execucao';
+            taskEl.textContent = `task_id: ${taskId}`;
+            statusMsg.textContent = 'Aguardando inicio no worker...';
+            progressLabel.textContent = '0%';
+            progressBar.style.width = '0%';
+            setChipStatus('queued', 'Em fila');
+            logStream.innerHTML = '';
+            resetBulkPanel(payload);
+            currentCompleted = false;
+            lastProgressValue = 0;
+            appendLog({
+                level: 'info',
+                timestamp: new Date().toLocaleTimeString('pt-BR', { hour12: false }),
+                device_name: deviceName || 'Sistema',
+                message: 'Task enfileirada. Aguardando worker...'
+            });
+            currentCancelUrl = payload.cancel_url || null;
+            currentIsBulk = Boolean(payload && payload.is_bulk);
+            currentStatusUrl = payload.status_url || currentStatusUrl;
+            currentLogsUrl = payload.logs_url || currentLogsUrl;
+            currentDeviceName = deviceName || currentDeviceName;
+            if (stopBtn) {
+                stopBtn.classList.toggle('hidden', !(currentIsBulk && currentCancelUrl));
+                stopBtn.disabled = false;
+                stopBtn.innerHTML = '<i data-lucide="square" class="h-4 w-4"></i> Parar lote';
+            }
+            if (currentIsBulk && taskId) {
+                try {
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+                        task_id: taskId,
+                        device_name: currentDeviceName || 'Backup em massa',
+                        status_url: currentStatusUrl,
+                        logs_url: currentLogsUrl,
+                        cancel_url: currentCancelUrl,
+                    }));
+                } catch (_) {}
+                if (bulkControlTask) bulkControlTask.textContent = `task_id: ${taskId}`;
+                if (bulkControl) bulkControl.classList.remove('hidden');
+            }
+        }
+
+        function openModal() {
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            if (window.lucide && window.lucide.createIcons) {
+                window.lucide.createIcons();
+            }
+        }
+
+        function minimizeModal() {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            if (currentIsBulk && !currentCompleted && bulkControl) {
+                bulkControl.classList.remove('hidden');
+            }
+        }
+
+        function closeModal() {
+            const keepTracking = Boolean(currentIsBulk && currentTaskId && !currentCompleted);
+            if (keepTracking) {
+                minimizeModal();
+                return;
+            }
+            if (pollTimer) {
+                clearInterval(pollTimer);
+                pollTimer = null;
+            }
+            currentTaskId = null;
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        async function tryResumeExistingBulkOperation() {
+            let taskId = currentTaskId;
+            let statusUrl = currentStatusUrl;
+            let logsUrl = currentLogsUrl;
+            let deviceName = currentDeviceName || 'Operacao em massa';
+            let cancelUrl = currentCancelUrl;
+
+            if (!taskId || !statusUrl || !logsUrl) {
+                try {
+                    const raw = localStorage.getItem(STORAGE_KEY);
+                    if (raw) {
+                        const data = JSON.parse(raw);
+                        taskId = data.task_id || taskId;
+                        statusUrl = data.status_url || statusUrl;
+                        logsUrl = data.logs_url || logsUrl;
+                        deviceName = data.device_name || deviceName;
+                        cancelUrl = data.cancel_url || cancelUrl;
+                    }
+                } catch (_) {}
+            }
+
+            if (!taskId || !statusUrl || !logsUrl) return false;
+
+            try {
+                const statusData = await fetchStatus(taskId, statusUrl);
+                if (!statusData || !statusData.ok) {
+                    try { localStorage.removeItem(STORAGE_KEY); } catch (_) {}
+                    return false;
+                }
+                const normalized = normalizeStatus(statusData.status, statusData.celery_state);
+                const stillRunning = Boolean(
+                    !statusData.completed &&
+                    normalized !== 'success' &&
+                    normalized !== 'failed' &&
+                    normalized !== 'stopped'
+                );
+                if (!stillRunning) {
+                    try { localStorage.removeItem(STORAGE_KEY); } catch (_) {}
+                    return false;
+                }
+
+                currentTaskId = taskId;
+                currentStatusUrl = statusUrl;
+                currentLogsUrl = logsUrl;
+                currentDeviceName = deviceName;
+                currentCancelUrl = cancelUrl || currentCancelUrl;
+                currentIsBulk = true;
+                currentCompleted = false;
+
+                resetModal(taskId, deviceName, {
+                    is_bulk: true,
+                    cancel_url: currentCancelUrl,
+                    status_url: statusUrl,
+                    logs_url: logsUrl,
+                });
+                openModal();
+                await startPolling(taskId, statusUrl, logsUrl);
+                return true;
+            } catch (_) {
+                return false;
+            }
+        }
+
+        async function fetchStatus(taskId, statusUrl) {
+            const response = await fetch(statusUrl, {
+                headers: { 'Accept': 'application/json' }
+            });
+            if (!response.ok) return null;
+            return response.json();
+        }
+
+        async function fetchLogs(taskId, logsUrl) {
+            const separator = logsUrl.includes('?') ? '&' : '?';
+            const response = await fetch(`${logsUrl}${separator}after=${lastLogSeq}`, {
+                headers: { 'Accept': 'application/json' }
+            });
+            if (!response.ok) return null;
+            return response.json();
+        }
+
+        function normalizeStatus(status, celeryState) {
+            const s = (status || '').toLowerCase();
+            if (s) return s;
+            const c = (celeryState || '').toUpperCase();
+            if (c === 'SUCCESS') return 'success';
+            if (c === 'FAILURE') return 'failed';
+            if (c === 'REVOKED') return 'stopped';
+            if (c === 'STARTED') return 'running';
+            return 'queued';
+        }
+
+        async function startPolling(taskId, statusUrl, logsUrl) {
+            if (pollTimer) {
+                clearInterval(pollTimer);
+                pollTimer = null;
+            }
+            currentTaskId = taskId;
+            currentCompleted = false;
+            lastLogSeq = 0;
+            lastProgressValue = 0;
+            pollInFlight = false;
+
+            const tick = async () => {
+                if (!currentTaskId) return;
+                if (pollInFlight) return;
+                pollInFlight = true;
+                try {
+                    const [statusData, logsData] = await Promise.all([
+                        fetchStatus(taskId, statusUrl),
+                        fetchLogs(taskId, logsUrl),
+                    ]);
+
+                    if (logsData && Array.isArray(logsData.entries)) {
+                        logsData.entries.forEach(appendLog);
+                        lastLogSeq = Number(logsData.last_seq || lastLogSeq || 0);
+                    }
+
+                    if (statusData && statusData.ok) {
+                        const normalized = normalizeStatus(statusData.status, statusData.celery_state);
+                        let progress = Math.max(0, Math.min(100, Number(statusData.progress || 0)));
+                        if (!statusData.completed && normalized !== 'success' && normalized !== 'failed' && normalized !== 'stopped') {
+                            progress = Math.max(lastProgressValue, progress);
+                        }
+                        lastProgressValue = progress;
+                        progressBar.style.width = `${progress}%`;
+                        progressLabel.textContent = `${progress}%`;
+                        statusMsg.textContent = statusData.message || 'Executando...';
+                        resetBulkPanel(statusData);
+
+                        if (normalized === 'running') setChipStatus('running', 'Executando');
+                        if (normalized === 'queued') setChipStatus('queued', 'Em fila');
+                        if (normalized === 'retry') setChipStatus('retry', 'Retry');
+                        if (normalized === 'success') setChipStatus('success', 'Concluido');
+                        if (normalized === 'failed') setChipStatus('failed', 'Falhou');
+                        if (normalized === 'stopping') setChipStatus('stopping', 'Parando');
+                        if (normalized === 'stopped') setChipStatus('stopped', 'Interrompido');
+
+                        currentCancelUrl = statusData.cancel_url || currentCancelUrl;
+                        const canStop = Boolean(
+                            statusData.is_bulk &&
+                            currentCancelUrl &&
+                            !statusData.completed &&
+                            normalized !== 'success' &&
+                            normalized !== 'failed' &&
+                            normalized !== 'stopped'
+                        );
+                        if (stopBtn) {
+                            stopBtn.classList.toggle('hidden', !canStop);
+                        }
+                        if (bulkControlStopBtn) {
+                            bulkControlStopBtn.disabled = !canStop;
+                        }
+
+                        if (statusData.completed || normalized === 'success' || normalized === 'failed' || normalized === 'stopped') {
+                            currentCompleted = true;
+                            if (pollTimer) {
+                                clearInterval(pollTimer);
+                                pollTimer = null;
+                            }
+                            if (normalized === 'success' || normalized === 'failed' || normalized === 'stopped' || statusData.completed) {
+                                try { localStorage.removeItem(STORAGE_KEY); } catch (_) {}
+                                if (bulkControl) bulkControl.classList.add('hidden');
+                            }
+                        }
+                    }
+                } finally {
+                    pollInFlight = false;
+                }
+            };
+
+            await tick();
+            pollTimer = setInterval(tick, 1200);
+        }
+
+        async function triggerBackupFromForm(form) {
+            const submitBtn = form.querySelector('[type="submit"]');
+            if (submitBtn) submitBtn.disabled = true;
+
+            try {
+                const formData = new FormData(form);
+                const response = await fetch(form.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json',
+                    }
+                });
+                const data = await response.json();
+                if (!response.ok || !data.ok) {
+                    throw new Error(data.error || 'Falha ao iniciar operacao');
+                }
+
+                resetModal(data.task_id, data.device_name, data);
+                openModal();
+                await startPolling(data.task_id, data.status_url, data.logs_url);
+            } catch (error) {
+                alert(`Nao foi possivel iniciar a operacao: ${error.message}`);
+            } finally {
+                if (submitBtn) submitBtn.disabled = false;
+            }
+        }
+
+        async function stopBulkBackup() {
+            if (!currentCancelUrl || !currentIsBulk) return;
+            if (!confirm('Parar o backup em massa agora?')) return;
+
+            stopBtn.disabled = true;
+            stopBtn.innerHTML = '<i data-lucide="loader-2" class="h-4 w-4 animate-spin"></i> Parando...';
+            if (window.lucide && window.lucide.createIcons) {
+                window.lucide.createIcons();
+            }
+
+            try {
+                const response = await fetch(currentCancelUrl, {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json',
+                    },
+                });
+                const data = await response.json();
+                if (!response.ok || !data.ok) {
+                    throw new Error(data.error || 'Falha ao solicitar parada do lote.');
+                }
+                appendLog({
+                    level: 'warning',
+                    timestamp: new Date().toLocaleTimeString('pt-BR', { hour12: false }),
+                    device_name: 'Backup em massa',
+                    message: `Parada solicitada. Revogacao enviada para ${Number(data.revoke_requested || 0)} task(s).`,
+                });
+                if (bulkControlStopBtn) bulkControlStopBtn.disabled = true;
+            } catch (error) {
+                stopBtn.disabled = false;
+                stopBtn.innerHTML = '<i data-lucide="square" class="h-4 w-4"></i> Parar lote';
+                appendLog({
+                    level: 'error',
+                    timestamp: new Date().toLocaleTimeString('pt-BR', { hour12: false }),
+                    device_name: 'Backup em massa',
+                    message: `Falha ao parar lote: ${error.message}`,
+                });
+            } finally {
+                if (window.lucide && window.lucide.createIcons) {
+                    window.lucide.createIcons();
+                }
+            }
+        }
+
+        document.querySelectorAll('[data-run-backup-live]').forEach((trigger) => {
+            trigger.addEventListener('click', async (event) => {
+                event.preventDefault();
+                const resumed = await tryResumeExistingBulkOperation();
+                if (resumed) return;
+                const formId = trigger.getAttribute('data-form-id');
+                let form = null;
+                if (formId) form = document.getElementById(formId);
+                if (!form) form = trigger.closest('form');
+                if (!form) return;
+                await triggerBackupFromForm(form);
+            });
+        });
+
+        if (closeBtn) closeBtn.addEventListener('click', closeModal);
+        if (clearBtn) {
+            clearBtn.addEventListener('click', () => {
+                logStream.innerHTML = '';
+            });
+        }
+        if (stopBtn) {
+            stopBtn.addEventListener('click', stopBulkBackup);
+        }
+        if (bulkControlStopBtn) {
+            bulkControlStopBtn.addEventListener('click', stopBulkBackup);
+        }
+        if (bulkControlOpenBtn) {
+            bulkControlOpenBtn.addEventListener('click', async () => {
+                if (!currentTaskId && currentStatusUrl) {
+                    try {
+                        const raw = localStorage.getItem(STORAGE_KEY);
+                        if (raw) {
+                            const data = JSON.parse(raw);
+                            currentTaskId = data.task_id || currentTaskId;
+                            currentDeviceName = data.device_name || currentDeviceName;
+                            currentStatusUrl = data.status_url || currentStatusUrl;
+                            currentLogsUrl = data.logs_url || currentLogsUrl;
+                            currentCancelUrl = data.cancel_url || currentCancelUrl;
+                            currentIsBulk = true;
+                        }
+                    } catch (_) {}
+                }
+                if (!currentTaskId || !currentStatusUrl || !currentLogsUrl) return;
+                resetModal(currentTaskId, currentDeviceName || 'Backup em massa', {
+                    is_bulk: true,
+                    cancel_url: currentCancelUrl,
+                    status_url: currentStatusUrl,
+                    logs_url: currentLogsUrl,
+                });
+                openModal();
+                await startPolling(currentTaskId, currentStatusUrl, currentLogsUrl);
+            });
+        }
+        try {
+            const raw = localStorage.getItem(STORAGE_KEY);
+            if (raw) {
+                const data = JSON.parse(raw);
+                currentTaskId = data.task_id || null;
+                currentDeviceName = data.device_name || 'Backup em massa';
+                currentStatusUrl = data.status_url || null;
+                currentLogsUrl = data.logs_url || null;
+                currentCancelUrl = data.cancel_url || null;
+                currentIsBulk = Boolean(currentTaskId && currentStatusUrl && currentLogsUrl);
+                if (currentIsBulk) {
+                    if (bulkControlTask) bulkControlTask.textContent = `task_id: ${currentTaskId}`;
+                    if (bulkControl) bulkControl.classList.remove('hidden');
+                }
+            }
+        } catch (_) {}
+        modal.addEventListener('click', (event) => {
+            if (event.target !== modal) return;
+            const keepTracking = Boolean(currentIsBulk && currentTaskId && !currentCompleted);
+            if (keepTracking) {
+                minimizeModal();
+                return;
+            }
+            closeModal();
+        });
+    })();
+</script>

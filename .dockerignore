@@ -1,0 +1,12 @@
+postgres_data
+redis_data
+storage
+node_modules
+__pycache__
+*.pyc
+*.pyo
+*.db
+*.log
+*.tar.gz
+.git
+.pytest_cache

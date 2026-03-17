@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block title %}Meu Perfil | Backup Center{% endblock %}
+
+{% block content %}
+{% set page_title = "Meu Perfil" %}
+{% include 'partials/breadcrumb.html' %}
+
+<div class="space-y-6 pb-4">
+    <div class="grid grid-cols-12 gap-6">
+        {% set settings_section = 'profile' %}
+        {% include 'tenant/settings/_settings_nav.html' %}
+
+        <div class="col-span-12 lg:col-span-9">
+            <div class="grid grid-cols-12 gap-6">
+                <div class="col-span-12 xl:col-span-4">
+                    <div class="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
+                        <div class="flex flex-col items-center text-center">
+                            <div class="relative mb-4">
+                                <div
+                                    class="flex h-32 w-32 items-center justify-center rounded-full border-4 border-brand-50 bg-gradient-to-br from-brand-500 to-brand-600 text-4xl font-bold text-white shadow-xl">
+                                    {{ user.full_name[0]|upper if user.full_name else 'U' }}
+                                </div>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-900 dark:text-white">{{ user.full_name or 'Usuario' }}</h3>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">{{ user.role|replace('_', ' ')|title }}</p>
+                        </div>
+
+                        <div class="mt-8 space-y-4">
+                            <div class="flex items-center justify-between text-sm">
+                                <span class="text-gray-500">Status</span>
+                                <span class="inline-flex items-center gap-1 font-medium text-success-600">
+                                    <span class="h-2 w-2 rounded-full bg-success-500"></span>
+                                    Ativo
+                                </span>
+                            </div>
+                            <div class="flex items-center justify-between text-sm">
+                                <span class="text-gray-500">Membro desde</span>
+                                <span class="font-medium text-gray-900 dark:text-white">{{ (user.created_at|localtime).strftime('%d/%m/%Y') if user.created_at else '-' }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-span-12 xl:col-span-8">
+                    <div class="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
+                        <h4 class="mb-6 text-lg font-semibold text-gray-900 dark:text-white">Informacoes Pessoais</h4>
+
+                        <form method="POST" action="{{ url_for('tenant_settings.profile', tenant_slug=tenant.slug) }}" class="space-y-6">
+                            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+
+                            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                <div>
+                                    <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Nome Completo</label>
+                                    <input type="text" name="full_name" value="{{ user.full_name }}"
+                                        class="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-brand-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white">
+                                </div>
+                                <div>
+                                    <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                        Email <span class="text-xs font-normal text-gray-500">(nao alteravel)</span>
+                                    </label>
+                                    <input type="email" value="{{ user.email }}"
+                                        class="w-full rounded-lg border border-gray-300 bg-gray-50 px-4 py-2 text-gray-600 opacity-70 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400"
+                                        readonly disabled>
+                                </div>
+                            </div>
+
+                            <div class="border-t border-gray-200 pt-6 dark:border-gray-800">
+                                <h5 class="mb-4 text-base font-semibold text-gray-900 dark:text-white">Alterar Senha</h5>
+                                <p class="mb-4 text-sm text-gray-500 dark:text-gray-400">Deixe os campos em branco se nao desejar alterar sua senha atual.</p>
+
+                                <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                    <div>
+                                        <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Senha Atual</label>
+                                        <input type="password" name="current_password"
+                                            class="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-brand-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+                                            placeholder="Sua senha atual">
+                                    </div>
+                                    <div>
+                                        <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Nova Senha</label>
+                                        <input type="password" name="password" minlength="6"
+                                            class="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-brand-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+                                            placeholder="No minimo 6 caracteres">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="flex justify-end border-t border-gray-200 pt-4 dark:border-gray-800">
+                                <button type="submit"
+                                    class="flex items-center gap-2 rounded-lg bg-brand-500 px-6 py-2.5 font-medium text-white transition-colors hover:bg-brand-600">
+                                    <i data-lucide="save" class="h-4 w-4"></i>
+                                    Salvar Alteracoes
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

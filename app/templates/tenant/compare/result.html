@@ -1,0 +1,385 @@
+{% extends "base.html" %}
+
+{% block title %}Comparar Backups | Backup Center{% endblock %}
+
+{% block content %}
+{% set page_title = "Comparar Configurações" %}
+{% include 'partials/breadcrumb.html' %}
+
+<div class="grid grid-cols-12 gap-6">
+
+    <!-- Header -->
+    <div class="col-span-12">
+        <div class="flex items-center gap-4">
+            <a href="{{ url_for('tenant_compare.select_device', tenant_slug=tenant.slug) }}"
+                class="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
+                <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                Voltar
+            </a>
+        </div>
+        <div class="mt-4">
+            <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Comparar Backups</h2>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                <i data-lucide="server" class="w-4 h-4 inline mr-1"></i>
+                {{ device.name }} <span class="text-gray-400">•</span> {{ device.ip_address }}
+            </p>
+        </div>
+    </div>
+
+    <!-- Selection Form -->
+    <div class="col-span-12">
+        <div class="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
+            <form method="POST" class="flex items-end gap-4 flex-wrap">
+            {% include 'partials/csrf.html' %}
+                <div class="flex-1 min-w-[200px]">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <i data-lucide="file-minus" class="w-4 h-4 inline mr-1 text-red-500"></i>
+                        Versão Antiga (Base)
+                    </label>
+                    <select name="backup_old" required
+                        class="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-brand-500 focus:border-brand-500">
+                        <option value="">Selecione um backup...</option>
+                        {% for backup in backups %}
+                        {% set status_val = backup.status_value %}
+                        <option value="{{ backup.id }}" {{ 'selected' if backup_old and backup.id==backup_old.id else '' }}>
+                            {{ (backup.created_at|localtime).strftime('%d/%m/%Y %H:%M:%S') }}
+                            • {{ status_val|title }}
+                            • id {{ (backup.id|string)[:8] }}
+                            {% if backup.file_size_bytes %}• {{ (backup.file_size_bytes // 1024) }} KB{% endif %}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="flex-1 min-w-[200px]">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <i data-lucide="file-plus" class="w-4 h-4 inline mr-1 text-green-500"></i>
+                        Versão Nova (Comparar)
+                    </label>
+                    <select name="backup_new" required
+                        class="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-brand-500 focus:border-brand-500">
+                        <option value="">Selecione um backup...</option>
+                        {% for backup in backups %}
+                        {% set status_val = backup.status_value %}
+                        <option value="{{ backup.id }}" {{ 'selected' if backup_new and backup.id==backup_new.id else '' }}>
+                            {{ (backup.created_at|localtime).strftime('%d/%m/%Y %H:%M:%S') }}
+                            • {{ status_val|title }}
+                            • id {{ (backup.id|string)[:8] }}
+                            {% if backup.file_size_bytes %}• {{ (backup.file_size_bytes // 1024) }} KB{% endif %}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button type="submit"
+                    class="rounded-lg bg-brand-500 px-6 py-2.5 text-sm font-medium text-white hover:bg-brand-600 transition-colors flex items-center gap-2">
+                    <i data-lucide="git-compare" class="w-4 h-4"></i>
+                    Comparar Versões
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Diff Result -->
+    {% if diff_result %}
+    <div class="col-span-12">
+        <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] overflow-hidden">
+            <!-- Stats Header -->
+            <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between bg-gray-50 dark:bg-gray-800/50">
+                <div class="flex items-center gap-4">
+                    <div class="flex items-center gap-2">
+                        <div class="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                            <i data-lucide="git-branch" class="w-4 h-4 text-gray-600 dark:text-gray-300"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-gray-900 dark:text-white text-sm">Resultado da Comparação</h3>
+                            <p class="text-xs text-gray-500">
+                                {% if backup_old and backup_new %}
+                                {{ (backup_old.created_at|localtime).strftime('%d/%m/%Y %H:%M') }} → {{ (backup_new.created_at|localtime).strftime('%d/%m/%Y %H:%M') }}
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                    {% if diff_result.has_changes %}
+                    <span class="inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-700 dark:bg-amber-500/20 dark:text-amber-400">
+                        <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                        Alterações Detectadas
+                    </span>
+                    {% else %}
+                    <span class="inline-flex items-center gap-1.5 rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700 dark:bg-green-500/20 dark:text-green-400">
+                        <i data-lucide="check" class="w-3 h-3"></i>
+                        Sem Alterações
+                    </span>
+                    {% endif %}
+                </div>
+                <div class="flex items-center gap-6 text-sm font-medium">
+                    <span class="flex items-center gap-1.5 text-green-600 dark:text-green-400">
+                        <span class="w-2 h-2 rounded-sm bg-green-500"></span>
+                        +{{ diff_result.added_lines }} adições
+                    </span>
+                    <span class="flex items-center gap-1.5 text-red-600 dark:text-red-400">
+                        <span class="w-2 h-2 rounded-sm bg-red-500"></span>
+                        -{{ diff_result.removed_lines }} remoções
+                    </span>
+                </div>
+            </div>
+            {% if diff_result.ignored_lines_old is defined or diff_result.ignored_lines_new is defined %}
+            <div class="px-6 py-2 text-xs text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">
+                Normalização ativa: linhas voláteis ignoradas para comparação precisa
+                (antiga: {{ diff_result.ignored_lines_old or 0 }}, nova: {{ diff_result.ignored_lines_new or 0 }}).
+            </div>
+            {% endif %}
+
+            {% if diff_result.error %}
+            <div class="p-6">
+                <div class="rounded-lg bg-red-50 border border-red-200 p-4 dark:bg-red-500/10 dark:border-red-500/30">
+                    <div class="flex items-center gap-3">
+                        <i data-lucide="alert-circle" class="w-5 h-5 text-red-600 dark:text-red-400"></i>
+                        <p class="text-red-700 dark:text-red-400">{{ diff_result.error }}</p>
+                    </div>
+                </div>
+            </div>
+            {% elif diff_result.has_changes %}
+            <!-- GitHub-style Diff -->
+            <div class="diff-container">
+                {% for hunk in diff_result.hunks %}
+                <div class="diff-hunk">
+                    <!-- Hunk Header -->
+                    <div class="diff-hunk-header">
+                        <span class="diff-hunk-info">{{ hunk.header }}</span>
+                        {% if hunk.context %}
+                        <span class="diff-hunk-context">{{ hunk.context }}</span>
+                        {% endif %}
+                    </div>
+                    <!-- Diff Lines -->
+                    <table class="diff-table">
+                        <tbody>
+                        {% for line in hunk.lines %}
+                        <tr class="diff-line diff-line-{{ line.type }}">
+                            <td class="diff-line-num diff-line-num-old">{{ line.old_num if line.old_num else '' }}</td>
+                            <td class="diff-line-num diff-line-num-new">{{ line.new_num if line.new_num else '' }}</td>
+                            <td class="diff-line-marker">
+                                {% if line.type == 'add' %}+{% elif line.type == 'remove' %}-{% else %} {% endif %}
+                            </td>
+                            <td class="diff-line-content"><pre>{{ line.content }}</pre></td>
+                        </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="p-12 text-center">
+                <div class="mx-auto w-16 h-16 bg-green-100 dark:bg-green-500/20 rounded-full flex items-center justify-center mb-4">
+                    <i data-lucide="check-circle" class="w-8 h-8 text-green-600 dark:text-green-400"></i>
+                </div>
+                <h4 class="text-lg font-semibold text-gray-900 dark:text-white">Configurações Idênticas</h4>
+                <p class="text-sm text-gray-500 mt-1">Os dois backups selecionados possuem configurações idênticas.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% elif not backups %}
+    <!-- No Backups -->
+    <div class="col-span-12">
+        <div class="rounded-2xl border-2 border-dashed border-gray-300 bg-white p-12 text-center dark:border-gray-700 dark:bg-gray-800">
+            <div class="mx-auto w-16 h-16 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center mb-4">
+                <i data-lucide="hard-drive" class="w-8 h-8 text-gray-400"></i>
+            </div>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Nenhum backup disponível</h3>
+            <p class="text-sm text-gray-500 mt-1">Este dispositivo não possui backups com arquivos válidos para comparação.</p>
+            <p class="text-xs text-gray-400 mt-2">
+                Total no banco: {{ total_backups_count or 0 }} • Comparáveis no storage atual: {{ comparable_backups_count or 0 }}
+            </p>
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+
+<style>
+/* GitHub-style Diff Styles */
+.diff-container {
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.diff-hunk {
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.dark .diff-hunk {
+    border-bottom-color: #374151;
+}
+
+.diff-hunk:last-child {
+    border-bottom: none;
+}
+
+.diff-hunk-header {
+    padding: 8px 16px;
+    background-color: #f3f4f6;
+    border-bottom: 1px solid #e5e7eb;
+    color: #6b7280;
+    font-size: 12px;
+}
+
+.dark .diff-hunk-header {
+    background-color: #1f2937;
+    border-bottom-color: #374151;
+    color: #9ca3af;
+}
+
+.diff-hunk-info {
+    color: #6366f1;
+}
+
+.dark .diff-hunk-info {
+    color: #818cf8;
+}
+
+.diff-hunk-context {
+    margin-left: 8px;
+    color: #9ca3af;
+}
+
+.diff-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+.diff-line {
+    transition: background-color 0.15s ease;
+}
+
+.diff-line:hover {
+    background-color: rgba(99, 102, 241, 0.08) !important;
+}
+
+.diff-line-num {
+    width: 50px;
+    min-width: 50px;
+    padding: 0 8px;
+    text-align: right;
+    color: #9ca3af;
+    background-color: #fafafa;
+    border-right: 1px solid #e5e7eb;
+    user-select: none;
+    vertical-align: top;
+}
+
+.dark .diff-line-num {
+    background-color: #111827;
+    border-right-color: #374151;
+    color: #6b7280;
+}
+
+.diff-line-marker {
+    width: 20px;
+    min-width: 20px;
+    padding: 0 4px;
+    text-align: center;
+    font-weight: 600;
+    user-select: none;
+    vertical-align: top;
+}
+
+.diff-line-content {
+    padding: 0 16px;
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+
+.diff-line-content pre {
+    margin: 0;
+    font-family: inherit;
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+
+/* Line type styles */
+.diff-line-add {
+    background-color: #dcfce7;
+}
+
+.diff-line-add .diff-line-num {
+    background-color: #bbf7d0;
+    border-right-color: #86efac;
+}
+
+.diff-line-add .diff-line-marker {
+    color: #16a34a;
+}
+
+.dark .diff-line-add {
+    background-color: rgba(34, 197, 94, 0.15);
+}
+
+.dark .diff-line-add .diff-line-num {
+    background-color: rgba(34, 197, 94, 0.25);
+    border-right-color: rgba(34, 197, 94, 0.4);
+}
+
+.dark .diff-line-add .diff-line-marker {
+    color: #4ade80;
+}
+
+.diff-line-remove {
+    background-color: #fee2e2;
+}
+
+.diff-line-remove .diff-line-num {
+    background-color: #fecaca;
+    border-right-color: #fca5a5;
+}
+
+.diff-line-remove .diff-line-marker {
+    color: #dc2626;
+}
+
+.dark .diff-line-remove {
+    background-color: rgba(239, 68, 68, 0.15);
+}
+
+.dark .diff-line-remove .diff-line-num {
+    background-color: rgba(239, 68, 68, 0.25);
+    border-right-color: rgba(239, 68, 68, 0.4);
+}
+
+.dark .diff-line-remove .diff-line-marker {
+    color: #f87171;
+}
+
+.diff-line-context {
+    background-color: #ffffff;
+}
+
+.dark .diff-line-context {
+    background-color: transparent;
+}
+
+.diff-line-context .diff-line-marker {
+    color: #d1d5db;
+}
+
+/* Scrollbar styling */
+.diff-container::-webkit-scrollbar {
+    height: 8px;
+}
+
+.diff-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.diff-container::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+}
+
+.diff-container::-webkit-scrollbar-thumb:hover {
+    background: #a1a1a1;
+}
+</style>
+{% endblock %}

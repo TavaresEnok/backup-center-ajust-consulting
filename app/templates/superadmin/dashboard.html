@@ -1,0 +1,863 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard | Backup Center{% endblock %}
+
+{% block content %}
+<style>
+    html.dark body {
+        background-color: #061126 !important;
+    }
+
+    .page-shell {
+        max-width: 1600px;
+        margin: 0 auto;
+        --ux-hero-bg:
+            radial-gradient(circle at top right, rgba(59, 130, 246, 0.18), transparent 44%),
+            linear-gradient(180deg, rgba(239, 246, 255, 0.92), rgba(219, 234, 254, 0.74));
+        --ux-surface-bg: linear-gradient(180deg, rgba(239, 246, 255, 0.92), rgba(224, 242, 254, 0.72));
+        --ux-side-bg: linear-gradient(180deg, rgba(248, 250, 252, 0.98), rgba(226, 232, 240, 0.84));
+        --ux-border: rgba(59, 130, 246, 0.22);
+        --ux-alert-bg: rgba(239, 246, 255, 0.92);
+    }
+
+    html.dark .page-shell {
+        --ux-hero-bg:
+            radial-gradient(circle at top right, rgba(96, 165, 250, 0.2), transparent 48%),
+            linear-gradient(180deg, rgba(14, 30, 58, 0.94), rgba(9, 22, 46, 0.86));
+        --ux-surface-bg: linear-gradient(180deg, rgba(12, 28, 54, 0.92), rgba(9, 22, 44, 0.82));
+        --ux-side-bg: linear-gradient(180deg, rgba(9, 24, 49, 0.95), rgba(7, 19, 41, 0.86));
+        --ux-border: rgba(96, 165, 250, 0.22);
+        --ux-alert-bg: rgba(11, 25, 50, 0.9);
+    }
+
+    .eyebrow {
+        font-size: .7rem;
+        font-weight: 700;
+        letter-spacing: .14em;
+        text-transform: uppercase;
+        color: #60a5fa;
+    }
+
+    .section-kicker {
+        font-size: .72rem;
+        font-weight: 700;
+        letter-spacing: .12em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+    }
+
+    .card-label {
+        font-size: .76rem;
+        font-weight: 700;
+        letter-spacing: .04em;
+        color: var(--text-muted);
+    }
+
+    .card-value-xl {
+        margin-top: .35rem;
+        font-size: 2rem;
+        line-height: 1;
+        font-weight: 800;
+    }
+
+    .card-value-lg {
+        margin-top: .35rem;
+        font-size: 1.65rem;
+        line-height: 1.05;
+        font-weight: 800;
+    }
+
+    .card-caption {
+        margin-top: .35rem;
+        font-size: .76rem;
+        color: var(--text-muted);
+        line-height: 1.4;
+    }
+
+    .admin-hero {
+        border: 1px solid var(--ux-border);
+        border-radius: 1rem;
+        background: var(--ux-hero-bg);
+    }
+
+    .priority-card,
+    .health-card,
+    .side-card {
+        border: 1px solid var(--ux-border);
+        border-radius: .95rem;
+        background: var(--ux-surface-bg);
+    }
+
+    .priority-card {
+        padding: 1rem;
+        transition: border-color .15s ease, transform .15s ease;
+    }
+
+    .priority-card:hover {
+        border-color: rgba(59, 130, 246, .45);
+        transform: translateY(-1px);
+    }
+
+    .priority-critical {
+        border-left: 4px solid rgba(239, 68, 68, .95);
+    }
+
+    .priority-warning {
+        border-left: 4px solid rgba(245, 158, 11, .95);
+    }
+
+    .priority-good {
+        border-left: 4px solid rgba(16, 185, 129, .95);
+    }
+
+    .health-card {
+        padding: .9rem;
+    }
+
+    .side-card {
+        padding: 1rem;
+        background: var(--ux-side-bg);
+    }
+
+    .alert-item {
+        border: 1px solid var(--ux-border);
+        border-radius: .75rem;
+        padding: .58rem .72rem;
+        background: var(--ux-alert-bg);
+    }
+
+    .alert-item-critical {
+        border-color: rgba(239, 68, 68, .32);
+    }
+
+    .alert-item-attention {
+        border-color: rgba(245, 158, 11, .32);
+    }
+
+    .kpi-chip {
+        border: 1px solid var(--line-color);
+        border-radius: 9999px;
+        padding: .32rem .72rem;
+        font-size: .71rem;
+        font-weight: 600;
+        color: var(--text-main);
+        background: rgba(148, 163, 184, 0.1);
+    }
+
+    .chart-wrap {
+        position: relative;
+        min-height: 270px;
+    }
+
+    .admin-table th {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: .08em;
+        color: var(--text-muted);
+        font-weight: 700;
+        padding: .7rem .9rem;
+        border-bottom: 1px solid var(--line-color);
+    }
+
+    .admin-table td {
+        padding: .75rem .9rem;
+        border-bottom: 1px solid var(--line-color);
+        font-size: .86rem;
+        color: var(--text-main);
+        vertical-align: top;
+    }
+
+    .admin-table tbody tr {
+        transition: background-color .12s ease;
+    }
+
+    .admin-table tbody tr:hover {
+        background: rgba(148, 163, 184, .06);
+    }
+
+    .drill-trigger {
+        cursor: pointer;
+    }
+
+    .drill-trigger-active {
+        box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.65) inset;
+    }
+
+    .drill-filter-badge {
+        border: 1px solid var(--line-color);
+        border-radius: 9999px;
+        padding: .3rem .7rem;
+        font-size: .71rem;
+        font-weight: 600;
+        color: var(--text-main);
+        background: rgba(59, 130, 246, 0.14);
+    }
+
+    .alert-list-compact {
+        max-height: 240px;
+        overflow: auto;
+        padding-right: .2rem;
+    }
+</style>
+
+<div class="page-shell space-y-7 pb-5">
+    <section class="admin-hero p-6">
+        <div class="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
+            <div>
+                <p class="eyebrow">Backoffice SaaS</p>
+                <h1 class="mt-1 text-3xl font-extrabold tracking-tight text-[var(--text-main)] xl:text-[2.15rem]">Centro de comando da plataforma</h1>
+                <p class="mt-2 max-w-3xl text-sm leading-relaxed text-[var(--text-muted)]">Visao executiva e operacional com foco em acao rapida.</p>
+                <div class="mt-4 flex flex-wrap gap-2.5">
+                    <span class="kpi-chip">Janela: {{ range_label }}</span>
+                    <span class="kpi-chip">Backups sucesso: {{ stats.backups_success_rate }}%</span>
+                    <span class="kpi-chip">Delta: {{ '+' if stats.backups_rate_delta >= 0 else '' }}{{ stats.backups_rate_delta }}pp</span>
+                    <span class="kpi-chip">Cobranca: {{ stats.invoices_collection_rate }}%</span>
+                </div>
+            </div>
+            <div class="flex flex-wrap items-center gap-2 xl:justify-end">
+                {% for key, label in range_options.items() %}
+                <a href="{{ url_for('superadmin_dashboard.dashboard', range=key) }}"
+                    class="rounded-lg px-3 py-2 text-[12px] font-semibold {% if selected_range == key %}bg-brand-600 text-white{% else %}border border-[var(--card-border)] text-[var(--text-main)] hover:bg-[var(--line-color)]{% endif %}">
+                    {{ label }}
+                </a>
+                {% endfor %}
+                <a href="{{ url_for('superadmin_tenants.add_tenant') }}"
+                    class="ml-1 inline-flex items-center rounded-lg bg-brand-600 px-3 py-2 text-sm font-semibold text-white hover:bg-brand-700">
+                    Novo cliente
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <div class="grid grid-cols-1 gap-4 xl:grid-cols-12">
+        <section class="space-y-4 xl:col-span-8">
+            <div>
+                <p class="section-kicker">Prioridades imediatas</p>
+                <div class="mt-2.5 grid grid-cols-1 gap-3 md:grid-cols-3">
+                    <a href="{{ links.risk_clients }}" class="priority-card priority-critical drill-trigger" data-drill-type="ops" data-drill-value="risk" data-drill-label="Clientes em risco comercial" data-drill-key="ops:risk">
+                        <p class="card-label">Clientes em risco</p>
+                        <p class="card-value-xl text-rose-300">{{ stats.risk_tenants_count }}</p>
+                        <p class="card-caption">Past due, cancelados e falha de cobranca.</p>
+                    </a>
+                    <a href="{{ links.revenue_risk }}" class="priority-card priority-critical drill-trigger" data-drill-type="invoice" data-drill-value="pending_or_failed" data-drill-label="Receita em risco (pendente/falha)" data-drill-key="invoice:pending_or_failed">
+                        <p class="card-label">Receita em risco</p>
+                        <p class="card-value-xl text-rose-300">{{ stats.revenue_at_risk }}</p>
+                        <p class="card-caption">Pendentes: {{ stats.pending_amount }} • Falhas: {{ stats.failed_amount }}</p>
+                    </a>
+                    <a href="{{ links.period_failures }}" class="priority-card priority-warning drill-trigger" data-drill-type="ops" data-drill-value="period_failures" data-drill-label="Falhas no periodo" data-drill-key="ops:period_failures">
+                        <p class="card-label">Falhas no periodo</p>
+                        <p class="card-value-xl text-amber-300">{{ stats.backups_failed + stats.invoices_period_failed }}</p>
+                        <p class="card-caption">Backup: {{ stats.backups_failed }} • Faturas: {{ stats.invoices_period_failed }}</p>
+                    </a>
+                </div>
+            </div>
+
+            <div>
+                <p class="section-kicker">Saude da plataforma</p>
+                <div class="mt-2.5 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                    <a href="{{ links.mrr_active }}" class="health-card priority-good drill-trigger" data-drill-type="payment" data-drill-value="active" data-drill-label="Clientes com pagamento ativo" data-drill-key="payment:active">
+                        <p class="card-label">MRR estimado</p>
+                        <p class="card-value-lg text-emerald-300">{{ stats.mrr }}</p>
+                        <p class="card-caption">Pagto ativo: {{ stats.tenants_payment_active }}</p>
+                    </a>
+                    <a href="{{ links.clients_total }}" class="health-card">
+                        <p class="card-label">Clientes ativos</p>
+                        <p class="card-value-lg text-[var(--text-main)]">{{ stats.tenants_active }} / {{ stats.tenants_total }}</p>
+                        <p class="card-caption">Inativos: {{ stats.tenants_inactive }}</p>
+                    </a>
+                    <a href="{{ links.devices_total }}" class="health-card">
+                        <p class="card-label">Dispositivos</p>
+                        <p class="card-value-lg text-[var(--text-main)]">{{ stats.devices_total }}</p>
+                        <p class="card-caption">Media/cliente: {{ stats.avg_devices_per_tenant }}</p>
+                    </a>
+                    <a href="{{ links.trial_expiring }}" class="health-card priority-warning drill-trigger" data-drill-type="subscription" data-drill-value="trial" data-drill-label="Clientes em trial" data-drill-key="subscription:trial">
+                        <p class="card-label">Trial vencendo (7d)</p>
+                        <p class="card-value-lg text-amber-300">{{ stats.trial_expiring_7d }}</p>
+                        <p class="card-caption">Sem plano: {{ stats.tenants_without_plan }}</p>
+                    </a>
+                </div>
+                <div class="mt-3.5 flex flex-wrap gap-2">
+                    <a href="{{ links.without_plan }}" class="kpi-chip drill-trigger" data-drill-type="ops" data-drill-value="no_plan" data-drill-label="Clientes sem plano" data-drill-key="ops:no_plan">Sem plano: {{ stats.tenants_without_plan }}</a>
+                    <a href="{{ links.without_devices }}" class="kpi-chip drill-trigger" data-drill-type="ops" data-drill-value="no_devices" data-drill-label="Clientes sem dispositivos" data-drill-key="ops:no_devices">Sem dispositivos: {{ stats.tenants_without_devices }}</a>
+                    <a href="{{ links.without_admin }}" class="kpi-chip drill-trigger" data-drill-type="ops" data-drill-value="no_admin" data-drill-label="Clientes sem admin" data-drill-key="ops:no_admin">Sem admin: {{ stats.tenants_without_admin }}</a>
+                </div>
+            </div>
+        </section>
+
+        <aside class="space-y-4 xl:col-span-4">
+            <section class="side-card">
+                <div class="mb-2 flex items-center justify-between">
+                    <h2 class="section-kicker">Alertas acionaveis</h2>
+                    <span class="text-xs text-[var(--text-muted)]">{{ alerts|length }}</span>
+                </div>
+                {% set compact_alerts = alerts[:3] %}
+                <div class="space-y-2 alert-list-compact">
+                    {% for alert in compact_alerts %}
+                    <div class="alert-item {% if alert.severity == 'critical' %}alert-item-critical{% else %}alert-item-attention{% endif %}">
+                        <p class="text-sm font-semibold text-[var(--text-main)]">{{ alert.title }}</p>
+                        <p class="mt-1 text-xs text-[var(--text-muted)]">{{ alert.description }}</p>
+                        <a href="{{ alert.action_url }}" class="mt-2 inline-flex text-xs font-semibold text-brand-300 hover:text-brand-200">{{ alert.action_label }}</a>
+                    </div>
+                    {% else %}
+                    <div class="alert-item">
+                        <p class="text-sm font-semibold text-emerald-300">Sem alertas criticos no momento.</p>
+                        <p class="mt-1 text-xs text-[var(--text-muted)]">A operacao atual esta dentro do esperado.</p>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% if alerts|length > 3 %}
+                <p class="mt-2 text-[11px] text-[var(--text-muted)]">+ {{ alerts|length - 3 }} alerta(s) adicional(is).</p>
+                {% endif %}
+            </section>
+
+            <section class="side-card">
+                <h2 class="section-kicker">Acoes rapidas</h2>
+                <div class="mt-3 grid grid-cols-1 gap-2">
+                    <a href="{{ links.manage_tenants }}" class="rounded-lg border border-[var(--line-color)] px-3 py-2 text-sm font-semibold text-[var(--text-main)] hover:bg-[var(--line-color)]">Gerenciar clientes</a>
+                    <a href="{{ links.manage_users }}" class="rounded-lg border border-[var(--line-color)] px-3 py-2 text-sm font-semibold text-[var(--text-main)] hover:bg-[var(--line-color)]">Gerenciar usuarios</a>
+                    <a href="{{ links.manage_billing }}" class="rounded-lg border border-[var(--line-color)] px-3 py-2 text-sm font-semibold text-[var(--text-main)] hover:bg-[var(--line-color)]">Operar cobranca</a>
+                    <a href="{{ links.manage_types }}" class="rounded-lg border border-[var(--line-color)] px-3 py-2 text-sm font-semibold text-[var(--text-main)] hover:bg-[var(--line-color)]">Catalogo tecnico</a>
+                </div>
+            </section>
+
+            <section class="side-card">
+                <h2 class="section-kicker">Integracoes e crescimento</h2>
+                <p class="mt-2 text-xs text-[var(--text-muted)]">
+                    Mercado Pago:
+                    {% if payment_setup.ready %}
+                    <span class="font-semibold text-emerald-300">OK</span>
+                    {% else %}
+                    <span class="font-semibold text-rose-300">INCOMPLETO</span>
+                    {% endif %}
+                </p>
+                <p class="mt-1 text-xs text-[var(--text-muted)]">Novos clientes (30d): <span class="text-[var(--text-main)]">{{ stats.new_tenants_30d }}</span></p>
+                <p class="mt-1 text-xs text-[var(--text-muted)]">Delta: <span class="text-[var(--text-main)]">{{ '+' if stats.tenants_growth_delta >= 0 else '' }}{{ stats.tenants_growth_delta }}</span></p>
+                <p class="mt-1 text-xs text-[var(--text-muted)]">Planos ativos: <span class="text-[var(--text-main)]">{{ stats.plans_active }}</span></p>
+            </section>
+        </aside>
+    </div>
+
+    <div class="grid grid-cols-1 gap-4 xl:grid-cols-12">
+        <section class="premium-card p-5 xl:col-span-7">
+            <div class="mb-3 flex items-center justify-between">
+                <h2 class="section-kicker">Tendencia de backups</h2>
+                <span class="text-xs text-[var(--text-muted)]">{{ range_label }}</span>
+            </div>
+            <div class="chart-wrap"><canvas id="chartBackups"></canvas></div>
+        </section>
+
+        <section class="premium-card p-5 xl:col-span-5">
+            <div class="mb-3 flex items-center justify-between">
+                <h2 class="section-kicker">Tendencia de faturamento</h2>
+                <a href="{{ url_for('superadmin_billing.list_billing') }}" class="text-xs font-semibold text-brand-400 hover:text-brand-300">Abrir cobranca</a>
+            </div>
+            <div class="chart-wrap"><canvas id="chartInvoices"></canvas></div>
+        </section>
+    </div>
+
+    <div class="grid grid-cols-1 gap-4 xl:grid-cols-12">
+        <section class="premium-card p-5 xl:col-span-4">
+            <div class="mb-3 flex items-center justify-between">
+                <h2 class="section-kicker">Saude de pagamento</h2>
+                <span class="text-xs text-[var(--text-muted)]">Distribuicao</span>
+            </div>
+            <div class="chart-wrap"><canvas id="chartPayment"></canvas></div>
+            <div class="mt-3 flex items-center gap-2 text-xs">
+                <span class="kpi-chip">Ativos: {{ stats.tenants_payment_active }}</span>
+                <span class="kpi-chip">Pendentes: {{ stats.tenants_payment_pending }}</span>
+                <span class="kpi-chip">Cancelados: {{ stats.tenants_payment_canceled }}</span>
+            </div>
+        </section>
+
+        <section class="premium-card overflow-hidden xl:col-span-8">
+            <div class="flex items-center justify-between border-b border-[var(--line-color)] px-4 py-3">
+                <h2 class="section-kicker">Clientes em risco (top)</h2>
+                <span class="text-xs text-[var(--text-muted)]">{{ risk_tenants|length }} clientes</span>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="admin-table min-w-full">
+                    <thead>
+                        <tr>
+                            <th>Cliente</th>
+                            <th>Status</th>
+                            <th>Faturas</th>
+                            <th>Backups ({{ range_label }})</th>
+                            <th class="text-right">Acoes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in risk_tenants %}
+                        <tr>
+                            <td>
+                                <p class="font-medium text-[var(--text-main)]">{{ row.name }}</p>
+                                <p class="text-xs text-[var(--text-muted)]">{{ row.slug }}</p>
+                            </td>
+                            <td>
+                                {% if row.subscription_status == 'active' %}
+                                <span class="rounded-full bg-emerald-500/15 px-2 py-0.5 text-xs font-semibold text-emerald-300">Ativo</span>
+                                {% elif row.subscription_status in ['past_due', 'trial'] %}
+                                <span class="rounded-full bg-amber-500/15 px-2 py-0.5 text-xs font-semibold text-amber-300">{{ row.subscription_status|replace('_', ' ')|title }}</span>
+                                {% else %}
+                                <span class="rounded-full bg-rose-500/15 px-2 py-0.5 text-xs font-semibold text-rose-300">{{ row.subscription_status|replace('_', ' ')|title }}</span>
+                                {% endif %}
+                                <p class="mt-1 text-[11px] text-[var(--text-muted)]">Score: {{ row.risk_score }}</p>
+                            </td>
+                            <td>
+                                <span class="text-amber-300">Pen: {{ row.invoice_pending }}</span>
+                                <span class="mx-1 text-[var(--text-muted)]">/</span>
+                                <span class="text-rose-300">Falha: {{ row.invoice_failed }}</span>
+                            </td>
+                            <td>
+                                <span class="text-emerald-300">S: {{ row.backup_success_period }}</span>
+                                <span class="mx-1 text-[var(--text-muted)]">/</span>
+                                <span class="text-rose-300">F: {{ row.backup_failed_period }}</span>
+                            </td>
+                            <td class="text-right">
+                                <a href="{{ url_for('superadmin_users.list_users', scope='tenant', tenant=row.id) }}" class="text-xs font-semibold text-brand-400 hover:text-brand-300">Usuarios</a>
+                                <a href="{{ url_for('superadmin_billing.list_billing', q=row.name) }}" class="ml-2 text-xs font-semibold text-brand-400 hover:text-brand-300">Cobranca</a>
+                                <a href="{{ url_for('superadmin_tenants.edit_tenant', tenant_id=row.id) }}" class="ml-2 text-xs font-semibold text-brand-400 hover:text-brand-300">Editar</a>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="5" class="text-center text-[var(--text-muted)]">Nenhum cliente em risco no momento.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+
+    <section id="drilldownPanel" class="premium-card p-4 space-y-3">
+        <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div>
+                <h2 class="section-kicker">Drill-down de clientes</h2>
+                <p class="mt-1 text-xs text-[var(--text-muted)]">Clique nos cards e graficos para filtrar sem sair da pagina.</p>
+            </div>
+            <div class="flex items-center gap-2">
+                <span id="drillFilterBadge" class="drill-filter-badge">Sem filtro ativo</span>
+                <button id="clearDrillFilter" type="button" class="hidden rounded-lg border border-[var(--line-color)] px-2.5 py-1.5 text-xs font-semibold text-[var(--text-main)] hover:bg-[var(--line-color)]">
+                    Limpar
+                </button>
+            </div>
+        </div>
+
+        <div class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+            <input id="drillSearch" type="text" placeholder="Buscar cliente por nome, slug ou email..." class="w-full rounded-lg border border-[var(--line-color)] bg-transparent px-3 py-2 text-sm text-[var(--text-main)] outline-none ring-brand-500 focus:ring-1">
+            <p id="drillVisibleCount" class="text-xs text-[var(--text-muted)]">0 clientes exibidos</p>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table id="drilldownTable" class="admin-table min-w-full">
+                <thead>
+                    <tr>
+                        <th>Cliente</th>
+                        <th>Status pagto</th>
+                        <th>Plano</th>
+                        <th>Uso</th>
+                        <th>Backups ({{ range_label }})</th>
+                        <th>Faturas</th>
+                        <th>Risco</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in tenant_rows %}
+                    <tr data-drill-row="1"
+                        data-subscription="{{ row.subscription_status|lower }}"
+                        data-has-plan="{% if row.plan_name == 'Sem plano' %}0{% else %}1{% endif %}"
+                        data-devices="{{ row.devices_count }}"
+                        data-users="{{ row.users_count }}"
+                        data-admin-users="{{ row.admin_users_count }}"
+                        data-backup-success="{{ row.backup_success_period }}"
+                        data-backup-failed="{{ row.backup_failed_period }}"
+                        data-invoice-paid="{{ row.invoice_paid }}"
+                        data-invoice-pending="{{ row.invoice_pending }}"
+                        data-invoice-failed="{{ row.invoice_failed }}"
+                        data-risk-score="{{ row.risk_score }}">
+                        <td>
+                            <p class="font-medium text-[var(--text-main)]">{{ row.name }}</p>
+                            <p class="text-xs text-[var(--text-muted)]">{{ row.slug }} • {{ row.email }}</p>
+                        </td>
+                        <td>
+                            {% if row.subscription_status == 'active' %}
+                            <span class="rounded-full bg-emerald-500/15 px-2 py-0.5 text-xs font-semibold text-emerald-300">Ativo</span>
+                            {% elif row.subscription_status in ['past_due', 'trial'] %}
+                            <span class="rounded-full bg-amber-500/15 px-2 py-0.5 text-xs font-semibold text-amber-300">{{ row.subscription_status|replace('_', ' ')|title }}</span>
+                            {% else %}
+                            <span class="rounded-full bg-rose-500/15 px-2 py-0.5 text-xs font-semibold text-rose-300">{{ row.subscription_status|replace('_', ' ')|title }}</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ row.plan_name }}</td>
+                        <td>{{ row.devices_count }} disp • {{ row.users_count }} users</td>
+                        <td><span class="text-emerald-300">S: {{ row.backup_success_period }}</span> / <span class="text-rose-300">F: {{ row.backup_failed_period }}</span></td>
+                        <td><span class="text-emerald-300">P: {{ row.invoice_paid }}</span> / <span class="text-amber-300">Pen: {{ row.invoice_pending }}</span> / <span class="text-rose-300">F: {{ row.invoice_failed }}</span></td>
+                        <td>
+                            {% if row.risk_score > 0 %}
+                            <span class="text-rose-300 font-semibold">{{ row.risk_score }}</span>
+                            {% else %}
+                            <span class="text-[var(--text-muted)]">0</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center text-[var(--text-muted)]">Sem clientes para exibir.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <div class="grid grid-cols-1 gap-4 xl:grid-cols-12">
+        <section class="premium-card overflow-hidden xl:col-span-6">
+            <div class="px-4 py-3 border-b border-[var(--line-color)] flex items-center justify-between">
+                <h2 class="section-kicker">Top atividade por cliente</h2>
+                <a href="{{ url_for('superadmin_tenants.list_tenants') }}" class="text-xs font-semibold text-brand-400 hover:text-brand-300">Ver todos</a>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="admin-table min-w-full">
+                    <thead>
+                        <tr>
+                            <th>Cliente</th>
+                            <th>Uso</th>
+                            <th>Backups ({{ range_label }})</th>
+                            <th class="text-right">Acoes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in top_activity_tenants %}
+                        <tr>
+                            <td>
+                                <p class="font-medium text-[var(--text-main)]">{{ row.name }}</p>
+                                <p class="text-xs text-[var(--text-muted)]">{{ row.plan_name }}</p>
+                            </td>
+                            <td>{{ row.devices_count }} disp. • {{ row.users_count }} usuarios</td>
+                            <td>
+                                <span class="text-emerald-300">S: {{ row.backup_success_period }}</span>
+                                <span class="mx-1 text-[var(--text-muted)]">/</span>
+                                <span class="text-rose-300">F: {{ row.backup_failed_period }}</span>
+                            </td>
+                            <td class="text-right">
+                                <a href="{{ url_for('superadmin_users.list_users', scope='tenant', tenant=row.id) }}" class="text-xs font-semibold text-brand-400 hover:text-brand-300">Usuarios</a>
+                                <a href="{{ url_for('superadmin_tenants.edit_tenant', tenant_id=row.id) }}" class="ml-2 text-xs font-semibold text-brand-400 hover:text-brand-300">Editar</a>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="4" class="text-center text-[var(--text-muted)]">Sem dados de atividade.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="premium-card overflow-hidden xl:col-span-6">
+            <div class="px-4 py-3 border-b border-[var(--line-color)] flex items-center justify-between">
+                <h2 class="section-kicker">Atividade recente da plataforma</h2>
+                <span class="text-xs text-[var(--text-muted)]">Ultimas 20 acoes</span>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="admin-table min-w-full">
+                    <thead>
+                        <tr>
+                            <th>Quando</th>
+                            <th>Acao</th>
+                            <th>Usuario</th>
+                            <th>Contexto</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in recent_activities %}
+                        <tr>
+                            <td>{{ format_datetime(item.created_at, "%d/%m %H:%M", "-") }}</td>
+                            <td>
+                                <p class="font-medium text-[var(--text-main)]">{{ item.action }}</p>
+                                {% if item.details %}
+                                <p class="text-xs text-[var(--text-muted)]">{{ item.details[:90] }}{% if item.details|length > 90 %}...{% endif %}</p>
+                                {% endif %}
+                            </td>
+                            <td>{{ item.user_name }}</td>
+                            <td>{{ item.tenant_name }}</td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="4" class="text-center text-[var(--text-muted)]">Sem eventos recentes.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+</div>
+
+<script>
+    (() => {
+        const labels = {{ charts.labels|tojson }};
+        const backupSuccess = {{ charts.backup_success|tojson }};
+        const backupFailed = {{ charts.backup_failed|tojson }};
+        const invoicePaid = {{ charts.invoice_paid|tojson }};
+        const invoicePending = {{ charts.invoice_pending|tojson }};
+        const invoiceFailed = {{ charts.invoice_failed|tojson }};
+        const payment = {{ charts.payment_distribution|tojson }};
+
+        const baseGridColor = 'rgba(148, 163, 184, 0.18)';
+        const baseTickColor = 'rgba(148, 163, 184, 0.95)';
+        const drillState = { type: null, value: null, label: '' };
+
+        const drillPanel = document.getElementById('drilldownPanel');
+        const drillRows = Array.from(document.querySelectorAll('#drilldownTable tbody tr[data-drill-row="1"]'));
+        const drillSearchInput = document.getElementById('drillSearch');
+        const drillFilterBadge = document.getElementById('drillFilterBadge');
+        const drillVisibleCount = document.getElementById('drillVisibleCount');
+        const clearDrillFilterBtn = document.getElementById('clearDrillFilter');
+        const drillTriggers = Array.from(document.querySelectorAll('.drill-trigger[data-drill-type][data-drill-value]'));
+
+        const toNumber = (value) => Number.parseInt(String(value || '0'), 10) || 0;
+
+        const updateDrillTriggerUI = () => {
+            const activeKey = drillState.type && drillState.value ? `${drillState.type}:${drillState.value}` : '';
+            drillTriggers.forEach((el) => {
+                el.classList.toggle('drill-trigger-active', activeKey && el.dataset.drillKey === activeKey);
+            });
+        };
+
+        const rowMatchesFilter = (row) => {
+            if (!drillState.type || !drillState.value) return true;
+
+            const subscription = String(row.dataset.subscription || '').toLowerCase();
+            const hasPlan = String(row.dataset.hasPlan || '0') === '1';
+            const devices = toNumber(row.dataset.devices);
+            const adminUsers = toNumber(row.dataset.adminUsers);
+            const backupSuccessCount = toNumber(row.dataset.backupSuccess);
+            const backupFailedCount = toNumber(row.dataset.backupFailed);
+            const invoicePaid = toNumber(row.dataset.invoicePaid);
+            const invoicePending = toNumber(row.dataset.invoicePending);
+            const invoiceFailed = toNumber(row.dataset.invoiceFailed);
+            const riskScore = toNumber(row.dataset.riskScore);
+
+            if (drillState.type === 'subscription') {
+                return subscription === drillState.value;
+            }
+
+            if (drillState.type === 'payment') {
+                if (drillState.value === 'active') return subscription === 'active';
+                if (drillState.value === 'pending') return subscription === 'trial' || subscription === 'past_due';
+                if (drillState.value === 'canceled') return subscription === 'canceled';
+                return true;
+            }
+
+            if (drillState.type === 'invoice') {
+                if (drillState.value === 'paid') return invoicePaid > 0;
+                if (drillState.value === 'pending') return invoicePending > 0;
+                if (drillState.value === 'failed') return invoiceFailed > 0;
+                if (drillState.value === 'pending_or_failed') return invoicePending > 0 || invoiceFailed > 0;
+                return true;
+            }
+
+            if (drillState.type === 'backup') {
+                if (drillState.value === 'success') return backupSuccessCount > 0;
+                if (drillState.value === 'failed') return backupFailedCount > 0;
+                if (drillState.value === 'none') return (backupSuccessCount + backupFailedCount) === 0;
+                return true;
+            }
+
+            if (drillState.type === 'ops') {
+                if (drillState.value === 'risk') return riskScore > 0;
+                if (drillState.value === 'no_plan') return !hasPlan;
+                if (drillState.value === 'no_devices') return devices === 0;
+                if (drillState.value === 'no_admin') return adminUsers === 0;
+                if (drillState.value === 'period_failures') return backupFailedCount > 0 || invoiceFailed > 0;
+                return true;
+            }
+
+            return true;
+        };
+
+        const rowMatchesSearch = (row) => {
+            const term = String(drillSearchInput?.value || '').trim().toLowerCase();
+            if (!term) return true;
+            return String(row.textContent || '').toLowerCase().includes(term);
+        };
+
+        const applyDrillFilter = () => {
+            let visible = 0;
+            drillRows.forEach((row) => {
+                const show = rowMatchesFilter(row) && rowMatchesSearch(row);
+                row.style.display = show ? '' : 'none';
+                if (show) visible += 1;
+            });
+            if (drillVisibleCount) {
+                drillVisibleCount.textContent = `${visible} cliente(s) exibido(s)`;
+            }
+            updateDrillTriggerUI();
+        };
+
+        const setDrillFilter = (type, value, label) => {
+            drillState.type = type || null;
+            drillState.value = value || null;
+            drillState.label = label || 'Sem filtro ativo';
+
+            if (drillFilterBadge) {
+                drillFilterBadge.textContent = drillState.type ? `Filtro: ${drillState.label}` : 'Sem filtro ativo';
+            }
+            if (clearDrillFilterBtn) {
+                clearDrillFilterBtn.classList.toggle('hidden', !drillState.type);
+            }
+
+            applyDrillFilter();
+
+            if (drillPanel) {
+                drillPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        };
+
+        drillTriggers.forEach((el) => {
+            el.addEventListener('click', (event) => {
+                if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button === 1) {
+                    return;
+                }
+                event.preventDefault();
+                setDrillFilter(el.dataset.drillType, el.dataset.drillValue, el.dataset.drillLabel || 'Filtro manual');
+            });
+        });
+
+        if (drillSearchInput) {
+            drillSearchInput.addEventListener('input', applyDrillFilter);
+        }
+
+        if (clearDrillFilterBtn) {
+            clearDrillFilterBtn.addEventListener('click', () => {
+                drillState.type = null;
+                drillState.value = null;
+                drillState.label = '';
+                if (drillFilterBadge) {
+                    drillFilterBadge.textContent = 'Sem filtro ativo';
+                }
+                clearDrillFilterBtn.classList.add('hidden');
+                applyDrillFilter();
+            });
+        }
+
+        const backupsCtx = document.getElementById('chartBackups');
+        if (backupsCtx) {
+            new Chart(backupsCtx, {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [
+                        {
+                            label: 'Sucesso',
+                            data: backupSuccess,
+                            borderColor: '#10b981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.12)',
+                            tension: 0.32,
+                            fill: true,
+                            pointRadius: 2,
+                        },
+                        {
+                            label: 'Falha',
+                            data: backupFailed,
+                            borderColor: '#ef4444',
+                            backgroundColor: 'rgba(239, 68, 68, 0.10)',
+                            tension: 0.32,
+                            fill: true,
+                            pointRadius: 2,
+                        },
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { labels: { color: baseTickColor } } },
+                    onClick: (event, elements) => {
+                        if (!elements.length) return;
+                        const datasetIdx = elements[0].datasetIndex;
+                        if (datasetIdx === 0) {
+                            setDrillFilter('backup', 'success', 'Backup com sucesso');
+                        } else if (datasetIdx === 1) {
+                            setDrillFilter('backup', 'failed', 'Backup com falha');
+                        }
+                    },
+                    scales: {
+                        x: { grid: { color: baseGridColor }, ticks: { color: baseTickColor } },
+                        y: { beginAtZero: true, grid: { color: baseGridColor }, ticks: { color: baseTickColor } },
+                    }
+                }
+            });
+        }
+
+        const invoicesCtx = document.getElementById('chartInvoices');
+        if (invoicesCtx) {
+            new Chart(invoicesCtx, {
+                type: 'bar',
+                data: {
+                    labels,
+                    datasets: [
+                        { label: 'Pagas', data: invoicePaid, backgroundColor: 'rgba(16, 185, 129, 0.75)' },
+                        { label: 'Pendentes', data: invoicePending, backgroundColor: 'rgba(245, 158, 11, 0.75)' },
+                        { label: 'Falhas', data: invoiceFailed, backgroundColor: 'rgba(239, 68, 68, 0.75)' },
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { labels: { color: baseTickColor } } },
+                    onClick: (event, elements) => {
+                        if (!elements.length) return;
+                        const datasetIdx = elements[0].datasetIndex;
+                        if (datasetIdx === 0) {
+                            setDrillFilter('invoice', 'paid', 'Faturas pagas');
+                        } else if (datasetIdx === 1) {
+                            setDrillFilter('invoice', 'pending', 'Faturas pendentes');
+                        } else if (datasetIdx === 2) {
+                            setDrillFilter('invoice', 'failed', 'Faturas com falha');
+                        }
+                    },
+                    scales: {
+                        x: { stacked: true, grid: { color: baseGridColor }, ticks: { color: baseTickColor } },
+                        y: { stacked: true, beginAtZero: true, grid: { color: baseGridColor }, ticks: { color: baseTickColor } },
+                    }
+                }
+            });
+        }
+
+        const paymentCtx = document.getElementById('chartPayment');
+        if (paymentCtx) {
+            new Chart(paymentCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Ativos', 'Pendentes', 'Cancelados'],
+                    datasets: [{
+                        data: [payment.active, payment.pending, payment.canceled],
+                        backgroundColor: ['#10b981', '#f59e0b', '#ef4444'],
+                        borderColor: ['#10b981', '#f59e0b', '#ef4444'],
+                        borderWidth: 1,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom', labels: { color: baseTickColor } } },
+                    onClick: (event, elements) => {
+                        if (!elements.length) return;
+                        const itemIndex = elements[0].index;
+                        if (itemIndex === 0) {
+                            setDrillFilter('payment', 'active', 'Pagamento ativo');
+                        } else if (itemIndex === 1) {
+                            setDrillFilter('payment', 'pending', 'Pagamento pendente');
+                        } else if (itemIndex === 2) {
+                            setDrillFilter('payment', 'canceled', 'Pagamento cancelado');
+                        }
+                    }
+                }
+            });
+        }
+
+        applyDrillFilter();
+    })();
+</script>
+{% endblock %}

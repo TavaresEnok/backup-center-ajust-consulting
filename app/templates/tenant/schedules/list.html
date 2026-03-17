@@ -1,0 +1,443 @@
+{% extends "base.html" %}
+
+{% block title %}Agendamentos | Backup Center{% endblock %}
+
+{% block content %}
+{% set page_title = "Agendamentos de Backup" %}
+{% include 'partials/breadcrumb.html' %}
+
+{% set weekday_labels = ['Segunda', 'Terca', 'Quarta', 'Quinta', 'Sexta', 'Sabado', 'Domingo'] %}
+{% set role = session.get('user_role') %}
+{% set can_manage_admin = role in ['super_admin', 'tenant_owner', 'tenant_admin'] %}
+
+<div class="space-y-6 pb-4">
+    <div class="flex flex-wrap items-start justify-between gap-3">
+        <div>
+            <h3 class="text-2xl font-bold text-gray-900 dark:text-white">Rotinas de Backup</h3>
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Defina um horario global em 1 passo e acompanhe o que ainda falta configurar.</p>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+            <a href="{{ url_for('tenant_operations.index', tenant_slug=tenant.slug) }}"
+                class="inline-flex items-center gap-2 rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800">
+                <i data-lucide="sliders-horizontal" class="h-4 w-4"></i>
+                Central de operacao
+            </a>
+            {% if can_manage_admin %}
+                <form id="form-run-backup-mass-schedules"
+                    action="{{ url_for('tenant_devices.run_backup_all', tenant_slug=tenant.slug) }}"
+                    method="POST" class="inline">
+                    {% include 'partials/csrf.html' %}
+                    <input type="hidden" name="only_ready" value="1">
+                    <button type="button" data-run-backup-live data-form-id="form-run-backup-mass-schedules"
+                        class="inline-flex items-center gap-2 rounded-lg border border-brand-300 bg-brand-50 px-4 py-2 text-sm font-medium text-brand-700 transition-colors hover:bg-brand-100 dark:border-brand-700 dark:bg-brand-500/10 dark:text-brand-300 dark:hover:bg-brand-500/20">
+                        <i data-lucide="play-circle" class="h-4 w-4"></i>
+                        Backup em massa (somente aptos)
+                    </button>
+                </form>
+                <form id="form-run-connection-audit-mass-schedules"
+                    action="{{ url_for('tenant_devices.run_connection_audit_all', tenant_slug=tenant.slug) }}"
+                    method="POST" class="inline">
+                    {% include 'partials/csrf.html' %}
+                    <button type="button" data-run-backup-live data-form-id="form-run-connection-audit-mass-schedules"
+                        class="inline-flex items-center gap-2 rounded-lg border border-blue-300 bg-blue-50 px-4 py-2 text-sm font-medium text-blue-700 transition-colors hover:bg-blue-100 dark:border-blue-700 dark:bg-blue-500/10 dark:text-blue-300 dark:hover:bg-blue-500/20">
+                        <i data-lucide="wifi" class="h-4 w-4"></i>
+                        Teste ping/login em massa
+                    </button>
+                </form>
+                <form id="form-run-reprocess-failed-today"
+                    action="{{ url_for('tenant_devices.run_reprocess_failures', tenant_slug=tenant.slug) }}"
+                    method="POST" class="inline">
+                    {% include 'partials/csrf.html' %}
+                    <input type="hidden" name="scope" value="today">
+                    <input type="hidden" name="transient_only" value="0">
+                    <button type="button" data-run-backup-live data-form-id="form-run-reprocess-failed-today"
+                        class="inline-flex items-center gap-2 rounded-lg border border-amber-300 bg-amber-50 px-4 py-2 text-sm font-medium text-amber-700 transition-colors hover:bg-amber-100 dark:border-amber-700 dark:bg-amber-500/10 dark:text-amber-300 dark:hover:bg-amber-500/20">
+                        <i data-lucide="rotate-cw" class="h-4 w-4"></i>
+                        Reprocessar falhas (hoje)
+                    </button>
+                </form>
+                <form id="form-run-reprocess-transient-24h"
+                    action="{{ url_for('tenant_devices.run_reprocess_failures', tenant_slug=tenant.slug) }}"
+                    method="POST" class="inline">
+                    {% include 'partials/csrf.html' %}
+                    <input type="hidden" name="scope" value="24h">
+                    <input type="hidden" name="transient_only" value="1">
+                    <button type="button" data-run-backup-live data-form-id="form-run-reprocess-transient-24h"
+                        class="inline-flex items-center gap-2 rounded-lg border border-purple-300 bg-purple-50 px-4 py-2 text-sm font-medium text-purple-700 transition-colors hover:bg-purple-100 dark:border-purple-700 dark:bg-purple-500/10 dark:text-purple-300 dark:hover:bg-purple-500/20">
+                        <i data-lucide="zap" class="h-4 w-4"></i>
+                        Reprocessar transitórias (24h)
+                    </button>
+                </form>
+                <form method="POST" action="{{ url_for('tenant_schedules.stop_all_backups', tenant_slug=tenant.slug) }}" class="inline" onsubmit="return confirm('Parar TODOS os backups em execucao e remover da fila agora?');">
+                    {% include 'partials/csrf.html' %}
+                    <button type="submit" class="inline-flex items-center gap-2 rounded-lg border border-red-300 bg-red-50 px-4 py-2 text-sm font-medium text-red-700 transition-colors hover:bg-red-100 dark:border-red-700 dark:bg-red-900/20 dark:text-red-300 dark:hover:bg-red-900/40">
+                        <i data-lucide="octagon-x" class="h-4 w-4"></i>
+                        Parar tudo
+                    </button>
+                </form>
+                <a href="{{ url_for('tenant_devices.list_devices', tenant_slug=tenant.slug) }}"
+                    class="inline-flex items-center gap-2 rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800">
+                    <i data-lucide="settings-2" class="h-4 w-4"></i>
+                    Configurar individualmente
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div id="agendamento-global"
+        class="rounded-2xl border border-brand-200/70 bg-gradient-to-r from-brand-50/90 via-white to-brand-50/70 p-5 dark:border-brand-900/40 dark:from-brand-900/20 dark:via-gray-900 dark:to-brand-900/10">
+        <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+            <div class="space-y-3">
+                <div>
+                    <p class="text-xs font-semibold uppercase tracking-wide text-brand-700 dark:text-brand-300">Agendamento Global</p>
+                    <h4 class="text-lg font-bold text-gray-900 dark:text-white">Backup diario para todos em um horario unico</h4>
+                    <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Use o modo recomendado para preencher apenas dispositivos sem rotina ativa.</p>
+                </div>
+                <div class="flex flex-wrap gap-2 text-xs">
+                    <span class="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-1 font-medium text-gray-700 dark:bg-gray-800 dark:text-gray-300">
+                        Ativos: {{ schedule_overview.total_active_devices }}
+                    </span>
+                    <span class="inline-flex items-center rounded-full bg-green-100 px-2.5 py-1 font-medium text-green-700 dark:bg-green-500/10 dark:text-green-300">
+                        Com rotina: {{ schedule_overview.with_schedule }}
+                    </span>
+                    <span class="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-1 font-medium text-amber-700 dark:bg-amber-500/10 dark:text-amber-300">
+                        Sem rotina: {{ schedule_overview.without_schedule }}
+                    </span>
+                </div>
+            </div>
+            {% if can_manage_admin %}
+                <form method="POST" action="{{ url_for('tenant_schedules.apply_daily_schedule', tenant_slug=tenant.slug) }}"
+                    class="w-full max-w-xl rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-900/70">
+                    {% include 'partials/csrf.html' %}
+                    <div class="grid gap-3 md:grid-cols-2">
+                        <div>
+                            <label for="daily_time" class="text-xs font-semibold uppercase tracking-wide text-gray-500">Horario (24h)</label>
+                            <input id="daily_time" name="daily_time" type="time" value="{{ schedule_overview.default_daily_time }}" required
+                                class="mt-1 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-brand-500 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-white">
+                        </div>
+                        <div>
+                            <label for="apply_scope" class="text-xs font-semibold uppercase tracking-wide text-gray-500">Aplicacao</label>
+                            <select id="apply_scope" name="apply_scope"
+                                class="mt-1 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-brand-500 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-white">
+                                <option value="missing" selected>Somente sem rotina (Recomendado)</option>
+                                <option value="all">Sobrescrever todos os ativos</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mt-3 flex flex-wrap items-center justify-between gap-3">
+                        <p class="text-xs text-gray-500 dark:text-gray-400">Fuso da plataforma: UTC. Exemplo: 02:00 executa diariamente as 02:00 UTC.</p>
+                        <button type="submit"
+                            onclick="return confirm('Aplicar agendamento diario conforme o modo selecionado?')"
+                            class="inline-flex items-center gap-1 rounded-md bg-brand-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-brand-600">
+                            <i data-lucide="clock-3" class="h-4 w-4"></i>
+                            Aplicar agora
+                        </button>
+                    </div>
+                </form>
+            {% else %}
+                <div class="w-full max-w-xl rounded-xl border border-gray-200 bg-white p-4 text-sm text-gray-600 dark:border-gray-700 dark:bg-gray-900/70 dark:text-gray-300">
+                    Apenas administradores podem alterar a rotina de agendamento.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    {% set connection_labels = {'direct': 'Direto', 'vpn': 'VPN', 'jump_host': 'Jump Host', 'jump': 'Jump Host'} %}
+    <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
+        <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+            <div>
+                <p class="text-sm font-semibold text-gray-900 dark:text-white">Cobertura por Grupo/Provedor</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400">Organizado por grupos para facilitar ajustes por lote.</p>
+            </div>
+            <a href="{{ url_for('tenant_operations.index', tenant_slug=tenant.slug) }}"
+                class="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-100 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800">
+                <i data-lucide="folder" class="h-3.5 w-3.5"></i>
+                Gerenciar grupos
+            </a>
+        </div>
+
+        {% if group_overview %}
+        <div class="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+            {% for group in group_overview %}
+            <div class="rounded-xl border border-gray-200 p-4 dark:border-gray-700">
+                <div class="flex items-start justify-between gap-2">
+                    <div>
+                        <p class="text-sm font-semibold text-gray-900 dark:text-white">{{ group.name }}</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">{{ connection_labels.get(group.connection_type, group.connection_type|capitalize) }}</p>
+                    </div>
+                    <span class="rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-700 dark:bg-gray-800 dark:text-gray-300">
+                        {{ group.coverage_pct }}%
+                    </span>
+                </div>
+                <div class="mt-3 h-2 w-full overflow-hidden rounded-full bg-gray-100 dark:bg-gray-800">
+                    <div class="h-full rounded-full bg-brand-500" style="width: {{ group.coverage_pct }}%"></div>
+                </div>
+                <div class="mt-3 grid grid-cols-3 gap-2 text-xs">
+                    <div class="rounded-md bg-gray-50 px-2 py-1.5 text-gray-600 dark:bg-gray-800/70 dark:text-gray-300">
+                        <span class="font-medium">{{ group.total }}</span> total
+                    </div>
+                    <div class="rounded-md bg-green-50 px-2 py-1.5 text-green-700 dark:bg-green-500/10 dark:text-green-300">
+                        <span class="font-medium">{{ group.with_schedule }}</span> ok
+                    </div>
+                    <div class="rounded-md bg-amber-50 px-2 py-1.5 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300">
+                        <span class="font-medium">{{ group.auto_disabled }}</span> sem auto
+                    </div>
+                </div>
+                <div class="mt-3">
+                    {% if group.group_id %}
+                    <a href="{{ url_for('tenant_devices.list_devices', tenant_slug=tenant.slug, group_id=group.group_id) }}"
+                        class="inline-flex items-center gap-1 rounded-lg border border-gray-300 px-2.5 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-100 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800">
+                        Ver dispositivos
+                    </a>
+                    {% else %}
+                    <a href="{{ url_for('tenant_devices.list_devices', tenant_slug=tenant.slug) }}"
+                        class="inline-flex items-center gap-1 rounded-lg border border-gray-300 px-2.5 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-100 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800">
+                        Ver todos os dispositivos
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="rounded-xl border border-dashed border-gray-300 bg-gray-50/70 px-4 py-5 text-sm text-gray-600 dark:border-gray-700 dark:bg-gray-900/40 dark:text-gray-300">
+            Nenhum grupo com dispositivo ativo encontrado.
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="rounded-2xl border border-amber-200 bg-amber-50/60 p-5 dark:border-amber-900/40 dark:bg-amber-900/10">
+        <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+            <div>
+                <p class="text-sm font-semibold text-gray-900 dark:text-white">Dispositivos Sem Backup Automatico</p>
+                <p class="text-xs text-gray-600 dark:text-gray-400">Esses dispositivos nao executam rotina automatica ate serem ativados.</p>
+            </div>
+            <span class="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-700 dark:bg-amber-500/20 dark:text-amber-300">
+                {{ missing_auto_total }} pendentes
+            </span>
+        </div>
+
+        {% if missing_auto_total > 0 %}
+        <div class="overflow-x-auto rounded-xl border border-amber-200 bg-white dark:border-amber-900/40 dark:bg-gray-900/40">
+            <table class="w-full border-collapse text-left">
+                <thead class="bg-amber-50 dark:bg-amber-900/20">
+                    <tr class="border-b border-amber-100 dark:border-amber-900/40">
+                        <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-amber-700 dark:text-amber-300">Dispositivo</th>
+                        <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-amber-700 dark:text-amber-300">Grupo/Provedor</th>
+                        <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-amber-700 dark:text-amber-300">IP</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-amber-700 dark:text-amber-300">Acao</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-amber-100 dark:divide-amber-900/40">
+                    {% for device in missing_auto_devices %}
+                    <tr class="hover:bg-amber-50/60 dark:hover:bg-amber-900/10">
+                        <td class="px-4 py-3 text-sm font-medium text-gray-900 dark:text-white">{{ device.name }}</td>
+                        <td class="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">{{ device.group.name if device.group else 'Sem grupo' }}</td>
+                        <td class="px-4 py-3 text-sm font-mono text-gray-700 dark:text-gray-300">{{ device.ip_address }}:{{ device.port }}</td>
+                        <td class="px-4 py-3 text-right">
+                            {% if can_manage_admin %}
+                                <a href="{{ url_for('tenant_devices.edit_device', tenant_slug=tenant.slug, device_id=device.id) }}"
+                                    class="inline-flex items-center gap-1 rounded-lg border border-amber-300 px-2.5 py-1.5 text-xs font-medium text-amber-700 transition-colors hover:bg-amber-100 dark:border-amber-800 dark:text-amber-300 dark:hover:bg-amber-900/30">
+                                    <i data-lucide="settings-2" class="h-3.5 w-3.5"></i>
+                                    Ativar backup
+                                </a>
+                            {% else %}
+                                <span class="text-xs text-gray-500 dark:text-gray-400">Sem permissao</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if missing_auto_total_pages > 1 %}
+        <div class="mt-4 flex flex-wrap items-center justify-between gap-3 text-sm text-gray-600 dark:text-gray-400">
+            <span>Mostrando {{ missing_auto_start }}-{{ missing_auto_end }} de {{ missing_auto_total }}</span>
+            <div class="flex flex-wrap items-center gap-2">
+                {% if missing_auto_page > 1 %}
+                <a href="{{ url_for('tenant_schedules.list_schedules', tenant_slug=tenant.slug, missing_page=missing_auto_page-1, missing_per_page=missing_auto_per_page) }}"
+                    class="rounded-lg border border-amber-300 px-3 py-1.5 text-xs font-medium text-amber-700 transition-colors hover:bg-amber-100 dark:border-amber-800 dark:text-amber-300 dark:hover:bg-amber-900/30">Anterior</a>
+                {% endif %}
+                {% for p in range(1, missing_auto_total_pages + 1) %}
+                    {% if p == missing_auto_page %}
+                    <span class="rounded-lg bg-amber-500 px-3 py-1.5 text-xs font-medium text-white">{{ p }}</span>
+                    {% else %}
+                    <a href="{{ url_for('tenant_schedules.list_schedules', tenant_slug=tenant.slug, missing_page=p, missing_per_page=missing_auto_per_page) }}"
+                        class="rounded-lg border border-amber-300 px-3 py-1.5 text-xs font-medium text-amber-700 transition-colors hover:bg-amber-100 dark:border-amber-800 dark:text-amber-300 dark:hover:bg-amber-900/30">{{ p }}</a>
+                    {% endif %}
+                {% endfor %}
+                {% if missing_auto_page < missing_auto_total_pages %}
+                <a href="{{ url_for('tenant_schedules.list_schedules', tenant_slug=tenant.slug, missing_page=missing_auto_page+1, missing_per_page=missing_auto_per_page) }}"
+                    class="rounded-lg border border-amber-300 px-3 py-1.5 text-xs font-medium text-amber-700 transition-colors hover:bg-amber-100 dark:border-amber-800 dark:text-amber-300 dark:hover:bg-amber-900/30">Proximo</a>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+        {% else %}
+        <div class="rounded-xl border border-green-200 bg-green-50 px-4 py-5 text-sm text-green-700 dark:border-green-900/40 dark:bg-green-900/10 dark:text-green-300">
+            Tudo certo: todos os dispositivos ativos ja estao com backup automatico habilitado.
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
+            <p class="text-sm text-gray-500 dark:text-gray-400">Total de Agendamentos</p>
+            <p class="mt-2 text-2xl font-bold text-gray-900 dark:text-white">{{ schedule_stats.total }}</p>
+        </div>
+        <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
+            <p class="text-sm text-gray-500 dark:text-gray-400">Ativos</p>
+            <p class="mt-2 text-2xl font-bold text-success-600 dark:text-success-400">{{ schedule_stats.active }}</p>
+        </div>
+        <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
+            <p class="text-sm text-gray-500 dark:text-gray-400">Pausados</p>
+            <p class="mt-2 text-2xl font-bold text-gray-700 dark:text-gray-300">{{ schedule_stats.paused }}</p>
+        </div>
+    </div>
+
+    <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+            <div>
+                <p class="text-sm font-semibold text-gray-900 dark:text-white">Detalhamento por dispositivo</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400">Abrir apenas quando precisar ajustar casos individuais.</p>
+            </div>
+            {% if show_details %}
+            <a href="{{ url_for('tenant_schedules.list_schedules', tenant_slug=tenant.slug) }}"
+                class="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-100 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800">
+                <i data-lucide="chevrons-up" class="h-3.5 w-3.5"></i>
+                Ocultar tabela
+            </a>
+            {% else %}
+            <a href="{{ url_for('tenant_schedules.list_schedules', tenant_slug=tenant.slug, details=1) }}"
+                class="inline-flex items-center gap-1.5 rounded-lg border border-brand-300 bg-brand-50 px-3 py-1.5 text-xs font-medium text-brand-700 transition-colors hover:bg-brand-100 dark:border-brand-700 dark:bg-brand-500/10 dark:text-brand-300 dark:hover:bg-brand-500/20">
+                <i data-lucide="table" class="h-3.5 w-3.5"></i>
+                Ver tabela
+            </a>
+            {% endif %}
+        </div>
+
+        {% if show_details %}
+        <div class="mt-4 overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-800">
+            <table class="w-full border-collapse text-left">
+                <thead class="bg-gray-50 dark:bg-gray-800/50">
+                    <tr class="border-b border-gray-100 dark:border-gray-800">
+                        <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-500">Dispositivo</th>
+                        <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-500">Frequencia</th>
+                        <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-500">Horario</th>
+                        <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-500">Proxima Execucao</th>
+                        <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-500">Ultima Execucao</th>
+                        <th class="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-gray-500">Status</th>
+                        <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-500">Acoes</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+                    {% for schedule in schedules %}
+                    <tr class="transition-colors hover:bg-gray-50 dark:hover:bg-white/[0.02]">
+                        <td class="px-4 py-3 text-sm font-medium text-gray-900 dark:text-white">{{ schedule.device.name }}</td>
+                        <td class="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
+                            {% set frequency_val = schedule.frequency.value if schedule.frequency is not string else schedule.frequency %}
+                            {% if frequency_val == 'daily' %}
+                                Diario
+                            {% elif frequency_val == 'weekly' %}
+                                Semanal
+                            {% else %}
+                                Mensal
+                            {% endif %}
+                            <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-500">
+                                {% if frequency_val == 'weekly' and schedule.day_of_week is not none and schedule.day_of_week >= 0 and schedule.day_of_week < 7 %}
+                                    Toda {{ weekday_labels[schedule.day_of_week] }}
+                                {% elif frequency_val == 'monthly' and schedule.day_of_month %}
+                                    Dia {{ schedule.day_of_month }}
+                                {% else %}
+                                    Todos os dias
+                                {% endif %}
+                            </p>
+                        </td>
+                        <td class="px-4 py-3 text-sm font-mono text-gray-700 dark:text-gray-300">{{ schedule.time }}</td>
+                        <td class="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
+                            {{ (schedule.next_run_at|localtime).strftime('%d/%m/%Y %H:%M') if schedule.next_run_at else 'Nao definido' }}
+                        </td>
+                        <td class="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
+                            {{ (schedule.last_run_at|localtime).strftime('%d/%m/%Y %H:%M') if schedule.last_run_at else 'Nunca executado' }}
+                        </td>
+                        <td class="px-4 py-3">
+                            {% if schedule.is_active %}
+                            <span
+                                class="inline-flex items-center rounded-full bg-green-50 px-2 py-1 text-xs font-medium text-green-600 dark:bg-green-500/10 dark:text-green-400">
+                                Ativo
+                            </span>
+                            {% else %}
+                            <span
+                                class="inline-flex items-center rounded-full bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 dark:bg-gray-500/10 dark:text-gray-400">
+                                Pausado
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td class="px-4 py-3 text-right">
+                            {% if can_manage_admin %}
+                                <a href="{{ url_for('tenant_devices.edit_device', tenant_slug=tenant.slug, device_id=schedule.device.id) }}"
+                                    class="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-100 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800">
+                                    <i data-lucide="settings-2" class="h-3.5 w-3.5"></i>
+                                    Ajustar
+                                </a>
+                            {% else %}
+                                <span class="text-xs text-gray-500 dark:text-gray-400">Sem permissao</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" class="px-4 py-12 text-center">
+                            <div class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800">
+                                <i data-lucide="calendar-x" class="h-7 w-7 text-gray-400"></i>
+                            </div>
+                            <p class="font-medium text-gray-700 dark:text-gray-300">Nenhum agendamento cadastrado.</p>
+                            <p class="mt-1 text-sm text-gray-500">Acesse um dispositivo para configurar a primeira rotina automatica.</p>
+                            <a href="{{ url_for('tenant_devices.list_devices', tenant_slug=tenant.slug) }}"
+                                class="mt-4 inline-flex items-center gap-2 rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-brand-600">
+                                <i data-lucide="router" class="h-4 w-4"></i>
+                                Ir para Dispositivos
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if total_pages > 1 %}
+        <div class="mt-4 flex flex-wrap items-center justify-between gap-3 text-sm text-gray-500 dark:text-gray-400">
+            <span>Mostrando {{ start_idx }}-{{ end_idx }} de {{ schedule_stats.total }}</span>
+            <div class="flex flex-wrap items-center gap-2">
+                {% if page > 1 %}
+                <a href="{{ url_for('tenant_schedules.list_schedules', tenant_slug=tenant.slug, details=1, page=page-1, per_page=per_page) }}"
+                    class="rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-100 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800">Anterior</a>
+                {% endif %}
+
+                {% for p in range(1, total_pages + 1) %}
+                    {% if p == page %}
+                    <span class="rounded-lg bg-brand-500 px-3 py-1.5 text-xs font-medium text-white">{{ p }}</span>
+                    {% else %}
+                    <a href="{{ url_for('tenant_schedules.list_schedules', tenant_slug=tenant.slug, details=1, page=p, per_page=per_page) }}"
+                        class="rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-100 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800">{{ p }}</a>
+                    {% endif %}
+                {% endfor %}
+
+                {% if page < total_pages %}
+                <a href="{{ url_for('tenant_schedules.list_schedules', tenant_slug=tenant.slug, details=1, page=page+1, per_page=per_page) }}"
+                    class="rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-100 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800">Proximo</a>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+        {% else %}
+        <div class="mt-4 rounded-xl border border-dashed border-gray-300 bg-gray-50/70 px-4 py-6 text-sm text-gray-600 dark:border-gray-700 dark:bg-gray-900/40 dark:text-gray-300">
+            Tabela oculta para manter a pagina limpa. Clique em <strong>Ver tabela</strong> quando precisar analisar dispositivo por dispositivo.
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% include 'partials/backup_live_modal.html' %}
+{% endblock %}

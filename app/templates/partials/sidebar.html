@@ -1,0 +1,319 @@
+<aside
+    class="fixed left-0 top-0 z-50 flex h-screen flex-col overflow-y-hidden bg-[var(--bg-app)] duration-300 ease-linear border-r border-[var(--line-color)] lg:static lg:translate-x-0"
+    :class="{
+        'w-[290px]': mobileSidebarOpen || sidebarExpanded || sidebarHovered,
+        'w-[90px]': !mobileSidebarOpen && !sidebarExpanded && !sidebarHovered,
+        'translate-x-0': mobileSidebarOpen,
+        '-translate-x-full': !mobileSidebarOpen
+    }" @mouseenter="sidebarHovered = true" @mouseleave="sidebarHovered = false"
+    @keydown.escape.window="mobileSidebarOpen = false" x-cloak>
+
+    <!-- Sidebar Header -->
+    <div class="flex items-center justify-between gap-2 px-6 py-5.5 lg:py-6.5">
+        <a href="{{ url_for('tenant.dashboard', tenant_slug=tenant.slug if tenant else 'admin-corp') }}">
+            <!-- Full Logo -->
+            <div class="flex items-center gap-2" x-show="mobileSidebarOpen || sidebarExpanded || sidebarHovered">
+                <div class="bg-gradient-to-br from-brand-500 to-brand-600 rounded-xl p-2 shadow-lg">
+                    <svg class="fill-white w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                        <path
+                            d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z" />
+                    </svg>
+                </div>
+                <span class="text-xl font-bold text-[var(--text-main)]">Backup Center</span>
+            </div>
+            <!-- Icon Logo -->
+            <div class="flex items-center justify-center w-full" x-show="!mobileSidebarOpen && !sidebarExpanded && !sidebarHovered">
+                <div class="bg-gradient-to-br from-brand-500 to-brand-600 rounded-xl p-2 shadow-lg">
+                    <svg class="fill-white w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                        <path
+                            d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z" />
+                    </svg>
+                </div>
+            </div>
+        </a>
+
+        <button class="block lg:hidden" @click="mobileSidebarOpen = !mobileSidebarOpen">
+            <i data-lucide="x"
+                class="w-6 h-6 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"></i>
+        </button>
+    </div>
+
+    <!-- Sidebar Menu -->
+    <div class="no-scrollbar flex flex-col overflow-y-auto duration-300 ease-linear">
+        <nav class="mt-2 px-4 py-4 lg:mt-4 lg:px-6"
+            @click="if (window.innerWidth < 1024 && $event.target.closest('a')) { mobileSidebarOpen = false; }">
+
+            {% set tenant_id = tenant_slug if tenant_slug else (tenant.slug if tenant else 'public') %}
+            {% set current_endpoint = request.endpoint|default('') %}
+            {% set is_dashboard = 'tenant.dashboard' in current_endpoint %}
+            {% set is_operations = 'tenant_operations' in current_endpoint %}
+            {% set is_devices = 'tenant_devices' in current_endpoint %}
+            {% set is_backups = 'tenant_backups' in current_endpoint or 'tenant_compare' in current_endpoint %}
+            {% set is_devices_backups = is_devices or is_backups %}
+            {% set is_reports = 'tenant_reports' in current_endpoint %}
+            {% set is_settings_general = current_endpoint == 'tenant_settings.general_settings' %}
+            {% set is_settings_profile = current_endpoint == 'tenant_settings.profile' %}
+            {% set is_settings_notifications = current_endpoint == 'tenant_settings.notifications' %}
+            {% set is_settings_reports = current_endpoint == 'tenant_settings.reports' %}
+            {% set is_settings_api_tokens = 'api_tokens' in current_endpoint %}
+            {% set is_settings = is_settings_general or is_settings_profile or is_settings_notifications or is_settings_reports or is_settings_api_tokens %}
+            {% set is_users = 'tenant_users' in current_endpoint %}
+            {% set is_activity = 'tenant_activity' in current_endpoint %}
+            {% set is_activity_live = is_activity and request.args.get('live') == '1' %}
+            {% set is_schedules = 'tenant_schedules' in current_endpoint %}
+            {% set is_billing = 'billing' in current_endpoint %}
+            {% set role = session.get('user_role') %}
+            {% set is_admin_role = role in ['super_admin', 'tenant_owner', 'tenant_admin'] %}
+            {% set is_owner_role = role in ['super_admin', 'tenant_owner'] %}
+
+            <!-- Menu Principal -->
+            <div>
+                <h3 class="mb-4 ml-4 text-xs uppercase font-semibold text-gray-400 tracking-wider"
+                    x-show="mobileSidebarOpen || sidebarExpanded || sidebarHovered">PRINCIPAL</h3>
+                <h3 class="mb-4 text-center text-sm font-medium text-gray-400"
+                    x-show="!mobileSidebarOpen && !sidebarExpanded && !sidebarHovered">•••</h3>
+
+                <ul class="mb-6 flex flex-col gap-1.5">
+
+                    <!-- Dashboard -->
+                    <li>
+                        <a href="{{ url_for('tenant.dashboard', tenant_slug=tenant_id) }}"
+                            class="menu-item group {% if is_dashboard %}menu-item-active{% else %}menu-item-inactive{% endif %}">
+                            <i data-lucide="layout-dashboard"
+                                class="w-5 h-5 shrink-0 {% if is_dashboard %}menu-item-icon-active{% else %}menu-item-icon-inactive{% endif %}"></i>
+                            <span x-show="mobileSidebarOpen || sidebarExpanded || sidebarHovered"
+                                class="truncate font-medium">Dashboard</span>
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="{{ url_for('tenant_operations.index', tenant_slug=tenant_id) }}"
+                            class="menu-item group {% if is_operations %}menu-item-active{% else %}menu-item-inactive{% endif %}">
+                            <i data-lucide="sliders-horizontal"
+                                class="w-5 h-5 shrink-0 {% if is_operations %}menu-item-icon-active{% else %}menu-item-icon-inactive{% endif %}"></i>
+                            <span x-show="mobileSidebarOpen || sidebarExpanded || sidebarHovered"
+                                class="truncate font-medium">Grupos</span>
+                        </a>
+                    </li>
+
+                    <!-- Dispositivos + Backups (menu unificado) -->
+                    <li x-data="{ open: {{ 'true' if is_devices_backups else 'false' }} }">
+                        <button @click="open = !open"
+                            class="menu-item group w-full {% if is_devices_backups %}menu-item-active{% else %}menu-item-inactive{% endif %}">
+                            <i data-lucide="hard-drive-download"
+                                class="w-5 h-5 shrink-0 {% if is_devices_backups %}menu-item-icon-active{% else %}menu-item-icon-inactive{% endif %}"></i>
+                            <span x-show="mobileSidebarOpen || sidebarExpanded || sidebarHovered" class="truncate font-medium">Dispositivos e Backups</span>
+                            <i data-lucide="chevron-down" class="w-4 h-4 ml-auto transition-transform"
+                                :class="open ? 'rotate-180' : ''" x-show="mobileSidebarOpen || sidebarExpanded || sidebarHovered"></i>
+                        </button>
+                        <ul x-show="open && (mobileSidebarOpen || sidebarExpanded || sidebarHovered)" class="mt-2 ml-9 space-y-1" x-cloak>
+                            <li>
+                                <a href="{{ url_for('tenant_devices.list_devices', tenant_slug=tenant_id) }}"
+                                    class="menu-dropdown-item {% if 'tenant_devices' in current_endpoint %}menu-dropdown-item-active{% else %}menu-dropdown-item-inactive{% endif %}">
+                                    Todos os dispositivos
+                                </a>
+                            </li>
+                            <li>
+                                <a href="{{ url_for('tenant_backups.list_backups', tenant_slug=tenant_id) }}"
+                                    class="menu-dropdown-item {% if 'tenant_backups' in current_endpoint %}menu-dropdown-item-active{% else %}menu-dropdown-item-inactive{% endif %}">
+                                    Histórico
+                                </a>
+                            </li>
+                            <li>
+                                <a href="{{ url_for('tenant_backups.failed_devices', tenant_slug=tenant_id) }}"
+                                    class="menu-dropdown-item {% if current_endpoint == 'tenant_backups.failed_devices' %}menu-dropdown-item-active{% else %}menu-dropdown-item-inactive{% endif %}">
+                                    Falhas
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+
+                </ul>
+            </div>
+
+            <!-- Separator -->
+            <div class="my-4 border-t border-[var(--line-color)]" x-show="mobileSidebarOpen || sidebarExpanded || sidebarHovered">
+            </div>
+
+            <!-- Monitoramento -->
+            <div>
+                <h3 class="mb-4 ml-4 text-xs uppercase font-semibold text-gray-400 tracking-wider"
+                    x-show="mobileSidebarOpen || sidebarExpanded || sidebarHovered">MONITORAMENTO</h3>
+
+                <ul class="mb-6 flex flex-col gap-1.5">
+
+                    <!-- Tempo Real + Alertas -->
+                    <li>
+                        <a href="{{ url_for('tenant_activity.list_activity', tenant_slug=tenant_id, live=1, view='logs') }}"
+                            class="menu-item group {% if is_activity_live %}menu-item-active{% else %}menu-item-inactive{% endif %}">
+                            <i data-lucide="activity"
+                                class="w-5 h-5 shrink-0 {% if is_activity_live %}menu-item-icon-active{% else %}menu-item-icon-inactive{% endif %}"></i>
+                            <span x-show="mobileSidebarOpen || sidebarExpanded || sidebarHovered" class="truncate font-medium">Tempo real e alertas</span>
+                            {% if notifications_count|default(0) > 0 %}
+                            <span x-show="mobileSidebarOpen || sidebarExpanded || sidebarHovered"
+                                class="ml-auto rounded-full bg-error-500 px-2 py-0.5 text-[10px] font-medium text-white">{{ notifications_count }}</span>
+                            {% endif %}
+                        </a>
+                    </li>
+
+                    <!-- Relatórios -->
+                    <li x-data="{ open: {{ 'true' if is_reports else 'false' }} }">
+                        <button @click="open = !open"
+                            class="menu-item group w-full {% if is_reports %}menu-item-active{% else %}menu-item-inactive{% endif %}">
+                            <i data-lucide="file-bar-chart"
+                                class="w-5 h-5 shrink-0 {% if is_reports %}menu-item-icon-active{% else %}menu-item-icon-inactive{% endif %}"></i>
+                            <span x-show="mobileSidebarOpen || sidebarExpanded || sidebarHovered"
+                                class="truncate font-medium">Relatórios</span>
+                            <i data-lucide="chevron-down" class="w-4 h-4 ml-auto transition-transform"
+                                :class="open ? 'rotate-180' : ''" x-show="mobileSidebarOpen || sidebarExpanded || sidebarHovered"></i>
+                        </button>
+                        <ul x-show="open && (mobileSidebarOpen || sidebarExpanded || sidebarHovered)" class="mt-2 ml-9 space-y-1" x-cloak>
+                            <li>
+                                <a href="{{ url_for('tenant_reports.daily', tenant_slug=tenant_id) }}"
+                                    class="menu-dropdown-item {% if current_endpoint == 'tenant_reports.daily' %}menu-dropdown-item-active{% else %}menu-dropdown-item-inactive{% endif %}">
+                                    Diário
+                                </a>
+                            </li>
+                            <li>
+                                <a href="{{ url_for('tenant_reports.weekly', tenant_slug=tenant_id) }}"
+                                    class="menu-dropdown-item {% if current_endpoint == 'tenant_reports.weekly' %}menu-dropdown-item-active{% else %}menu-dropdown-item-inactive{% endif %}">
+                                    Semanal
+                                </a>
+                            </li>
+                            <li>
+                                <a href="{{ url_for('tenant_reports.monthly', tenant_slug=tenant_id) }}"
+                                    class="menu-dropdown-item {% if current_endpoint == 'tenant_reports.monthly' %}menu-dropdown-item-active{% else %}menu-dropdown-item-inactive{% endif %}">
+                                    Mensal
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+
+                </ul>
+            </div>
+
+            <!-- Separator -->
+            <div class="my-4 border-t border-[var(--line-color)]" x-show="mobileSidebarOpen || sidebarExpanded || sidebarHovered">
+            </div>
+
+            <!-- Configurações -->
+            <div>
+                <h3 class="mb-4 ml-4 text-xs uppercase font-semibold text-gray-400 tracking-wider"
+                    x-show="mobileSidebarOpen || sidebarExpanded || sidebarHovered">SISTEMA</h3>
+
+                <ul class="flex flex-col gap-1.5">
+
+                    <!-- Configurações -->
+                    <li x-data="{ open: {{ 'true' if is_settings else 'false' }} }">
+                        <button @click="open = !open"
+                            class="menu-item group w-full {% if is_settings %}menu-item-active{% else %}menu-item-inactive{% endif %}">
+                            <i data-lucide="settings"
+                                class="w-5 h-5 shrink-0 {% if is_settings %}menu-item-icon-active{% else %}menu-item-icon-inactive{% endif %}"></i>
+                            <span x-show="mobileSidebarOpen || sidebarExpanded || sidebarHovered"
+                                class="truncate font-medium">Configurações</span>
+                            <i data-lucide="chevron-down" class="w-4 h-4 ml-auto transition-transform"
+                                :class="open ? 'rotate-180' : ''" x-show="mobileSidebarOpen || sidebarExpanded || sidebarHovered"></i>
+                        </button>
+                        <ul x-show="open && (mobileSidebarOpen || sidebarExpanded || sidebarHovered)" class="mt-2 ml-9 space-y-1" x-cloak>
+                            <li>
+                                {% if is_admin_role %}
+                                    <a href="{{ url_for('tenant_settings.general_settings', tenant_slug=tenant_id) }}"
+                                        class="menu-dropdown-item {% if is_settings_general %}menu-dropdown-item-active{% else %}menu-dropdown-item-inactive{% endif %}">
+                                        Geral
+                                    </a>
+                                {% endif %}
+                            </li>
+                            <li>
+                                <a href="{{ url_for('tenant_settings.profile', tenant_slug=tenant_id) }}"
+                                    class="menu-dropdown-item {% if is_settings_profile %}menu-dropdown-item-active{% else %}menu-dropdown-item-inactive{% endif %}">
+                                    Perfil
+                                </a>
+                            </li>
+                            <li>
+                                <a href="{{ url_for('tenant_settings.notifications', tenant_slug=tenant_id) }}"
+                                    class="menu-dropdown-item {% if is_settings_notifications %}menu-dropdown-item-active{% else %}menu-dropdown-item-inactive{% endif %}">
+                                    Notificacoes
+                                </a>
+                            </li>
+                            <li>
+                                <a href="{{ url_for('tenant_settings.reports', tenant_slug=tenant_id) }}"
+                                    class="menu-dropdown-item {% if is_settings_reports %}menu-dropdown-item-active{% else %}menu-dropdown-item-inactive{% endif %}">
+                                    Relatorios
+                                </a>
+                            </li>
+                            <li>
+                                {% if is_admin_role %}
+                                    <a href="{{ url_for('api_tokens.list_tokens', tenant_slug=tenant_id) }}"
+                                        class="menu-dropdown-item {% if is_settings_api_tokens %}menu-dropdown-item-active{% else %}menu-dropdown-item-inactive{% endif %}">
+                                        API Tokens
+                                    </a>
+                                {% endif %}
+                            </li>
+                        </ul>
+                    </li>
+
+                    <!-- Usuários -->
+                    <li>
+                        <a href="{{ url_for('tenant_users.list_users', tenant_slug=tenant_id) }}"
+                            class="menu-item group {% if is_users %}menu-item-active{% else %}menu-item-inactive{% endif %}">
+                            <i data-lucide="users"
+                                class="w-5 h-5 shrink-0 {% if is_users %}menu-item-icon-active{% else %}menu-item-icon-inactive{% endif %}"></i>
+                            <span x-show="mobileSidebarOpen || sidebarExpanded || sidebarHovered"
+                                class="truncate font-medium">Usuários</span>
+                        </a>
+                    </li>
+
+                    <!-- Logs -->
+                    <li>
+                        <a href="{{ url_for('tenant_activity.list_activity', tenant_slug=tenant_id) }}"
+                            class="menu-item group {% if is_activity and not is_activity_live %}menu-item-active{% else %}menu-item-inactive{% endif %}">
+                            <i data-lucide="scroll-text"
+                                class="w-5 h-5 shrink-0 {% if is_activity and not is_activity_live %}menu-item-icon-active{% else %}menu-item-icon-inactive{% endif %}"></i>
+                            <span x-show="mobileSidebarOpen || sidebarExpanded || sidebarHovered" class="truncate font-medium">Logs de
+                                Atividade</span>
+                        </a>
+                    </li>
+
+                    <!-- Agendamentos -->
+                    <li>
+                        <a href="{{ url_for('tenant_schedules.list_schedules', tenant_slug=tenant_id) }}"
+                            class="menu-item group {% if is_schedules %}menu-item-active{% else %}menu-item-inactive{% endif %}">
+                            <i data-lucide="calendar"
+                                class="w-5 h-5 shrink-0 {% if is_schedules %}menu-item-icon-active{% else %}menu-item-icon-inactive{% endif %}"></i>
+                            <span x-show="mobileSidebarOpen || sidebarExpanded || sidebarHovered"
+                                class="truncate font-medium">Agendamentos</span>
+                        </a>
+                    </li>
+
+                    <!-- Plano/Assinatura -->
+                    {% if is_owner_role %}
+                    <li>
+                        <a href="{{ url_for('billing.dashboard', tenant_slug=tenant_id) }}"
+                            class="menu-item group {% if is_billing %}menu-item-active{% else %}menu-item-inactive{% endif %}">
+                            <i data-lucide="credit-card"
+                                class="w-5 h-5 shrink-0 {% if is_billing %}menu-item-icon-active{% else %}menu-item-icon-inactive{% endif %}"></i>
+                            <span x-show="mobileSidebarOpen || sidebarExpanded || sidebarHovered"
+                                class="truncate font-medium">Assinatura</span>
+                            <span x-show="mobileSidebarOpen || sidebarExpanded || sidebarHovered"
+                                class="ml-auto rounded bg-success-500 px-1.5 py-0.5 text-[10px] font-medium text-white">PRO</span>
+                        </a>
+                    </li>
+                    {% endif %}
+
+                </ul>
+            </div>
+
+            <!-- Sidebar Expand/Collapse Button (Desktop only) -->
+            <div class="mt-8 hidden lg:block" x-show="mobileSidebarOpen || sidebarExpanded || sidebarHovered">
+                <button @click="sidebarExpanded = !sidebarExpanded"
+                    class="flex items-center justify-center w-full gap-2 px-4 py-2.5 text-sm font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 transition-colors">
+                    <i data-lucide="panel-left-close" class="w-4 h-4" x-show="sidebarExpanded"></i>
+                    <i data-lucide="panel-left-open" class="w-4 h-4" x-show="!sidebarExpanded"></i>
+                    <span x-show="sidebarExpanded">Recolher menu</span>
+                    <span x-show="!sidebarExpanded && sidebarHovered">Expandir</span>
+                </button>
+            </div>
+
+        </nav>
+    </div>
+</aside>

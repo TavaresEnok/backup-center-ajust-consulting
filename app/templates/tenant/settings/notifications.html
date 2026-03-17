@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}Notificacoes | Backup Center{% endblock %}
+
+{% block content %}
+{% set page_title = "Notificacoes" %}
+{% include 'partials/breadcrumb.html' %}
+
+<div class="space-y-6 pb-4">
+    <div class="grid grid-cols-12 gap-6">
+        {% set settings_section = 'notifications' %}
+        {% include 'tenant/settings/_settings_nav.html' %}
+
+        <div class="col-span-12 lg:col-span-9">
+            <div class="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
+                <div class="mb-6 flex items-start justify-between gap-3">
+                    <div>
+                        <h4 class="text-lg font-semibold text-gray-900 dark:text-white">Central de Alertas</h4>
+                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Ultimas notificacoes sobre falhas, sucessos e eventos importantes.</p>
+                    </div>
+                    <span class="rounded-full bg-brand-50 px-3 py-1 text-xs font-medium text-brand-600 dark:bg-brand-500/10 dark:text-brand-400">
+                        {{ notifications|length }} item(ns)
+                    </span>
+                </div>
+
+                <div class="space-y-4">
+                    {% for notif in notifications %}
+                    {% set notif_type = notif.type.value if notif.type else '' %}
+                    <div
+                        class="flex items-start gap-4 rounded-xl border border-gray-100 p-4 transition-colors hover:bg-gray-50 dark:border-gray-800 dark:hover:bg-gray-800/50">
+                        <div
+                            class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full {% if notif_type == 'backup_success' %}bg-success-50 text-success-600 dark:bg-success-500/10 dark:text-success-400{% elif notif_type == 'backup_failed' %}bg-error-50 text-error-600 dark:bg-error-500/10 dark:text-error-400{% else %}bg-brand-50 text-brand-600 dark:bg-brand-500/10 dark:text-brand-400{% endif %}">
+                            <i data-lucide="{% if notif_type == 'backup_success' %}check-circle{% elif notif_type == 'backup_failed' %}alert-circle{% else %}bell{% endif %}"
+                                class="h-5 w-5"></i>
+                        </div>
+                        <div class="min-w-0 flex-1">
+                            <div class="flex items-center justify-between gap-2">
+                                <p class="font-semibold text-gray-900 dark:text-white">{{ notif.title }}</p>
+                                <span class="text-xs text-gray-500">{{ (notif.created_at|localtime).strftime('%d/%m/%Y %H:%M') if notif.created_at else '-' }}</span>
+                            </div>
+                            <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ notif.message }}</p>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="py-12 text-center">
+                        <div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800">
+                            <i data-lucide="bell-off" class="h-8 w-8 text-gray-400"></i>
+                        </div>
+                        <p class="text-gray-500">Voce nao tem notificacoes recentes.</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

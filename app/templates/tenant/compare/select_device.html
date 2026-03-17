@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block title %}Selecionar Dispositivo - Comparação | Backup Center{% endblock %}
+
+{% block content %}
+{% set page_title = "Comparar Backups" %}
+{% include 'partials/breadcrumb.html' %}
+
+<div class="space-y-6">
+
+    <div class="flex items-center justify-between">
+        <div>
+            <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Comparar por Grupos</h2>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                Selecione o grupo/provedor e o sistema abrirá a página de dispositivos do cliente já filtrada.
+            </p>
+        </div>
+    </div>
+
+    {% set connection_labels = {'direct': 'Direto', 'vpn': 'VPN', 'jump_host': 'Jump Host'} %}
+    <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900/60">
+        <div class="mb-4 flex items-center justify-between">
+            <p class="text-sm font-semibold text-gray-900 dark:text-white">1) Escolha o grupo/provedor</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400">{{ group_cards|length }} grupos</p>
+        </div>
+        <div class="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
+            {% for group in group_cards %}
+            {% set group_href = url_for('tenant_devices.list_devices', tenant_slug=tenant.slug, group_id=group.id, compare='1') if group.id != 'ungrouped' else url_for('tenant_compare.select_device', tenant_slug=tenant.slug, group=group.id) %}
+            <a href="{{ group_href }}"
+                class="rounded-xl border p-4 transition-colors {% if selected_group_key == group.id %}border-brand-500 bg-brand-50 dark:bg-brand-500/10{% else %}border-gray-200 bg-white hover:border-brand-300 dark:border-gray-700 dark:bg-gray-900/40{% endif %}">
+                <div class="flex items-start justify-between gap-2">
+                    <div>
+                        <p class="text-sm font-semibold text-gray-900 dark:text-white">{{ group.name }}</p>
+                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ connection_labels.get(group.connection_type, group.connection_type|capitalize) }}</p>
+                    </div>
+                    <span class="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700 dark:bg-gray-800 dark:text-gray-300">
+                        {{ group.device_count }}
+                    </span>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900/60">
+        <div class="mb-4 flex items-center justify-between">
+            <p class="text-sm font-semibold text-gray-900 dark:text-white">2) Escolha o dispositivo</p>
+            {% if selected_group_name %}
+            <span class="rounded-full bg-brand-50 px-2.5 py-1 text-xs font-medium text-brand-700 dark:bg-brand-500/10 dark:text-brand-300">
+                Grupo: {{ selected_group_name }}
+            </span>
+            {% endif %}
+        </div>
+
+        {% if not selected_group_key %}
+        <div class="py-10 text-center">
+            <div class="mx-auto h-12 w-12 text-gray-400">
+                <i data-lucide="layers" class="h-full w-full"></i>
+            </div>
+            <h3 class="mt-2 text-sm font-semibold text-gray-900 dark:text-white">Selecione um grupo/provedor</h3>
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Você será direcionado para a página de dispositivos para escolher o equipamento e comparar.</p>
+        </div>
+        {% else %}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for item in devices %}
+            <a href="{{ url_for('tenant_compare.compare_backups', tenant_slug=tenant.slug, device_id=item.device.id) }}"
+                class="group relative flex flex-col gap-4 rounded-xl border border-gray-200 bg-white p-6 hover:border-brand-500 hover:shadow-lg hover:shadow-brand-500/10 transition-all dark:border-gray-800 dark:bg-gray-800 dark:hover:border-brand-500">
+
+                <div class="flex items-center justify-between">
+                    <div
+                        class="flex h-12 w-12 items-center justify-center rounded-lg bg-brand-50 text-brand-600 transition-colors group-hover:bg-brand-500 group-hover:text-white dark:bg-brand-500/10 dark:text-brand-400">
+                        <i data-lucide="router" class="h-6 w-6"></i>
+                    </div>
+                    <span class="flex items-center gap-1 text-xs font-medium text-gray-500 dark:text-gray-400">
+                        <i data-lucide="hard-drive" class="h-3 w-3"></i>
+                        {{ item.comparable_backup_count }} comparáveis
+                    </span>
+                </div>
+
+                <div>
+                    <h3 class="font-semibold text-gray-900 group-hover:text-brand-600 dark:text-white dark:group-hover:text-brand-400">
+                        {{ item.device.name }}
+                    </h3>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1 font-mono">{{ item.device.ip_address }}</p>
+                </div>
+
+                <div class="mt-auto pt-4 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between">
+                    <span class="text-xs font-medium text-gray-500 group-hover:text-brand-600 dark:text-gray-400">
+                        Comparar Versões
+                    </span>
+                    <span class="text-[11px] text-gray-400 dark:text-gray-500">
+                        {{ item.total_backup_count }} total
+                    </span>
+                    <i data-lucide="arrow-right"
+                        class="h-4 w-4 text-gray-400 transition-transform group-hover:translate-x-1 group-hover:text-brand-500"></i>
+                </div>
+            </a>
+            {% else %}
+            <div class="col-span-full py-12 text-center">
+                <div class="mx-auto h-12 w-12 text-gray-400">
+                    <i data-lucide="server-off" class="h-full w-full"></i>
+                </div>
+                <h3 class="mt-2 text-sm font-semibold text-gray-900 dark:text-white">Nenhum dispositivo encontrado</h3>
+                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Esse grupo ainda não possui dispositivos ativos.</p>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}

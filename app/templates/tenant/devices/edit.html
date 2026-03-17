@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+
+{% block title %}Editar Dispositivo | Backup Center{% endblock %}
+
+{% block content %}
+{% include 'partials/breadcrumb.html' %}
+
+<div class="max-w-4xl mx-auto">
+    <div class="flex items-center justify-between mb-6">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Editar Dispositivo</h1>
+            <p class="text-sm text-gray-500">Atualize as configurações de conexão e agendamento.</p>
+        </div>
+        <a href="{{ url_for('tenant_devices.view_device', tenant_slug=tenant.slug, device_id=device.id) }}"
+            class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-700">
+            Cancelar
+        </a>
+    </div>
+
+    <form action="{{ url_for('tenant_devices.edit_device', tenant_slug=tenant.slug, device_id=device.id) }}"
+        method="POST" class="space-y-6">
+
+    {% include 'partials/csrf.html' %}
+
+        <!-- Conexão -->
+        <div class="p-6 bg-white border border-gray-200 rounded-xl dark:bg-gray-800 dark:border-gray-700">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Dados de Conexão</h3>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="form-control">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nome do
+                        Dispositivo</label>
+                    <input type="text" name="name" value="{{ device.name }}"
+                        class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-brand-500 focus:border-brand-500"
+                        required />
+                </div>
+
+                <div class="form-control">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tipo de
+                        Equipamento</label>
+                    <select name="device_type_id"
+                        class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-brand-500 focus:border-brand-500">
+                        {% for type in device_types %}
+                        <option value="{{ type.id }}" {% if device.device_type_id==type.id %}selected{% endif %}>{{
+                            type.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-control">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Endereço IP /
+                        Host</label>
+                    <input type="text" name="ip_address" value="{{ device.ip_address }}"
+                        class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-brand-500 focus:border-brand-500"
+                        required />
+                </div>
+
+                <div class="form-control">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Porta SSH</label>
+                    <input type="number" name="port" value="{{ device.port }}"
+                        class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-brand-500 focus:border-brand-500"
+                        required />
+                </div>
+
+                <div class="form-control">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Grupo</label>
+                    <select name="group_id"
+                        class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-brand-500 focus:border-brand-500">
+                        <option value="">Sem grupo</option>
+                        {% for group in groups %}
+                        <option value="{{ group.id }}" {% if device.group_id==group.id %}selected{% endif %}>{{
+                            group.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6 pt-6 border-t border-gray-100 dark:border-gray-700">
+                <div class="form-control">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Usuário SSH</label>
+                    <input type="text" name="username" value="{{ device.username }}"
+                        class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-brand-500 focus:border-brand-500"
+                        required />
+                </div>
+                <div class="form-control">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Senha SSH (Deixe em
+                        branco para manter)</label>
+                    <input type="password" name="password" placeholder="••••••••"
+                        class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-brand-500 focus:border-brand-500" />
+                </div>
+            </div>
+
+            <div class="mt-6">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Descrição</label>
+                <textarea name="description" rows="3"
+                    class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-brand-500 focus:border-brand-500">{{ device.description or '' }}</textarea>
+            </div>
+
+            <div class="mt-4 flex items-center gap-2">
+                <input type="checkbox" name="use_telnet" id="use_telnet" {% if device.use_telnet %}checked{% endif %}
+                    class="rounded text-brand-600 focus:ring-brand-500 dark:bg-gray-700 dark:border-gray-600">
+                <label for="use_telnet" class="text-sm text-gray-700 dark:text-gray-300">Usar Telnet (Inseguro - legados
+                    apenas)</label>
+            </div>
+        </div>
+
+        <!-- Agendamento -->
+        <div class="p-6 bg-white border border-gray-200 rounded-xl dark:bg-gray-800 dark:border-gray-700">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Agendamento de Backup</h3>
+
+            <div class="flex items-center gap-2 mb-6">
+                <input type="checkbox" name="backup_scheduled" id="backup_scheduled" {% if device.backup_scheduled
+                    %}checked{% endif %}
+                    class="rounded text-brand-600 focus:ring-brand-500 dark:bg-gray-700 dark:border-gray-600 h-5 w-5">
+                <label for="backup_scheduled" class="text-sm font-medium text-gray-900 dark:text-white">Ativar Backup
+                    Automático</label>
+            </div>
+
+            <!-- Campos de Frequencia (Adicionados agora) -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6"
+                x-data="{ enabled: {{ 'true' if device.backup_scheduled else 'false' }} }" x-show="enabled"
+                x-transition>
+                <div class="form-control">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Frequência</label>
+                    <select name="schedule_frequency"
+                        class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-brand-500 focus:border-brand-500">
+                        <option value="daily" selected>Diário</option>
+                        <option value="weekly">Semanal</option>
+                        <option value="monthly">Mensal</option>
+                    </select>
+                </div>
+                <div class="form-control">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Horário
+                        (HH:MM)</label>
+                    <input type="time" name="schedule_time" value="00:00"
+                        class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-brand-500 focus:border-brand-500" />
+                </div>
+            </div>
+            <p class="text-xs text-gray-500 mt-2">* A configuração detalhada de agendamento será salva.</p>
+        </div>
+
+        <div class="flex justify-end gap-3">
+            <a href="{{ url_for('tenant_devices.view_device', tenant_slug=tenant.slug, device_id=device.id) }}"
+                class="px-6 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-700">Cancelar</a>
+            <button type="submit"
+                class="px-6 py-2.5 text-sm font-medium text-white bg-brand-600 rounded-lg hover:bg-brand-700 focus:ring-4 focus:ring-brand-500/20 shadow-lg shadow-brand-500/30 transition-all">
+                Salvar Alterações
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+    // Simples toggle para mostrar campos de agendamento (usando AlpineJS inline ou vanilla)
+    const checkbox = document.getElementById('backup_scheduled');
+    // ... logica simples se nao usar x-data
+</script>
+{% endblock %}

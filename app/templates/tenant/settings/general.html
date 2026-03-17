@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}Configuracoes | Backup Center{% endblock %}
+
+{% block content %}
+{% set page_title = "Configuracoes Gerais" %}
+{% include 'partials/breadcrumb.html' %}
+
+<div class="space-y-6 pb-4">
+    <div class="grid grid-cols-12 gap-6">
+        {% set settings_section = 'general' %}
+        {% include 'tenant/settings/_settings_nav.html' %}
+
+        <div class="col-span-12 lg:col-span-9">
+            <div class="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
+                <h3 class="mb-6 text-lg font-semibold text-gray-900 dark:text-white">Informacoes da Organizacao</h3>
+
+                <form method="POST" action="{{ url_for('tenant_settings.general_settings', tenant_slug=tenant.slug) }}" class="space-y-4">
+                    {% include 'partials/csrf.html' %}
+                    <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                        <div>
+                            <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Nome da Empresa</label>
+                            <input type="text" name="name" value="{{ tenant.name }}"
+                                class="input-premium focus:ring-1 focus:ring-brand-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+                                required>
+                        </div>
+                        <div>
+                            <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Slug</label>
+                            <input type="text" value="{{ tenant.slug }}"
+                                class="w-full cursor-not-allowed rounded-lg border border-gray-300 bg-gray-50 px-4 py-2 text-gray-600 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-500"
+                                readonly title="O slug nao pode ser alterado apos a criacao.">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">E-mail de Contato</label>
+                        <input type="email" name="email" value="{{ tenant.email or '' }}"
+                            class="input-premium focus:ring-1 focus:ring-brand-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white">
+                    </div>
+
+                    <div class="mt-6 border-t border-gray-200 pt-4 dark:border-gray-800">
+                        <button type="submit"
+                            class="rounded-lg bg-brand-500 px-4 py-2 text-white transition-colors hover:bg-brand-600">
+                            Salvar Alteracoes
+                        </button>
+                        <p class="mt-2 text-xs text-gray-500">Atualize as informacoes publicas e de contato da organizacao.</p>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

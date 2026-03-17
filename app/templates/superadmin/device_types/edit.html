@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block title %}Editar Tipo de Dispositivo | Super Admin{% endblock %}
+
+{% block content %}
+<div class="mx-auto max-w-3xl space-y-5 pb-4">
+    <div>
+        <h1 class="text-2xl font-bold text-[var(--text-main)]">Editar tipo de dispositivo</h1>
+        <p class="text-sm text-[var(--text-muted)]">Ajuste script, conexão e parâmetros de {{ dev_type.name }}.</p>
+    </div>
+
+    <form method="POST" class="premium-card space-y-5 p-5">
+        {% include 'partials/csrf.html' %}
+
+        <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
+            <div>
+                <label for="name" class="block text-sm font-medium text-[var(--text-main)]">Nome</label>
+                <input type="text" name="name" id="name" value="{{ dev_type.name }}" required
+                    class="mt-1 block w-full rounded-lg border border-[var(--card-border)] bg-[var(--card-bg)] px-3 py-2 text-sm text-[var(--text-main)]">
+            </div>
+            <div>
+                <label for="slug" class="block text-sm font-medium text-[var(--text-main)]">Slug</label>
+                <input type="text" name="slug" id="slug" value="{{ dev_type.slug }}" required
+                    class="mt-1 block w-full rounded-lg border border-[var(--card-border)] bg-[var(--card-bg)] px-3 py-2 text-sm text-[var(--text-main)]">
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 gap-3 md:grid-cols-3">
+            <div class="md:col-span-2">
+                <label for="script_name" class="block text-sm font-medium text-[var(--text-main)]">Script</label>
+                <input type="text" name="script_name" id="script_name" value="{{ dev_type.script_name }}" required
+                    class="mt-1 block w-full rounded-lg border border-[var(--card-border)] bg-[var(--card-bg)] px-3 py-2 text-sm text-[var(--text-main)]">
+            </div>
+            <div>
+                <label for="default_port" class="block text-sm font-medium text-[var(--text-main)]">Porta padrão</label>
+                <input type="number" name="default_port" id="default_port" value="{{ dev_type.default_port }}" required min="1"
+                    class="mt-1 block w-full rounded-lg border border-[var(--card-border)] bg-[var(--card-bg)] px-3 py-2 text-sm text-[var(--text-main)]">
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
+            <div>
+                <label for="category" class="block text-sm font-medium text-[var(--text-main)]">Categoria</label>
+                <input type="text" name="category" id="category" value="{{ dev_type.category or 'other' }}" list="device-type-categories"
+                    class="mt-1 block w-full rounded-lg border border-[var(--card-border)] bg-[var(--card-bg)] px-3 py-2 text-sm text-[var(--text-main)]">
+                <datalist id="device-type-categories">
+                    <option value="olt"></option>
+                    <option value="switch"></option>
+                    <option value="router"></option>
+                    <option value="firewall"></option>
+                    <option value="server"></option>
+                    <option value="other"></option>
+                </datalist>
+            </div>
+            <div>
+                <label for="required_parameters" class="block text-sm font-medium text-[var(--text-main)]">Parâmetros extras</label>
+                <input type="text" name="required_parameters" id="required_parameters"
+                    value="{{ (dev_type.required_parameters or '').replace('\n', ', ') }}"
+                    placeholder="Ex: enable_password, secret"
+                    class="mt-1 block w-full rounded-lg border border-[var(--card-border)] bg-[var(--card-bg)] px-3 py-2 text-sm text-[var(--text-main)]">
+            </div>
+        </div>
+
+        <div>
+            <label for="description" class="block text-sm font-medium text-[var(--text-main)]">Descrição</label>
+            <textarea name="description" id="description" rows="3"
+                class="mt-1 block w-full rounded-lg border border-[var(--card-border)] bg-[var(--card-bg)] px-3 py-2 text-sm text-[var(--text-main)]">{{ dev_type.description or '' }}</textarea>
+        </div>
+
+        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <label class="flex items-center gap-2 rounded-lg border border-[var(--card-border)] px-3 py-2 text-sm text-[var(--text-main)]">
+                <input type="checkbox" name="use_telnet" {% if dev_type.use_telnet %}checked{% endif %}
+                    class="h-4 w-4 rounded border-[var(--card-border)]">
+                Usar Telnet por padrão
+            </label>
+            <label class="flex items-center gap-2 rounded-lg border border-[var(--card-border)] px-3 py-2 text-sm text-[var(--text-main)]">
+                <input type="checkbox" name="is_active" {% if dev_type.is_active %}checked{% endif %}
+                    class="h-4 w-4 rounded border-[var(--card-border)]">
+                Tipo ativo
+            </label>
+        </div>
+
+        <div class="flex flex-wrap justify-end gap-2 pt-2">
+            <a href="{{ url_for('superadmin_device_types.list_types') }}"
+                class="rounded-lg border border-[var(--card-border)] px-4 py-2 text-sm font-medium text-[var(--text-main)] hover:bg-[var(--line-color)]">
+                Cancelar
+            </a>
+            <button type="submit"
+                class="rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700">
+                Salvar alterações
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,586 @@
+{% extends "base.html" %}
+
+{% block title %}Devices | {{ tenant.name }}{% endblock %}
+
+{% block content %}
+{% set arg_q = request.args.get('q', '') %}
+{% set arg_connection = current_connection_filter or '' %}
+{% set arg_auto = current_auto_filter or '' %}
+{% set arg_result = current_result_filter or '' %}
+{% set arg_history = current_history_filter or '' %}
+{% set arg_audit = current_connection_audit_filter or '' %}
+{% set arg_due = current_due_filter or '' %}
+{% set arg_sort = current_sort or 'name_asc' %}
+{% set arg_compare = '1' if compare_mode else '' %}
+{% set has_any_filter = arg_q or current_group or arg_connection or arg_auto or arg_result or arg_history or arg_audit or arg_due %}
+<style>
+    .device-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .device-table th {
+        text-align: left;
+        padding: 0.75rem 1rem;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        border-bottom: 1px solid var(--line-color);
+        position: sticky;
+        top: 0;
+        background: var(--card-bg);
+        z-index: 5;
+    }
+    .dark .device-table th,
+    .dark .device-table td {
+        border-bottom: 1px solid #1e293b;
+    }
+
+    .device-table td {
+        padding: 1rem;
+        border-bottom: 1px solid var(--line-color);
+    }
+
+    .device-table tr:hover td {
+        background: var(--line-color);
+    }
+    .dark .device-table tr:hover td {
+        background: rgba(59, 130, 246, 0.1);
+    }
+
+    .btn-premium-neon {
+        background: linear-gradient(135deg, #3b82f6, #6366f1);
+        color: white;
+        padding: 0.5rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.2s;
+    }
+
+    .btn-premium-neon:hover {
+        box-shadow: 0 0 20px rgba(59, 130, 246, 0.4);
+        transform: translateY(-1px);
+    }
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .status-online {
+        background: rgba(16, 185, 129, 0.15);
+        color: #10b981;
+    }
+
+    .status-offline {
+        background: rgba(239, 68, 68, 0.15);
+        color: #ef4444;
+    }
+
+    .status-unknown {
+        background: rgba(100, 116, 139, 0.15);
+        color: var(--text-muted);
+    }
+
+    /* Dropdown Menu Styles */
+    .dropdown-menu {
+        position: absolute;
+        right: 0;
+        margin-top: 8px;
+        width: 280px;
+        max-height: 400px;
+        overflow-y: auto;
+        z-index: 10050;
+        background-color: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 12px;
+        box-shadow: var(--card-shadow);
+        backdrop-filter: blur(20px);
+    }
+    
+
+    .dropdown-item {
+        display: block;
+        padding: 10px 16px;
+        font-size: 14px;
+        color: var(--text-muted);
+        background-color: var(--card-bg);
+        text-decoration: none;
+        transition: background-color 0.15s;
+    }
+
+    .dropdown-item:first-child {
+        border-bottom: 1px solid var(--line-color);
+    }
+    .dark .dropdown-item:first-child {
+        border-bottom: 1px solid #334155;
+    }
+
+    .dropdown-item:hover {
+        background-color: var(--line-color);
+        color: var(--text-main);
+    }
+    .dark .dropdown-item:hover {
+        background-color: #1e293b;
+    }
+
+    .dropdown-item.dropdown-active {
+        background-color: rgba(59, 130, 246, 0.1);
+        color: var(--primary);
+    }
+    .dark .dropdown-item.dropdown-active {
+        background-color: #1e3a5f;
+        color: #60a5fa;
+    }
+
+    .dropdown-count {
+        float: right;
+        color: var(--text-muted);
+        font-size: 12px;
+    }
+
+</style>
+
+<div class="space-y-6 pb-4">
+    <!-- Header -->
+    <div class="mb-8 space-y-4">
+        <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div>
+                <h1 class="text-3xl font-bold text-[var(--text-main)]">Dispositivos</h1>
+            </div>
+            <div class="flex flex-wrap items-center gap-2">
+                {% if has_any_filter %}
+                <a href="{{ url_for('tenant_devices.list_devices', tenant_slug=tenant.slug, compare=arg_compare) }}"
+                    class="px-3 py-2 rounded-lg border border-[var(--card-border)] text-[var(--text-muted)] hover:text-[var(--text-main)] transition text-sm">
+                    Limpar filtros
+                </a>
+                {% endif %}
+                <a href="{{ url_for('tenant_devices.add_device', tenant_slug=tenant.slug) }}"
+                    class="btn-premium flex items-center gap-2">
+                    <i data-lucide="plus" class="w-4 h-4"></i>
+                    <span>Novo Dispositivo</span>
+                </a>
+            </div>
+        </div>
+
+        {% if compare_mode %}
+        <div class="rounded-xl border border-blue-300/50 bg-blue-500/10 px-4 py-3 text-sm text-blue-300">
+            Modo comparação ativo: escolha o dispositivo e clique no ícone <span class="font-semibold">Comparar</span> na coluna de ações.
+        </div>
+        {% endif %}
+
+        <div class="premium-card p-4 relative z-30">
+            <form action="" method="GET" class="grid grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-8">
+                {% if compare_mode %}
+                <input type="hidden" name="compare" value="1">
+                {% endif %}
+                <input type="text" name="q" value="{{ arg_q }}"
+                    placeholder="Buscar por nome ou IP..."
+                    class="px-4 py-2 rounded-lg bg-[var(--card-bg)] border border-[var(--card-border)] text-[var(--text-main)] placeholder-slate-500 focus:border-blue-500 focus:outline-none xl:col-span-2">
+                <div id="groupCombobox" class="relative md:col-span-2 xl:col-span-2">
+                    <input type="hidden" id="groupSelectValue" name="group_id" value="{{ current_group.id if current_group else '' }}">
+                    <button id="groupSelectToggle" type="button"
+                        class="flex w-full items-center justify-between px-3 py-2 rounded-lg bg-[var(--card-bg)] border border-[var(--card-border)] text-sm text-[var(--text-main)] focus:border-blue-500 focus:outline-none">
+                        <span id="groupSelectLabel">
+                            {% if current_group %}
+                                {{ current_group.name }}
+                            {% else %}
+                                Todos os grupos
+                            {% endif %}
+                        </span>
+                        <i data-lucide="chevrons-up-down" class="w-4 h-4 text-[var(--text-muted)]"></i>
+                    </button>
+                    <div id="groupSelectMenu"
+                        class="hidden absolute left-0 right-0 mt-2 z-[120] rounded-xl border border-[var(--card-border)] bg-[var(--card-bg)] shadow-xl">
+                        <div class="p-2 border-b border-[var(--line-color)]">
+                            <input id="groupSelectSearchInner" type="text" placeholder="Buscar grupo na lista..."
+                                class="w-full px-3 py-2 rounded-lg bg-[var(--card-bg)] border border-[var(--card-border)] text-sm text-[var(--text-main)] placeholder:text-[var(--text-muted)] focus:border-blue-500 focus:outline-none">
+                        </div>
+                        <div id="groupSelectOptions" class="max-h-64 overflow-y-auto p-1">
+                            <button type="button" data-group-option data-value="" data-label="Todos os grupos"
+                                class="group-option w-full text-left rounded-lg px-3 py-2 text-sm text-[var(--text-main)] hover:bg-[var(--line-color)]">
+                                Todos os grupos
+                            </button>
+                            {% for g in groups %}
+                            <button type="button" data-group-option data-value="{{ g.group.id }}" data-label="{{ g.group.name }}"
+                                class="group-option w-full text-left rounded-lg px-3 py-2 text-sm text-[var(--text-main)] hover:bg-[var(--line-color)]">
+                                {{ g.group.name }} ({{ g.device_count }})
+                            </button>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                <select name="connection"
+                    class="px-3 py-2 rounded-lg bg-[var(--card-bg)] border border-[var(--card-border)] text-sm text-[var(--text-main)] focus:border-blue-500 focus:outline-none">
+                    <option value="">Conexão: todas</option>
+                    <option value="online" {% if arg_connection == 'online' %}selected{% endif %}>Online</option>
+                    <option value="offline" {% if arg_connection == 'offline' %}selected{% endif %}>Offline/Erro</option>
+                    <option value="unknown" {% if arg_connection == 'unknown' %}selected{% endif %}>Não monitorado</option>
+                </select>
+                <select name="auto"
+                    class="px-3 py-2 rounded-lg bg-[var(--card-bg)] border border-[var(--card-border)] text-sm text-[var(--text-main)] focus:border-blue-500 focus:outline-none">
+                    <option value="">Auto-backup: todos</option>
+                    <option value="enabled" {% if arg_auto == 'enabled' %}selected{% endif %}>Ativado</option>
+                    <option value="disabled" {% if arg_auto == 'disabled' %}selected{% endif %}>Desativado</option>
+                </select>
+                <select name="result"
+                    class="px-3 py-2 rounded-lg bg-[var(--card-bg)] border border-[var(--card-border)] text-sm text-[var(--text-main)] focus:border-blue-500 focus:outline-none">
+                    <option value="">Último resultado: todos</option>
+                    <option value="success" {% if arg_result == 'success' %}selected{% endif %}>Sucesso</option>
+                    <option value="failed" {% if arg_result == 'failed' %}selected{% endif %}>Falha</option>
+                    <option value="never" {% if arg_result == 'never' %}selected{% endif %}>Nunca executado</option>
+                </select>
+                <select name="history"
+                    class="px-3 py-2 rounded-lg bg-[var(--card-bg)] border border-[var(--card-border)] text-sm text-[var(--text-main)] focus:border-blue-500 focus:outline-none">
+                    <option value="">Histórico: todos</option>
+                    <option value="with_history" {% if arg_history == 'with_history' %}selected{% endif %}>Com histórico</option>
+                    <option value="without_history" {% if arg_history == 'without_history' %}selected{% endif %}>Sem histórico</option>
+                </select>
+                <select name="sort"
+                    class="px-3 py-2 rounded-lg bg-[var(--card-bg)] border border-[var(--card-border)] text-sm text-[var(--text-main)] focus:border-blue-500 focus:outline-none">
+                    <option value="name_asc" {% if arg_sort == 'name_asc' %}selected{% endif %}>Nome A-Z</option>
+                    <option value="name_desc" {% if arg_sort == 'name_desc' %}selected{% endif %}>Nome Z-A</option>
+                    <option value="last_backup_desc" {% if arg_sort == 'last_backup_desc' %}selected{% endif %}>Últ. backup (novo)</option>
+                    <option value="last_backup_asc" {% if arg_sort == 'last_backup_asc' %}selected{% endif %}>Últ. backup (antigo)</option>
+                    <option value="status_priority" {% if arg_sort == 'status_priority' %}selected{% endif %}>Priorizar problemas</option>
+                </select>
+                <div class="flex gap-2">
+                    <select name="per_page"
+                        class="w-full px-3 py-2 rounded-lg bg-[var(--card-bg)] border border-[var(--card-border)] text-sm text-[var(--text-main)] focus:border-blue-500 focus:outline-none">
+                        <option value="30" {% if per_page == 30 %}selected{% endif %}>30 / pág</option>
+                        <option value="50" {% if per_page == 50 %}selected{% endif %}>50 / pág</option>
+                        <option value="100" {% if per_page == 100 %}selected{% endif %}>100 / pág</option>
+                    </select>
+                    <button type="submit"
+                        class="px-4 py-2 rounded-lg bg-blue-500/20 text-blue-400 text-sm font-semibold hover:bg-blue-500/30 transition">
+                        Aplicar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Bulk Actions -->
+    <form id="bulkForm" action="{{ url_for('tenant_devices.run_backup_selected', tenant_slug=tenant.slug) }}"
+        method="POST">
+        {% include 'partials/csrf.html' %}
+
+        <div class="premium-card p-6 mb-4 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <input type="checkbox" id="selectAll" class="w-4 h-4 rounded">
+                <span class="text-sm text-[var(--text-muted)]">Selecionar Todos</span>
+                <span id="selectedCount"
+                    class="px-2 py-1 rounded bg-blue-500/15 text-blue-400 text-xs font-semibold">0 selecionados</span>
+            </div>
+            <div class="flex gap-2">
+                <button type="submit"
+                    class="px-4 py-2 rounded-lg bg-emerald-500/20 text-emerald-400 text-sm font-semibold hover:bg-emerald-500/30 transition">
+                    <i data-lucide="play" class="w-4 h-4 inline-block mr-1"></i> Backup Selecionados
+                </button>
+                <button type="button" onclick="document.getElementById('form-backup-all').submit()"
+                    class="px-4 py-2 rounded-lg bg-blue-500/20 text-blue-400 text-sm font-semibold hover:bg-blue-500/30 transition">
+                    <i data-lucide="layers" class="w-4 h-4 inline-block mr-1"></i> Backup Todos ({{ stats.scheduled }})
+                </button>
+            </div>
+        </div>
+
+        <div id="bulkActionBar"
+            class="fixed bottom-5 left-1/2 z-[100] hidden w-[min(92vw,760px)] -translate-x-1/2 items-center justify-between rounded-xl border border-blue-500/30 bg-slate-950/90 px-4 py-3 shadow-2xl backdrop-blur">
+            <div class="text-sm text-slate-200">
+                <span id="bulkActionLabel" class="font-semibold text-blue-400">0 dispositivos selecionados</span>
+                <span class="text-slate-400"> · Ações em lote</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <button type="button" id="bulkActionClear"
+                    class="rounded-lg border border-slate-600 px-3 py-1.5 text-xs font-semibold text-slate-200 hover:bg-slate-800 transition">
+                    Limpar seleção
+                </button>
+                <button type="button" id="bulkActionRun"
+                    class="rounded-lg border border-emerald-600/40 bg-emerald-500/15 px-3 py-1.5 text-xs font-semibold text-emerald-300 hover:bg-emerald-500/25 transition">
+                    Backup Agora
+                </button>
+            </div>
+        </div>
+
+        <!-- Device Table -->
+        <div class="premium-card p-6 overflow-hidden relative z-10" style="padding: 0;">
+            <div class="overflow-x-auto">
+                <table class="device-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 40px;"></th>
+                            <th>Dispositivo</th>
+                            <th>Tipo</th>
+                            <th>IP</th>
+                            <th>Conectividade</th>
+                            <th>Último Backup</th>
+                            <th>Status</th>
+                            <th style="text-align: right;">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if devices %}
+                        {% for device in devices %}
+                        {% set row_state = 'critical' if device.last_backup_status == 'failure' else ('attention' if (device.last_connection_status in ['offline', 'error'] or not device.backup_scheduled) else 'normal') %}
+                        <tr class="{% if row_state == 'critical' %}bg-red-500/5{% elif row_state == 'attention' %}bg-amber-500/5{% endif %}">
+                            <td>
+                                <input type="checkbox" name="device_ids" value="{{ device.id }}"
+                                    class="w-4 h-4 rounded row-checkbox">
+                            </td>
+                            <td>
+                                <div class="font-semibold text-[var(--text-main)]">{{ device.name }}</div>
+                                {% if device.group %}
+                                <div class="text-xs text-[var(--text-muted)]">{{ device.group.name }}</div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="text-xs px-2 py-1 rounded bg-[var(--line-color)] text-[var(--text-main)] font-medium">
+                                    {{ device.type.name if device.type else 'Nao definido' }}
+                                </span>
+                            </td>
+                            <td class="text-[var(--text-main)] font-medium font-mono text-sm">
+                                {{ device.ip_address }}:{{ device.port }}
+                            </td>
+                            <td>
+                                {% if device.last_connection_status == 'online' %}
+                                <span class="status-badge status-online">Online</span>
+                                {% elif device.last_connection_status in ['offline', 'error'] %}
+                                <span class="status-badge status-offline">Offline</span>
+                                {% else %}
+                                <span class="status-badge status-unknown">Não monitorado</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if device.last_backup_at %}
+                                <div class="text-sm text-[var(--text-main)]">{{ (device.last_backup_at|localtime).strftime('%Y-%m-%d %H:%M') }}
+                                </div>
+                                {% else %}
+                                <span class="text-[var(--text-muted)] italic text-sm">Nunca</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if device.last_backup_status == 'success' %}
+                                <span class="status-badge status-online">Sucesso</span>
+                                {% elif device.last_backup_status == 'failure' %}
+                                <span class="status-badge status-offline">Falha</span>
+                                {% elif not device.last_backup_at %}
+                                <span class="status-badge status-unknown">Nunca executado</span>
+                                {% else %}
+                                <span class="status-badge status-unknown">Desconhecido</span>
+                                {% endif %}
+                                <div class="mt-1 text-xs {% if device.backup_scheduled %}text-blue-400{% else %}text-[var(--text-muted)]{% endif %}">
+                                    Auto-backup: {{ 'Ativado' if device.backup_scheduled else 'Desativado' }}
+                                </div>
+                                <div class="mt-1 text-[11px] {% if row_state == 'critical' %}text-red-300{% elif row_state == 'attention' %}text-amber-300{% else %}text-emerald-300{% endif %}">
+                                    Prioridade: {% if row_state == 'critical' %}Critica{% elif row_state == 'attention' %}Atencao{% else %}Normal{% endif %}
+                                </div>
+                            </td>
+                            <td style="text-align: right;">
+                                <div class="flex justify-end gap-2">
+                                    <a href="{{ url_for('tenant_devices.view_device', tenant_slug=tenant.slug, device_id=device.id) }}"
+                                        class="p-2 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-[var(--text-muted)] hover:text-white transition"
+                                        title="Ver">
+                                        <i data-lucide="eye" class="w-4 h-4"></i>
+                                    </a>
+                                    <a href="{{ url_for('tenant_devices.edit_device', tenant_slug=tenant.slug, device_id=device.id) }}"
+                                        class="p-2 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-[var(--text-muted)] hover:text-white transition"
+                                        title="Editar">
+                                        <i data-lucide="settings" class="w-4 h-4"></i>
+                                    </a>
+                                    <a href="{{ url_for('tenant_compare.compare_backups', tenant_slug=tenant.slug, device_id=device.id) }}"
+                                        class="p-2 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-[var(--text-muted)] hover:text-blue-400 transition"
+                                        title="Comparar Backups">
+                                        <i data-lucide="git-compare" class="w-4 h-4"></i>
+                                    </a>
+                                    <button type="button"
+                                        data-run-backup-live
+                                        data-form-id="form-backup-{{ device.id }}"
+                                        class="p-2 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-[var(--text-muted)] hover:text-emerald-400 transition"
+                                        title="Backup Manual">
+                                        <i data-lucide="play-circle" class="w-4 h-4"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        <form id="form-backup-{{ device.id }}"
+                            action="{{ url_for('tenant_devices.run_backup', tenant_slug=tenant.slug, device_id=device.id) }}"
+                            method="POST" class="hidden">{% include 'partials/csrf.html' %}</form>
+                        {% endfor %}
+                        {% else %}
+                        <tr>
+                            <td colspan="8" class="text-center py-12 text-[var(--text-muted)]">
+                                <i data-lucide="inbox" class="w-12 h-12 mx-auto mb-4 opacity-30"></i>
+                                <p>Nenhum dispositivo encontrado.</p>
+                                <div class="mt-4">
+                                    <a href="{{ url_for('tenant_devices.list_devices', tenant_slug=tenant.slug) }}"
+                                        class="px-4 py-2 rounded-lg border border-[var(--card-border)] hover:bg-slate-100 dark:hover:bg-slate-700 transition">
+                                        Limpar filtros
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        {% if total_pages > 1 %}
+        <div class="flex justify-between items-center mt-6 text-sm text-[var(--text-muted)]">
+            <div>Mostrando {{ start_idx }}-{{ end_idx }} de {{ stats.total }}</div>
+            <div class="flex gap-2">
+                {% if page > 1 %}
+                <a href="{{ url_for('tenant_devices.list_devices', tenant_slug=tenant.slug, page=page-1, q=arg_q, group_id=current_group.id if current_group else None, connection=arg_connection, auto=arg_auto, result=arg_result, history=arg_history, audit=arg_audit, due=arg_due, sort=arg_sort, per_page=per_page, compare=arg_compare) }}"
+                    class="px-3 py-1 rounded bg-[var(--card-bg)] hover:bg-slate-100 dark:hover:bg-slate-700 transition">Anterior</a>
+                {% endif %}
+
+                {% for p in range(1, total_pages + 1) %}
+                {% if p == page %}
+                <span class="px-3 py-1 rounded bg-blue-600 text-[var(--text-main)]">{{ p }}</span>
+                {% else %}
+                <a href="{{ url_for('tenant_devices.list_devices', tenant_slug=tenant.slug, page=p, q=arg_q, group_id=current_group.id if current_group else None, connection=arg_connection, auto=arg_auto, result=arg_result, history=arg_history, audit=arg_audit, due=arg_due, sort=arg_sort, per_page=per_page, compare=arg_compare) }}"
+                    class="px-3 py-1 rounded bg-[var(--card-bg)] hover:bg-slate-100 dark:hover:bg-slate-700 transition">{{ p }}</a>
+                {% endif %}
+                {% endfor %}
+
+                {% if page < total_pages %} <a
+                    href="{{ url_for('tenant_devices.list_devices', tenant_slug=tenant.slug, page=page+1, q=arg_q, group_id=current_group.id if current_group else None, connection=arg_connection, auto=arg_auto, result=arg_result, history=arg_history, audit=arg_audit, due=arg_due, sort=arg_sort, per_page=per_page, compare=arg_compare) }}"
+                    class="px-3 py-1 rounded bg-[var(--card-bg)] hover:bg-slate-100 dark:hover:bg-slate-700 transition">Próximo</a>
+                    {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </form>
+
+    <!-- Hidden Form for 'Backup All' -->
+    <form id="form-backup-all" action="{{ url_for('tenant_devices.run_backup_all', tenant_slug=tenant.slug) }}"
+        method="POST" class="hidden"
+        onsubmit="return confirm('Executar backup para todos os dispositivos agendados neste filtro?')">
+        {% include 'partials/csrf.html' %}
+        <input type="hidden" name="only_ready" value="1">
+        {% if current_group %}
+        <input type="hidden" name="group_id" value="{{ current_group.id }}">
+        {% endif %}
+    </form>
+</div>
+
+{% include 'partials/backup_live_modal.html' %}
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        lucide.createIcons();
+
+        // Select All Logic
+        const selectAll = document.getElementById('selectAll');
+        const rowChecks = document.querySelectorAll('.row-checkbox');
+        const selectedCount = document.getElementById('selectedCount');
+        const bulkActionBar = document.getElementById('bulkActionBar');
+        const bulkActionLabel = document.getElementById('bulkActionLabel');
+        const bulkActionRun = document.getElementById('bulkActionRun');
+        const bulkActionClear = document.getElementById('bulkActionClear');
+        const bulkForm = document.getElementById('bulkForm');
+
+        function refreshSelectedCount() {
+            const checked = [...rowChecks].filter(cb => cb.checked).length;
+            if (selectedCount) {
+                selectedCount.textContent = `${checked} selecionados`;
+            }
+            if (bulkActionLabel) {
+                bulkActionLabel.textContent = `${checked} dispositivos selecionados`;
+            }
+            if (bulkActionBar) {
+                bulkActionBar.classList.toggle('hidden', checked === 0);
+                bulkActionBar.classList.toggle('flex', checked > 0);
+            }
+        }
+
+        if (selectAll) {
+            selectAll.addEventListener('change', (e) => {
+                rowChecks.forEach(cb => cb.checked = e.target.checked);
+                refreshSelectedCount();
+            });
+        }
+
+        rowChecks.forEach(cb => cb.addEventListener('change', refreshSelectedCount));
+        refreshSelectedCount();
+
+        if (bulkActionRun) {
+            bulkActionRun.addEventListener('click', () => {
+                const checked = [...rowChecks].filter(cb => cb.checked).length;
+                if (checked <= 0 || !bulkForm) return;
+                bulkForm.submit();
+            });
+        }
+        if (bulkActionClear) {
+            bulkActionClear.addEventListener('click', () => {
+                rowChecks.forEach(cb => cb.checked = false);
+                if (selectAll) selectAll.checked = false;
+                refreshSelectedCount();
+            });
+        }
+
+        // Group combobox with search inside dropdown
+        const groupCombobox = document.getElementById('groupCombobox');
+        if (groupCombobox) {
+            const groupToggle = document.getElementById('groupSelectToggle');
+            const groupMenu = document.getElementById('groupSelectMenu');
+            const groupLabel = document.getElementById('groupSelectLabel');
+            const groupValue = document.getElementById('groupSelectValue');
+            const groupSearchInner = document.getElementById('groupSelectSearchInner');
+            const groupOptions = Array.from(groupCombobox.querySelectorAll('[data-group-option]'));
+
+            const syncActive = () => {
+                groupOptions.forEach((opt) => {
+                    const active = (opt.dataset.value || '') === (groupValue.value || '');
+                    opt.classList.toggle('bg-blue-500/20', active);
+                    opt.classList.toggle('text-blue-400', active);
+                });
+            };
+
+            const closeMenu = () => {
+                groupMenu.classList.add('hidden');
+            };
+
+            if (groupToggle && groupMenu && groupSearchInner && groupValue && groupLabel) {
+                groupToggle.addEventListener('click', () => {
+                    groupMenu.classList.toggle('hidden');
+                    if (!groupMenu.classList.contains('hidden')) {
+                        groupSearchInner.focus();
+                    }
+                });
+
+                groupSearchInner.addEventListener('input', (e) => {
+                    const term = (e.target.value || '').toLowerCase().trim();
+                    groupOptions.forEach((opt) => {
+                        const text = (opt.textContent || '').toLowerCase();
+                        opt.classList.toggle('hidden', Boolean(term) && !text.includes(term));
+                    });
+                });
+
+                groupOptions.forEach((opt) => {
+                    opt.addEventListener('click', () => {
+                        groupValue.value = opt.dataset.value || '';
+                        groupLabel.textContent = opt.dataset.label || 'Todos os grupos';
+                        syncActive();
+                        closeMenu();
+                    });
+                });
+
+                document.addEventListener('click', (event) => {
+                    if (!groupCombobox.contains(event.target)) {
+                        closeMenu();
+                    }
+                });
+
+                syncActive();
+            }
+        }
+    });
+</script>
+{% endblock %}

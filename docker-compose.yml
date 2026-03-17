@@ -1,0 +1,135 @@
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: backup_sys_db
+    environment:
+      POSTGRES_DB: backup_center
+      POSTGRES_USER: backup_user
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5436:5432" # Slot 3
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U backup_user" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - backup_net
+
+  redis:
+    image: redis:7-alpine
+    container_name: backup_sys_redis
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
+    volumes:
+      - ./redis_data:/data
+    ports:
+      - "6383:6379" # Slot 3
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "redis-cli", "--raw", "incr", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - backup_net
+
+  app:
+    build: .
+    container_name: backup_sys_app
+    env_file:
+      - .env
+    environment:
+      - DATABASE_URL=postgresql://backup_user:${DB_PASSWORD}@db:5432/backup_center
+      - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379/0
+      - SECRET_KEY=${SECRET_KEY}
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY}
+      - APP_TIMEZONE=${APP_TIMEZONE:-America/Recife}
+      - TZ=${APP_TIMEZONE:-America/Recife}
+    volumes:
+      - ./storage:/app/storage
+      - ./app:/app/app
+    ports:
+      - "5000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - backup_net
+
+  celery:
+    build: .
+    container_name: backup_sys_celery
+    command: celery -A app.celery_app worker -l info -Q celery --concurrency=20 --prefetch-multiplier=1 --max-tasks-per-child=10
+    environment:
+      - DATABASE_URL=postgresql://backup_user:${DB_PASSWORD}@db:5432/backup_center
+      - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379/0
+      - SECRET_KEY=${SECRET_KEY}
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY}
+      - APP_TIMEZONE=${APP_TIMEZONE:-America/Recife}
+      - TZ=${APP_TIMEZONE:-America/Recife}
+    volumes:
+      - ./storage:/app/storage
+      - ./app:/app/app
+    depends_on:
+      - db
+      - redis
+    restart: unless-stopped
+    networks:
+      - backup_net
+
+  celery_vpn:
+    build: .
+    container_name: backup_sys_celery_vpn
+    command: celery -A app.celery_app worker -l info -Q vpn_queue --concurrency=10 --prefetch-multiplier=1 --max-tasks-per-child=10
+    environment:
+      - DATABASE_URL=postgresql://backup_user:${DB_PASSWORD}@127.0.0.1:5436/backup_center
+      - REDIS_URL=redis://:${REDIS_PASSWORD}@127.0.0.1:6383/0
+      - SECRET_KEY=${SECRET_KEY}
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY}
+      - APP_TIMEZONE=${APP_TIMEZONE:-America/Recife}
+      - TZ=${APP_TIMEZONE:-America/Recife}
+    volumes:
+      - ./storage:/app/storage
+      - ./app:/app/app
+      - /run/dbus/system_bus_socket:/run/dbus/system_bus_socket
+    privileged: true
+    cap_add:
+      - NET_ADMIN
+      - SYS_ADMIN
+    security_opt:
+      - apparmor:unconfined
+    depends_on:
+      - db
+      - redis
+    restart: unless-stopped
+    network_mode: host
+
+  celery_beat:
+    build: .
+    container_name: backup_sys_celery_beat
+    command: celery -A app.celery_app beat -l info
+    environment:
+      - DATABASE_URL=postgresql://backup_user:${DB_PASSWORD}@db:5432/backup_center
+      - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379/0
+      - SECRET_KEY=${SECRET_KEY}
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY}
+      - APP_TIMEZONE=${APP_TIMEZONE:-America/Recife}
+      - TZ=${APP_TIMEZONE:-America/Recife}
+    volumes:
+      - ./app:/app/app
+    depends_on:
+      - db
+      - redis
+    restart: unless-stopped
+    networks:
+      - backup_net
+
+networks:
+  backup_net:
+    name: backup_net

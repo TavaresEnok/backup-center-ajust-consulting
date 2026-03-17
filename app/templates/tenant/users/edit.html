@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block title %}Editar Usuário | Backup Center{% endblock %}
+
+{% block content %}
+{% set page_title = "Editar Usuário" %}
+{% include 'partials/breadcrumb.html' %}
+
+<div class="max-w-2xl mx-auto">
+    <div class="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-6">Editar Usuário</h3>
+
+        <form method="POST" action="{{ url_for('tenant_users.edit_user', tenant_slug=tenant.slug, user_id=user.id) }}"
+            class="space-y-4">
+
+        {% include 'partials/csrf.html' %}
+            <!-- Nome Completo -->
+            <div>
+                <label for="full_name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Nome Completo <span class="text-red-500">*</span>
+                </label>
+                <input type="text" id="full_name" name="full_name" value="{{ user.full_name }}" required
+                    class="w-full rounded-lg border border-gray-300 bg-gray-50 px-4 py-2 text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all">
+            </div>
+
+            <!-- Email -->
+            <div>
+                <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    E-mail de Acesso <span class="text-red-500">*</span>
+                </label>
+                <input type="email" id="email" name="email" value="{{ user.email }}" required
+                    class="w-full rounded-lg border border-gray-300 bg-gray-50 px-4 py-2 text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all">
+            </div>
+
+            <!-- Papel/Função -->
+            <div>
+                <label for="role" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Nível de Acesso <span class="text-red-500">*</span>
+                </label>
+                <select id="role" name="role" required
+                    class="w-full rounded-lg border border-gray-300 bg-gray-50 px-4 py-2 text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all">
+                    <option value="TENANT_TECHNICIAN" {% if user.role==UserRole.TENANT_TECHNICIAN %}selected{% endif %}>
+                        Técnico (Padrão)</option>
+                    <option value="TENANT_ADMIN" {% if user.role==UserRole.TENANT_ADMIN %}selected{% endif %}>
+                        Administrador</option>
+                    <option value="TENANT_OWNER" {% if user.role==UserRole.TENANT_OWNER %}selected{% endif %}>Administrador Master</option>
+                </select>
+            </div>
+
+            <!-- Status -->
+            <div class="flex items-center gap-2">
+                <input type="checkbox" id="is_active" name="is_active" {% if user.is_active %}checked{% endif %}
+                    class="rounded border-gray-300 text-brand-500 focus:ring-brand-500 dark:border-gray-600 dark:bg-gray-700">
+                <label for="is_active" class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Usuário Ativo
+                </label>
+            </div>
+
+            <!-- Alterar Senha (Opcional) -->
+            <div class="pt-4 border-t border-gray-200 dark:border-gray-800 mt-4">
+                <label for="password" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Alterar Senha
+                </label>
+                <div class="relative">
+                    <input type="password" id="password" name="password" minlength="6"
+                        class="w-full rounded-lg border border-gray-300 bg-gray-50 px-4 py-2 text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all pr-10"
+                        placeholder="Deixe em branco para manter a atual">
+                    <button type="button" onclick="togglePassword('password')"
+                        class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+                        <i data-lucide="eye" class="w-4 h-4"></i>
+                    </button>
+                    <p class="text-xs text-gray-500 mt-1">Preencha apenas se desejar redefinir a senha do usuário.</p>
+                </div>
+            </div>
+
+            <!-- Botões -->
+            <div class="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-800 mt-6">
+                <!-- Botão de Deletar (Modal trigger seria melhor, mas form direto pra simplificar) -->
+                <button type="button" onclick="confirmDelete()"
+                    class="px-4 py-2 text-sm font-medium text-error-600 border border-error-200 hover:bg-error-50 rounded-lg transition-colors dark:border-error-500/30 dark:text-error-400 dark:hover:bg-error-500/10">
+                    Excluir Usuário
+                </button>
+
+                <div class="flex items-center gap-3">
+                    <a href="{{ url_for('tenant_users.list_users', tenant_slug=tenant.slug) }}"
+                        class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors">
+                        Cancelar
+                    </a>
+                    <button type="submit"
+                        class="px-4 py-2 text-sm font-medium text-white bg-brand-500 hover:bg-brand-600 rounded-lg transition-colors shadow-lg shadow-brand-500/20">
+                        Salvar Alterações
+                    </button>
+                </div>
+            </div>
+        </form>
+
+        <!-- Form escondido para delete -->
+        <form id="delete-form"
+            action="{{ url_for('tenant_users.delete_user', tenant_slug=tenant.slug, user_id=user.id) }}" method="POST"
+            class="hidden">
+            {% include 'partials/csrf.html' %}
+        </form>
+    </div>
+</div>
+
+<script>
+    function togglePassword(inputId) {
+        const input = document.getElementById(inputId);
+        if (input.type === "password") {
+            input.type = "text";
+        } else {
+            input.type = "password";
+        }
+    }
+
+    function confirmDelete() {
+        if (confirm('Tem certeza que deseja desativar este usuário? Ele perderá o acesso imediatamente.')) {
+            document.getElementById('delete-form').submit();
+        }
+    }
+</script>
+{% endblock %}

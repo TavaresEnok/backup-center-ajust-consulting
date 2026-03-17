@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+
+{% block title %}Novo Dispositivo | Backup Center{% endblock %}
+
+{% block content %}
+{% include 'partials/breadcrumb.html' %}
+
+<div class="max-w-4xl mx-auto">
+    <div class="flex items-center justify-between mb-6">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Novo Dispositivo</h1>
+            <p class="text-sm text-gray-500">Cadastre o equipamento e selecione o tipo correto para usar o script de backup adequado.</p>
+        </div>
+        <a href="{{ url_for('tenant_devices.list_devices', tenant_slug=tenant.slug) }}"
+            class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-700">
+            Voltar
+        </a>
+    </div>
+
+    <form action="{{ url_for('tenant_devices.add_device', tenant_slug=tenant.slug) }}" method="POST" class="space-y-6">
+        {% include 'partials/csrf.html' %}
+
+        <div class="p-6 bg-white border border-gray-200 rounded-xl dark:bg-gray-800 dark:border-gray-700">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Dados de Conexão</h3>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="form-control">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nome do Dispositivo</label>
+                    <input type="text" name="name"
+                        class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-brand-500 focus:border-brand-500"
+                        required />
+                </div>
+
+                <div class="form-control">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tipo de Equipamento</label>
+                    <select name="device_type_id" id="device_type_id"
+                        class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-brand-500 focus:border-brand-500"
+                        required>
+                        <option value="">Selecione o tipo...</option>
+                        {% for type in device_types %}
+                        <option value="{{ type.id }}"
+                            data-default-port="{{ type.default_port or 22 }}"
+                            data-use-telnet="{{ '1' if type.use_telnet else '0' }}"
+                            data-script="{{ type.script_name or '' }}">
+                            {{ type.name }}{% if type.category %} ({{ type.category|upper }}){% endif %}
+                        </option>
+                        {% endfor %}
+                    </select>
+                    <p id="script-hint" class="mt-1 text-xs text-gray-500 dark:text-gray-400 hidden"></p>
+                </div>
+
+                <div class="form-control">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Endereço IP / Host</label>
+                    <input type="text" name="ip_address"
+                        class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-brand-500 focus:border-brand-500"
+                        required />
+                </div>
+
+                <div class="form-control">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Porta</label>
+                    <input type="number" name="port" id="port" value="22"
+                        class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-brand-500 focus:border-brand-500"
+                        required />
+                </div>
+
+                <div class="form-control">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Grupo (Provedor)</label>
+                    <select name="group_id"
+                        class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-brand-500 focus:border-brand-500">
+                        <option value="">Sem grupo</option>
+                        {% for group in groups %}
+                        <option value="{{ group.id }}">{{ group.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6 pt-6 border-t border-gray-100 dark:border-gray-700">
+                <div class="form-control">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Usuário</label>
+                    <input type="text" name="username"
+                        class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-brand-500 focus:border-brand-500"
+                        required />
+                </div>
+                <div class="form-control">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Senha</label>
+                    <input type="password" name="password"
+                        class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-brand-500 focus:border-brand-500"
+                        required />
+                </div>
+            </div>
+
+            <div class="mt-6">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Descrição</label>
+                <textarea name="description" rows="3"
+                    class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-brand-500 focus:border-brand-500"></textarea>
+            </div>
+
+            <div class="mt-4 flex items-center gap-2">
+                <input type="checkbox" name="use_telnet" id="use_telnet"
+                    class="rounded text-brand-600 focus:ring-brand-500 dark:bg-gray-700 dark:border-gray-600">
+                <label for="use_telnet" class="text-sm text-gray-700 dark:text-gray-300">Usar Telnet (legado)</label>
+            </div>
+        </div>
+
+        <div class="p-6 bg-white border border-gray-200 rounded-xl dark:bg-gray-800 dark:border-gray-700">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Agendamento de Backup</h3>
+
+            <div class="flex items-center gap-2 mb-4">
+                <input type="checkbox" name="backup_scheduled" id="backup_scheduled" checked
+                    class="rounded text-brand-600 focus:ring-brand-500 dark:bg-gray-700 dark:border-gray-600 h-5 w-5">
+                <label for="backup_scheduled" class="text-sm font-medium text-gray-900 dark:text-white">Ativar backup automático</label>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="form-control">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Frequência</label>
+                    <select name="schedule_frequency"
+                        class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-brand-500 focus:border-brand-500">
+                        <option value="daily" selected>Diário</option>
+                        <option value="weekly">Semanal</option>
+                        <option value="monthly">Mensal</option>
+                    </select>
+                </div>
+                <div class="form-control">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Horário (HH:MM)</label>
+                    <input type="time" name="schedule_time" value="00:00"
+                        class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-brand-500 focus:border-brand-500" />
+                </div>
+            </div>
+        </div>
+
+        <div class="flex justify-end gap-3">
+            <a href="{{ url_for('tenant_devices.list_devices', tenant_slug=tenant.slug) }}"
+                class="px-6 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-700">Cancelar</a>
+            <button type="submit"
+                class="px-6 py-2.5 text-sm font-medium text-white bg-brand-600 rounded-lg hover:bg-brand-700 focus:ring-4 focus:ring-brand-500/20 shadow-lg shadow-brand-500/30 transition-all">
+                Salvar Dispositivo
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const typeSelect = document.getElementById('device_type_id');
+        const portInput = document.getElementById('port');
+        const telnetCheckbox = document.getElementById('use_telnet');
+        const scriptHint = document.getElementById('script-hint');
+
+        function applyTypeDefaults() {
+            const selected = typeSelect.options[typeSelect.selectedIndex];
+            if (!selected || !selected.value) {
+                scriptHint.classList.add('hidden');
+                return;
+            }
+            const defaultPort = selected.dataset.defaultPort;
+            const useTelnet = selected.dataset.useTelnet === '1';
+            const scriptName = selected.dataset.script || '';
+
+            if (defaultPort) {
+                portInput.value = defaultPort;
+            }
+            telnetCheckbox.checked = useTelnet;
+
+            if (scriptName) {
+                scriptHint.textContent = `Script de backup: ${scriptName}`;
+                scriptHint.classList.remove('hidden');
+            } else {
+                scriptHint.classList.add('hidden');
+            }
+        }
+
+        typeSelect.addEventListener('change', applyTypeDefaults);
+    });
+</script>
+{% endblock %}

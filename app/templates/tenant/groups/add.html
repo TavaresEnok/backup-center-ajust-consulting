@@ -1,0 +1,383 @@
+{% extends "base.html" %}
+
+{% block title %}Novo Grupo | {{ tenant.name }}{% endblock %}
+
+{% block content %}
+<style>
+    .form-card {
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 16px;
+        padding: 2rem;
+        max-width: 700px;
+    }
+
+    .form-label {
+        display: block;
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: #94a3b8;
+        margin-bottom: 0.5rem;
+    }
+
+    .form-input {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 10px;
+        color: var(--text-main);
+        font-size: 0.875rem;
+        transition: all 0.2s;
+    }
+
+    .form-input:focus {
+        outline: none;
+        border-color: #3b82f6;
+        box-shadow: 0 0 15px rgba(59, 130, 246, 0.2);
+    }
+
+    .form-input::placeholder {
+        color: var(--text-muted);
+    }
+
+    .form-textarea {
+        min-height: 80px;
+        resize: vertical;
+    }
+
+    .form-radio {
+        width: 18px;
+        height: 18px;
+        accent-color: #3b82f6;
+        cursor: pointer;
+    }
+
+    .form-select {
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+        background-position: right 0.75rem center;
+        background-repeat: no-repeat;
+        background-size: 1.5em 1.5em;
+        padding-right: 2.5rem;
+    }
+
+    .btn-premium {
+        background: linear-gradient(135deg, #3b82f6, #6366f1);
+        color: white;
+        padding: 0.75rem 2rem;
+        border-radius: 10px;
+        font-weight: 600;
+        transition: all 0.2s;
+        border: none;
+        cursor: pointer;
+    }
+
+    .btn-premium:hover {
+        box-shadow: 0 0 20px rgba(59, 130, 246, 0.4);
+        transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid var(--card-border);
+        color: #94a3b8;
+        padding: 0.75rem 1.5rem;
+        border-radius: 10px;
+        font-weight: 500;
+        transition: all 0.2s;
+        text-decoration: none;
+    }
+
+    .btn-secondary:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+    }
+
+    .connection-section {
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-top: 1rem;
+    }
+
+    .vpn-section {
+        background: rgba(139, 92, 246, 0.05);
+        border: 1px solid rgba(139, 92, 246, 0.2);
+    }
+
+    .jump-section {
+        background: rgba(16, 185, 129, 0.05);
+        border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+
+    .section-title {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--text-main);
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+    }
+
+    .connection-option {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+        padding: 1rem;
+        border-radius: 10px;
+        border: 1px solid var(--card-border);
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .connection-option:hover {
+        border-color: rgba(255, 255, 255, 0.2);
+        background: rgba(255, 255, 255, 0.02);
+    }
+
+    .connection-option.selected {
+        border-color: #3b82f6;
+        background: rgba(59, 130, 246, 0.1);
+    }
+
+    .connection-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .connection-icon.direct {
+        background: rgba(100, 116, 139, 0.2);
+        color: #94a3b8;
+    }
+
+    .connection-icon.vpn {
+        background: rgba(139, 92, 246, 0.2);
+        color: #a78bfa;
+    }
+
+    .connection-icon.jump {
+        background: rgba(16, 185, 129, 0.2);
+        color: #34d399;
+    }
+
+    @media (max-width: 640px) {
+        .form-row {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<div class="space-y-6 pb-4">
+    <!-- Header -->
+    <div class="mb-8">
+        <a href="{{ url_for('tenant_groups.list_groups', tenant_slug=tenant.slug) }}"
+            class="inline-flex items-center gap-2 text-[var(--text-muted)] hover:text-white transition mb-4">
+            <i data-lucide="arrow-left" class="w-4 h-4"></i>
+            <span>Voltar para Grupos</span>
+        </a>
+        <h1 class="text-3xl font-bold text-[var(--text-main)]">Novo Grupo</h1>
+        <p class="text-[var(--text-muted)] text-sm mt-1">Crie um grupo para organizar seus dispositivos</p>
+    </div>
+
+    <div class="form-card">
+        <form action="{{ url_for('tenant_groups.add_group', tenant_slug=tenant.slug) }}" method="POST">
+            {% include 'partials/csrf.html' %}
+
+            <!-- Basic Info -->
+            <div class="space-y-5">
+                <div>
+                    <label class="form-label">Nome do Grupo *</label>
+                    <input type="text" name="name" required class="form-input" placeholder="Ex: Provedor XYZ">
+                </div>
+
+                <div>
+                    <label class="form-label">Descrição</label>
+                    <textarea name="description" class="form-input form-textarea"
+                        placeholder="Descrição opcional do grupo..."></textarea>
+                </div>
+
+                <!-- Connection Type Selection -->
+                <div class="pt-4 border-t border-[var(--line-color)]">
+                    <label class="form-label mb-3">Tipo de Conexão</label>
+
+                    <div class="space-y-3" x-data="{ connectionType: 'direct' }">
+
+                        <!-- Direct Connection -->
+                        <label class="connection-option" :class="{'selected': connectionType === 'direct'}">
+                            <input type="radio" name="connection_type" value="direct" class="form-radio mt-1"
+                                x-model="connectionType" checked>
+                            <div class="connection-icon direct">
+                                <i data-lucide="wifi" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                                <div class="text-[var(--text-main)] font-medium">Conexão Direta</div>
+                                <div class="text-[var(--text-muted)] text-sm">Conecta diretamente ao IP do dispositivo
+                                    (SSH/Telnet)</div>
+                            </div>
+                        </label>
+
+                        <!-- VPN Connection -->
+                        <label class="connection-option" :class="{'selected': connectionType === 'vpn'}">
+                            <input type="radio" name="connection_type" value="vpn" class="form-radio mt-1"
+                                x-model="connectionType">
+                            <div class="connection-icon vpn">
+                                <i data-lucide="shield" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                                <div class="text-[var(--text-main)] font-medium">VPN (L2TP/PPTP/WireGuard)</div>
+                                <div class="text-[var(--text-muted)] text-sm">Estabelece túnel VPN antes de conectar aos
+                                    dispositivos</div>
+                            </div>
+                        </label>
+
+                        <!-- Jump Host Connection -->
+                        <label class="connection-option" :class="{'selected': connectionType === 'jump_host'}">
+                            <input type="radio" name="connection_type" value="jump_host" class="form-radio mt-1"
+                                x-model="connectionType">
+                            <div class="connection-icon jump">
+                                <i data-lucide="git-branch" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                                <div class="text-[var(--text-main)] font-medium">SSH Jump Host (Bastion)</div>
+                                <div class="text-[var(--text-muted)] text-sm">Conecta via servidor intermediário do provedor</div>
+                            </div>
+                        </label>
+
+                        <!-- VPN Settings -->
+                        <div x-show="connectionType === 'vpn'" x-transition class="connection-section vpn-section">
+                            <div class="section-title">
+                                <i data-lucide="shield" class="w-4 h-4 text-purple-400"></i>
+                                Configurações VPN
+                            </div>
+
+                            <div class="space-y-4">
+                                <div class="form-row">
+                                    <div>
+                                        <label class="form-label">Tipo de VPN</label>
+                                        <select name="vpn_type" class="form-input form-select">
+                                            <option value="l2tp" selected>L2TP/IPSec</option>
+                                            <option value="pptp">PPTP</option>
+                                            <option value="openvpn">OpenVPN</option>
+                                            <option value="wireguard">WireGuard</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="form-label">Servidor VPN</label>
+                                        <input type="text" name="vpn_server" class="form-input"
+                                            placeholder="vpn.provedor.com.br">
+                                    </div>
+                                </div>
+
+                                <div class="form-row">
+                                    <div>
+                                        <label class="form-label">Usuário VPN</label>
+                                        <input type="text" name="vpn_username" class="form-input"
+                                            placeholder="usuario_vpn">
+                                    </div>
+                                    <div>
+                                        <label class="form-label">Senha VPN</label>
+                                        <input type="password" name="vpn_password" class="form-input"
+                                            placeholder="••••••••">
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="form-label">IPSec Secret (PSK)</label>
+                                    <input type="password" name="vpn_ipsec_secret" class="form-input"
+                                        placeholder="••••••••">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Jump Host Settings -->
+                        <div x-show="connectionType === 'jump_host'" x-transition
+                            class="connection-section jump-section">
+                            <div class="section-title">
+                                <i data-lucide="git-branch" class="w-4 h-4 text-emerald-400"></i>
+                                Configurações Jump Host
+                            </div>
+
+                            <div class="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 mb-4">
+                                <p class="text-emerald-300 text-sm">
+                                    <i data-lucide="info" class="w-4 h-4 inline-block mr-1"></i>
+                                    O Jump Host é um servidor Linux do provedor. Seu sistema conectará primeiro neste
+                                    servidor,
+                                    e depois nos dispositivos da rede interna.
+                                </p>
+                            </div>
+
+                            <div class="space-y-4">
+                                <div class="form-row">
+                                    <div>
+                                        <label class="form-label">Host / IP do Servidor *</label>
+                                        <input type="text" name="jump_host" class="form-input"
+                                            placeholder="ssh.provedor.com.br ou 200.x.x.x">
+                                    </div>
+                                    <div>
+                                        <label class="form-label">Porta SSH</label>
+                                        <input type="number" name="jump_port" value="22" class="form-input"
+                                            placeholder="22">
+                                    </div>
+                                </div>
+
+                                <div class="form-row">
+                                    <div>
+                                        <label class="form-label">Usuário SSH *</label>
+                                        <input type="text" name="jump_username" class="form-input"
+                                            placeholder="backup_user">
+                                    </div>
+                                    <div>
+                                        <label class="form-label">Senha SSH</label>
+                                        <input type="password" name="jump_password" class="form-input"
+                                            placeholder="••••••••">
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="form-label">Chave Privada SSH (opcional)</label>
+                                    <textarea name="jump_key" class="form-input form-textarea"
+                                        placeholder="-----BEGIN RSA PRIVATE KEY-----&#10;...&#10;-----END RSA PRIVATE KEY-----"></textarea>
+                                    <p class="text-xs text-[var(--text-muted)] mt-1">Cole a chave privada para autenticação por
+                                        chave. Deixe em branco para usar senha.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="flex items-center justify-between mt-8 pt-6 border-t border-[var(--line-color)]">
+                <a href="{{ url_for('tenant_groups.list_groups', tenant_slug=tenant.slug) }}" class="btn-secondary">
+                    Cancelar
+                </a>
+                <button type="submit" class="btn-premium">
+                    <span class="flex items-center gap-2">
+                        <i data-lucide="plus" class="w-4 h-4"></i>
+                        Criar Grupo
+                    </span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        lucide.createIcons();
+    });
+</script>
+{% endblock %}
