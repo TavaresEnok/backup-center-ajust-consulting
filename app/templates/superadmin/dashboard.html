@@ -8,172 +8,381 @@
         background-color: #061126 !important;
     }
 
-    .page-shell {
+    .command-shell {
         max-width: 1600px;
         margin: 0 auto;
         --ux-hero-bg:
-            radial-gradient(circle at top right, rgba(59, 130, 246, 0.18), transparent 44%),
-            linear-gradient(180deg, rgba(239, 246, 255, 0.92), rgba(219, 234, 254, 0.74));
-        --ux-surface-bg: linear-gradient(180deg, rgba(239, 246, 255, 0.92), rgba(224, 242, 254, 0.72));
-        --ux-side-bg: linear-gradient(180deg, rgba(248, 250, 252, 0.98), rgba(226, 232, 240, 0.84));
-        --ux-border: rgba(59, 130, 246, 0.22);
-        --ux-alert-bg: rgba(239, 246, 255, 0.92);
+            radial-gradient(circle at top right, rgba(59, 130, 246, 0.18), transparent 36%),
+            linear-gradient(180deg, rgba(239, 246, 255, 0.96), rgba(219, 234, 254, 0.78));
+        --ux-surface-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(239, 246, 255, 0.82));
+        --ux-muted-bg: linear-gradient(180deg, rgba(248, 250, 252, 0.94), rgba(226, 232, 240, 0.78));
+        --ux-border: rgba(59, 130, 246, 0.18);
+        --ux-soft: rgba(59, 130, 246, 0.08);
+        --ux-soft-strong: rgba(59, 130, 246, 0.14);
     }
 
-    html.dark .page-shell {
+    html.dark .command-shell {
         --ux-hero-bg:
-            radial-gradient(circle at top right, rgba(96, 165, 250, 0.2), transparent 48%),
-            linear-gradient(180deg, rgba(14, 30, 58, 0.94), rgba(9, 22, 46, 0.86));
-        --ux-surface-bg: linear-gradient(180deg, rgba(12, 28, 54, 0.92), rgba(9, 22, 44, 0.82));
-        --ux-side-bg: linear-gradient(180deg, rgba(9, 24, 49, 0.95), rgba(7, 19, 41, 0.86));
-        --ux-border: rgba(96, 165, 250, 0.22);
-        --ux-alert-bg: rgba(11, 25, 50, 0.9);
+            radial-gradient(circle at top right, rgba(96, 165, 250, 0.16), transparent 38%),
+            linear-gradient(180deg, rgba(11, 28, 56, 0.96), rgba(8, 22, 43, 0.92));
+        --ux-surface-bg: linear-gradient(180deg, rgba(11, 29, 56, 0.94), rgba(9, 21, 40, 0.9));
+        --ux-muted-bg: linear-gradient(180deg, rgba(9, 23, 45, 0.94), rgba(7, 18, 36, 0.88));
+        --ux-border: rgba(96, 165, 250, 0.18);
+        --ux-soft: rgba(96, 165, 250, 0.08);
+        --ux-soft-strong: rgba(96, 165, 250, 0.14);
     }
 
-    .eyebrow {
-        font-size: .7rem;
+    .section-title {
+        font-size: .76rem;
         font-weight: 700;
         letter-spacing: .14em;
-        text-transform: uppercase;
-        color: #60a5fa;
-    }
-
-    .section-kicker {
-        font-size: .72rem;
-        font-weight: 700;
-        letter-spacing: .12em;
         text-transform: uppercase;
         color: var(--text-muted);
     }
 
-    .card-label {
-        font-size: .76rem;
+    .hero-card,
+    .surface-card,
+    .metric-card,
+    .stack-card,
+    .list-card,
+    .drill-shell {
+        border: 1px solid var(--ux-border);
+        border-radius: 1.1rem;
+    }
+
+    .hero-card {
+        background: var(--ux-hero-bg);
+    }
+
+    .surface-card,
+    .metric-card,
+    .stack-card,
+    .list-card,
+    .drill-shell {
+        background: var(--ux-surface-bg);
+    }
+
+    .muted-card {
+        background: var(--ux-muted-bg);
+    }
+
+    .hero-metric {
+        border-radius: .95rem;
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        background: rgba(255, 255, 255, 0.22);
+        padding: 1rem;
+        backdrop-filter: blur(14px);
+    }
+
+    html.dark .hero-metric {
+        background: rgba(8, 19, 38, 0.42);
+        border-color: rgba(96, 165, 250, 0.12);
+    }
+
+    .hero-metric-label,
+    .metric-label,
+    .stack-kicker,
+    .list-kicker {
+        font-size: .74rem;
         font-weight: 700;
         letter-spacing: .04em;
         color: var(--text-muted);
     }
 
-    .card-value-xl {
-        margin-top: .35rem;
-        font-size: 2rem;
+    .hero-metric-value {
+        margin-top: .45rem;
+        font-size: 2.1rem;
         line-height: 1;
         font-weight: 800;
+        color: var(--text-main);
     }
 
-    .card-value-lg {
-        margin-top: .35rem;
-        font-size: 1.65rem;
+    .metric-card {
+        padding: 1rem;
+        display: flex;
+        flex-direction: column;
+        gap: .5rem;
+        min-height: 150px;
+    }
+
+    .metric-value {
+        font-size: 1.75rem;
         line-height: 1.05;
         font-weight: 800;
+        color: var(--text-main);
     }
 
-    .card-caption {
-        margin-top: .35rem;
-        font-size: .76rem;
+    .metric-copy,
+    .hero-copy,
+    .muted-copy,
+    .list-copy {
+        font-size: .82rem;
+        line-height: 1.55;
         color: var(--text-muted);
-        line-height: 1.4;
     }
 
-    .admin-hero {
-        border: 1px solid var(--ux-border);
-        border-radius: 1rem;
-        background: var(--ux-hero-bg);
+    .status-strip {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .6rem;
     }
 
-    .priority-card,
-    .health-card,
-    .side-card {
-        border: 1px solid var(--ux-border);
-        border-radius: .95rem;
-        background: var(--ux-surface-bg);
+    .status-chip,
+    .anchor-chip,
+    .pill-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: .45rem;
+        border-radius: 9999px;
+        border: 1px solid var(--line-color);
+        background: rgba(148, 163, 184, 0.08);
+        padding: .45rem .75rem;
+        font-size: .74rem;
+        font-weight: 600;
+        color: var(--text-main);
     }
 
-    .priority-card {
-        padding: 1rem;
-        transition: border-color .15s ease, transform .15s ease;
+    .anchor-chip {
+        transition: background-color .15s ease, border-color .15s ease, transform .15s ease;
     }
 
-    .priority-card:hover {
-        border-color: rgba(59, 130, 246, .45);
+    .anchor-chip:hover {
+        background: var(--ux-soft);
+        border-color: rgba(59, 130, 246, 0.35);
         transform: translateY(-1px);
     }
 
-    .priority-critical {
-        border-left: 4px solid rgba(239, 68, 68, .95);
+    .anchor-chip-active {
+        border-color: rgba(59, 130, 246, 0.35);
+        background: var(--ux-soft-strong);
+        color: #2563eb;
     }
 
-    .priority-warning {
-        border-left: 4px solid rgba(245, 158, 11, .95);
+    html.dark .anchor-chip-active {
+        color: #93c5fd;
     }
 
-    .priority-good {
-        border-left: 4px solid rgba(16, 185, 129, .95);
+    .queue-list {
+        display: grid;
+        gap: .9rem;
     }
 
-    .health-card {
-        padding: .9rem;
-    }
-
-    .side-card {
+    .queue-item {
+        display: flex;
+        gap: .95rem;
+        align-items: flex-start;
         padding: 1rem;
-        background: var(--ux-side-bg);
-    }
-
-    .alert-item {
+        border-radius: 1rem;
         border: 1px solid var(--ux-border);
-        border-radius: .75rem;
-        padding: .58rem .72rem;
-        background: var(--ux-alert-bg);
+        background: rgba(255, 255, 255, 0.34);
+        transition: transform .15s ease, border-color .15s ease;
     }
 
-    .alert-item-critical {
-        border-color: rgba(239, 68, 68, .32);
+    html.dark .queue-item {
+        background: rgba(6, 18, 37, 0.34);
     }
 
-    .alert-item-attention {
-        border-color: rgba(245, 158, 11, .32);
+    .queue-item:hover {
+        transform: translateY(-1px);
+        border-color: rgba(59, 130, 246, 0.34);
     }
 
-    .kpi-chip {
-        border: 1px solid var(--line-color);
+    .queue-dot {
+        width: .85rem;
+        height: .85rem;
         border-radius: 9999px;
-        padding: .32rem .72rem;
-        font-size: .71rem;
-        font-weight: 600;
+        margin-top: .32rem;
+        flex-shrink: 0;
+        box-shadow: 0 0 0 5px rgba(255, 255, 255, 0.08);
+    }
+
+    .queue-dot-critical { background: #ef4444; }
+    .queue-dot-warning { background: #f59e0b; }
+    .queue-dot-good { background: #10b981; }
+
+    .queue-title {
+        font-size: .98rem;
+        font-weight: 700;
         color: var(--text-main);
-        background: rgba(148, 163, 184, 0.1);
+    }
+
+    .queue-value {
+        font-size: 1.6rem;
+        line-height: 1;
+        font-weight: 800;
+        margin-top: .45rem;
+    }
+
+    .queue-link {
+        margin-top: .6rem;
+        display: inline-flex;
+        align-items: center;
+        gap: .4rem;
+        font-size: .76rem;
+        font-weight: 700;
+        color: #60a5fa;
+    }
+
+    .progress-track {
+        width: 100%;
+        height: .52rem;
+        border-radius: 9999px;
+        background: rgba(148, 163, 184, 0.16);
+        overflow: hidden;
+    }
+
+    .progress-bar {
+        height: 100%;
+        border-radius: inherit;
+        background: linear-gradient(90deg, #3b82f6, #60a5fa);
+    }
+
+    .progress-bar-success { background: linear-gradient(90deg, #10b981, #34d399); }
+    .progress-bar-warning { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+    .progress-bar-danger { background: linear-gradient(90deg, #ef4444, #fb7185); }
+
+    .stack-card,
+    .list-card,
+    .drill-shell {
+        padding: 1.1rem;
+    }
+
+    .chart-card {
+        padding: 1.2rem;
+        border: 1px solid var(--ux-border);
+        border-radius: 1.1rem;
+        background: var(--ux-surface-bg);
     }
 
     .chart-wrap {
         position: relative;
-        min-height: 270px;
+        min-height: 290px;
+    }
+
+    .mini-list {
+        display: grid;
+        gap: .75rem;
+    }
+
+    .mini-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: .75rem;
+        border-radius: .95rem;
+        padding: .85rem .95rem;
+        border: 1px solid var(--ux-border);
+        background: rgba(148, 163, 184, 0.06);
+    }
+
+    .mini-row-copy {
+        min-width: 0;
+    }
+
+    .mini-row-title {
+        font-size: .86rem;
+        font-weight: 700;
+        color: var(--text-main);
+    }
+
+    .mini-row-value {
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: var(--text-main);
+        white-space: nowrap;
+    }
+
+    .tenants-feed,
+    .alerts-feed,
+    .activity-feed {
+        display: grid;
+        gap: .75rem;
+    }
+
+    .feed-item {
+        border-radius: .95rem;
+        border: 1px solid var(--ux-border);
+        background: rgba(148, 163, 184, 0.06);
+        padding: .9rem .95rem;
+    }
+
+    .feed-item-link {
+        transition: border-color .15s ease, transform .15s ease;
+    }
+
+    .feed-item-link:hover {
+        border-color: rgba(59, 130, 246, 0.34);
+        transform: translateY(-1px);
+    }
+
+    .feed-item-title {
+        font-size: .88rem;
+        font-weight: 700;
+        color: var(--text-main);
+    }
+
+    .feed-item-meta {
+        margin-top: .24rem;
+        font-size: .75rem;
+        color: var(--text-muted);
+        line-height: 1.45;
+    }
+
+    .list-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .table-shell {
+        overflow-x: auto;
+        border-radius: 1rem;
+        border: 1px solid var(--ux-border);
+        background: rgba(148, 163, 184, 0.04);
+    }
+
+    .admin-table {
+        min-width: 100%;
     }
 
     .admin-table th {
-        font-size: 11px;
-        text-transform: uppercase;
-        letter-spacing: .08em;
-        color: var(--text-muted);
-        font-weight: 700;
-        padding: .7rem .9rem;
+        padding: .75rem .95rem;
         border-bottom: 1px solid var(--line-color);
+        font-size: .69rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .1em;
+        color: var(--text-muted);
+        text-align: left;
     }
 
     .admin-table td {
-        padding: .75rem .9rem;
+        padding: .9rem .95rem;
         border-bottom: 1px solid var(--line-color);
-        font-size: .86rem;
+        font-size: .84rem;
         color: var(--text-main);
         vertical-align: top;
     }
 
-    .admin-table tbody tr {
-        transition: background-color .12s ease;
+    .admin-table tbody tr:hover {
+        background: rgba(148, 163, 184, 0.05);
     }
 
-    .admin-table tbody tr:hover {
-        background: rgba(148, 163, 184, .06);
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        border-radius: 9999px;
+        padding: .28rem .62rem;
+        font-size: .71rem;
+        font-weight: 700;
     }
+
+    .status-badge-success { background: rgba(16, 185, 129, 0.15); color: #6ee7b7; }
+    .status-badge-warning { background: rgba(245, 158, 11, 0.16); color: #fcd34d; }
+    .status-badge-danger { background: rgba(239, 68, 68, 0.16); color: #fda4af; }
+    .status-badge-neutral { background: rgba(148, 163, 184, 0.18); color: var(--text-muted); }
 
     .drill-trigger {
         cursor: pointer;
@@ -186,269 +395,528 @@
     .drill-filter-badge {
         border: 1px solid var(--line-color);
         border-radius: 9999px;
-        padding: .3rem .7rem;
-        font-size: .71rem;
-        font-weight: 600;
+        padding: .38rem .78rem;
+        font-size: .72rem;
+        font-weight: 700;
         color: var(--text-main);
-        background: rgba(59, 130, 246, 0.14);
+        background: var(--ux-soft-strong);
     }
 
-    .alert-list-compact {
-        max-height: 240px;
-        overflow: auto;
-        padding-right: .2rem;
+    .chart-legend-note {
+        font-size: .75rem;
+        color: var(--text-muted);
+    }
+
+    @media (max-width: 1279px) {
+        .chart-wrap {
+            min-height: 260px;
+        }
     }
 </style>
 
-<div class="page-shell space-y-7 pb-5">
-    <section class="admin-hero p-6">
-        <div class="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
-            <div>
-                <p class="eyebrow">Backoffice SaaS</p>
-                <h1 class="mt-1 text-3xl font-extrabold tracking-tight text-[var(--text-main)] xl:text-[2.15rem]">Centro de comando da plataforma</h1>
-                <p class="mt-2 max-w-3xl text-sm leading-relaxed text-[var(--text-muted)]">Visao executiva e operacional com foco em acao rapida.</p>
-                <div class="mt-4 flex flex-wrap gap-2.5">
-                    <span class="kpi-chip">Janela: {{ range_label }}</span>
-                    <span class="kpi-chip">Backups sucesso: {{ stats.backups_success_rate }}%</span>
-                    <span class="kpi-chip">Delta: {{ '+' if stats.backups_rate_delta >= 0 else '' }}{{ stats.backups_rate_delta }}pp</span>
-                    <span class="kpi-chip">Cobranca: {{ stats.invoices_collection_rate }}%</span>
+{% set backup_goal = 90 %}
+{% set collection_goal = 95 %}
+{% set backup_goal_gap = (stats.backups_success_rate - backup_goal)|round(1) %}
+{% set collection_goal_gap = (stats.invoices_collection_rate - collection_goal)|round(1) %}
+{% set payments_attention = stats.tenants_payment_pending + stats.tenants_payment_canceled %}
+{% set payment_ready_label = 'Pronto' if payment_setup.ready else 'Incompleto' %}
+
+<div class="command-shell space-y-6 pb-6">
+    <section class="hero-card p-6 lg:p-7">
+        <div class="grid grid-cols-1 gap-6 xl:grid-cols-[1.35fr_.95fr]">
+            <div class="space-y-5">
+                <div class="space-y-3">
+                    <div class="status-strip">
+                        <span class="status-chip">Backoffice SaaS</span>
+                        <span class="status-chip">Janela: {{ range_label }}</span>
+                        <span class="status-chip">Mercado Pago: {{ payment_ready_label }}</span>
+                    </div>
+                    <div>
+                        <h1 class="text-3xl font-extrabold tracking-tight text-[var(--text-main)] lg:text-[2.35rem]">Dashboard administrativo da plataforma</h1>
+                        <p class="hero-copy mt-2 max-w-3xl">Esta tela precisa responder tres perguntas sem ambiguidade: onde a receita esta em risco, quais clientes exigem acao agora e se a operacao tecnica esta saudavel.</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 gap-3 md:grid-cols-3">
+                    <div class="hero-metric">
+                        <p class="hero-metric-label">MRR estimado</p>
+                        <p class="hero-metric-value">{{ stats.mrr }}</p>
+                        <p class="muted-copy mt-2">{{ stats.tenants_payment_active }} clientes com pagamento ativo.</p>
+                    </div>
+                    <div class="hero-metric">
+                        <p class="hero-metric-label">Taxa de backup</p>
+                        <p class="hero-metric-value">{{ stats.backups_success_rate }}%</p>
+                        <div class="mt-3 progress-track"><div class="progress-bar progress-bar-success" style="width: {{ [stats.backups_success_rate, 100]|min }}%"></div></div>
+                        <p class="muted-copy mt-2">Meta: {{ backup_goal }}% • {{ '+' if backup_goal_gap >= 0 else '' }}{{ backup_goal_gap }}pp</p>
+                    </div>
+                    <div class="hero-metric">
+                        <p class="hero-metric-label">Taxa de cobranca</p>
+                        <p class="hero-metric-value">{{ stats.invoices_collection_rate }}%</p>
+                        <div class="mt-3 progress-track"><div class="progress-bar {% if stats.invoices_collection_rate >= collection_goal %}progress-bar-success{% elif stats.invoices_collection_rate >= 75 %}progress-bar-warning{% else %}progress-bar-danger{% endif %}" style="width: {{ [stats.invoices_collection_rate, 100]|min }}%"></div></div>
+                        <p class="muted-copy mt-2">Meta: {{ collection_goal }}% • {{ '+' if collection_goal_gap >= 0 else '' }}{{ collection_goal_gap }}pp</p>
+                    </div>
+                </div>
+
+                <div class="flex flex-wrap gap-2.5">
+                    {% for key, label in range_options.items() %}
+                    <a href="{{ url_for('superadmin_dashboard.dashboard', range=key) }}"
+                        class="anchor-chip {% if selected_range == key %}anchor-chip-active{% endif %}">
+                        {{ label }}
+                    </a>
+                    {% endfor %}
                 </div>
             </div>
-            <div class="flex flex-wrap items-center gap-2 xl:justify-end">
-                {% for key, label in range_options.items() %}
-                <a href="{{ url_for('superadmin_dashboard.dashboard', range=key) }}"
-                    class="rounded-lg px-3 py-2 text-[12px] font-semibold {% if selected_range == key %}bg-brand-600 text-white{% else %}border border-[var(--card-border)] text-[var(--text-main)] hover:bg-[var(--line-color)]{% endif %}">
-                    {{ label }}
-                </a>
-                {% endfor %}
-                <a href="{{ url_for('superadmin_tenants.add_tenant') }}"
-                    class="inline-flex items-center rounded-lg bg-brand-600 px-3 py-2 text-sm font-semibold text-white hover:bg-brand-700">
-                    Novo cliente
-                </a>
+
+            <div class="surface-card muted-card p-4 lg:p-5">
+                <div class="list-header">
+                    <div>
+                        <p class="section-title">O que exige acao agora</p>
+                        <p class="list-copy mt-1">Fila curta, orientada por impacto financeiro e operacional.</p>
+                    </div>
+                    <a href="{{ links.manage_tenants }}" class="text-xs font-semibold text-blue-500 hover:text-blue-400">Abrir clientes</a>
+                </div>
+                <div class="queue-list">
+                    <a href="{{ links.risk_clients }}" class="queue-item drill-trigger" data-drill-type="ops" data-drill-value="risk" data-drill-label="Clientes em risco comercial" data-drill-key="ops:risk">
+                        <span class="queue-dot queue-dot-critical"></span>
+                        <div class="min-w-0">
+                            <p class="queue-title">Clientes em risco comercial</p>
+                            <p class="queue-value text-rose-300">{{ stats.risk_tenants_count }}</p>
+                            <p class="muted-copy mt-2">Past due, cancelados, falhas de cobranca ou operacao degradada.</p>
+                            <span class="queue-link">Investigar agora</span>
+                        </div>
+                    </a>
+                    <a href="{{ links.revenue_risk }}" class="queue-item drill-trigger" data-drill-type="invoice" data-drill-value="pending_or_failed" data-drill-label="Receita em risco" data-drill-key="invoice:pending_or_failed">
+                        <span class="queue-dot queue-dot-critical"></span>
+                        <div class="min-w-0">
+                            <p class="queue-title">Receita em risco</p>
+                            <p class="queue-value text-rose-300">{{ stats.revenue_at_risk }}</p>
+                            <p class="muted-copy mt-2">Pendentes: {{ stats.pending_amount }} • Falhas: {{ stats.failed_amount }}</p>
+                        </div>
+                    </a>
+                    <a href="{{ links.period_failures }}" class="queue-item drill-trigger" data-drill-type="ops" data-drill-value="period_failures" data-drill-label="Falhas no periodo" data-drill-key="ops:period_failures">
+                        <span class="queue-dot {% if stats.backups_failed + stats.invoices_period_failed > 0 %}queue-dot-warning{% else %}queue-dot-good{% endif %}"></span>
+                        <div class="min-w-0">
+                            <p class="queue-title">Falhas no periodo</p>
+                            <p class="queue-value {% if stats.backups_failed + stats.invoices_period_failed > 0 %}text-amber-300{% else %}text-emerald-300{% endif %}">{{ stats.backups_failed + stats.invoices_period_failed }}</p>
+                            <p class="muted-copy mt-2">Backup: {{ stats.backups_failed }} • Faturas: {{ stats.invoices_period_failed }}</p>
+                        </div>
+                    </a>
+                </div>
             </div>
         </div>
     </section>
 
-    <div class="grid grid-cols-1 gap-4 xl:grid-cols-12">
-        <section class="space-y-4 xl:col-span-8">
-            <div>
-                <p class="section-kicker">Prioridades imediatas</p>
-                <div class="mt-2.5 grid grid-cols-1 gap-3 md:grid-cols-3">
-                    <a href="{{ links.risk_clients }}" class="priority-card priority-critical drill-trigger" data-drill-type="ops" data-drill-value="risk" data-drill-label="Clientes em risco comercial" data-drill-key="ops:risk">
-                        <p class="card-label">Clientes em risco</p>
-                        <p class="card-value-xl text-rose-300">{{ stats.risk_tenants_count }}</p>
-                        <p class="card-caption">Past due, cancelados e falha de cobranca.</p>
-                    </a>
-                    <a href="{{ links.revenue_risk }}" class="priority-card priority-critical drill-trigger" data-drill-type="invoice" data-drill-value="pending_or_failed" data-drill-label="Receita em risco (pendente/falha)" data-drill-key="invoice:pending_or_failed">
-                        <p class="card-label">Receita em risco</p>
-                        <p class="card-value-xl text-rose-300">{{ stats.revenue_at_risk }}</p>
-                        <p class="card-caption">Pendentes: {{ stats.pending_amount }} • Falhas: {{ stats.failed_amount }}</p>
-                    </a>
-                    <a href="{{ links.period_failures }}" class="priority-card priority-warning drill-trigger" data-drill-type="ops" data-drill-value="period_failures" data-drill-label="Falhas no periodo" data-drill-key="ops:period_failures">
-                        <p class="card-label">Falhas no periodo</p>
-                        <p class="card-value-xl text-amber-300">{{ stats.backups_failed + stats.invoices_period_failed }}</p>
-                        <p class="card-caption">Backup: {{ stats.backups_failed }} • Faturas: {{ stats.invoices_period_failed }}</p>
-                    </a>
+    <section id="overview" class="grid grid-cols-1 gap-4 xl:grid-cols-12">
+        <div class="xl:col-span-8 space-y-4">
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-2 2xl:grid-cols-4">
+                <div class="metric-card drill-trigger" data-drill-type="payment" data-drill-value="active" data-drill-label="Clientes com pagamento ativo" data-drill-key="payment:active">
+                    <p class="metric-label">Clientes ativos</p>
+                    <p class="metric-value">{{ stats.tenants_active }} / {{ stats.tenants_total }}</p>
+                    <p class="metric-copy">Inativos: {{ stats.tenants_inactive }} • Novos em 30d: {{ stats.new_tenants_30d }}</p>
+                </div>
+                <div class="metric-card">
+                    <p class="metric-label">Dispositivos cadastrados</p>
+                    <p class="metric-value">{{ stats.devices_total }}</p>
+                    <p class="metric-copy">Ativos: {{ stats.devices_active }} • Media por cliente: {{ stats.avg_devices_per_tenant }}</p>
+                </div>
+                <div class="metric-card">
+                    <p class="metric-label">Usuarios da plataforma</p>
+                    <p class="metric-value">{{ stats.users_total }}</p>
+                    <p class="metric-copy">Superadmins: {{ stats.admin_users_total }} • Usuarios em tenants: {{ stats.tenant_users_total }}</p>
+                </div>
+                <div class="metric-card drill-trigger" data-drill-type="subscription" data-drill-value="trial" data-drill-label="Clientes em trial" data-drill-key="subscription:trial">
+                    <p class="metric-label">Trials vencendo</p>
+                    <p class="metric-value">{{ stats.trial_expiring_7d }}</p>
+                    <p class="metric-copy">Trials atuais: {{ stats.subscriptions_trial }} • Sem plano: {{ stats.tenants_without_plan }}</p>
                 </div>
             </div>
 
-            <div>
-                <p class="section-kicker">Saude da plataforma</p>
-                <div class="mt-2.5 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                    <a href="{{ links.mrr_active }}" class="health-card priority-good drill-trigger" data-drill-type="payment" data-drill-value="active" data-drill-label="Clientes com pagamento ativo" data-drill-key="payment:active">
-                        <p class="card-label">MRR estimado</p>
-                        <p class="card-value-lg text-emerald-300">{{ stats.mrr }}</p>
-                        <p class="card-caption">Pagto ativo: {{ stats.tenants_payment_active }}</p>
-                    </a>
-                    <a href="{{ links.clients_total }}" class="health-card">
-                        <p class="card-label">Clientes ativos</p>
-                        <p class="card-value-lg text-[var(--text-main)]">{{ stats.tenants_active }} / {{ stats.tenants_total }}</p>
-                        <p class="card-caption">Inativos: {{ stats.tenants_inactive }}</p>
-                    </a>
-                    <a href="{{ links.devices_total }}" class="health-card">
-                        <p class="card-label">Dispositivos</p>
-                        <p class="card-value-lg text-[var(--text-main)]">{{ stats.devices_total }}</p>
-                        <p class="card-caption">Media/cliente: {{ stats.avg_devices_per_tenant }}</p>
-                    </a>
-                    <a href="{{ links.trial_expiring }}" class="health-card priority-warning drill-trigger" data-drill-type="subscription" data-drill-value="trial" data-drill-label="Clientes em trial" data-drill-key="subscription:trial">
-                        <p class="card-label">Trial vencendo (7d)</p>
-                        <p class="card-value-lg text-amber-300">{{ stats.trial_expiring_7d }}</p>
-                        <p class="card-caption">Sem plano: {{ stats.tenants_without_plan }}</p>
-                    </a>
+            <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                <div class="stack-card">
+                    <div class="list-header">
+                        <div>
+                            <p class="section-title">Saude comercial</p>
+                            <p class="list-copy mt-1">Indicadores que impactam conversao, cobranca e inadimplencia.</p>
+                        </div>
+                        <a href="{{ links.manage_billing }}" class="text-xs font-semibold text-blue-500 hover:text-blue-400">Operar cobranca</a>
+                    </div>
+                    <div class="mini-list">
+                        <a href="{{ links.mrr_active }}" class="mini-row drill-trigger" data-drill-type="payment" data-drill-value="active" data-drill-label="Clientes com pagamento ativo" data-drill-key="payment:active">
+                            <div class="mini-row-copy">
+                                <p class="mini-row-title">Base pagante ativa</p>
+                                <p class="feed-item-meta">Clientes ativos em assinatura recorrente ou status adimplente.</p>
+                            </div>
+                            <span class="mini-row-value text-emerald-300">{{ stats.tenants_payment_active }}</span>
+                        </a>
+                        <a href="{{ links.revenue_risk }}" class="mini-row drill-trigger" data-drill-type="invoice" data-drill-value="pending_or_failed" data-drill-label="Receita em risco" data-drill-key="invoice:pending_or_failed">
+                            <div class="mini-row-copy">
+                                <p class="mini-row-title">Pagamentos com atencao</p>
+                                <p class="feed-item-meta">Pendentes + cancelados: {{ payments_attention }} cliente(s).</p>
+                            </div>
+                            <span class="mini-row-value text-amber-300">{{ stats.tenants_payment_pending }} pend.</span>
+                        </a>
+                        <a href="{{ links.revenue_risk }}" class="mini-row drill-trigger" data-drill-type="invoice" data-drill-value="failed" data-drill-label="Faturas com falha" data-drill-key="invoice:failed">
+                            <div class="mini-row-copy">
+                                <p class="mini-row-title">Falhas de cobranca</p>
+                                <p class="feed-item-meta">Falhas abertas exigem acao imediata do financeiro/comercial.</p>
+                            </div>
+                            <span class="mini-row-value text-rose-300">{{ stats.invoices_failed }}</span>
+                        </a>
+                    </div>
                 </div>
-                <div class="mt-3.5 flex flex-wrap gap-2">
-                    <a href="{{ links.without_plan }}" class="kpi-chip drill-trigger" data-drill-type="ops" data-drill-value="no_plan" data-drill-label="Clientes sem plano" data-drill-key="ops:no_plan">Sem plano: {{ stats.tenants_without_plan }}</a>
-                    <a href="{{ links.without_devices }}" class="kpi-chip drill-trigger" data-drill-type="ops" data-drill-value="no_devices" data-drill-label="Clientes sem dispositivos" data-drill-key="ops:no_devices">Sem dispositivos: {{ stats.tenants_without_devices }}</a>
-                    <a href="{{ links.without_admin }}" class="kpi-chip drill-trigger" data-drill-type="ops" data-drill-value="no_admin" data-drill-label="Clientes sem admin" data-drill-key="ops:no_admin">Sem admin: {{ stats.tenants_without_admin }}</a>
+
+                <div class="stack-card">
+                    <div class="list-header">
+                        <div>
+                            <p class="section-title">Anomalias de cadastro</p>
+                            <p class="list-copy mt-1">Erros estruturais que desorganizam suporte, cobranca e onboarding.</p>
+                        </div>
+                        <a href="{{ links.manage_tenants }}" class="text-xs font-semibold text-blue-500 hover:text-blue-400">Corrigir base</a>
+                    </div>
+                    <div class="mini-list">
+                        <a href="{{ links.without_plan }}" class="mini-row drill-trigger" data-drill-type="ops" data-drill-value="no_plan" data-drill-label="Clientes sem plano" data-drill-key="ops:no_plan">
+                            <div class="mini-row-copy">
+                                <p class="mini-row-title">Clientes sem plano</p>
+                                <p class="feed-item-meta">Tenant ativo sem enquadramento comercial ou limite claro.</p>
+                            </div>
+                            <span class="mini-row-value">{{ stats.tenants_without_plan }}</span>
+                        </a>
+                        <a href="{{ links.without_devices }}" class="mini-row drill-trigger" data-drill-type="ops" data-drill-value="no_devices" data-drill-label="Clientes sem dispositivos" data-drill-key="ops:no_devices">
+                            <div class="mini-row-copy">
+                                <p class="mini-row-title">Clientes sem dispositivos</p>
+                                <p class="feed-item-meta">Onboarding incompleto ou cliente parado apos contratacao.</p>
+                            </div>
+                            <span class="mini-row-value">{{ stats.tenants_without_devices }}</span>
+                        </a>
+                        <a href="{{ links.without_admin }}" class="mini-row drill-trigger" data-drill-type="ops" data-drill-value="no_admin" data-drill-label="Clientes sem admin" data-drill-key="ops:no_admin">
+                            <div class="mini-row-copy">
+                                <p class="mini-row-title">Clientes sem admin</p>
+                                <p class="feed-item-meta">Tenant sem owner/admin dificulta operacao e suporte.</p>
+                            </div>
+                            <span class="mini-row-value">{{ stats.tenants_without_admin }}</span>
+                        </a>
+                    </div>
                 </div>
             </div>
-        </section>
+        </div>
 
-        <aside class="space-y-4 xl:col-span-4">
-            <section class="side-card">
-                <div class="mb-2 flex items-center justify-between">
-                    <h2 class="section-kicker">Alertas acionaveis</h2>
-                    <span class="text-xs text-[var(--text-muted)]">{{ alerts|length }}</span>
+        <div class="xl:col-span-4 space-y-4">
+            <div class="stack-card muted-card">
+                <div class="list-header">
+                    <div>
+                        <p class="section-title">Alertas acionaveis</p>
+                        <p class="list-copy mt-1">Lista curta, sem competir com o restante da tela.</p>
+                    </div>
+                    <span class="pill-chip">{{ alerts|length }}</span>
                 </div>
-                {% set compact_alerts = alerts[:3] %}
-                <div class="space-y-2 alert-list-compact">
-                    {% for alert in compact_alerts %}
-                    <div class="alert-item {% if alert.severity == 'critical' %}alert-item-critical{% else %}alert-item-attention{% endif %}">
-                        <p class="text-sm font-semibold text-[var(--text-main)]">{{ alert.title }}</p>
-                        <p class="mt-1 text-xs text-[var(--text-muted)]">{{ alert.description }}</p>
-                        <a href="{{ alert.action_url }}" class="mt-2 inline-flex text-xs font-semibold text-brand-300 hover:text-brand-200">{{ alert.action_label }}</a>
+                <div class="alerts-feed">
+                    {% for alert in alerts[:4] %}
+                    <div class="feed-item">
+                        <div class="flex items-start justify-between gap-3">
+                            <div>
+                                <p class="feed-item-title">{{ alert.title }}</p>
+                                <p class="feed-item-meta">{{ alert.description }}</p>
+                            </div>
+                            <span class="status-badge {% if alert.severity == 'critical' %}status-badge-danger{% else %}status-badge-warning{% endif %}">{{ 'Critico' if alert.severity == 'critical' else 'Atencao' }}</span>
+                        </div>
+                        <a href="{{ alert.action_url }}" class="queue-link">{{ alert.action_label }}</a>
                     </div>
                     {% else %}
-                    <div class="alert-item">
-                        <p class="text-sm font-semibold text-emerald-300">Sem alertas criticos no momento.</p>
-                        <p class="mt-1 text-xs text-[var(--text-muted)]">A operacao atual esta dentro do esperado.</p>
+                    <div class="feed-item">
+                        <p class="feed-item-title text-emerald-300">Sem alertas criticos no momento</p>
+                        <p class="feed-item-meta">A plataforma esta operando dentro do esperado nesta janela.</p>
                     </div>
                     {% endfor %}
                 </div>
-                {% if alerts|length > 3 %}
-                <p class="mt-2 text-[11px] text-[var(--text-muted)]">+ {{ alerts|length - 3 }} alerta(s) adicional(is).</p>
-                {% endif %}
-            </section>
+            </div>
 
-            <section class="side-card">
-                <h2 class="section-kicker">Acoes rapidas</h2>
-                <div class="mt-3 grid grid-cols-1 gap-2">
-                    <a href="{{ links.manage_tenants }}" class="rounded-lg border border-[var(--line-color)] px-3 py-2 text-sm font-semibold text-[var(--text-main)] hover:bg-[var(--line-color)]">Gerenciar clientes</a>
-                    <a href="{{ links.manage_users }}" class="rounded-lg border border-[var(--line-color)] px-3 py-2 text-sm font-semibold text-[var(--text-main)] hover:bg-[var(--line-color)]">Gerenciar usuarios</a>
-                    <a href="{{ links.manage_billing }}" class="rounded-lg border border-[var(--line-color)] px-3 py-2 text-sm font-semibold text-[var(--text-main)] hover:bg-[var(--line-color)]">Operar cobranca</a>
-                    <a href="{{ links.manage_types }}" class="rounded-lg border border-[var(--line-color)] px-3 py-2 text-sm font-semibold text-[var(--text-main)] hover:bg-[var(--line-color)]">Catalogo tecnico</a>
+            <div class="stack-card">
+                <div class="list-header">
+                    <div>
+                        <p class="section-title">Navegacao rapida</p>
+                        <p class="list-copy mt-1">Acesso direto para as telas operacionais principais.</p>
+                    </div>
                 </div>
-            </section>
+                <div class="flex flex-wrap gap-2">
+                    <a href="#overview" class="anchor-chip">Visao geral</a>
+                    <a href="#revenue" class="anchor-chip">Receita</a>
+                    <a href="#operations" class="anchor-chip">Operacao</a>
+                    <a href="#drilldownPanel" class="anchor-chip">Drill-down</a>
+                    <a href="{{ links.manage_tenants }}" class="anchor-chip">Clientes</a>
+                    <a href="{{ links.manage_users }}" class="anchor-chip">Usuarios</a>
+                    <a href="{{ links.manage_billing }}" class="anchor-chip">Cobranca</a>
+                    <a href="{{ links.manage_types }}" class="anchor-chip">Catalogo tecnico</a>
+                </div>
+            </div>
+        </div>
+    </section>
 
-            <section class="side-card">
-                <h2 class="section-kicker">Integracoes e crescimento</h2>
-                <p class="mt-2 text-xs text-[var(--text-muted)]">
-                    Mercado Pago:
-                    {% if payment_setup.ready %}
-                    <span class="font-semibold text-emerald-300">OK</span>
+    <section id="revenue" class="grid grid-cols-1 gap-4 xl:grid-cols-12">
+        <div class="xl:col-span-7 space-y-4">
+            <div class="chart-card">
+                <div class="list-header">
+                    <div>
+                        <p class="section-title">Tendencia de faturamento</p>
+                        <p class="list-copy mt-1">Evolucao das faturas na janela selecionada, com clique para drill-down.</p>
+                    </div>
+                    <a href="{{ url_for('superadmin_billing.list_billing') }}" class="text-xs font-semibold text-blue-500 hover:text-blue-400">Abrir cobranca</a>
+                </div>
+                <div class="chart-wrap"><canvas id="chartInvoices"></canvas></div>
+            </div>
+
+            <div class="list-card">
+                <div class="list-header">
+                    <div>
+                        <p class="section-title">Clientes em risco</p>
+                        <p class="list-copy mt-1">Top clientes para acao comercial ou financeira agora.</p>
+                    </div>
+                    <span class="pill-chip">{{ risk_tenants|length }} clientes</span>
+                </div>
+                <div class="table-shell">
+                    <table class="admin-table min-w-full">
+                        <thead>
+                            <tr>
+                                <th>Cliente</th>
+                                <th>Status</th>
+                                <th>Faturas</th>
+                                <th>Backups</th>
+                                <th class="text-right">Acoes</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in risk_tenants %}
+                            <tr>
+                                <td>
+                                    <p class="font-semibold text-[var(--text-main)]">{{ row.name }}</p>
+                                    <p class="feed-item-meta">{{ row.slug }}</p>
+                                </td>
+                                <td>
+                                    {% if row.subscription_status == 'active' %}
+                                    <span class="status-badge status-badge-success">Ativo</span>
+                                    {% elif row.subscription_status in ['past_due', 'trial'] %}
+                                    <span class="status-badge status-badge-warning">{{ row.subscription_status|replace('_', ' ')|title }}</span>
+                                    {% else %}
+                                    <span class="status-badge status-badge-danger">{{ row.subscription_status|replace('_', ' ')|title }}</span>
+                                    {% endif %}
+                                    <p class="feed-item-meta mt-2">Score {{ row.risk_score }}</p>
+                                </td>
+                                <td>
+                                    <span class="text-amber-300">Pen {{ row.invoice_pending }}</span>
+                                    <span class="mx-1 text-[var(--text-muted)]">/</span>
+                                    <span class="text-rose-300">Falha {{ row.invoice_failed }}</span>
+                                </td>
+                                <td>
+                                    <span class="text-emerald-300">S {{ row.backup_success_period }}</span>
+                                    <span class="mx-1 text-[var(--text-muted)]">/</span>
+                                    <span class="text-rose-300">F {{ row.backup_failed_period }}</span>
+                                </td>
+                                <td class="text-right">
+                                    <a href="{{ url_for('superadmin_tenants.view_tenant', tenant_id=row.id) }}" class="text-xs font-semibold text-blue-500 hover:text-blue-400">360</a>
+                                    <a href="{{ url_for('superadmin_billing.list_billing', q=row.name) }}" class="ml-2 text-xs font-semibold text-blue-500 hover:text-blue-400">Cobranca</a>
+                                    <a href="{{ url_for('superadmin_users.list_users', scope='tenant', tenant=row.id) }}" class="ml-2 text-xs font-semibold text-blue-500 hover:text-blue-400">Usuarios</a>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="5" class="text-center text-[var(--text-muted)]">Nenhum cliente em risco no momento.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="xl:col-span-5 space-y-4">
+            <div class="chart-card">
+                <div class="list-header">
+                    <div>
+                        <p class="section-title">Saude de pagamento</p>
+                        <p class="list-copy mt-1">Distribuicao atual da base por status de assinatura.</p>
+                    </div>
+                    <span class="pill-chip">{{ stats.tenants_total }} clientes</span>
+                </div>
+                <div class="chart-wrap"><canvas id="chartPayment"></canvas></div>
+                <div class="status-strip mt-4">
+                    <span class="status-chip">Ativos: {{ stats.tenants_payment_active }}</span>
+                    <span class="status-chip">Pendentes: {{ stats.tenants_payment_pending }}</span>
+                    <span class="status-chip">Cancelados: {{ stats.tenants_payment_canceled }}</span>
+                </div>
+            </div>
+
+            <div class="stack-card">
+                <div class="list-header">
+                    <div>
+                        <p class="section-title">Mix de planos</p>
+                        <p class="list-copy mt-1">Distribuicao atual da base por produto comercial.</p>
+                    </div>
+                    <a href="{{ url_for('superadmin_plans.list_plans') }}" class="text-xs font-semibold text-blue-500 hover:text-blue-400">Gerenciar planos</a>
+                </div>
+                <div class="mini-list">
+                    {% for plan in plan_usage[:6] %}
+                    <div class="mini-row">
+                        <div class="mini-row-copy">
+                            <p class="mini-row-title">{{ plan.name }}</p>
+                            <div class="progress-track mt-2"><div class="progress-bar" style="width: {{ (plan.tenants / [stats.tenants_total, 1]|max * 100)|round(1) }}%"></div></div>
+                        </div>
+                        <span class="mini-row-value">{{ plan.tenants }}</span>
+                    </div>
                     {% else %}
-                    <span class="font-semibold text-rose-300">INCOMPLETO</span>
-                    {% endif %}
-                </p>
-                <p class="mt-1 text-xs text-[var(--text-muted)]">Novos clientes (30d): <span class="text-[var(--text-main)]">{{ stats.new_tenants_30d }}</span></p>
-                <p class="mt-1 text-xs text-[var(--text-muted)]">Delta: <span class="text-[var(--text-main)]">{{ '+' if stats.tenants_growth_delta >= 0 else '' }}{{ stats.tenants_growth_delta }}</span></p>
-                <p class="mt-1 text-xs text-[var(--text-muted)]">Planos ativos: <span class="text-[var(--text-main)]">{{ stats.plans_active }}</span></p>
-            </section>
-        </aside>
-    </div>
+                    <div class="feed-item">
+                        <p class="feed-item-title">Sem planos cadastrados</p>
+                        <p class="feed-item-meta">Cadastre produtos para organizar cobranca e limites.</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </section>
 
-    <div class="grid grid-cols-1 gap-4 xl:grid-cols-12">
-        <section class="premium-card p-5 xl:col-span-7">
-            <div class="mb-3 flex items-center justify-between">
-                <h2 class="section-kicker">Tendencia de backups</h2>
-                <span class="text-xs text-[var(--text-muted)]">{{ range_label }}</span>
+    <section id="operations" class="grid grid-cols-1 gap-4 xl:grid-cols-12">
+        <div class="xl:col-span-7 space-y-4">
+            <div class="chart-card">
+                <div class="list-header">
+                    <div>
+                        <p class="section-title">Tendencia de backups</p>
+                        <p class="list-copy mt-1">Visao tecnica do periodo, com clique em sucesso/falha para filtrar tenants.</p>
+                    </div>
+                    <span class="chart-legend-note">{{ range_label }}</span>
+                </div>
+                <div class="chart-wrap"><canvas id="chartBackups"></canvas></div>
             </div>
-            <div class="chart-wrap"><canvas id="chartBackups"></canvas></div>
-        </section>
 
-        <section class="premium-card p-5 xl:col-span-5">
-            <div class="mb-3 flex items-center justify-between">
-                <h2 class="section-kicker">Tendencia de faturamento</h2>
-                <a href="{{ url_for('superadmin_billing.list_billing') }}" class="text-xs font-semibold text-brand-400 hover:text-brand-300">Abrir cobranca</a>
+            <div class="list-card">
+                <div class="list-header">
+                    <div>
+                        <p class="section-title">Top atividade por cliente</p>
+                        <p class="list-copy mt-1">Onde o uso da plataforma esta concentrado nesta janela.</p>
+                    </div>
+                    <a href="{{ url_for('superadmin_tenants.list_tenants') }}" class="text-xs font-semibold text-blue-500 hover:text-blue-400">Ver todos</a>
+                </div>
+                <div class="table-shell">
+                    <table class="admin-table min-w-full">
+                        <thead>
+                            <tr>
+                                <th>Cliente</th>
+                                <th>Uso</th>
+                                <th>Backups</th>
+                                <th class="text-right">Acoes</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in top_activity_tenants %}
+                            <tr>
+                                <td>
+                                    <p class="font-semibold text-[var(--text-main)]">{{ row.name }}</p>
+                                    <p class="feed-item-meta">{{ row.plan_name }}</p>
+                                </td>
+                                <td>{{ row.devices_count }} disp. • {{ row.users_count }} usuarios</td>
+                                <td>
+                                    <span class="text-emerald-300">S {{ row.backup_success_period }}</span>
+                                    <span class="mx-1 text-[var(--text-muted)]">/</span>
+                                    <span class="text-rose-300">F {{ row.backup_failed_period }}</span>
+                                </td>
+                                <td class="text-right">
+                                    <a href="{{ url_for('superadmin_tenants.view_tenant', tenant_id=row.id) }}" class="text-xs font-semibold text-blue-500 hover:text-blue-400">360</a>
+                                    <a href="{{ url_for('superadmin_tenants.edit_tenant', tenant_id=row.id) }}" class="ml-2 text-xs font-semibold text-blue-500 hover:text-blue-400">Editar</a>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="4" class="text-center text-[var(--text-muted)]">Sem dados de atividade.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             </div>
-            <div class="chart-wrap"><canvas id="chartInvoices"></canvas></div>
-        </section>
-    </div>
+        </div>
 
-    <div class="grid grid-cols-1 gap-4 xl:grid-cols-12">
-        <section class="premium-card p-5 xl:col-span-4">
-            <div class="mb-3 flex items-center justify-between">
-                <h2 class="section-kicker">Saude de pagamento</h2>
-                <span class="text-xs text-[var(--text-muted)]">Distribuicao</span>
+        <div class="xl:col-span-5 space-y-4">
+            <div class="stack-card">
+                <div class="list-header">
+                    <div>
+                        <p class="section-title">Clientes recentes</p>
+                        <p class="list-copy mt-1">Novos tenants ou tenants criados por ultimo.</p>
+                    </div>
+                    <a href="{{ links.growth_clients }}" class="text-xs font-semibold text-blue-500 hover:text-blue-400">Ver clientes</a>
+                </div>
+                <div class="tenants-feed">
+                    {% for row in recent_tenants[:6] %}
+                    <a href="{{ url_for('superadmin_tenants.view_tenant', tenant_id=row.id) }}" class="feed-item feed-item-link">
+                        <div class="flex items-start justify-between gap-3">
+                            <div>
+                                <p class="feed-item-title">{{ row.name }}</p>
+                                <p class="feed-item-meta">{{ row.slug }} • {{ format_datetime(row.created_at, "%d/%m/%Y", "-") }}</p>
+                            </div>
+                            {% if row.subscription_status == 'active' %}
+                            <span class="status-badge status-badge-success">Ativo</span>
+                            {% elif row.subscription_status in ['past_due', 'trial'] %}
+                            <span class="status-badge status-badge-warning">{{ row.subscription_status|replace('_', ' ')|title }}</span>
+                            {% else %}
+                            <span class="status-badge status-badge-danger">{{ row.subscription_status|replace('_', ' ')|title }}</span>
+                            {% endif %}
+                        </div>
+                    </a>
+                    {% else %}
+                    <div class="feed-item">
+                        <p class="feed-item-title">Sem novos clientes recentes</p>
+                    </div>
+                    {% endfor %}
+                </div>
             </div>
-            <div class="chart-wrap"><canvas id="chartPayment"></canvas></div>
-            <div class="mt-3 flex items-center gap-2 text-xs">
-                <span class="kpi-chip">Ativos: {{ stats.tenants_payment_active }}</span>
-                <span class="kpi-chip">Pendentes: {{ stats.tenants_payment_pending }}</span>
-                <span class="kpi-chip">Cancelados: {{ stats.tenants_payment_canceled }}</span>
-            </div>
-        </section>
 
-        <section class="premium-card overflow-hidden xl:col-span-8">
-            <div class="flex items-center justify-between border-b border-[var(--line-color)] px-4 py-3">
-                <h2 class="section-kicker">Clientes em risco (top)</h2>
-                <span class="text-xs text-[var(--text-muted)]">{{ risk_tenants|length }} clientes</span>
-            </div>
-            <div class="overflow-x-auto">
-                <table class="admin-table min-w-full">
-                    <thead>
-                        <tr>
-                            <th>Cliente</th>
-                            <th>Status</th>
-                            <th>Faturas</th>
-                            <th>Backups ({{ range_label }})</th>
-                            <th class="text-right">Acoes</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for row in risk_tenants %}
-                        <tr>
-                            <td>
-                                <p class="font-medium text-[var(--text-main)]">{{ row.name }}</p>
-                                <p class="text-xs text-[var(--text-muted)]">{{ row.slug }}</p>
-                            </td>
-                            <td>
-                                {% if row.subscription_status == 'active' %}
-                                <span class="rounded-full bg-emerald-500/15 px-2 py-0.5 text-xs font-semibold text-emerald-300">Ativo</span>
-                                {% elif row.subscription_status in ['past_due', 'trial'] %}
-                                <span class="rounded-full bg-amber-500/15 px-2 py-0.5 text-xs font-semibold text-amber-300">{{ row.subscription_status|replace('_', ' ')|title }}</span>
-                                {% else %}
-                                <span class="rounded-full bg-rose-500/15 px-2 py-0.5 text-xs font-semibold text-rose-300">{{ row.subscription_status|replace('_', ' ')|title }}</span>
+            <div class="stack-card">
+                <div class="list-header">
+                    <div>
+                        <p class="section-title">Atividade recente da plataforma</p>
+                        <p class="list-copy mt-1">Ultimas 20 acoes relevantes para suporte e operacao.</p>
+                    </div>
+                </div>
+                <div class="activity-feed">
+                    {% for item in recent_activities[:8] %}
+                    <div class="feed-item">
+                        <div class="flex items-start justify-between gap-3">
+                            <div>
+                                <p class="feed-item-title">{{ item.action }}</p>
+                                <p class="feed-item-meta">{{ item.user_name }} • {{ item.tenant_name }}</p>
+                                {% if item.details %}
+                                <p class="feed-item-meta mt-2">{{ item.details[:120] }}{% if item.details|length > 120 %}...{% endif %}</p>
                                 {% endif %}
-                                <p class="mt-1 text-[11px] text-[var(--text-muted)]">Score: {{ row.risk_score }}</p>
-                            </td>
-                            <td>
-                                <span class="text-amber-300">Pen: {{ row.invoice_pending }}</span>
-                                <span class="mx-1 text-[var(--text-muted)]">/</span>
-                                <span class="text-rose-300">Falha: {{ row.invoice_failed }}</span>
-                            </td>
-                            <td>
-                                <span class="text-emerald-300">S: {{ row.backup_success_period }}</span>
-                                <span class="mx-1 text-[var(--text-muted)]">/</span>
-                                <span class="text-rose-300">F: {{ row.backup_failed_period }}</span>
-                            </td>
-                            <td class="text-right">
-                                <a href="{{ url_for('superadmin_users.list_users', scope='tenant', tenant=row.id) }}" class="text-xs font-semibold text-brand-400 hover:text-brand-300">Usuarios</a>
-                                <a href="{{ url_for('superadmin_billing.list_billing', q=row.name) }}" class="ml-2 text-xs font-semibold text-brand-400 hover:text-brand-300">Cobranca</a>
-                                <a href="{{ url_for('superadmin_tenants.edit_tenant', tenant_id=row.id) }}" class="ml-2 text-xs font-semibold text-brand-400 hover:text-brand-300">Editar</a>
-                            </td>
-                        </tr>
-                        {% else %}
-                        <tr>
-                            <td colspan="5" class="text-center text-[var(--text-muted)]">Nenhum cliente em risco no momento.</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                            </div>
+                            <span class="pill-chip">{{ format_datetime(item.created_at, "%d/%m %H:%M", "-") }}</span>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="feed-item">
+                        <p class="feed-item-title">Sem eventos recentes</p>
+                    </div>
+                    {% endfor %}
+                </div>
             </div>
-        </section>
-    </div>
+        </div>
+    </section>
 
-    <section id="drilldownPanel" class="premium-card p-4 space-y-3">
-        <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+    <section id="drilldownPanel" class="drill-shell space-y-4">
+        <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             <div>
-                <h2 class="section-kicker">Drill-down de clientes</h2>
-                <p class="mt-1 text-xs text-[var(--text-muted)]">Clique nos cards e graficos para filtrar sem sair da pagina.</p>
+                <p class="section-title">Drill-down de clientes</p>
+                <p class="list-copy mt-1">Use os cards e graficos acima como navegacao analitica. O objetivo aqui e cortar a base ate chegar no grupo exato de clientes.</p>
             </div>
             <div class="flex items-center gap-2">
                 <span id="drillFilterBadge" class="drill-filter-badge">Sem filtro ativo</span>
-                <button id="clearDrillFilter" type="button" class="hidden rounded-lg border border-[var(--line-color)] px-2.5 py-1.5 text-xs font-semibold text-[var(--text-main)] hover:bg-[var(--line-color)]">
+                <button id="clearDrillFilter" type="button" class="hidden rounded-lg border border-[var(--line-color)] px-3 py-2 text-xs font-semibold text-[var(--text-main)] hover:bg-[var(--line-color)]">
                     Limpar
                 </button>
             </div>
         </div>
 
-        <div class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-            <input id="drillSearch" type="text" placeholder="Buscar cliente por nome, slug ou email..." class="w-full rounded-lg border border-[var(--line-color)] bg-transparent px-3 py-2 text-sm text-[var(--text-main)] outline-none ring-brand-500 focus:ring-1">
-            <p id="drillVisibleCount" class="text-xs text-[var(--text-muted)]">0 clientes exibidos</p>
+        <div class="grid grid-cols-1 gap-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
+            <input id="drillSearch" type="text" placeholder="Buscar cliente por nome, slug ou email..." class="w-full rounded-xl border border-[var(--line-color)] bg-transparent px-3.5 py-3 text-sm text-[var(--text-main)] outline-none ring-blue-500 focus:ring-1">
+            <p id="drillVisibleCount" class="text-sm text-[var(--text-muted)]">0 clientes exibidos</p>
         </div>
 
-        <div class="overflow-x-auto">
+        <div class="table-shell">
             <table id="drilldownTable" class="admin-table min-w-full">
                 <thead>
                     <tr>
@@ -476,25 +944,25 @@
                         data-invoice-failed="{{ row.invoice_failed }}"
                         data-risk-score="{{ row.risk_score }}">
                         <td>
-                            <p class="font-medium text-[var(--text-main)]">{{ row.name }}</p>
-                            <p class="text-xs text-[var(--text-muted)]">{{ row.slug }} • {{ row.email }}</p>
+                            <p class="font-semibold text-[var(--text-main)]">{{ row.name }}</p>
+                            <p class="feed-item-meta">{{ row.slug }} • {{ row.email }}</p>
                         </td>
                         <td>
                             {% if row.subscription_status == 'active' %}
-                            <span class="rounded-full bg-emerald-500/15 px-2 py-0.5 text-xs font-semibold text-emerald-300">Ativo</span>
+                            <span class="status-badge status-badge-success">Ativo</span>
                             {% elif row.subscription_status in ['past_due', 'trial'] %}
-                            <span class="rounded-full bg-amber-500/15 px-2 py-0.5 text-xs font-semibold text-amber-300">{{ row.subscription_status|replace('_', ' ')|title }}</span>
+                            <span class="status-badge status-badge-warning">{{ row.subscription_status|replace('_', ' ')|title }}</span>
                             {% else %}
-                            <span class="rounded-full bg-rose-500/15 px-2 py-0.5 text-xs font-semibold text-rose-300">{{ row.subscription_status|replace('_', ' ')|title }}</span>
+                            <span class="status-badge status-badge-danger">{{ row.subscription_status|replace('_', ' ')|title }}</span>
                             {% endif %}
                         </td>
                         <td>{{ row.plan_name }}</td>
                         <td>{{ row.devices_count }} disp • {{ row.users_count }} users</td>
-                        <td><span class="text-emerald-300">S: {{ row.backup_success_period }}</span> / <span class="text-rose-300">F: {{ row.backup_failed_period }}</span></td>
-                        <td><span class="text-emerald-300">P: {{ row.invoice_paid }}</span> / <span class="text-amber-300">Pen: {{ row.invoice_pending }}</span> / <span class="text-rose-300">F: {{ row.invoice_failed }}</span></td>
+                        <td><span class="text-emerald-300">S {{ row.backup_success_period }}</span> / <span class="text-rose-300">F {{ row.backup_failed_period }}</span></td>
+                        <td><span class="text-emerald-300">P {{ row.invoice_paid }}</span> / <span class="text-amber-300">Pen {{ row.invoice_pending }}</span> / <span class="text-rose-300">F {{ row.invoice_failed }}</span></td>
                         <td>
                             {% if row.risk_score > 0 %}
-                            <span class="text-rose-300 font-semibold">{{ row.risk_score }}</span>
+                            <span class="font-semibold text-rose-300">{{ row.risk_score }}</span>
                             {% else %}
                             <span class="text-[var(--text-muted)]">0</span>
                             {% endif %}
@@ -509,89 +977,6 @@
             </table>
         </div>
     </section>
-
-    <div class="grid grid-cols-1 gap-4 xl:grid-cols-12">
-        <section class="premium-card overflow-hidden xl:col-span-6">
-            <div class="px-4 py-3 border-b border-[var(--line-color)] flex items-center justify-between">
-                <h2 class="section-kicker">Top atividade por cliente</h2>
-                <a href="{{ url_for('superadmin_tenants.list_tenants') }}" class="text-xs font-semibold text-brand-400 hover:text-brand-300">Ver todos</a>
-            </div>
-            <div class="overflow-x-auto">
-                <table class="admin-table min-w-full">
-                    <thead>
-                        <tr>
-                            <th>Cliente</th>
-                            <th>Uso</th>
-                            <th>Backups ({{ range_label }})</th>
-                            <th class="text-right">Acoes</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for row in top_activity_tenants %}
-                        <tr>
-                            <td>
-                                <p class="font-medium text-[var(--text-main)]">{{ row.name }}</p>
-                                <p class="text-xs text-[var(--text-muted)]">{{ row.plan_name }}</p>
-                            </td>
-                            <td>{{ row.devices_count }} disp. • {{ row.users_count }} usuarios</td>
-                            <td>
-                                <span class="text-emerald-300">S: {{ row.backup_success_period }}</span>
-                                <span class="mx-1 text-[var(--text-muted)]">/</span>
-                                <span class="text-rose-300">F: {{ row.backup_failed_period }}</span>
-                            </td>
-                            <td class="text-right">
-                                <a href="{{ url_for('superadmin_users.list_users', scope='tenant', tenant=row.id) }}" class="text-xs font-semibold text-brand-400 hover:text-brand-300">Usuarios</a>
-                                <a href="{{ url_for('superadmin_tenants.edit_tenant', tenant_id=row.id) }}" class="ml-2 text-xs font-semibold text-brand-400 hover:text-brand-300">Editar</a>
-                            </td>
-                        </tr>
-                        {% else %}
-                        <tr>
-                            <td colspan="4" class="text-center text-[var(--text-muted)]">Sem dados de atividade.</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </section>
-
-        <section class="premium-card overflow-hidden xl:col-span-6">
-            <div class="px-4 py-3 border-b border-[var(--line-color)] flex items-center justify-between">
-                <h2 class="section-kicker">Atividade recente da plataforma</h2>
-                <span class="text-xs text-[var(--text-muted)]">Ultimas 20 acoes</span>
-            </div>
-            <div class="overflow-x-auto">
-                <table class="admin-table min-w-full">
-                    <thead>
-                        <tr>
-                            <th>Quando</th>
-                            <th>Acao</th>
-                            <th>Usuario</th>
-                            <th>Contexto</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for item in recent_activities %}
-                        <tr>
-                            <td>{{ format_datetime(item.created_at, "%d/%m %H:%M", "-") }}</td>
-                            <td>
-                                <p class="font-medium text-[var(--text-main)]">{{ item.action }}</p>
-                                {% if item.details %}
-                                <p class="text-xs text-[var(--text-muted)]">{{ item.details[:90] }}{% if item.details|length > 90 %}...{% endif %}</p>
-                                {% endif %}
-                            </td>
-                            <td>{{ item.user_name }}</td>
-                            <td>{{ item.tenant_name }}</td>
-                        </tr>
-                        {% else %}
-                        <tr>
-                            <td colspan="4" class="text-center text-[var(--text-muted)]">Sem eventos recentes.</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </section>
-    </div>
 </div>
 
 <script>
@@ -634,9 +1019,9 @@
             const adminUsers = toNumber(row.dataset.adminUsers);
             const backupSuccessCount = toNumber(row.dataset.backupSuccess);
             const backupFailedCount = toNumber(row.dataset.backupFailed);
-            const invoicePaid = toNumber(row.dataset.invoicePaid);
-            const invoicePending = toNumber(row.dataset.invoicePending);
-            const invoiceFailed = toNumber(row.dataset.invoiceFailed);
+            const invoicePaidCount = toNumber(row.dataset.invoicePaid);
+            const invoicePendingCount = toNumber(row.dataset.invoicePending);
+            const invoiceFailedCount = toNumber(row.dataset.invoiceFailed);
             const riskScore = toNumber(row.dataset.riskScore);
 
             if (drillState.type === 'subscription') {
@@ -651,10 +1036,10 @@
             }
 
             if (drillState.type === 'invoice') {
-                if (drillState.value === 'paid') return invoicePaid > 0;
-                if (drillState.value === 'pending') return invoicePending > 0;
-                if (drillState.value === 'failed') return invoiceFailed > 0;
-                if (drillState.value === 'pending_or_failed') return invoicePending > 0 || invoiceFailed > 0;
+                if (drillState.value === 'paid') return invoicePaidCount > 0;
+                if (drillState.value === 'pending') return invoicePendingCount > 0;
+                if (drillState.value === 'failed') return invoiceFailedCount > 0;
+                if (drillState.value === 'pending_or_failed') return invoicePendingCount > 0 || invoiceFailedCount > 0;
                 return true;
             }
 
@@ -670,7 +1055,7 @@
                 if (drillState.value === 'no_plan') return !hasPlan;
                 if (drillState.value === 'no_devices') return devices === 0;
                 if (drillState.value === 'no_admin') return adminUsers === 0;
-                if (drillState.value === 'period_failures') return backupFailedCount > 0 || invoiceFailed > 0;
+                if (drillState.value === 'period_failures') return backupFailedCount > 0 || invoiceFailedCount > 0;
                 return true;
             }
 
