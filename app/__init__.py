@@ -13,6 +13,7 @@ import secrets
 from sqlalchemy import text
 from redis import Redis
 from werkzeug.exceptions import HTTPException
+from urllib.parse import urlsplit, urlunsplit
 
 def create_flask_app():
     app = Flask(__name__)
@@ -32,6 +33,17 @@ def create_flask_app():
             session["_csrf_token"] = token
         return token
 
+    def _sanitize_admin_return_target(raw_value: str | None) -> str | None:
+        value = (raw_value or "").strip()
+        if not value:
+            return None
+        parsed = urlsplit(value)
+        if parsed.scheme or parsed.netloc:
+            return None
+        if not parsed.path.startswith("/admin/"):
+            return None
+        return urlunsplit(("", "", parsed.path, parsed.query, ""))
+
     @app.before_request
     def _csrf_protect():
         if request.method in ("POST", "PUT", "PATCH", "DELETE"):
@@ -41,6 +53,29 @@ def create_flask_app():
             request_token = request.form.get("_csrf_token") or request.headers.get("X-CSRF-Token")
             if not session_token or not request_token or session_token != request_token:
                 abort(400)
+
+    @app.before_request
+    def _track_superadmin_tenant_origin():
+        if session.get("user_role") != "super_admin":
+            session.pop("superadmin_return_url", None)
+            session.pop("superadmin_return_label", None)
+            session.pop("superadmin_return_tenant_slug", None)
+            return
+
+        if not request.path.startswith("/tenant/"):
+            return
+
+        admin_return = _sanitize_admin_return_target(request.args.get("admin_return"))
+        if not admin_return:
+            return
+
+        session["superadmin_return_url"] = admin_return
+        session["superadmin_return_label"] = (
+            (request.args.get("admin_return_label") or "").strip()[:80] or "Voltar ao Tenant 360"
+        )
+        current_tenant_slug = (request.view_args or {}).get("tenant_slug")
+        if current_tenant_slug:
+            session["superadmin_return_tenant_slug"] = current_tenant_slug
 
     app.jinja_env.globals["csrf_token"] = _generate_csrf_token
 
@@ -90,6 +125,29 @@ def create_flask_app():
             }
         finally:
             db.close()
+
+    @app.context_processor
+    def inject_superadmin_tenant_return():
+        if session.get("user_role") != "super_admin":
+            return {}
+
+        current_tenant_slug = (request.view_args or {}).get("tenant_slug")
+        return_url = session.get("superadmin_return_url")
+        return_label = session.get("superadmin_return_label") or "Voltar ao Tenant 360"
+        return_tenant_slug = session.get("superadmin_return_tenant_slug")
+        is_tenant_area = request.path.startswith("/tenant/")
+        is_active = bool(
+            is_tenant_area
+            and return_url
+            and current_tenant_slug
+            and (not return_tenant_slug or return_tenant_slug == current_tenant_slug)
+        )
+
+        return {
+            "superadmin_return_url": return_url if is_active else None,
+            "superadmin_return_label": return_label,
+            "is_superadmin_tenant_view": is_active,
+        }
     
     logger = logging.getLogger(__name__)
 

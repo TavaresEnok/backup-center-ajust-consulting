@@ -3,6 +3,7 @@
 {% block title %}{{ tenant.name }} | Tenant 360{% endblock %}
 
 {% block content %}
+{% set admin_return_url = url_for('superadmin_tenants.view_tenant', tenant_id=tenant.id) %}
 <style>
     html.dark body {
         background-color: #061126 !important;
@@ -92,17 +93,21 @@
                 </div>
             </div>
             <div class="flex flex-wrap gap-2">
-                <a href="{{ url_for('tenant.dashboard', tenant_slug=tenant.slug) }}"
+                <a href="{{ url_for('tenant.dashboard', tenant_slug=tenant.slug, admin_return=admin_return_url, admin_return_label='Voltar ao Tenant 360') }}"
                     class="rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700">
                     Abrir tenant
                 </a>
-                <a href="{{ url_for('tenant_devices.list_devices', tenant_slug=tenant.slug) }}"
+                <a href="{{ url_for('tenant_devices.list_devices', tenant_slug=tenant.slug, admin_return=admin_return_url, admin_return_label='Voltar ao Tenant 360') }}"
                     class="rounded-xl border border-[var(--card-border)] px-4 py-2.5 text-sm font-semibold text-[var(--text-main)] hover:bg-[var(--line-color)]">
                     Dispositivos
                 </a>
-                <a href="{{ url_for('tenant_backups.list_backups', tenant_slug=tenant.slug) }}"
+                <a href="{{ url_for('tenant_backups.list_backups', tenant_slug=tenant.slug, admin_return=admin_return_url, admin_return_label='Voltar ao Tenant 360') }}"
                     class="rounded-xl border border-[var(--card-border)] px-4 py-2.5 text-sm font-semibold text-[var(--text-main)] hover:bg-[var(--line-color)]">
                     Backups
+                </a>
+                <a href="{{ url_for('billing.dashboard', tenant_slug=tenant.slug, admin_return=admin_return_url, admin_return_label='Voltar ao Tenant 360') }}"
+                    class="rounded-xl border border-[var(--card-border)] px-4 py-2.5 text-sm font-semibold text-[var(--text-main)] hover:bg-[var(--line-color)]">
+                    Assinatura
                 </a>
                 <a href="{{ url_for('superadmin_billing.list_billing', q=tenant.name) }}"
                     class="rounded-xl border border-[var(--card-border)] px-4 py-2.5 text-sm font-semibold text-[var(--text-main)] hover:bg-[var(--line-color)]">

@@ -66,6 +66,18 @@
             {% set is_admin_role = role in ['super_admin', 'tenant_owner', 'tenant_admin'] %}
             {% set is_owner_role = role in ['super_admin', 'tenant_owner'] %}
 
+            {% if superadmin_return_url %}
+            <div class="mb-6">
+                <a href="{{ superadmin_return_url }}"
+                    class="menu-item group border border-blue-500/20 bg-blue-500/10 text-blue-600 dark:text-blue-300">
+                    <i data-lucide="arrow-left-right" class="w-5 h-5 shrink-0 text-blue-500 dark:text-blue-300"></i>
+                    <span x-show="mobileSidebarOpen || sidebarExpanded || sidebarHovered" class="truncate font-medium">
+                        {{ superadmin_return_label }}
+                    </span>
+                </a>
+            </div>
+            {% endif %}
+
             <!-- Menu Principal -->
             <div>
                 <h3 class="mb-4 ml-4 text-xs uppercase font-semibold text-gray-400 tracking-wider"
