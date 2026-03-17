@@ -88,6 +88,192 @@
             color: var(--text-main);
             transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
         }
+
+        .admin-page {
+            max-width: 1600px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            padding-bottom: 1rem;
+        }
+
+        .admin-page--narrow {
+            max-width: 980px;
+        }
+
+        .admin-page--compact {
+            gap: 1.25rem;
+        }
+
+        .admin-page-header {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 1rem 1.25rem;
+        }
+
+        .admin-page-header-copy {
+            display: flex;
+            flex-direction: column;
+            gap: 0.45rem;
+        }
+
+        .admin-page-header-actions {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .admin-page-title {
+            font-size: 1.9rem;
+            line-height: 1.1;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            color: var(--text-main);
+        }
+
+        .admin-page-subtitle {
+            max-width: 54rem;
+            font-size: 0.92rem;
+            line-height: 1.55;
+            color: var(--text-muted);
+        }
+
+        .admin-card-grid {
+            display: grid;
+            gap: 0.9rem;
+        }
+
+        .admin-filter-card {
+            padding: 1rem;
+        }
+
+        .admin-table {
+            min-width: 100%;
+            font-size: 0.875rem;
+        }
+
+        .admin-table th {
+            padding: 0.8rem 0.95rem;
+            border-bottom: 1px solid var(--line-color);
+            font-size: 0.69rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            text-align: left;
+        }
+
+        .admin-table td {
+            padding: 0.9rem 0.95rem;
+            border-bottom: 1px solid var(--line-color);
+            vertical-align: top;
+            color: var(--text-main);
+        }
+
+        .admin-table tbody tr:hover {
+            background: rgba(148, 163, 184, 0.06);
+        }
+
+        .admin-table-actions {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+            gap: 0.5rem;
+        }
+
+        .admin-form-card {
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        .admin-form-section {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            padding-top: 1.25rem;
+            border-top: 1px solid var(--line-color);
+        }
+
+        .admin-form-heading {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+        }
+
+        .admin-form-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .admin-form-copy {
+            font-size: 0.82rem;
+            line-height: 1.5;
+            color: var(--text-muted);
+        }
+
+        .admin-form-actions {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+            gap: 0.75rem;
+            padding-top: 0.25rem;
+        }
+
+        .admin-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .admin-help {
+            margin-top: 0.35rem;
+            font-size: 0.75rem;
+            line-height: 1.45;
+            color: var(--text-muted);
+        }
+
+        .admin-control {
+            display: block;
+            width: 100%;
+            margin-top: 0.4rem;
+            border-radius: 0.75rem;
+            border: 1px solid var(--card-border);
+            background: var(--card-bg);
+            color: var(--text-main);
+            padding: 0.72rem 0.9rem;
+            font-size: 0.875rem;
+            line-height: 1.4;
+        }
+
+        .admin-control:focus {
+            outline: none;
+            border-color: rgba(59, 130, 246, 0.55);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.18);
+        }
+
+        .admin-toggle-card {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            border: 1px solid var(--card-border);
+            border-radius: 0.85rem;
+            background: rgba(148, 163, 184, 0.08);
+            padding: 0.9rem 1rem;
+            color: var(--text-main);
+        }
+
+        .admin-toggle-card input[type="checkbox"],
+        .admin-toggle-card input[type="radio"] {
+            flex-shrink: 0;
+        }
     </style>
 </head>
 

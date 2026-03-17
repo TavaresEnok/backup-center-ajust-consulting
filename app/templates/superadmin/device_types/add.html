@@ -3,50 +3,52 @@
 {% block title %}Novo Tipo de Dispositivo | Super Admin{% endblock %}
 
 {% block content %}
-<div class="mx-auto max-w-3xl space-y-5 pb-4">
-    <div>
-        <h1 class="text-2xl font-bold text-[var(--text-main)]">Novo tipo de dispositivo</h1>
-        <p class="text-sm text-[var(--text-muted)]">Cadastre script, parâmetros e padrão de conexão.</p>
+<div class="admin-page admin-page--narrow admin-page--compact">
+    <div class="admin-page-header">
+        <div class="admin-page-header-copy">
+            <h1 class="admin-page-title">Novo tipo de dispositivo</h1>
+            <p class="admin-page-subtitle">Cadastre script, parametros e padrao de conexao.</p>
+        </div>
     </div>
 
-    <form method="POST" class="premium-card space-y-5 p-5">
+    <form method="POST" class="premium-card admin-form-card">
         {% include 'partials/csrf.html' %}
 
         <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
             <div>
-                <label for="name" class="block text-sm font-medium text-[var(--text-main)]">Nome</label>
+                <label for="name" class="admin-label">Nome</label>
                 <input type="text" name="name" id="name" required
                     placeholder="Ex: OLT FiberHome"
-                    class="mt-1 block w-full rounded-lg border border-[var(--card-border)] bg-[var(--card-bg)] px-3 py-2 text-sm text-[var(--text-main)]">
+                    class="admin-control">
             </div>
             <div>
-                <label for="slug" class="block text-sm font-medium text-[var(--text-main)]">Slug</label>
+                <label for="slug" class="admin-label">Slug</label>
                 <input type="text" name="slug" id="slug" required
                     placeholder="Ex: olt_fiberhome"
-                    class="mt-1 block w-full rounded-lg border border-[var(--card-border)] bg-[var(--card-bg)] px-3 py-2 text-sm text-[var(--text-main)]">
+                    class="admin-control">
             </div>
         </div>
 
         <div class="grid grid-cols-1 gap-3 md:grid-cols-3">
             <div class="md:col-span-2">
-                <label for="script_name" class="block text-sm font-medium text-[var(--text-main)]">Script</label>
+                <label for="script_name" class="admin-label">Script</label>
                 <input type="text" name="script_name" id="script_name" required
                     placeholder="Ex: fiberhome_olt_netmiko.py"
-                    class="mt-1 block w-full rounded-lg border border-[var(--card-border)] bg-[var(--card-bg)] px-3 py-2 text-sm text-[var(--text-main)]">
-                <p class="mt-1 text-xs text-[var(--text-muted)]">Arquivo em `app/scripts/backup_scripts/`.</p>
+                    class="admin-control">
+                <p class="admin-help">Arquivo em `app/scripts/backup_scripts/`.</p>
             </div>
             <div>
-                <label for="default_port" class="block text-sm font-medium text-[var(--text-main)]">Porta padrão</label>
+                <label for="default_port" class="admin-label">Porta padrão</label>
                 <input type="number" name="default_port" id="default_port" value="22" required min="1"
-                    class="mt-1 block w-full rounded-lg border border-[var(--card-border)] bg-[var(--card-bg)] px-3 py-2 text-sm text-[var(--text-main)]">
+                    class="admin-control">
             </div>
         </div>
 
         <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
             <div>
-                <label for="category" class="block text-sm font-medium text-[var(--text-main)]">Categoria</label>
+                <label for="category" class="admin-label">Categoria</label>
                 <input type="text" name="category" id="category" value="other" list="device-type-categories"
-                    class="mt-1 block w-full rounded-lg border border-[var(--card-border)] bg-[var(--card-bg)] px-3 py-2 text-sm text-[var(--text-main)]">
+                    class="admin-control">
                 <datalist id="device-type-categories">
                     <option value="olt"></option>
                     <option value="switch"></option>
@@ -57,31 +59,31 @@
                 </datalist>
             </div>
             <div>
-                <label for="required_parameters" class="block text-sm font-medium text-[var(--text-main)]">Parâmetros extras</label>
+                <label for="required_parameters" class="admin-label">Parâmetros extras</label>
                 <input type="text" name="required_parameters" id="required_parameters"
                     placeholder="Ex: enable_password, secret"
-                    class="mt-1 block w-full rounded-lg border border-[var(--card-border)] bg-[var(--card-bg)] px-3 py-2 text-sm text-[var(--text-main)]">
+                    class="admin-control">
             </div>
         </div>
 
         <div>
-            <label for="description" class="block text-sm font-medium text-[var(--text-main)]">Descrição</label>
+            <label for="description" class="admin-label">Descrição</label>
             <textarea name="description" id="description" rows="3"
-                class="mt-1 block w-full rounded-lg border border-[var(--card-border)] bg-[var(--card-bg)] px-3 py-2 text-sm text-[var(--text-main)]"></textarea>
+                class="admin-control"></textarea>
         </div>
 
         <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <label class="flex items-center gap-2 rounded-lg border border-[var(--card-border)] px-3 py-2 text-sm text-[var(--text-main)]">
+            <label class="admin-toggle-card">
                 <input type="checkbox" name="use_telnet" class="h-4 w-4 rounded border-[var(--card-border)]">
                 Usar Telnet por padrão
             </label>
-            <label class="flex items-center gap-2 rounded-lg border border-[var(--card-border)] px-3 py-2 text-sm text-[var(--text-main)]">
+            <label class="admin-toggle-card">
                 <input type="checkbox" name="is_active" checked class="h-4 w-4 rounded border-[var(--card-border)]">
                 Tipo ativo
             </label>
         </div>
 
-        <div class="flex flex-wrap justify-end gap-2 pt-2">
+        <div class="admin-form-actions">
             <a href="{{ url_for('superadmin_device_types.list_types') }}"
                 class="rounded-lg border border-[var(--card-border)] px-4 py-2 text-sm font-medium text-[var(--text-main)] hover:bg-[var(--line-color)]">
                 Cancelar

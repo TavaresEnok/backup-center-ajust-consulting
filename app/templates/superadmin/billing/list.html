@@ -179,15 +179,17 @@
                             <span class="text-rose-300">F: {{ row.failed }}</span>
                         </td>
                         <td>{{ format_datetime(row.next_due, "%d/%m/%Y", "-") }}</td>
-                        <td class="text-right whitespace-nowrap">
-                            <a href="{{ url_for('superadmin_tenants.view_tenant', tenant_id=t.id) }}"
-                                class="rounded-lg border border-[var(--card-border)] px-2.5 py-1.5 text-xs font-medium text-[var(--text-main)] hover:bg-[var(--line-color)]">
-                                Visao 360
-                            </a>
-                            <a href="{{ url_for('superadmin_tenants.edit_tenant', tenant_id=t.id) }}"
-                                class="ml-1 rounded-lg border border-[var(--card-border)] px-2.5 py-1.5 text-xs font-medium text-[var(--text-main)] hover:bg-[var(--line-color)]">
-                                Editar cliente
-                            </a>
+                        <td class="text-right">
+                            <div class="admin-table-actions">
+                                <a href="{{ url_for('superadmin_tenants.view_tenant', tenant_id=t.id) }}"
+                                    class="rounded-lg border border-[var(--card-border)] px-2.5 py-1.5 text-xs font-medium text-[var(--text-main)] hover:bg-[var(--line-color)]">
+                                    Visao 360
+                                </a>
+                                <a href="{{ url_for('superadmin_tenants.edit_tenant', tenant_id=t.id) }}"
+                                    class="rounded-lg border border-[var(--card-border)] px-2.5 py-1.5 text-xs font-medium text-[var(--text-main)] hover:bg-[var(--line-color)]">
+                                    Editar cliente
+                                </a>
+                            </div>
                         </td>
                     </tr>
                     {% else %}
