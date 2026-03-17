@@ -81,6 +81,11 @@
         transform: translateY(-1px);
     }
 
+    .metrics-strip {
+        max-width: 1120px;
+        margin: 0 auto;
+    }
+
     .metric-danger {
         border-left: 4px solid rgba(239, 68, 68, .95);
     }
@@ -168,7 +173,7 @@
         </div>
     </section>
 
-    <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+    <div class="metrics-strip grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <a href="{{ url_for('superadmin_tenants.list_tenants') }}" class="metric-card p-4">
             <p class="card-label">Total de tenants</p>
             <p class="card-value-xl text-[var(--text-main)]">{{ stats.total }}</p>
