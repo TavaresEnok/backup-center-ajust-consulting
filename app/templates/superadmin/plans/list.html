@@ -17,7 +17,7 @@
         </div>
     </div>
 
-    <div class="admin-card-grid grid-cols-1 sm:grid-cols-3">
+    <div class="admin-card-grid admin-summary-strip grid-cols-1 sm:grid-cols-3 lg:grid-cols-3">
         <div class="premium-card p-4">
             <p class="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">Total</p>
             <p class="mt-1 text-2xl font-bold text-[var(--text-main)]">{{ stats.total }}</p>
@@ -33,15 +33,16 @@
     </div>
 
     <div class="premium-card admin-filter-card">
-        <form method="GET" class="grid grid-cols-1 gap-2 md:grid-cols-4">
+        <form method="GET" class="admin-inline-filters"
+            style="--admin-filter-columns: minmax(320px, 2.2fr) minmax(170px, 1fr) minmax(260px, 1.35fr);">
             <input type="text" name="q" value="{{ q }}" placeholder="Buscar por nome, slug ou descrição..."
-                class="rounded-lg border border-[var(--card-border)] bg-[var(--card-bg)] px-3 py-2 text-sm text-[var(--text-main)] md:col-span-2">
+                class="rounded-lg border border-[var(--card-border)] bg-[var(--card-bg)] px-3 py-2 text-sm text-[var(--text-main)]">
             <select name="status" class="rounded-lg border border-[var(--card-border)] bg-[var(--card-bg)] px-3 py-2 text-sm text-[var(--text-main)]">
                 <option value="all" {% if status == 'all' %}selected{% endif %}>Status: todos</option>
                 <option value="active" {% if status == 'active' %}selected{% endif %}>Ativos</option>
                 <option value="inactive" {% if status == 'inactive' %}selected{% endif %}>Inativos</option>
             </select>
-            <div class="flex gap-2">
+            <div class="admin-inline-actions">
                 <select name="sort" class="w-full rounded-lg border border-[var(--card-border)] bg-[var(--card-bg)] px-3 py-2 text-sm text-[var(--text-main)]">
                     <option value="price_monthly_asc" {% if sort == 'price_monthly_asc' %}selected{% endif %}>Preço mensal ↑</option>
                     <option value="price_monthly_desc" {% if sort == 'price_monthly_desc' %}selected{% endif %}>Preço mensal ↓</option>

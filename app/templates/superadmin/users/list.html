@@ -17,7 +17,7 @@
         </div>
     </div>
 
-    <div class="admin-card-grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5">
+    <div class="admin-card-grid admin-summary-strip admin-summary-strip--wide grid-cols-1 sm:grid-cols-2 lg:grid-cols-5">
         <div class="premium-card p-4">
             <p class="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">Total</p>
             <p class="mt-1 text-2xl font-bold text-[var(--text-main)]">{{ stats.total }}</p>
@@ -41,9 +41,10 @@
     </div>
 
     <div class="premium-card admin-filter-card">
-        <form method="GET" class="grid grid-cols-1 gap-2 md:grid-cols-6">
+        <form method="GET" class="admin-inline-filters"
+            style="--admin-filter-columns: minmax(270px, 2.2fr) repeat(3, minmax(150px, 1fr)) minmax(260px, 1.35fr);">
             <input type="text" name="q" value="{{ q }}" placeholder="Buscar por nome, e-mail, tenant..."
-                class="rounded-lg border border-[var(--card-border)] bg-[var(--card-bg)] px-3 py-2 text-sm text-[var(--text-main)] md:col-span-2">
+                class="rounded-lg border border-[var(--card-border)] bg-[var(--card-bg)] px-3 py-2 text-sm text-[var(--text-main)]">
             <select name="scope" class="rounded-lg border border-[var(--card-border)] bg-[var(--card-bg)] px-3 py-2 text-sm text-[var(--text-main)]">
                 <option value="all" {% if scope == 'all' %}selected{% endif %}>Escopo: todos</option>
                 <option value="platform" {% if scope == 'platform' %}selected{% endif %}>Plataforma</option>
@@ -59,7 +60,7 @@
                 <option value="{{ option.value }}" {% if role_filter == option.value %}selected{% endif %}>{{ option.label }}</option>
                 {% endfor %}
             </select>
-            <div class="flex gap-2">
+            <div class="admin-inline-actions">
                 <select name="tenant" class="w-full rounded-lg border border-[var(--card-border)] bg-[var(--card-bg)] px-3 py-2 text-sm text-[var(--text-main)]">
                     <option value="">Tenant: todos</option>
                     {% for tenant in tenant_options %}

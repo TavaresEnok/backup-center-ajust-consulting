@@ -147,8 +147,44 @@
             gap: 0.9rem;
         }
 
+        .admin-summary-strip {
+            width: 100%;
+            max-width: var(--admin-summary-max, 1160px);
+            margin: 0 auto;
+        }
+
+        .admin-summary-strip--wide {
+            --admin-summary-max: 1280px;
+        }
+
+        .admin-summary-strip--full {
+            --admin-summary-max: 1440px;
+        }
+
         .admin-filter-card {
             padding: 1rem;
+        }
+
+        .admin-inline-filters {
+            display: grid;
+            gap: 0.65rem;
+            grid-template-columns: 1fr;
+        }
+
+        .admin-inline-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        @media (min-width: 1280px) {
+            .admin-inline-filters {
+                grid-template-columns: var(--admin-filter-columns, 1fr);
+                align-items: center;
+            }
+
+            .admin-inline-actions {
+                justify-content: flex-end;
+            }
         }
 
         .admin-table {

@@ -46,6 +46,11 @@
         transform: translateY(-1px);
     }
 
+    .billing-summary-strip {
+        max-width: 1360px;
+        margin: 0 auto;
+    }
+
     .billing-table th {
         font-size: 10.8px;
         text-transform: uppercase;
@@ -84,7 +89,7 @@
         </div>
     </section>
 
-    <div class="grid grid-cols-1 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+    <div class="billing-summary-strip grid grid-cols-1 gap-3 sm:grid-cols-3 lg:grid-cols-6">
         <a href="{{ url_for('superadmin_billing.list_billing') }}" class="billing-metric p-4">
             <p class="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">Faturas total</p>
             <p class="mt-1 text-2xl font-bold text-[var(--text-main)]">{{ stats.invoices_total }}</p>
@@ -112,9 +117,10 @@
     </div>
 
     <div class="premium-card p-4">
-        <form method="GET" class="grid grid-cols-1 gap-2 md:grid-cols-5">
+        <form method="GET" class="admin-inline-filters"
+            style="--admin-filter-columns: minmax(340px, 2.3fr) minmax(180px, 1fr) minmax(180px, 1fr) minmax(140px, .8fr);">
             <input type="text" name="q" value="{{ q }}" placeholder="Buscar por tenant, empresa ou e-mail..."
-                class="rounded-lg border border-[var(--card-border)] bg-[var(--card-bg)] px-3 py-2 text-sm text-[var(--text-main)] md:col-span-2">
+                class="rounded-lg border border-[var(--card-border)] bg-[var(--card-bg)] px-3 py-2 text-sm text-[var(--text-main)]">
             <select name="subscription" class="rounded-lg border border-[var(--card-border)] bg-[var(--card-bg)] px-3 py-2 text-sm text-[var(--text-main)]">
                 <option value="all" {% if subscription == 'all' %}selected{% endif %}>Assinatura: todas</option>
                 <option value="active" {% if subscription == 'active' %}selected{% endif %}>Ativas</option>
