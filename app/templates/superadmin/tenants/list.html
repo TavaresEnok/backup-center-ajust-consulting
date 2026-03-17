@@ -86,6 +86,19 @@
         margin: 0 auto;
     }
 
+    .filters-layout {
+        display: grid;
+        gap: .65rem;
+        grid-template-columns: 1fr;
+    }
+
+    @media (min-width: 1280px) {
+        .filters-layout {
+            grid-template-columns: minmax(260px, 2fr) repeat(4, minmax(145px, 1fr)) minmax(210px, 1.15fr);
+            align-items: center;
+        }
+    }
+
     .metric-danger {
         border-left: 4px solid rgba(239, 68, 68, .95);
     }
@@ -201,9 +214,9 @@
             <h2 class="section-kicker">Filtros</h2>
             <a href="{{ url_for('superadmin_tenants.list_tenants') }}" class="text-xs font-semibold text-brand-400 hover:text-brand-300">Limpar filtros</a>
         </div>
-        <form method="GET" class="grid grid-cols-1 gap-2 md:grid-cols-7">
+        <form method="GET" class="filters-layout">
             <input type="text" name="q" value="{{ q }}" placeholder="Buscar por nome, slug ou e-mail..."
-                class="rounded-lg border border-[var(--card-border)] bg-[var(--card-bg)] px-3 py-2 text-sm text-[var(--text-main)] md:col-span-2">
+                class="rounded-lg border border-[var(--card-border)] bg-[var(--card-bg)] px-3 py-2 text-sm text-[var(--text-main)]">
             <select name="status" class="rounded-lg border border-[var(--card-border)] bg-[var(--card-bg)] px-3 py-2 text-sm text-[var(--text-main)]">
                 <option value="all" {% if status == 'all' %}selected{% endif %}>Status: todos</option>
                 <option value="active" {% if status == 'active' %}selected{% endif %}>Ativos</option>
@@ -231,7 +244,7 @@
                 <option value="name_asc" {% if sort == 'name_asc' %}selected{% endif %}>Nome A-Z</option>
                 <option value="name_desc" {% if sort == 'name_desc' %}selected{% endif %}>Nome Z-A</option>
             </select>
-            <div class="flex gap-2">
+            <div class="flex gap-2 xl:justify-end">
                 <select name="per_page" class="w-full rounded-lg border border-[var(--card-border)] bg-[var(--card-bg)] px-3 py-2 text-sm text-[var(--text-main)]">
                     <option value="20" {% if per_page == 20 %}selected{% endif %}>20 / pág</option>
                     <option value="50" {% if per_page == 50 %}selected{% endif %}>50 / pág</option>
