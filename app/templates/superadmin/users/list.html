@@ -7,7 +7,7 @@
     <div class="admin-page-header">
         <div class="admin-page-header-copy">
             <h1 class="admin-page-title">Usuarios</h1>
-            <p class="admin-page-subtitle">Gestao de usuarios da plataforma e dos tenants.</p>
+            <p class="admin-page-subtitle">Gestao de usuarios da plataforma e dos clientes.</p>
         </div>
         <div class="admin-page-header-actions">
             <a href="{{ url_for('superadmin_users.add_user') }}"
@@ -35,7 +35,7 @@
             <p class="mt-1 text-2xl font-bold text-[var(--text-main)]">{{ stats.admin_users }}</p>
         </div>
         <div class="premium-card p-4">
-            <p class="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">Usuarios tenants</p>
+            <p class="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">Usuarios clientes</p>
             <p class="mt-1 text-2xl font-bold text-[var(--text-main)]">{{ stats.tenant_users }}</p>
         </div>
     </div>
@@ -43,7 +43,7 @@
     <div class="premium-card admin-filter-card">
         <form method="GET" class="admin-inline-filters"
             style="--admin-filter-columns: minmax(270px, 2.3fr) minmax(160px, 1fr) minmax(180px, 1fr) minmax(290px, 1.5fr);">
-            <input type="text" name="q" value="{{ q }}" placeholder="Buscar por nome, e-mail, tenant..."
+            <input type="text" name="q" value="{{ q }}" placeholder="Buscar por nome, e-mail, cliente..."
                 class="rounded-lg border border-[var(--card-border)] bg-[var(--card-bg)] px-3 py-2 text-sm text-[var(--text-main)]">
             <select name="status" class="rounded-lg border border-[var(--card-border)] bg-[var(--card-bg)] px-3 py-2 text-sm text-[var(--text-main)]">
                 <option value="all" {% if status == 'all' %}selected{% endif %}>Status: todos</option>
@@ -57,7 +57,7 @@
             </select>
             <div class="admin-inline-actions">
                 <select name="tenant" class="w-full rounded-lg border border-[var(--card-border)] bg-[var(--card-bg)] px-3 py-2 text-sm text-[var(--text-main)]">
-                    <option value="">Tenant/Admin: todos</option>
+                    <option value="">Cliente/Admin: todos</option>
                     <option value="__platform__" {% if tenant_filter == '__platform__' %}selected{% endif %}>ADMIN</option>
                     {% for tenant in tenant_options %}
                     <option value="{{ tenant.id }}" {% if tenant_filter == tenant.id %}selected{% endif %}>{{ tenant.name }}</option>

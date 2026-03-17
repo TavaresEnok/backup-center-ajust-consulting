@@ -7,7 +7,7 @@
     <div class="admin-page-header">
         <div class="admin-page-header-copy">
             <h1 class="admin-page-title">Novo usuario</h1>
-            <p class="admin-page-subtitle">Crie usuarios internos ou usuarios de tenants.</p>
+            <p class="admin-page-subtitle">Crie usuarios internos ou usuarios de clientes.</p>
         </div>
     </div>
 
@@ -17,7 +17,7 @@
         <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
             <label class="flex items-center gap-2 rounded-lg border border-[var(--card-border)] px-3 py-2 text-sm text-[var(--text-main)]">
                 <input type="radio" name="user_scope" value="tenant" x-model="scope" checked class="h-4 w-4">
-                Usuario de tenant
+                Usuario de cliente
             </label>
             <label class="flex items-center gap-2 rounded-lg border border-[var(--card-border)] px-3 py-2 text-sm text-[var(--text-main)]">
                 <input type="radio" name="user_scope" value="platform" x-model="scope" class="h-4 w-4">
@@ -45,7 +45,7 @@
                     class="admin-control">
             </div>
             <div x-show="scope === 'tenant'" x-cloak>
-                <label for="role" class="admin-label">Funcao no tenant</label>
+                <label for="role" class="admin-label">Funcao no cliente</label>
                 <select name="role" id="role"
                     class="admin-control">
                     {% for role in tenant_roles %}
@@ -56,7 +56,7 @@
         </div>
 
         <div x-show="scope === 'tenant'" x-cloak>
-            <label for="tenant_id" class="admin-label">Tenant</label>
+            <label for="tenant_id" class="admin-label">Cliente</label>
             <select name="tenant_id" id="tenant_id"
                 class="admin-control">
                 <option value="">Selecione...</option>
@@ -67,7 +67,7 @@
         </div>
 
         <div class="rounded-lg border border-[var(--card-border)] bg-[var(--line-color)] px-3 py-2 text-xs text-[var(--text-muted)]">
-            Para "Admin da plataforma", o usuario sera criado com perfil Super Admin e sem tenant vinculado.
+            Para "Admin da plataforma", o usuario sera criado com perfil Super Admin e sem cliente vinculado.
         </div>
 
         <div class="admin-form-actions">

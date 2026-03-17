@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Tenants | Super Admin{% endblock %}
+{% block title %}Clientes | Super Admin{% endblock %}
 
 {% block content %}
 <style>
@@ -170,12 +170,12 @@
         <div class="flex flex-wrap items-start justify-between gap-3">
             <div>
                 <p class="eyebrow">Super Admin</p>
-                <h1 class="mt-1 text-3xl font-extrabold tracking-tight text-[var(--text-main)]">Tenants</h1>
+                <h1 class="mt-1 text-3xl font-extrabold tracking-tight text-[var(--text-main)]">Clientes</h1>
                 <p class="mt-2 max-w-3xl text-sm leading-relaxed text-[var(--text-muted)]">Gestao comercial e operacional dos clientes SaaS.</p>
             </div>
             <a href="{{ url_for('superadmin_tenants.add_tenant') }}"
                 class="inline-flex items-center rounded-lg bg-brand-600 px-3 py-2 text-sm font-semibold text-white hover:bg-brand-700">
-                Novo tenant
+                Novo cliente
             </a>
         </div>
         <div class="mt-4 flex flex-wrap gap-2">
@@ -188,12 +188,12 @@
 
     <div class="metrics-strip grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <a href="{{ url_for('superadmin_tenants.list_tenants') }}" class="metric-card p-4">
-            <p class="card-label">Total de tenants</p>
+            <p class="card-label">Total de clientes</p>
             <p class="card-value-xl text-[var(--text-main)]">{{ stats.total }}</p>
             <p class="card-caption">Base cadastrada</p>
         </a>
         <a href="{{ url_for('superadmin_tenants.list_tenants', status='active') }}" class="metric-card metric-good p-4">
-            <p class="card-label">Tenants ativos</p>
+            <p class="card-label">Clientes ativos</p>
             <p class="card-value-xl text-emerald-300">{{ stats.active }}</p>
             <p class="card-caption">Operacao habilitada</p>
         </a>
@@ -236,7 +236,7 @@
                 <option value="past_due" {% if ops == 'past_due' %}selected{% endif %}>Somente past due</option>
                 <option value="no_plan" {% if ops == 'no_plan' %}selected{% endif %}>Sem plano</option>
                 <option value="no_devices" {% if ops == 'no_devices' %}selected{% endif %}>Sem dispositivos</option>
-                <option value="no_admin" {% if ops == 'no_admin' %}selected{% endif %}>Sem admin no tenant</option>
+                <option value="no_admin" {% if ops == 'no_admin' %}selected{% endif %}>Sem admin no cliente</option>
             </select>
             <select name="sort" class="rounded-lg border border-[var(--card-border)] bg-[var(--card-bg)] px-3 py-2 text-sm text-[var(--text-main)]">
                 <option value="created_desc" {% if sort == 'created_desc' %}selected{% endif %}>Criação recente</option>
@@ -257,14 +257,14 @@
 
     <section class="premium-card overflow-hidden">
         <div class="border-b border-[var(--line-color)] px-4 py-3">
-            <p class="text-sm font-semibold text-[var(--text-main)]">Lista de tenants</p>
+            <p class="text-sm font-semibold text-[var(--text-main)]">Lista de clientes</p>
             <p class="text-xs text-[var(--text-muted)]">{{ total }} resultado(s) com os filtros atuais.</p>
         </div>
         <div class="overflow-x-auto">
             <table class="tenant-table min-w-full">
                 <thead>
                     <tr>
-                        <th>Tenant</th>
+                        <th>Cliente</th>
                         <th>Plano / Assinatura</th>
                         <th>Uso</th>
                         <th>Backup 24h</th>
@@ -320,12 +320,32 @@
                                     class="rounded-lg border border-[var(--card-border)] px-2.5 py-1.5 text-xs font-medium text-[var(--text-main)] hover:bg-[var(--line-color)]">
                                     Editar
                                 </a>
+                                <form method="POST" action="{{ url_for('superadmin_tenants.toggle_tenant_active', tenant_id=t.id) }}" class="inline"
+                                    data-confirm="{{ 'Desativar' if t.is_active else 'Ativar' }} o cliente {{ t.name }} agora?"
+                                    onsubmit="return confirm(this.dataset.confirm);">
+                                    {% include 'partials/csrf.html' %}
+                                    <input type="hidden" name="return_url" value="{{ request.full_path.rstrip('?') }}">
+                                    <button type="submit"
+                                        class="rounded-lg border border-[var(--card-border)] px-2.5 py-1.5 text-xs font-medium {% if t.is_active %}text-amber-300 hover:bg-amber-500/10{% else %}text-emerald-300 hover:bg-emerald-500/10{% endif %}">
+                                        {{ 'Desativar' if t.is_active else 'Ativar' }}
+                                    </button>
+                                </form>
+                                <form method="POST" action="{{ url_for('superadmin_tenants.delete_tenant', tenant_id=t.id) }}" class="inline"
+                                    data-confirm="Apagar o cliente {{ t.name }} agora? Esta ação remove usuários, dispositivos, faturamento e configurações vinculadas."
+                                    onsubmit="return confirm(this.dataset.confirm);">
+                                    {% include 'partials/csrf.html' %}
+                                    <input type="hidden" name="return_url" value="{{ request.full_path.rstrip('?') }}">
+                                    <button type="submit"
+                                        class="rounded-lg border border-rose-500/30 px-2.5 py-1.5 text-xs font-medium text-rose-300 hover:bg-rose-500/10">
+                                        Apagar
+                                    </button>
+                                </form>
                             </div>
                         </td>
                     </tr>
                     {% else %}
                     <tr>
-                        <td colspan="6" class="px-4 py-10 text-center text-[var(--text-muted)]">Nenhum tenant encontrado com esses filtros.</td>
+                        <td colspan="6" class="px-4 py-10 text-center text-[var(--text-muted)]">Nenhum cliente encontrado com esses filtros.</td>
                     </tr>
                     {% endfor %}
                 </tbody>

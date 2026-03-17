@@ -80,11 +80,11 @@
             <div>
                 <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-blue-400">Receita</p>
                 <h1 class="mt-1 text-3xl font-extrabold tracking-tight text-[var(--text-main)]">Cobranca</h1>
-                <p class="mt-2 text-sm text-[var(--text-muted)]">Operacao financeira por tenant, com foco em risco comercial e faturas abertas.</p>
+                <p class="mt-2 text-sm text-[var(--text-muted)]">Operacao financeira por cliente, com foco em risco comercial e faturas abertas.</p>
             </div>
             <a href="{{ url_for('superadmin_tenants.list_tenants') }}"
                 class="inline-flex items-center rounded-lg border border-[var(--card-border)] px-3 py-2 text-sm font-medium text-[var(--text-main)] hover:bg-[var(--line-color)]">
-                Ir para tenants
+                Ir para clientes
             </a>
         </div>
     </section>
@@ -119,7 +119,7 @@
     <div class="premium-card p-4">
         <form method="GET" class="admin-inline-filters"
             style="--admin-filter-columns: minmax(340px, 2.3fr) minmax(180px, 1fr) minmax(180px, 1fr) minmax(140px, .8fr);">
-            <input type="text" name="q" value="{{ q }}" placeholder="Buscar por tenant, empresa ou e-mail..."
+            <input type="text" name="q" value="{{ q }}" placeholder="Buscar por cliente, empresa ou e-mail..."
                 class="rounded-lg border border-[var(--card-border)] bg-[var(--card-bg)] px-3 py-2 text-sm text-[var(--text-main)]">
             <select name="subscription" class="rounded-lg border border-[var(--card-border)] bg-[var(--card-bg)] px-3 py-2 text-sm text-[var(--text-main)]">
                 <option value="all" {% if subscription == 'all' %}selected{% endif %}>Assinatura: todas</option>

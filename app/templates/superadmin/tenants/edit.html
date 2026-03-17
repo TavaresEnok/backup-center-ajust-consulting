@@ -1,12 +1,12 @@
 {% extends "base.html" %}
 
-{% block title %}Editar Tenant | Super Admin{% endblock %}
+{% block title %}Editar Cliente | Super Admin{% endblock %}
 
 {% block content %}
 <div class="admin-page admin-page--narrow">
     <div class="admin-page-header">
         <div class="admin-page-header-copy">
-            <h1 class="admin-page-title">Editar tenant</h1>
+            <h1 class="admin-page-title">Editar cliente</h1>
             <p class="admin-page-subtitle">Ajuste dados de cadastro, slug e status de assinatura de {{ tenant.name }}.</p>
         </div>
     </div>
@@ -28,7 +28,7 @@
                 <input type="text" name="slug" id="slug" value="{{ tenant.slug }}" required class="admin-control">
             </div>
             <div>
-                <label for="email" class="admin-label">E-mail do tenant</label>
+                <label for="email" class="admin-label">E-mail do cliente</label>
                 <input type="email" name="email" id="email" value="{{ tenant.email }}" required class="admin-control">
             </div>
             <div class="md:col-span-2">
@@ -45,7 +45,7 @@
         <label class="admin-toggle-card">
             <input type="checkbox" name="is_active" {% if tenant.is_active %}checked{% endif %}
                 class="h-4 w-4 rounded border-[var(--card-border)]">
-            <span class="text-sm">Tenant ativo. Desmarque apenas se quiser suspender o acesso desse cliente.</span>
+            <span class="text-sm">Cliente ativo. Desmarque apenas se quiser suspender o acesso desse cliente.</span>
         </label>
 
         <div class="admin-form-actions">

@@ -1,4 +1,4 @@
-from flask import Flask, session, request, abort, jsonify
+from flask import Flask, session, request, abort, jsonify, flash, redirect, url_for
 from datetime import timedelta, datetime
 from fastapi import FastAPI
 from zoneinfo import ZoneInfo
@@ -8,6 +8,7 @@ from app.core.logging_config import setup_logging
 import logging
 from app.core.database import SessionLocal
 from app.models.notification import Notification
+from app.models.tenant import Tenant
 import uuid
 import secrets
 from sqlalchemy import text
@@ -71,11 +72,32 @@ def create_flask_app():
 
         session["superadmin_return_url"] = admin_return
         session["superadmin_return_label"] = (
-            (request.args.get("admin_return_label") or "").strip()[:80] or "Voltar ao Tenant 360"
+            (request.args.get("admin_return_label") or "").strip()[:80] or "Voltar ao Cliente 360"
         )
         current_tenant_slug = (request.view_args or {}).get("tenant_slug")
         if current_tenant_slug:
             session["superadmin_return_tenant_slug"] = current_tenant_slug
+
+    @app.before_request
+    def _guard_inactive_tenant_access():
+        if session.get("user_role") == "super_admin":
+            return
+        if not request.path.startswith("/tenant/"):
+            return
+
+        tenant_slug = (request.view_args or {}).get("tenant_slug")
+        if not tenant_slug:
+            return
+
+        db = SessionLocal()
+        try:
+            tenant = db.query(Tenant).filter(Tenant.slug == tenant_slug).first()
+            if tenant and not tenant.is_active:
+                session.clear()
+                flash("Este cliente esta desativado. Entre em contato com o suporte.", "error")
+                return redirect(url_for("auth.login"))
+        finally:
+            db.close()
 
     app.jinja_env.globals["csrf_token"] = _generate_csrf_token
 
@@ -133,7 +155,7 @@ def create_flask_app():
 
         current_tenant_slug = (request.view_args or {}).get("tenant_slug")
         return_url = session.get("superadmin_return_url")
-        return_label = session.get("superadmin_return_label") or "Voltar ao Tenant 360"
+        return_label = session.get("superadmin_return_label") or "Voltar ao Cliente 360"
         return_tenant_slug = session.get("superadmin_return_tenant_slug")
         is_tenant_area = request.path.startswith("/tenant/")
         is_active = bool(

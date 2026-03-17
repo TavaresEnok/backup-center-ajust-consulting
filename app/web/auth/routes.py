@@ -111,6 +111,10 @@ def login():
         try:
             user = AuthService.authenticate_user(db, email, password)
             if user:
+                if user.role != UserRole.SUPER_ADMIN and user.tenant and not user.tenant.is_active:
+                    flash('Este cliente esta desativado. Entre em contato com o suporte.', 'error')
+                    return render_template('auth/login.html')
+
                 logging.getLogger(__name__).info("user authenticated: %s", user.email)
                 session.permanent = True
                 session['user_id'] = str(user.id)

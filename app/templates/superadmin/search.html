@@ -53,7 +53,7 @@
 </style>
 
 {% set sections = [
-    ('Tenants', tenant_results, 'building-2'),
+    ('Clientes', tenant_results, 'building-2'),
     ('Usuarios', user_results, 'users'),
     ('Planos', plan_results, 'credit-card'),
     ('Tipos', type_results, 'cpu'),
@@ -65,8 +65,8 @@
         <div class="flex flex-wrap items-start justify-between gap-3">
             <div>
                 <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-blue-400">Busca Global</p>
-                <h1 class="mt-1 text-3xl font-extrabold tracking-tight text-[var(--text-main)]">Super Admin Search</h1>
-                <p class="mt-2 text-sm text-[var(--text-muted)]">Busca cruzada por tenant, usuario, plano, tipo de dispositivo e fatura.</p>
+                <h1 class="mt-1 text-3xl font-extrabold tracking-tight text-[var(--text-main)]">Busca global</h1>
+                <p class="mt-2 text-sm text-[var(--text-muted)]">Busca cruzada por cliente, usuario, plano, tipo de dispositivo e fatura.</p>
             </div>
             <form action="{{ url_for('superadmin_dashboard.search') }}" method="GET" class="flex w-full max-w-xl gap-2">
                 <input type="text" name="q" value="{{ q }}" placeholder="Ex.: Ajust, backupcenter, fatura, admin..."

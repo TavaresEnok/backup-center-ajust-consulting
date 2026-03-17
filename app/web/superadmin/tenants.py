@@ -1,18 +1,24 @@
 import re
 import uuid
 from datetime import datetime, timedelta
+from urllib.parse import urlsplit, urlunsplit
 
 from flask import Blueprint, flash, redirect, render_template, request, session, url_for
 from sqlalchemy import case, func, select
 from sqlalchemy.orm import joinedload
 
 from app.models.activity_log import ActivityLog
+from app.models.api_token import ApiToken
 from app.core.database import SessionLocal
 from app.core.security import get_password_hash
 from app.models.backup import Backup, BackupStatus
 from app.models.device import Device
 from app.models.device_group import DeviceGroup
 from app.models.invoice import Invoice, InvoiceStatus
+from app.models.notification import Notification
+from app.models.payment import PaymentMethod, Subscription
+from app.models.report import Report
+from app.models.schedule import Schedule
 from app.models.tenant import Tenant
 from app.models.user import User, UserRole
 
@@ -30,6 +36,67 @@ def _normalize_slug(raw: str) -> str:
     value = re.sub(r"[^a-z0-9-]+", "-", value)
     value = re.sub(r"-{2,}", "-", value).strip("-")
     return value
+
+
+def _parse_tenant_uuid(raw_value: str):
+    try:
+        return uuid.UUID(str(raw_value))
+    except Exception:
+        return None
+
+
+def _safe_admin_return_url(raw_value: str | None) -> str | None:
+    value = (raw_value or "").strip()
+    if not value:
+        return None
+    parsed = urlsplit(value)
+    if parsed.scheme or parsed.netloc:
+        return None
+    if not parsed.path.startswith("/admin/"):
+        return None
+    return urlunsplit(("", "", parsed.path, parsed.query, ""))
+
+
+def _redirect_after_client_action(default_endpoint: str = "superadmin_tenants.list_tenants", **values):
+    safe_return = _safe_admin_return_url(request.form.get("return_url"))
+    if safe_return:
+        return redirect(safe_return)
+    return redirect(url_for(default_endpoint, **values))
+
+
+def _delete_client_dependencies(db, tenant_id):
+    user_ids = [row[0] for row in db.query(User.id).filter(User.tenant_id == tenant_id).all()]
+    device_ids = [row[0] for row in db.query(Device.id).filter(Device.tenant_id == tenant_id).all()]
+
+    if user_ids:
+        db.query(ActivityLog).filter(ActivityLog.user_id.in_(user_ids)).update(
+            {ActivityLog.user_id: None},
+            synchronize_session=False,
+        )
+        db.query(Backup).filter(Backup.triggered_by_user_id.in_(user_ids)).update(
+            {Backup.triggered_by_user_id: None},
+            synchronize_session=False,
+        )
+        db.query(Notification).filter(Notification.user_id.in_(user_ids)).delete(synchronize_session=False)
+        db.query(ApiToken).filter(ApiToken.user_id.in_(user_ids)).delete(synchronize_session=False)
+
+    db.query(ActivityLog).filter(ActivityLog.tenant_id == tenant_id).update(
+        {ActivityLog.tenant_id: None},
+        synchronize_session=False,
+    )
+    db.query(ApiToken).filter(ApiToken.tenant_id == tenant_id).delete(synchronize_session=False)
+    db.query(PaymentMethod).filter(PaymentMethod.tenant_id == tenant_id).delete(synchronize_session=False)
+    db.query(Subscription).filter(Subscription.tenant_id == tenant_id).delete(synchronize_session=False)
+    db.query(Report).filter(Report.tenant_id == tenant_id).delete(synchronize_session=False)
+
+    if device_ids:
+        db.query(Schedule).filter(Schedule.device_id.in_(device_ids)).delete(synchronize_session=False)
+        db.query(Backup).filter(Backup.device_id.in_(device_ids)).delete(synchronize_session=False)
+        db.query(Device).filter(Device.id.in_(device_ids)).delete(synchronize_session=False)
+
+    db.query(DeviceGroup).filter(DeviceGroup.tenant_id == tenant_id).delete(synchronize_session=False)
+    db.query(Invoice).filter(Invoice.tenant_id == tenant_id).delete(synchronize_session=False)
+    db.query(User).filter(User.tenant_id == tenant_id).delete(synchronize_session=False)
 
 
 @bp.route("/")
@@ -200,10 +267,9 @@ def list_tenants():
 def view_tenant(tenant_id):
     db = SessionLocal()
     try:
-        try:
-            tenant_uuid = uuid.UUID(str(tenant_id))
-        except Exception:
-            flash("Tenant inválido.", "error")
+        tenant_uuid = _parse_tenant_uuid(tenant_id)
+        if not tenant_uuid:
+            flash("Cliente inválido.", "error")
             return redirect(url_for("superadmin_tenants.list_tenants"))
 
         tenant = (
@@ -213,7 +279,7 @@ def view_tenant(tenant_id):
             .first()
         )
         if not tenant:
-            flash("Tenant não encontrado.", "error")
+            flash("Cliente não encontrado.", "error")
             return redirect(url_for("superadmin_tenants.list_tenants"))
 
         now = datetime.utcnow()
@@ -403,7 +469,7 @@ def add_tenant():
                 return render_template("superadmin/tenants/add.html")
 
             if db.query(Tenant).filter(Tenant.slug == slug).first():
-                flash("Esse slug já está em uso por outro tenant.", "error")
+                flash("Esse slug já está em uso por outro cliente.", "error")
                 return render_template("superadmin/tenants/add.html")
 
             if db.query(User).filter(User.email == owner_email).first():
@@ -433,11 +499,11 @@ def add_tenant():
             db.add(owner)
             db.commit()
 
-            flash("Tenant criado com sucesso.", "success")
+            flash("Cliente criado com sucesso.", "success")
             return redirect(url_for("superadmin_tenants.list_tenants"))
         except Exception as exc:
             db.rollback()
-            flash(f"Erro ao criar tenant: {str(exc)}", "error")
+            flash(f"Erro ao criar cliente: {str(exc)}", "error")
         finally:
             db.close()
 
@@ -448,15 +514,14 @@ def add_tenant():
 def edit_tenant(tenant_id):
     db = SessionLocal()
     try:
-        try:
-            tenant_uuid = uuid.UUID(str(tenant_id))
-        except Exception:
-            flash("Tenant inválido.", "error")
+        tenant_uuid = _parse_tenant_uuid(tenant_id)
+        if not tenant_uuid:
+            flash("Cliente inválido.", "error")
             return redirect(url_for("superadmin_tenants.list_tenants"))
 
         tenant = db.query(Tenant).filter(Tenant.id == tenant_uuid).first()
         if not tenant:
-            flash("Tenant não encontrado.", "error")
+            flash("Cliente não encontrado.", "error")
             return redirect(url_for("superadmin_tenants.list_tenants"))
 
         if request.method == "POST":
@@ -479,7 +544,7 @@ def edit_tenant(tenant_id):
                 .first()
             )
             if exists_slug:
-                flash("Esse slug já está em uso por outro tenant.", "error")
+                flash("Esse slug já está em uso por outro cliente.", "error")
                 return render_template("superadmin/tenants/edit.html", tenant=tenant)
 
             tenant.name = name
@@ -490,13 +555,73 @@ def edit_tenant(tenant_id):
             tenant.subscription_status = subscription_status
 
             db.commit()
-            flash("Tenant atualizado com sucesso.", "success")
+            flash("Cliente atualizado com sucesso.", "success")
             return redirect(url_for("superadmin_tenants.list_tenants"))
 
         return render_template("superadmin/tenants/edit.html", tenant=tenant)
     except Exception as exc:
         db.rollback()
-        flash(f"Erro ao editar tenant: {str(exc)}", "error")
+        flash(f"Erro ao editar cliente: {str(exc)}", "error")
+        return redirect(url_for("superadmin_tenants.list_tenants"))
+    finally:
+        db.close()
+
+
+@bp.route("/<tenant_id>/toggle-active", methods=["POST"])
+def toggle_tenant_active(tenant_id):
+    db = SessionLocal()
+    try:
+        tenant_uuid = _parse_tenant_uuid(tenant_id)
+        if not tenant_uuid:
+            flash("Cliente inválido.", "error")
+            return redirect(url_for("superadmin_tenants.list_tenants"))
+
+        tenant = db.query(Tenant).filter(Tenant.id == tenant_uuid).first()
+        if not tenant:
+            flash("Cliente não encontrado.", "error")
+            return redirect(url_for("superadmin_tenants.list_tenants"))
+
+        tenant.is_active = not bool(tenant.is_active)
+        db.commit()
+
+        action_label = "ativado" if tenant.is_active else "desativado"
+        flash(f"Cliente {tenant.name} {action_label} com sucesso.", "success")
+        return _redirect_after_client_action(
+            "superadmin_tenants.view_tenant",
+            tenant_id=tenant.id,
+        )
+    except Exception as exc:
+        db.rollback()
+        flash(f"Erro ao alterar status do cliente: {str(exc)}", "error")
+        return redirect(url_for("superadmin_tenants.list_tenants"))
+    finally:
+        db.close()
+
+
+@bp.route("/<tenant_id>/delete", methods=["POST"])
+def delete_tenant(tenant_id):
+    db = SessionLocal()
+    try:
+        tenant_uuid = _parse_tenant_uuid(tenant_id)
+        if not tenant_uuid:
+            flash("Cliente inválido.", "error")
+            return redirect(url_for("superadmin_tenants.list_tenants"))
+
+        tenant = db.query(Tenant).filter(Tenant.id == tenant_uuid).first()
+        if not tenant:
+            flash("Cliente não encontrado.", "error")
+            return redirect(url_for("superadmin_tenants.list_tenants"))
+
+        client_name = tenant.name
+        _delete_client_dependencies(db, tenant.id)
+        db.query(Tenant).filter(Tenant.id == tenant.id).delete(synchronize_session=False)
+        db.commit()
+
+        flash(f"Cliente {client_name} apagado com sucesso.", "success")
+        return _redirect_after_client_action()
+    except Exception as exc:
+        db.rollback()
+        flash(f"Erro ao apagar cliente: {str(exc)}", "error")
         return redirect(url_for("superadmin_tenants.list_tenants"))
     finally:
         db.close()
