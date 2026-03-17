@@ -16,6 +16,19 @@ from app.services.mercadopago_service import MercadoPagoError, MercadoPagoServic
 
 class BillingController:
     @staticmethod
+    def is_checkout_available() -> bool:
+        return bool((settings.MERCADO_PAGO_ACCESS_TOKEN or "").strip())
+
+    @staticmethod
+    def public_checkout_error(exc: Exception, fallback: str) -> str:
+        message = str(exc or "").strip().lower()
+        if isinstance(exc, MercadoPagoError):
+            return "Nao foi possivel iniciar o pagamento online no momento. Tente novamente mais tarde ou fale com o suporte comercial."
+        if "mercado_pago_access_token" in message or "pagamento nao configurado" in message:
+            return "Pagamento online indisponivel no momento. Fale com o suporte comercial para concluir a assinatura."
+        return fallback
+
+    @staticmethod
     def get_available_plans():
         db = SessionLocal()
         try:
@@ -438,4 +451,3 @@ class BillingController:
             )
         finally:
             db.close()
-

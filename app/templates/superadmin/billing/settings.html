@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+
+{% block title %}Configuração de Pagamentos | Super Admin{% endblock %}
+
+{% block content %}
+<style>
+    html.dark body {
+        background-color: #061126 !important;
+    }
+
+    .billing-settings-shell {
+        max-width: 1480px;
+        margin: 0 auto;
+        --ux-hero-bg:
+            radial-gradient(circle at top right, rgba(59, 130, 246, 0.18), transparent 44%),
+            linear-gradient(180deg, rgba(239, 246, 255, 0.92), rgba(219, 234, 254, 0.74));
+        --ux-surface-bg: linear-gradient(180deg, rgba(239, 246, 255, 0.92), rgba(224, 242, 254, 0.72));
+        --ux-border: rgba(59, 130, 246, 0.22);
+    }
+
+    html.dark .billing-settings-shell {
+        --ux-hero-bg:
+            radial-gradient(circle at top right, rgba(96, 165, 250, 0.2), transparent 48%),
+            linear-gradient(180deg, rgba(14, 30, 58, 0.94), rgba(9, 22, 46, 0.86));
+        --ux-surface-bg: linear-gradient(180deg, rgba(12, 28, 54, 0.92), rgba(9, 22, 44, 0.82));
+        --ux-border: rgba(96, 165, 250, 0.22);
+    }
+
+    .settings-hero,
+    .settings-card {
+        border: 1px solid var(--ux-border);
+        border-radius: 1rem;
+    }
+
+    .settings-hero {
+        background: var(--ux-hero-bg);
+    }
+
+    .settings-card {
+        background: var(--ux-surface-bg);
+    }
+</style>
+
+<div class="billing-settings-shell space-y-5 pb-4">
+    <section class="settings-hero p-6">
+        <div class="flex flex-wrap items-start justify-between gap-3">
+            <div>
+                <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-blue-400">Billing</p>
+                <h1 class="mt-1 text-3xl font-extrabold tracking-tight text-[var(--text-main)]">Configuração de pagamentos</h1>
+                <p class="mt-2 max-w-3xl text-sm text-[var(--text-muted)]">Visão restrita ao superadmin para validar a integração do checkout online. Nenhum detalhe técnico do gateway aparece para os clientes.</p>
+            </div>
+            <div class="flex flex-wrap gap-2">
+                <a href="{{ url_for('superadmin_billing.list_billing') }}"
+                    class="inline-flex items-center rounded-lg border border-[var(--card-border)] px-3 py-2 text-sm font-medium text-[var(--text-main)] hover:bg-[var(--line-color)]">
+                    Voltar para cobrança
+                </a>
+            </div>
+        </div>
+        <div class="mt-4 flex flex-wrap gap-2 text-xs">
+            {% if ready %}
+            <span class="rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1 text-emerald-300">Checkout online pronto</span>
+            {% else %}
+            <span class="rounded-lg border border-amber-500/30 bg-amber-500/10 px-2.5 py-1 text-amber-300">Configuração incompleta</span>
+            {% endif %}
+            <span class="rounded-lg border border-[var(--line-color)] px-2.5 py-1 text-[var(--text-main)]">Modo: {{ 'Sandbox' if sandbox_mode else 'Produção' }}</span>
+            <span class="rounded-lg border border-[var(--line-color)] px-2.5 py-1 text-[var(--text-main)]">Webhook efetivo: {{ effective_webhook or 'não definido' }}</span>
+        </div>
+    </section>
+
+    <div class="grid grid-cols-1 gap-4 xl:grid-cols-3">
+        <section class="settings-card p-4 xl:col-span-2">
+            <div class="mb-3">
+                <h2 class="text-sm font-semibold uppercase tracking-[0.14em] text-[var(--text-muted)]">Checklist da integração</h2>
+                <p class="mt-1 text-sm text-[var(--text-muted)]">Itens obrigatórios e opcionais da configuração do Mercado Pago no ambiente.</p>
+            </div>
+            <div class="space-y-3">
+                {% for item in setup_items %}
+                <div class="rounded-xl border border-[var(--line-color)] p-4">
+                    <div class="flex flex-wrap items-start justify-between gap-3">
+                        <div>
+                            <p class="text-sm font-semibold text-[var(--text-main)]">{{ item.name }}</p>
+                            <p class="mt-1 text-sm text-[var(--text-muted)]">{{ item.description }}</p>
+                        </div>
+                        <div class="flex flex-wrap gap-2 text-xs">
+                            {% if item.required %}
+                            <span class="rounded-lg border border-blue-500/30 bg-blue-500/10 px-2.5 py-1 text-blue-300">Obrigatório</span>
+                            {% else %}
+                            <span class="rounded-lg border border-[var(--line-color)] px-2.5 py-1 text-[var(--text-main)]">Opcional</span>
+                            {% endif %}
+
+                            {% if item.configured %}
+                            <span class="rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1 text-emerald-300">Configurado</span>
+                            {% else %}
+                            <span class="rounded-lg border border-rose-500/30 bg-rose-500/10 px-2.5 py-1 text-rose-300">Ausente</span>
+                            {% endif %}
+
+                            {% if item.value is defined %}
+                            <span class="rounded-lg border border-[var(--line-color)] px-2.5 py-1 text-[var(--text-main)]">{{ item.value }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+
+        <section class="settings-card p-4">
+            <div class="mb-3">
+                <h2 class="text-sm font-semibold uppercase tracking-[0.14em] text-[var(--text-muted)]">Diagnóstico</h2>
+            </div>
+            {% if ready %}
+            <div class="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4">
+                <p class="text-sm font-semibold text-emerald-300">Integração pronta</p>
+                <p class="mt-2 text-sm text-[var(--text-main)]">O cliente pode usar o checkout online sem ver qualquer detalhe técnico da configuração.</p>
+            </div>
+            {% else %}
+            <div class="rounded-xl border border-amber-500/30 bg-amber-500/10 p-4">
+                <p class="text-sm font-semibold text-amber-300">Pendências obrigatórias</p>
+                <ul class="mt-3 space-y-2 text-sm text-[var(--text-main)]">
+                    {% for item in missing_required %}
+                    <li>{{ item }}</li>
+                    {% endfor %}
+                </ul>
+                <p class="mt-3 text-sm text-[var(--text-muted)]">Enquanto isso, o cliente vê apenas que o pagamento online está indisponível, sem exposição de variáveis ou infraestrutura.</p>
+            </div>
+            {% endif %}
+
+            <div class="mt-4 rounded-xl border border-[var(--line-color)] p-4">
+                <p class="text-sm font-semibold text-[var(--text-main)]">Boa prática</p>
+                <p class="mt-2 text-sm text-[var(--text-muted)]">Segredos do gateway continuam no ambiente do servidor. O painel admin mostra somente status e checklist operacional.</p>
+            </div>
+        </section>
+    </div>
+</div>
+{% endblock %}

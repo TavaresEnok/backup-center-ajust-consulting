@@ -45,7 +45,7 @@ def dashboard(tenant_slug):
             .all()
         )
         pending_invoice = next((inv for inv in invoices if str(getattr(inv.status, "value", inv.status)) == "pending"), None)
-        payment_ready = bool(settings.MERCADO_PAGO_ACCESS_TOKEN)
+        payment_ready = BillingController.is_checkout_available()
 
         return render_template(
             "billing/index.html",
@@ -54,7 +54,6 @@ def dashboard(tenant_slug):
             invoices=invoices,
             pending_invoice=pending_invoice,
             payment_ready=payment_ready,
-            payment_provider="Mercado Pago",
         )
     finally:
         db.close()
@@ -89,7 +88,13 @@ def subscribe(tenant_slug, plan_id):
         )
         return redirect(result["checkout_url"])
     except Exception as exc:
-        flash(f"Erro ao iniciar pagamento: {str(exc)}", "error")
+        flash(
+            BillingController.public_checkout_error(
+                exc,
+                "Erro ao iniciar pagamento online. Tente novamente mais tarde.",
+            ),
+            "error",
+        )
         return redirect(url_for("billing.dashboard", tenant_slug=tenant_slug))
 
 
@@ -119,7 +124,13 @@ def pay_invoice(tenant_slug, invoice_id):
         )
         return redirect(result["checkout_url"])
     except Exception as exc:
-        flash(f"Erro ao reabrir pagamento da fatura: {str(exc)}", "error")
+        flash(
+            BillingController.public_checkout_error(
+                exc,
+                "Erro ao reabrir pagamento da fatura. Tente novamente mais tarde.",
+            ),
+            "error",
+        )
         return redirect(url_for("billing.dashboard", tenant_slug=tenant_slug))
 
 
@@ -152,4 +163,3 @@ def payment_return(tenant_slug):
             flash("Retorno de pagamento recebido.", "info")
 
     return redirect(url_for("billing.dashboard", tenant_slug=tenant_slug))
-

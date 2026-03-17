@@ -2,6 +2,7 @@ from flask import Blueprint, redirect, render_template, request, session, url_fo
 from sqlalchemy import case, func, or_, select
 from sqlalchemy.orm import joinedload
 
+from app.core.config import settings
 from app.core.database import SessionLocal
 from app.models.invoice import Invoice, InvoiceStatus
 from app.models.tenant import Tenant
@@ -155,3 +156,71 @@ def list_billing():
         )
     finally:
         db.close()
+
+
+@bp.route("/settings")
+def payment_settings():
+    app_public_url = (settings.APP_PUBLIC_URL or "").strip()
+    webhook_url = (settings.MERCADO_PAGO_WEBHOOK_URL or "").strip()
+    access_token = (settings.MERCADO_PAGO_ACCESS_TOKEN or "").strip()
+    public_key = (settings.MERCADO_PAGO_PUBLIC_KEY or "").strip()
+    webhook_token = (settings.MERCADO_PAGO_WEBHOOK_TOKEN or "").strip()
+
+    effective_webhook = webhook_url or (
+        f"{app_public_url.rstrip('/')}/webhooks/billing/mercadopago" if app_public_url else None
+    )
+
+    setup_items = [
+        {
+            "name": "APP_PUBLIC_URL",
+            "configured": bool(app_public_url),
+            "required": True,
+            "description": "Base publica usada nos retornos do checkout e no webhook automatico.",
+        },
+        {
+            "name": "MERCADO_PAGO_ACCESS_TOKEN",
+            "configured": bool(access_token),
+            "required": True,
+            "description": "Token privado usado para criar checkout e consultar pagamentos.",
+        },
+        {
+            "name": "MERCADO_PAGO_PUBLIC_KEY",
+            "configured": bool(public_key),
+            "required": False,
+            "description": "Chave publica opcional. So sera necessaria para experiencias de checkout embutido no futuro.",
+        },
+        {
+            "name": "MERCADO_PAGO_WEBHOOK_URL",
+            "configured": bool(effective_webhook),
+            "required": True,
+            "description": "URL de callback para confirmacao automatica. Se vazia, o sistema tenta derivar a partir de APP_PUBLIC_URL.",
+        },
+        {
+            "name": "MERCADO_PAGO_WEBHOOK_TOKEN",
+            "configured": bool(webhook_token),
+            "required": False,
+            "description": "Token adicional para proteger o endpoint de webhook.",
+        },
+        {
+            "name": "MERCADO_PAGO_USE_SANDBOX",
+            "configured": True,
+            "required": False,
+            "description": "Define se o checkout usa ambiente de teste ou producao.",
+            "value": "sandbox" if settings.MERCADO_PAGO_USE_SANDBOX else "producao",
+        },
+    ]
+
+    missing_required = [
+        item["name"]
+        for item in setup_items
+        if item.get("required") and not item.get("configured")
+    ]
+
+    return render_template(
+        "superadmin/billing/settings.html",
+        setup_items=setup_items,
+        ready=not missing_required,
+        missing_required=missing_required,
+        effective_webhook=effective_webhook,
+        sandbox_mode=bool(settings.MERCADO_PAGO_USE_SANDBOX),
+    )

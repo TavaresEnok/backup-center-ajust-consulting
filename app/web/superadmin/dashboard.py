@@ -468,8 +468,8 @@ def dashboard():
                     "severity": "critical",
                     "title": "Integracao de pagamento incompleta",
                     "description": "Mercado Pago ainda nao esta 100% configurado no ambiente atual.",
-                    "action_label": "Revisar cobranca",
-                    "action_url": url_for("superadmin_billing.list_billing", focus="at_risk"),
+                    "action_label": "Abrir configuracao",
+                    "action_url": url_for("superadmin_billing.payment_settings"),
                 }
             )
         if tenants_payment_pending > 0:
@@ -595,6 +595,7 @@ def dashboard():
             "manage_tenants": url_for("superadmin_tenants.list_tenants"),
             "manage_users": url_for("superadmin_users.list_users"),
             "manage_billing": url_for("superadmin_billing.list_billing"),
+            "payment_settings": url_for("superadmin_billing.payment_settings"),
             "manage_types": url_for("superadmin_device_types.list_types"),
             "without_devices": url_for("superadmin_tenants.list_tenants", ops="no_devices"),
             "without_admin": url_for("superadmin_tenants.list_tenants", ops="no_admin"),
