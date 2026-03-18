@@ -64,7 +64,7 @@
         </div>
 
         <!-- Header Right: Theme, Notifications, User -->
-        <div class="hidden lg:flex items-center justify-end gap-3 sm:gap-7" x-data="{ headerMenuOpen: null }" @click.outside="headerMenuOpen = null" @keydown.escape.window="headerMenuOpen = null">
+        <div class="hidden lg:flex items-center justify-end gap-3 sm:gap-7">
 
             <div class="flex items-center gap-2 2xsm:gap-4">
                 <!-- Theme Toggler (Functional) -->
@@ -87,7 +87,7 @@
                 <!-- Notifications Dropdown -->
                 <div class="relative">
                     {% set notif_count = notifications_count|default(0) %}
-                    <button @click.stop="headerMenuOpen = (headerMenuOpen === 'notif' ? null : 'notif')"
+                    <button id="notifMenuBtn" type="button"
                         class="relative flex h-11 w-11 items-center justify-center rounded-full text-gray-500 hover:text-brand-500 bg-[var(--line-color)] text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-[var(--card-border)] transition-colors">
                         {% if notif_count > 0 %}
                         <span
@@ -99,13 +99,9 @@
                     </button>
 
                     <!-- Notifications Panel -->
-                    <div x-show="headerMenuOpen === 'notif'" @click.outside="headerMenuOpen = null"
-                        x-transition:enter="transition ease-out duration-200"
-                        x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
-                        x-transition:leave="transition ease-in duration-150"
-                        x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
+                    <div id="notifMenuPanel"
                         class="absolute right-0 mt-4 w-80 rounded-xl border border-gray-200 bg-[var(--card-bg)] shadow-[var(--card-shadow)] border-[var(--card-border)] backdrop-blur-xl saturate-150"
-                        x-cloak>
+                        hidden>
                         <div class="px-4 py-3 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between">
                             <h4 class="font-semibold text-gray-800 dark:text-white">Notificacoes</h4>
                             <span class="text-xs {% if notif_count > 0 %}text-brand-500{% else %}text-gray-500{% endif %}">
@@ -141,7 +137,7 @@
 
             <!-- User Menu -->
             <div class="relative">
-                <a class="flex items-center gap-4" href="#" @click.prevent.stop="headerMenuOpen = (headerMenuOpen === 'user' ? null : 'user')">
+                <a id="userMenuBtn" class="flex items-center gap-4" href="#" role="button" aria-haspopup="true" aria-expanded="false">
                     <span class="hidden text-right lg:block">
                         <span class="block text-sm font-medium text-[var(--text-main)]">{{
                             session.get('user_name', 'Admin User') }}</span>
@@ -173,16 +169,13 @@
 
                     <i data-lucide="chevron-down"
                         class="hidden w-4 h-4 text-gray-500 lg:block transition-transform duration-200"
-                        :class="headerMenuOpen === 'user' ? 'rotate-180' : ''"></i>
+                        id="userMenuChevron"></i>
                 </a>
 
                 <!-- Dropdown -->
-                <div x-show="headerMenuOpen === 'user'" x-transition:enter="transition ease-out duration-200"
-                    x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
-                    x-transition:leave="transition ease-in duration-150"
-                    x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
+                <div id="userMenuPanel"
                     class="absolute right-0 mt-4 flex w-[250px] flex-col rounded-xl border border-gray-200 bg-[var(--card-bg)] shadow-[var(--card-shadow)] border-[var(--card-border)] backdrop-blur-xl saturate-150"
-                    x-cloak>
+                    hidden>
                     <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-800">
                         <p class="text-sm font-medium text-gray-800 dark:text-white">{{ session.get('user_name', 'Admin
                             User') }}</p>
@@ -232,3 +225,51 @@
 
     </div>
 </header>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const notifBtn = document.getElementById('notifMenuBtn');
+        const notifPanel = document.getElementById('notifMenuPanel');
+        const userBtn = document.getElementById('userMenuBtn');
+        const userPanel = document.getElementById('userMenuPanel');
+        const userChevron = document.getElementById('userMenuChevron');
+
+        if (!notifBtn || !notifPanel || !userBtn || !userPanel) return;
+
+        const closeNotif = () => { notifPanel.hidden = true; };
+        const closeUser = () => {
+            userPanel.hidden = true;
+            if (userChevron) userChevron.classList.remove('rotate-180');
+            userBtn.setAttribute('aria-expanded', 'false');
+        };
+        const closeAll = () => { closeNotif(); closeUser(); };
+
+        notifBtn.addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const willOpen = notifPanel.hidden;
+            closeAll();
+            notifPanel.hidden = !willOpen;
+        });
+
+        userBtn.addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const willOpen = userPanel.hidden;
+            closeAll();
+            userPanel.hidden = !willOpen;
+            userBtn.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+            if (userChevron) userChevron.classList.toggle('rotate-180', willOpen);
+        });
+
+        document.addEventListener('click', function (e) {
+            const insideNotif = notifPanel.contains(e.target) || notifBtn.contains(e.target);
+            const insideUser = userPanel.contains(e.target) || userBtn.contains(e.target);
+            if (!insideNotif && !insideUser) closeAll();
+        });
+
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') closeAll();
+        });
+    });
+</script>
