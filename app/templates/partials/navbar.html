@@ -100,8 +100,7 @@
 
                     <!-- Notifications Panel -->
                     <div id="notifMenuPanel"
-                        class="absolute right-0 mt-4 w-80 rounded-xl border border-gray-200 bg-[var(--card-bg)] shadow-[var(--card-shadow)] border-[var(--card-border)] backdrop-blur-xl saturate-150"
-                        hidden>
+                        class="hidden absolute right-0 mt-4 w-80 rounded-xl border border-gray-200 bg-[var(--card-bg)] shadow-[var(--card-shadow)] border-[var(--card-border)] backdrop-blur-xl saturate-150">
                         <div class="px-4 py-3 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between">
                             <h4 class="font-semibold text-gray-800 dark:text-white">Notificacoes</h4>
                             <span class="text-xs {% if notif_count > 0 %}text-brand-500{% else %}text-gray-500{% endif %}">
@@ -137,7 +136,7 @@
 
             <!-- User Menu -->
             <div class="relative">
-                <a id="userMenuBtn" class="flex items-center gap-4" href="#" role="button" aria-haspopup="true" aria-expanded="false">
+                <button id="userMenuBtn" type="button" class="flex items-center gap-4" aria-haspopup="true" aria-expanded="false">
                     <span class="hidden text-right lg:block">
                         <span class="block text-sm font-medium text-[var(--text-main)]">{{
                             session.get('user_name', 'Admin User') }}</span>
@@ -170,12 +169,11 @@
                     <i data-lucide="chevron-down"
                         class="hidden w-4 h-4 text-gray-500 lg:block transition-transform duration-200"
                         id="userMenuChevron"></i>
-                </a>
+                </button>
 
                 <!-- Dropdown -->
                 <div id="userMenuPanel"
-                    class="absolute right-0 mt-4 flex w-[250px] flex-col rounded-xl border border-gray-200 bg-[var(--card-bg)] shadow-[var(--card-shadow)] border-[var(--card-border)] backdrop-blur-xl saturate-150"
-                    hidden>
+                    class="hidden absolute right-0 mt-4 flex w-[250px] flex-col rounded-xl border border-gray-200 bg-[var(--card-bg)] shadow-[var(--card-shadow)] border-[var(--card-border)] backdrop-blur-xl saturate-150">
                     <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-800">
                         <p class="text-sm font-medium text-gray-800 dark:text-white">{{ session.get('user_name', 'Admin
                             User') }}</p>
@@ -236,28 +234,32 @@
 
         if (!notifBtn || !notifPanel || !userBtn || !userPanel) return;
 
-        const closeNotif = () => { notifPanel.hidden = true; };
+        const closeNotif = () => { notifPanel.classList.add('hidden'); };
         const closeUser = () => {
-            userPanel.hidden = true;
+            userPanel.classList.add('hidden');
             if (userChevron) userChevron.classList.remove('rotate-180');
             userBtn.setAttribute('aria-expanded', 'false');
         };
         const closeAll = () => { closeNotif(); closeUser(); };
 
+        // Defensive reset to avoid stale open states after cached navigation.
+        closeAll();
+        requestAnimationFrame(closeAll);
+
         notifBtn.addEventListener('click', function (e) {
             e.preventDefault();
             e.stopPropagation();
-            const willOpen = notifPanel.hidden;
+            const willOpen = notifPanel.classList.contains('hidden');
             closeAll();
-            notifPanel.hidden = !willOpen;
+            if (willOpen) notifPanel.classList.remove('hidden');
         });
 
         userBtn.addEventListener('click', function (e) {
             e.preventDefault();
             e.stopPropagation();
-            const willOpen = userPanel.hidden;
+            const willOpen = userPanel.classList.contains('hidden');
             closeAll();
-            userPanel.hidden = !willOpen;
+            if (willOpen) userPanel.classList.remove('hidden');
             userBtn.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
             if (userChevron) userChevron.classList.toggle('rotate-180', willOpen);
         });
