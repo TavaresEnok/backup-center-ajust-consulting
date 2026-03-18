@@ -13,6 +13,7 @@ from app.models.payment import PaymentMethod, Subscription, PaymentMethodType, S
 from app.models.report import Report, ReportType, ReportSchedule
 from app.models.activity_log import ActivityLog
 from app.models.api_token import ApiToken
+from app.models.system_setting import SystemSetting
 
 __all__ = [
     "TimestampMixin",
@@ -38,5 +39,6 @@ __all__ = [
     "ReportSchedule",
     "ActivityLog",
     "ApiToken",
+    "SystemSetting",
 ]
 

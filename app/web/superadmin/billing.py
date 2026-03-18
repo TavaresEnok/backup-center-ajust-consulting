@@ -1,12 +1,13 @@
-from flask import Blueprint, redirect, render_template, request, session, url_for
+from flask import Blueprint, flash, redirect, render_template, request, session, url_for
 from sqlalchemy import case, func, or_, select
 from sqlalchemy.orm import joinedload
 
-from app.core.config import settings
 from app.core.database import SessionLocal
 from app.models.invoice import Invoice, InvoiceStatus
 from app.models.tenant import Tenant
 from app.models.user import UserRole
+from app.services.mercadopago_service import MercadoPagoService
+from app.services.platform_settings_service import PlatformSettingsService
 
 bp = Blueprint("superadmin_billing", __name__, url_prefix="/admin/billing")
 
@@ -158,13 +159,33 @@ def list_billing():
         db.close()
 
 
-@bp.route("/settings")
+@bp.route("/settings", methods=["GET", "POST"])
 def payment_settings():
-    app_public_url = (settings.APP_PUBLIC_URL or "").strip()
-    webhook_url = (settings.MERCADO_PAGO_WEBHOOK_URL or "").strip()
-    access_token = (settings.MERCADO_PAGO_ACCESS_TOKEN or "").strip()
-    public_key = (settings.MERCADO_PAGO_PUBLIC_KEY or "").strip()
-    webhook_token = (settings.MERCADO_PAGO_WEBHOOK_TOKEN or "").strip()
+    if request.method == "POST":
+        try:
+            PlatformSettingsService.save_payment_config(
+                app_public_url=(request.form.get("app_public_url") or "").strip(),
+                webhook_url=(request.form.get("mercado_pago_webhook_url") or "").strip(),
+                use_sandbox=(request.form.get("mercado_pago_use_sandbox") == "on"),
+                access_token=request.form.get("mercado_pago_access_token"),
+                public_key=request.form.get("mercado_pago_public_key"),
+                webhook_token=request.form.get("mercado_pago_webhook_token"),
+                clear_access_token=(request.form.get("clear_access_token") == "on"),
+                clear_public_key=(request.form.get("clear_public_key") == "on"),
+                clear_webhook_token=(request.form.get("clear_webhook_token") == "on"),
+            )
+            flash("Configuracao de pagamento salva com sucesso.", "success")
+            return redirect(url_for("superadmin_billing.payment_settings"))
+        except Exception as exc:
+            flash(f"Erro ao salvar configuracao de pagamento: {exc}", "error")
+
+    config = PlatformSettingsService.get_payment_config()
+    app_public_url = (config.get("app_public_url") or "").strip()
+    webhook_url = (config.get("mercado_pago_webhook_url") or "").strip()
+    access_token = (config.get("mercado_pago_access_token") or "").strip()
+    public_key = (config.get("mercado_pago_public_key") or "").strip()
+    webhook_token = (config.get("mercado_pago_webhook_token") or "").strip()
+    sandbox_mode = bool(config.get("mercado_pago_use_sandbox"))
 
     effective_webhook = webhook_url or (
         f"{app_public_url.rstrip('/')}/webhooks/billing/mercadopago" if app_public_url else None
@@ -206,7 +227,7 @@ def payment_settings():
             "configured": True,
             "required": False,
             "description": "Define se o checkout usa ambiente de teste ou producao.",
-            "value": "sandbox" if settings.MERCADO_PAGO_USE_SANDBOX else "producao",
+            "value": "sandbox" if sandbox_mode else "producao",
         },
     ]
 
@@ -222,5 +243,31 @@ def payment_settings():
         ready=not missing_required,
         missing_required=missing_required,
         effective_webhook=effective_webhook,
-        sandbox_mode=bool(settings.MERCADO_PAGO_USE_SANDBOX),
+        sandbox_mode=sandbox_mode,
+        form_data={
+            "app_public_url": app_public_url,
+            "mercado_pago_webhook_url": webhook_url,
+            "mercado_pago_use_sandbox": sandbox_mode,
+            "has_access_token": bool(access_token),
+            "has_public_key": bool(public_key),
+            "has_webhook_token": bool(webhook_token),
+        },
     )
+
+
+@bp.route("/settings/test", methods=["POST"])
+def payment_settings_test():
+    try:
+        config = PlatformSettingsService.get_payment_config()
+        access_token = (config.get("mercado_pago_access_token") or "").strip()
+        if not access_token:
+            flash("Defina o Access Token antes de testar a integração.", "warning")
+            return redirect(url_for("superadmin_billing.payment_settings"))
+
+        mp = MercadoPagoService(access_token)
+        account = mp.get_current_user()
+        nickname = account.get("nickname") or account.get("email") or account.get("id") or "conta identificada"
+        flash(f"Integração Mercado Pago validada com sucesso: {nickname}", "success")
+    except Exception as exc:
+        flash(f"Falha ao testar integração do Mercado Pago: {exc}", "error")
+    return redirect(url_for("superadmin_billing.payment_settings"))

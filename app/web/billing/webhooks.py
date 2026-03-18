@@ -2,7 +2,7 @@ import logging
 
 from flask import Blueprint, jsonify, request
 
-from app.core.config import settings
+from app.services.platform_settings_service import PlatformSettingsService
 from app.web.billing.controller import BillingController
 
 bp = Blueprint("billing_webhooks", __name__, url_prefix="/webhooks/billing")
@@ -10,7 +10,8 @@ bp = Blueprint("billing_webhooks", __name__, url_prefix="/webhooks/billing")
 
 @bp.route("/mercadopago", methods=["POST"])
 def mercadopago_webhook():
-    token = (settings.MERCADO_PAGO_WEBHOOK_TOKEN or "").strip()
+    config = PlatformSettingsService.get_payment_config()
+    token = (config.get("mercado_pago_webhook_token") or "").strip()
     if token:
         request_token = (request.args.get("token") or "").strip()
         if request_token != token:
@@ -31,7 +32,7 @@ def mercadopago_webhook():
         should_process_payment = True
 
     if should_process_payment and payment_id:
-        if not settings.MERCADO_PAGO_ACCESS_TOKEN:
+        if not (config.get("mercado_pago_access_token") or "").strip():
             return jsonify({"ok": True, "processed": False, "reason": "mercado_pago_not_configured"}), 200
         try:
             BillingController.process_mercadopago_payment(payment_id=payment_id, source="webhook")

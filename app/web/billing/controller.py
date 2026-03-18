@@ -5,19 +5,24 @@ from typing import Any, Dict, Optional
 
 from sqlalchemy import desc
 
-from app.core.config import settings
 from app.core.database import SessionLocal
 from app.models.invoice import Invoice, InvoiceStatus
 from app.models.payment import Subscription, SubscriptionStatus
 from app.models.plan import Plan
 from app.models.tenant import Tenant
 from app.services.mercadopago_service import MercadoPagoError, MercadoPagoService
+from app.services.platform_settings_service import PlatformSettingsService
 
 
 class BillingController:
     @staticmethod
+    def payment_config() -> Dict[str, Any]:
+        return PlatformSettingsService.get_payment_config()
+
+    @staticmethod
     def is_checkout_available() -> bool:
-        return bool((settings.MERCADO_PAGO_ACCESS_TOKEN or "").strip())
+        config = BillingController.payment_config()
+        return bool((config.get("mercado_pago_access_token") or "").strip())
 
     @staticmethod
     def public_checkout_error(exc: Exception, fallback: str) -> str:
@@ -78,9 +83,11 @@ class BillingController:
 
     @staticmethod
     def _build_notification_url(base_url: str) -> str:
-        if settings.MERCADO_PAGO_WEBHOOK_URL:
-            return settings.MERCADO_PAGO_WEBHOOK_URL
-        token = (settings.MERCADO_PAGO_WEBHOOK_TOKEN or "").strip()
+        config = BillingController.payment_config()
+        webhook_url = (config.get("mercado_pago_webhook_url") or "").strip()
+        if webhook_url:
+            return webhook_url
+        token = (config.get("mercado_pago_webhook_token") or "").strip()
         url = BillingController._build_url(base_url, "/webhooks/billing/mercadopago")
         if token:
             sep = "&" if "?" in url else "?"
@@ -214,8 +221,11 @@ class BillingController:
         base_url: str,
         billing_cycle: str = "monthly",
     ) -> Dict[str, Any]:
-        if not settings.MERCADO_PAGO_ACCESS_TOKEN:
-            raise ValueError("Pagamento nao configurado. Defina MERCADO_PAGO_ACCESS_TOKEN.")
+        config = BillingController.payment_config()
+        access_token = (config.get("mercado_pago_access_token") or "").strip()
+        use_sandbox = bool(config.get("mercado_pago_use_sandbox"))
+        if not access_token:
+            raise ValueError("Pagamento online nao configurado.")
 
         tenant_uuid = BillingController._parse_uuid(tenant_id, "tenant_id")
         plan_uuid = BillingController._parse_uuid(plan_id, "plan_id")
@@ -256,11 +266,11 @@ class BillingController:
                 billing_cycle=billing_cycle,
                 base_url=base_url,
             )
-            mp = MercadoPagoService(settings.MERCADO_PAGO_ACCESS_TOKEN)
+            mp = MercadoPagoService(access_token)
             preference = mp.create_preference(payload)
             checkout_url = MercadoPagoService.select_checkout_url(
                 preference,
-                use_sandbox=settings.MERCADO_PAGO_USE_SANDBOX,
+                use_sandbox=use_sandbox,
             )
             if not checkout_url:
                 raise MercadoPagoError("Mercado Pago nao retornou URL de checkout.")
@@ -287,8 +297,11 @@ class BillingController:
         payer_email: str,
         base_url: str,
     ) -> Dict[str, Any]:
-        if not settings.MERCADO_PAGO_ACCESS_TOKEN:
-            raise ValueError("Pagamento nao configurado. Defina MERCADO_PAGO_ACCESS_TOKEN.")
+        config = BillingController.payment_config()
+        access_token = (config.get("mercado_pago_access_token") or "").strip()
+        use_sandbox = bool(config.get("mercado_pago_use_sandbox"))
+        if not access_token:
+            raise ValueError("Pagamento online nao configurado.")
 
         tenant_uuid = BillingController._parse_uuid(tenant_id, "tenant_id")
         invoice_uuid = BillingController._parse_uuid(invoice_id, "invoice_id")
@@ -326,11 +339,11 @@ class BillingController:
                 billing_cycle=billing_cycle,
                 base_url=base_url,
             )
-            mp = MercadoPagoService(settings.MERCADO_PAGO_ACCESS_TOKEN)
+            mp = MercadoPagoService(access_token)
             preference = mp.create_preference(payload)
             checkout_url = MercadoPagoService.select_checkout_url(
                 preference,
-                use_sandbox=settings.MERCADO_PAGO_USE_SANDBOX,
+                use_sandbox=use_sandbox,
             )
             if not checkout_url:
                 raise MercadoPagoError("Mercado Pago nao retornou URL de checkout.")
@@ -351,13 +364,15 @@ class BillingController:
 
     @staticmethod
     def process_mercadopago_payment(payment_id: Any, source: str = "manual") -> Dict[str, Any]:
-        if not settings.MERCADO_PAGO_ACCESS_TOKEN:
-            raise ValueError("Pagamento nao configurado. Defina MERCADO_PAGO_ACCESS_TOKEN.")
+        config = BillingController.payment_config()
+        access_token = (config.get("mercado_pago_access_token") or "").strip()
+        if not access_token:
+            raise ValueError("Pagamento online nao configurado.")
         payment_id = str(payment_id or "").strip()
         if not payment_id:
             raise ValueError("payment_id nao informado.")
 
-        mp = MercadoPagoService(settings.MERCADO_PAGO_ACCESS_TOKEN)
+        mp = MercadoPagoService(access_token)
         payment = mp.get_payment(payment_id)
         payment_status = str(payment.get("status") or "").lower().strip()
         external_reference = str(payment.get("external_reference") or "").strip()

@@ -16,6 +16,7 @@ from app.models.payment import Subscription, SubscriptionStatus
 from app.models.plan import Plan
 from app.models.tenant import Tenant
 from app.models.user import User, UserRole
+from app.services.platform_settings_service import PlatformSettingsService
 
 bp = Blueprint("superadmin_dashboard", __name__, url_prefix="/admin")
 
@@ -300,11 +301,12 @@ def dashboard():
             "canceled": int(tenants_payment_canceled),
         }
 
+        payment_config = PlatformSettingsService.get_payment_config()
         payment_setup = {
-            "public_url": bool(settings.APP_PUBLIC_URL),
-            "mp_access_token": bool(settings.MERCADO_PAGO_ACCESS_TOKEN),
-            "mp_webhook_token": bool(settings.MERCADO_PAGO_WEBHOOK_TOKEN),
-            "mp_webhook_url": bool(settings.MERCADO_PAGO_WEBHOOK_URL),
+            "public_url": bool(payment_config.get("app_public_url")),
+            "mp_access_token": bool(payment_config.get("mercado_pago_access_token")),
+            "mp_webhook_token": bool(payment_config.get("mercado_pago_webhook_token")),
+            "mp_webhook_url": bool(payment_config.get("mercado_pago_webhook_url")),
         }
         payment_setup["ready"] = (
             payment_setup["public_url"] and payment_setup["mp_access_token"] and payment_setup["mp_webhook_token"]

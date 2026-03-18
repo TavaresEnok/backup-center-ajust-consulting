@@ -61,9 +61,24 @@ class MercadoPagoService:
             raise MercadoPagoError(f"Erro ao consultar pagamento ({response.status_code}).")
         return response.json()
 
+    def get_current_user(self) -> Dict[str, Any]:
+        url = f"{self.BASE_URL}/users/me"
+        response = requests.get(
+            url,
+            headers=self._headers(),
+            timeout=self.timeout_seconds,
+        )
+        if response.status_code >= 400:
+            logging.getLogger(__name__).error(
+                "mercadopago current user lookup error status=%s body=%s",
+                response.status_code,
+                response.text[:1500],
+            )
+            raise MercadoPagoError(f"Erro ao validar credenciais ({response.status_code}).")
+        return response.json()
+
     @staticmethod
     def select_checkout_url(preference: Dict[str, Any], use_sandbox: bool = False) -> Optional[str]:
         if use_sandbox:
             return preference.get("sandbox_init_point") or preference.get("init_point")
         return preference.get("init_point") or preference.get("sandbox_init_point")
-

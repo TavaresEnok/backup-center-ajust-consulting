@@ -1,10 +1,10 @@
 from flask import Blueprint, render_template, session, redirect, url_for, request, flash
 
-from app.core.config import settings
 from app.core.database import SessionLocal
 from app.models.invoice import Invoice
 from app.models.tenant import Tenant
 from app.models.user import UserRole
+from app.services.platform_settings_service import PlatformSettingsService
 from app.web.auth.decorators import login_required, tenant_owner_required
 from app.web.billing.controller import BillingController
 
@@ -19,8 +19,9 @@ def _guard_tenant_access(tenant_slug: str) -> bool:
 
 
 def _request_base_url() -> str:
-    if settings.APP_PUBLIC_URL:
-        return settings.APP_PUBLIC_URL.rstrip("/")
+    config = PlatformSettingsService.get_payment_config()
+    if config.get("app_public_url"):
+        return str(config["app_public_url"]).rstrip("/")
     return request.url_root.rstrip("/")
 
 
@@ -152,8 +153,11 @@ def payment_return(tenant_slug):
         try:
             BillingController.process_mercadopago_payment(payment_id=payment_id, source="return")
             flash("Pagamento processado com sucesso.", "success")
-        except Exception as exc:
-            flash(f"Nao foi possivel confirmar o pagamento agora: {str(exc)}", "warning")
+        except Exception:
+            flash(
+                "Nao foi possivel confirmar o pagamento agora. Se a cobranca ja foi concluida, a assinatura sera atualizada automaticamente apos a confirmacao do gateway.",
+                "warning",
+            )
     else:
         if result_hint == "pending":
             flash("Pagamento pendente. Assim que for confirmado, a assinatura sera ativada.", "warning")
