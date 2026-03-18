@@ -9,14 +9,13 @@ from app.core.database import SessionLocal
 from app.core.config import settings
 import logging
 import os
-import calendar
 from datetime import datetime, timedelta
 from collections import defaultdict
 import time
 from celery.exceptions import Retry
+from app.services.schedule_utils import compute_next_run_at, utc_now_naive
 
 logger = logging.getLogger(__name__)
-MAX_READY_AGE_MINUTES = 30
 
 
 def _is_global_backup_stop_enabled() -> bool:
@@ -48,16 +47,15 @@ def _should_stop_now(bulk_task_id: str | None = None) -> bool:
     return _is_global_backup_stop_enabled() or _is_bulk_cancelled(bulk_task_id)
 
 
-def _is_connection_ready_recent(device, max_age_minutes: int = MAX_READY_AGE_MINUTES) -> tuple[bool, str]:
+def _is_connection_ready_for_backup(device) -> tuple[bool, str]:
     try:
-        from app.services.backup_diagnostics import is_connection_ready_recent
-        return is_connection_ready_recent(
+        from app.services.backup_diagnostics import is_connection_ready_for_backup
+        return is_connection_ready_for_backup(
             getattr(device, "extra_parameters", None) or {},
-            max_age_minutes=max_age_minutes,
         )
     except Exception:
-        logger.exception("Falha ao validar recencia de ping/login para device %s", getattr(device, "id", None))
-        return False, "falha ao validar recencia do teste ping/login"
+        logger.exception("Falha ao validar ultimo teste ping/login para device %s", getattr(device, "id", None))
+        return False, "falha ao validar o ultimo teste ping/login"
 
 
 @celery_app.task(bind=True, max_retries=3)
@@ -347,7 +345,7 @@ def run_backup_group_task(self, group_id: str, tenant_id: str):
         for d in devices:
             if not d.backup_scheduled:
                 continue
-            ok, _ = _is_connection_ready_recent(d)
+            ok, _ = _is_connection_ready_for_backup(d)
             if ok:
                 scheduled_devices.append(d)
             else:
@@ -365,7 +363,7 @@ def run_backup_group_task(self, group_id: str, tenant_id: str):
             if skipped_not_ready:
                 results['details'].append({
                     'group_name': group.name,
-                    'message': f'{skipped_not_ready} dispositivo(s) pulados por falta de teste ping/login recente.'
+                    'message': f'{skipped_not_ready} dispositivo(s) pulados por falta de ping+login OK no ultimo teste.'
                 })
             logger.info(
                 "Grupo %s enfileirado na vpn_queue (%s dispositivos)",
@@ -720,7 +718,7 @@ def run_scheduled_backups():
     db = SessionLocal()
     
     try:
-        now = datetime.utcnow()
+        now = utc_now_naive()
         schedules = db.query(Schedule).join(Device).options(
             joinedload(Schedule.device).joinedload(Device.group)
         ).filter(
@@ -734,38 +732,13 @@ def run_scheduled_backups():
             return value.value if hasattr(value, "value") else str(value)
 
         def _next_run(schedule, reference):
-            hh, mm = map(int, (schedule.time or "00:00").split(":"))
-            frequency = _frequency_value(schedule)
-
-            if frequency == "weekly":
-                target_weekday = schedule.day_of_week if schedule.day_of_week is not None else reference.weekday()
-                target_weekday = max(0, min(int(target_weekday), 6))
-                candidate = reference.replace(hour=hh, minute=mm, second=0, microsecond=0)
-                days_ahead = (target_weekday - candidate.weekday()) % 7
-                candidate += timedelta(days=days_ahead)
-                if candidate <= reference:
-                    candidate += timedelta(days=7)
-                return candidate
-
-            if frequency == "monthly":
-                target_day = schedule.day_of_month or 1
-                target_day = max(1, min(int(target_day), 31))
-                year, month = reference.year, reference.month
-                last_day = calendar.monthrange(year, month)[1]
-                candidate = datetime(year, month, min(target_day, last_day), hh, mm)
-                if candidate <= reference:
-                    month += 1
-                    if month > 12:
-                        month = 1
-                        year += 1
-                    last_day = calendar.monthrange(year, month)[1]
-                    candidate = datetime(year, month, min(target_day, last_day), hh, mm)
-                return candidate
-
-            candidate = reference.replace(hour=hh, minute=mm, second=0, microsecond=0)
-            if candidate <= reference:
-                candidate += timedelta(days=1)
-            return candidate
+            return compute_next_run_at(
+                time_str=schedule.time or "00:00",
+                frequency=_frequency_value(schedule),
+                day_of_week=schedule.day_of_week,
+                day_of_month=schedule.day_of_month,
+                reference_utc=reference,
+            )
 
         queued = 0
         queued_direct = 0
@@ -783,7 +756,7 @@ def run_scheduled_backups():
 
             if schedule.next_run_at <= now:
                 device = schedule.device
-                ready_ok, ready_reason = _is_connection_ready_recent(device)
+                ready_ok, ready_reason = _is_connection_ready_for_backup(device)
                 if not ready_ok:
                     skipped_not_ready += 1
                     schedule.last_run_at = now
@@ -824,7 +797,7 @@ def run_scheduled_backups():
             )
         if skipped_not_ready > 0:
             logger.info(
-                "Agendamentos ignorados por conectividade/credenciais pendentes: %s",
+                "Agendamentos ignorados por falta de ping+login OK no ultimo teste: %s",
                 skipped_not_ready,
             )
 

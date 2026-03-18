@@ -16,7 +16,6 @@ import logging
 from datetime import datetime, timezone, timedelta
 
 bp = Blueprint('tenant_devices', __name__, url_prefix='/tenant/<tenant_slug>/devices')
-MAX_READY_AGE_MINUTES = 30
 
 
 def get_db_and_tenant(tenant_slug):
@@ -47,19 +46,18 @@ def _clear_global_force_stop_flag() -> bool:
         return False
 
 
-def _is_device_ready_recent(device, max_age_minutes: int = MAX_READY_AGE_MINUTES):
-    from app.services.backup_diagnostics import is_connection_ready_recent
-    return is_connection_ready_recent(
+def _is_device_ready_for_backup(device):
+    from app.services.backup_diagnostics import is_connection_ready_for_backup
+    return is_connection_ready_for_backup(
         getattr(device, "extra_parameters", None) or {},
-        max_age_minutes=max_age_minutes,
     )
 
 
-def _collect_ready_devices(devices, max_age_minutes: int = MAX_READY_AGE_MINUTES):
+def _collect_ready_devices(devices):
     ready = []
     stale = []
     for device in devices:
-        ok, reason = _is_device_ready_recent(device, max_age_minutes=max_age_minutes)
+        ok, reason = _is_device_ready_for_backup(device)
         if ok:
             ready.append(device)
         else:
@@ -568,7 +566,7 @@ def run_backup_all(tenant_slug):
     base_devices = query.all()
     skipped_not_ready = 0
     if only_ready:
-        devices, stale = _collect_ready_devices(base_devices, max_age_minutes=MAX_READY_AGE_MINUTES)
+        devices, stale = _collect_ready_devices(base_devices)
         skipped_not_ready = len(stale)
     else:
         devices = base_devices
@@ -576,10 +574,10 @@ def run_backup_all(tenant_slug):
         if is_ajax:
             db.close()
             if only_ready:
-                return jsonify({'ok': False, 'error': f'Nenhum dispositivo apto com ping+login OK recente (<= {MAX_READY_AGE_MINUTES} min).'}), 400
+                return jsonify({'ok': False, 'error': 'Nenhum dispositivo apto com ping+login OK no ultimo teste.'}), 400
             return jsonify({'ok': False, 'error': 'Nenhum dispositivo agendado encontrado.'}), 400
         if only_ready:
-            flash(f'Nenhum dispositivo apto com ping+login OK recente (<= {MAX_READY_AGE_MINUTES} min).', 'warning')
+            flash('Nenhum dispositivo apto com ping+login OK no ultimo teste.', 'warning')
         else:
             flash('Nenhum dispositivo agendado encontrado', 'warning')
         db.close()
@@ -622,7 +620,7 @@ def run_backup_all(tenant_slug):
                     "Backup em massa",
                     (
                         f"{skipped_not_ready} dispositivo(s) foram pulados por nao estarem "
-                        f"com ping+login OK recente (<= {MAX_READY_AGE_MINUTES} min)."
+                        "com ping+login OK no ultimo teste."
                     ),
                     "warning",
                 )
@@ -812,7 +810,7 @@ def run_backup_all(tenant_slug):
         )
     if skipped_not_ready > 0:
         flash(
-            f'{skipped_not_ready} dispositivo(s) pulados por nao estarem com ping+login OK recente (<= {MAX_READY_AGE_MINUTES} min).',
+            f'{skipped_not_ready} dispositivo(s) pulados por nao estarem com ping+login OK no ultimo teste.',
             'warning'
         )
     
@@ -993,7 +991,7 @@ def run_backup_selected(tenant_slug):
             
             if device:
                 if not include_unvalidated:
-                    ready_ok, _ = _is_device_ready_recent(device, max_age_minutes=MAX_READY_AGE_MINUTES)
+                    ready_ok, _ = _is_device_ready_for_backup(device)
                     if not ready_ok:
                         skipped_not_ready += 1
                         continue
@@ -1030,7 +1028,7 @@ def run_backup_selected(tenant_slug):
 
     total_queued = queued_direct + queued_vpn_groups
     if total_queued <= 0:
-        flash(f'Nenhum dispositivo apto com ping+login OK recente (<= {MAX_READY_AGE_MINUTES} min).', 'warning')
+        flash('Nenhum dispositivo apto com ping+login OK no ultimo teste.', 'warning')
     else:
         flash(
             f'Backups selecionados enfileirados: {queued_direct} diretos + {queued_vpn_groups} grupo(s) VPN.',
@@ -1038,7 +1036,7 @@ def run_backup_selected(tenant_slug):
         )
     if skipped_not_ready > 0:
         flash(
-            f'{skipped_not_ready} dispositivo(s) selecionados foram pulados por falta de teste ping+login recente.',
+            f'{skipped_not_ready} dispositivo(s) selecionados foram pulados por falta de ping+login OK no ultimo teste.',
             'warning'
         )
     
@@ -1128,14 +1126,14 @@ def run_reprocess_failures(tenant_slug):
 
     skipped_not_ready = 0
     if not include_unvalidated:
-        devices, stale = _collect_ready_devices(devices, max_age_minutes=MAX_READY_AGE_MINUTES)
+        devices, stale = _collect_ready_devices(devices)
         skipped_not_ready = len(stale)
 
     if not devices:
         if is_ajax:
             db.close()
-            return jsonify({"ok": False, "error": "Nenhum dispositivo apto com ping+login recente para reprocessar."}), 400
-        flash("Nenhum dispositivo apto com ping+login recente para reprocessar.", "warning")
+            return jsonify({"ok": False, "error": "Nenhum dispositivo apto com ping+login OK no ultimo teste para reprocessar."}), 400
+        flash("Nenhum dispositivo apto com ping+login OK no ultimo teste para reprocessar.", "warning")
         db.close()
         return redirect(url_for('tenant_schedules.list_schedules', tenant_slug=tenant_slug))
 
@@ -1167,7 +1165,7 @@ def run_reprocess_failures(tenant_slug):
             "Reprocessamento",
             (
                 f"{skipped_not_ready} dispositivo(s) pulados por nao estarem com "
-                f"ping+login OK recente (<= {MAX_READY_AGE_MINUTES} min)."
+                "ping+login OK no ultimo teste."
             ),
             "warning",
         )
@@ -1290,7 +1288,7 @@ def run_reprocess_failures(tenant_slug):
     )
     if skipped_not_ready > 0:
         flash(
-            f"{skipped_not_ready} dispositivo(s) pulados por falta de teste ping/login recente.",
+            f"{skipped_not_ready} dispositivo(s) pulados por falta de ping+login OK no ultimo teste.",
             "warning",
         )
     return redirect(url_for('tenant_schedules.list_schedules', tenant_slug=tenant_slug))

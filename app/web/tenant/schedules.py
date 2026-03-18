@@ -1,4 +1,4 @@
-﻿from datetime import datetime, timedelta
+﻿from datetime import datetime
 import re
 from collections import Counter
 import uuid
@@ -16,6 +16,7 @@ from sqlalchemy.orm import joinedload
 from app.services.activity_service import ActivityService
 from app.celery_app import celery_app
 from app.services.realtime_backup_logs import get_redis_client
+from app.services.schedule_utils import compute_next_run_at
 
 bp = Blueprint('tenant_schedules', __name__, url_prefix='/tenant/<tenant_slug>/schedules')
 
@@ -28,12 +29,7 @@ def get_db_and_tenant(tenant_slug):
 
 
 def _next_daily_run(time_str: str, now: datetime | None = None) -> datetime:
-    now = now or datetime.utcnow()
-    hh, mm = map(int, time_str.split(":"))
-    candidate = now.replace(hour=hh, minute=mm, second=0, microsecond=0)
-    if candidate <= now:
-        candidate += timedelta(days=1)
-    return candidate
+    return compute_next_run_at(time_str=time_str, frequency="daily", reference_utc=now)
 
 
 def _is_valid_time(value: str) -> bool:

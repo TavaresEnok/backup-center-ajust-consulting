@@ -120,9 +120,11 @@
                                     Editar
                                 </a>
                                 <form action="{{ url_for('superadmin_users.delete_user', user_id=u.id) }}" method="POST"
-                                    onsubmit="return confirm({{ ('Apagar o usuario ' ~ u.full_name ~ ' agora?')|tojson }});">
+                                    data-confirm="{{ 'Voce deseja realmente deletar esse usuario? ' ~ u.full_name }}"
+                                    onsubmit="return window.__confirmDangerousForm ? window.__confirmDangerousForm(this) : confirm(this.dataset.confirm);">
                                     {% include 'partials/csrf.html' %}
                                     <button type="submit"
+                                        onclick="return window.__confirmDangerousForm ? window.__confirmDangerousForm(this.form) : confirm(this.form.dataset.confirm);"
                                         class="rounded-lg border border-rose-500/30 px-2.5 py-1.5 text-xs font-medium text-rose-300 hover:bg-rose-500/10">
                                         Apagar
                                     </button>

@@ -465,6 +465,17 @@
     <script>
         lucide.createIcons();
 
+        window.__confirmDangerousForm = function (formEl) {
+            if (!formEl) return true;
+            if (formEl.dataset.confirmed === '1') return true;
+            const message = formEl.dataset.confirm;
+            if (!message) return true;
+            const ok = window.confirm(message);
+            if (!ok) return false;
+            formEl.dataset.confirmed = '1';
+            return true;
+        };
+
         document.addEventListener('keydown', function (event) {
             const searchInput = document.getElementById('superadmin-global-search');
             if (!searchInput) {
@@ -490,6 +501,20 @@
                     setTimeout(() => alert.remove(), 500);
                 }, 5000 + (index * 500)); // Stagger the removal - increased to 5 seconds
             });
+
+            document.addEventListener('submit', function (event) {
+                const form = event.target;
+                if (!(form instanceof HTMLFormElement)) {
+                    return;
+                }
+                if (!form.dataset.confirm) {
+                    return;
+                }
+                if (!window.__confirmDangerousForm(form)) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }, true);
         });
     </script>
 </body>

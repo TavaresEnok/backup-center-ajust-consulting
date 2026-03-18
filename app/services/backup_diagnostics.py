@@ -92,6 +92,19 @@ def is_connection_ready_recent(extra_parameters: Dict[str, Any], max_age_minutes
     return True, "ready"
 
 
+def is_connection_ready_for_backup(extra_parameters: Dict[str, Any]) -> Tuple[bool, str]:
+    extra = extra_parameters if isinstance(extra_parameters, dict) else {}
+    group = str(extra.get("connection_test_group") or "").strip().lower()
+    if group != "ready":
+        return False, "sem ping+login OK no ultimo teste"
+
+    last_at = parse_iso_utc(extra.get("connection_test_last_at"))
+    if not last_at:
+        return False, "sem timestamp do ultimo teste ping/login"
+
+    return True, "ready"
+
+
 def normalize_config_lines(content: str) -> Tuple[list[str], int]:
     text = (content or "").replace("\r\n", "\n").replace("\r", "\n")
     lines = text.split("\n")

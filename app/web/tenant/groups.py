@@ -8,8 +8,6 @@ import uuid
 import re
 import logging
 
-MAX_READY_AGE_MINUTES = 30
-
 bp = Blueprint('tenant_groups', __name__, url_prefix='/tenant/<tenant_slug>/groups')
 
 
@@ -250,14 +248,13 @@ def run_backup_all(tenant_slug, group_id):
     if include_unvalidated:
         scheduled_devices = [d for d in devices if d.backup_scheduled]
     else:
-        from app.services.backup_diagnostics import is_connection_ready_recent
+        from app.services.backup_diagnostics import is_connection_ready_for_backup
         scheduled_devices = []
         for d in devices:
             if not d.backup_scheduled:
                 continue
-            ok, _ = is_connection_ready_recent(
+            ok, _ = is_connection_ready_for_backup(
                 d.extra_parameters or {},
-                max_age_minutes=MAX_READY_AGE_MINUTES,
             )
             if ok:
                 scheduled_devices.append(d)
@@ -278,7 +275,7 @@ def run_backup_all(tenant_slug, group_id):
         )
         if skipped_not_ready > 0:
             flash(
-                f'{skipped_not_ready} dispositivo(s) do grupo foram pulados por falta de teste ping/login recente.',
+                f'{skipped_not_ready} dispositivo(s) do grupo foram pulados por falta de ping+login OK no ultimo teste.',
                 'warning'
             )
         return _redirect_target()
@@ -291,7 +288,7 @@ def run_backup_all(tenant_slug, group_id):
     if queued == 0 and not (group.uses_vpn and scheduled_devices):
         db.close()
         flash(
-            f'Nenhum dispositivo apto com ping+login OK recente (<= {MAX_READY_AGE_MINUTES} min) para backup neste grupo.',
+            'Nenhum dispositivo apto com ping+login OK no ultimo teste para backup neste grupo.',
             'warning'
         )
         return _redirect_target()
@@ -302,7 +299,7 @@ def run_backup_all(tenant_slug, group_id):
     flash(f'Backup de grupo enfileirado: {queued} dispositivos.', 'success')
     if skipped_not_ready > 0:
         flash(
-            f'{skipped_not_ready} dispositivo(s) do grupo foram pulados por falta de teste ping/login recente.',
+            f'{skipped_not_ready} dispositivo(s) do grupo foram pulados por falta de ping+login OK no ultimo teste.',
             'warning'
         )
     
