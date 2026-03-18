@@ -25,6 +25,8 @@ class Tenant(Base, TimestampMixin):
     
     # Billing
     plan_id = Column(UUID(as_uuid=True), ForeignKey('plans.id'), nullable=True)
+    access_unlimited = Column(Boolean, default=False, nullable=False)
+    protected_system_tenant = Column(Boolean, default=False, nullable=False)
     
     # Relationships
     users = relationship('User', back_populates='tenant', cascade='all, delete-orphan')

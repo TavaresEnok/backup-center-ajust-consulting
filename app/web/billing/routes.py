@@ -47,6 +47,8 @@ def dashboard(tenant_slug):
         )
         pending_invoice = next((inv for inv in invoices if str(getattr(inv.status, "value", inv.status)) == "pending"), None)
         payment_ready = BillingController.is_checkout_available()
+        current_device_count = BillingController.get_tenant_device_count(tenant.id)
+        plan_capacity = BillingController.get_plan_capacity_map(tenant.id, plans)
 
         return render_template(
             "billing/index.html",
@@ -55,6 +57,8 @@ def dashboard(tenant_slug):
             invoices=invoices,
             pending_invoice=pending_invoice,
             payment_ready=payment_ready,
+            current_device_count=current_device_count,
+            plan_capacity=plan_capacity,
         )
     finally:
         db.close()

@@ -28,7 +28,21 @@
                 <input type="text" name="slug" id="slug" required placeholder="ex: minha-empresa" class="admin-control">
                 <p class="admin-help">Identificador único na URL. Use apenas letras minúsculas, números e hífen.</p>
             </div>
+            <div>
+                <label for="plan_id" class="admin-label">Plano inicial</label>
+                <select name="plan_id" id="plan_id" class="admin-control">
+                    <option value="">Selecione um plano</option>
+                    {% for plan in plans %}
+                    <option value="{{ plan.id }}">{{ plan.name }} • {{ plan.max_devices }} dispositivos</option>
+                    {% endfor %}
+                </select>
+            </div>
         </div>
+
+        <label class="admin-toggle-card">
+            <input type="checkbox" name="access_unlimited">
+            <span class="text-sm">Acesso ilimitado. Use apenas para clientes liberados manualmente sem depender do limite do plano.</span>
+        </label>
 
         <div class="admin-form-section">
             <div class="admin-form-heading">

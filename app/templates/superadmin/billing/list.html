@@ -172,7 +172,7 @@
                             <p class="font-medium text-[var(--text-main)]">{{ t.name }}</p>
                             <p class="text-xs text-[var(--text-muted)]">{{ t.slug }} • {{ t.email }}</p>
                         </td>
-                        <td>{{ t.plan.name if t.plan else 'Sem plano' }}</td>
+                        <td>{% if t.plan %}{{ t.plan.name }}{% elif t.access_unlimited %}Acesso ilimitado{% else %}Sem plano{% endif %}</td>
                         <td>
                             {% set s = (t.subscription_status or 'unknown') %}
                             {% if s == 'active' %}

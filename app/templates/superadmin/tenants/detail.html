@@ -83,8 +83,18 @@
                         Assinatura: {{ subscription|replace('_', ' ')|title }}
                     </span>
                     <span class="rounded-lg border border-[var(--line-color)] px-2.5 py-1 text-[var(--text-main)]">
-                        Plano: {{ tenant.plan.name if tenant.plan else 'Sem plano' }}
+                        Plano: {{ plan_label }}
                     </span>
+                    {% if tenant.access_unlimited %}
+                    <span class="rounded-lg border border-blue-500/30 bg-blue-500/10 px-2.5 py-1 text-blue-300">
+                        Acesso ilimitado
+                    </span>
+                    {% endif %}
+                    {% if tenant.protected_system_tenant %}
+                    <span class="rounded-lg border border-amber-500/30 bg-amber-500/10 px-2.5 py-1 text-amber-300">
+                        Cliente protegido
+                    </span>
+                    {% endif %}
                     {% if tenant.company_name %}
                     <span class="rounded-lg border border-[var(--line-color)] px-2.5 py-1 text-[var(--text-main)]">
                         Empresa: {{ tenant.company_name }}
@@ -132,7 +142,7 @@
                     onsubmit="return confirm(this.dataset.confirm);">
                     {% include 'partials/csrf.html' %}
                     <input type="hidden" name="return_url" value="{{ url_for('superadmin_tenants.list_tenants') }}">
-                    <button type="submit"
+                    <button type="submit" {% if tenant.protected_system_tenant %}disabled{% endif %}
                         class="rounded-xl border border-rose-500/30 px-4 py-2.5 text-sm font-semibold text-rose-300 hover:bg-rose-500/10">
                         Apagar cliente
                     </button>

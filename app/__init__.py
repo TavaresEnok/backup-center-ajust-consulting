@@ -282,7 +282,6 @@ def create_flask_app():
 
     from app.web.tenant.api_tokens import bp as api_tokens_bp
     app.register_blueprint(api_tokens_bp)
-
     return app
 
 

@@ -6,12 +6,14 @@ from typing import Any, Dict, Optional
 from sqlalchemy import desc
 
 from app.core.database import SessionLocal
+from app.models.device import Device
 from app.models.invoice import Invoice, InvoiceStatus
 from app.models.payment import Subscription, SubscriptionStatus
 from app.models.plan import Plan
 from app.models.tenant import Tenant
 from app.services.mercadopago_service import MercadoPagoError, MercadoPagoService
 from app.services.platform_settings_service import PlatformSettingsService
+from app.services.tenant_access_service import TenantAccessService
 
 
 class BillingController:
@@ -29,6 +31,8 @@ class BillingController:
         message = str(exc or "").strip().lower()
         if isinstance(exc, MercadoPagoError):
             return "Nao foi possivel iniciar o pagamento online no momento. Tente novamente mais tarde ou fale com o suporte comercial."
+        if "suporta ate" in message and "dispositivos" in message:
+            return str(exc)
         if "mercado_pago_access_token" in message or "pagamento nao configurado" in message:
             return "Pagamento online indisponivel no momento. Fale com o suporte comercial para concluir a assinatura."
         return fallback
@@ -40,6 +44,33 @@ class BillingController:
             return db.query(Plan).filter(Plan.is_active.is_(True)).order_by(Plan.price_monthly.asc()).all()
         finally:
             db.close()
+
+    @staticmethod
+    def get_tenant_device_count(tenant_id: Any) -> int:
+        tenant_uuid = BillingController._parse_uuid(tenant_id, "tenant_id")
+        db = SessionLocal()
+        try:
+            return int(db.query(Device.id).filter(Device.tenant_id == tenant_uuid).count() or 0)
+        finally:
+            db.close()
+
+    @staticmethod
+    def get_plan_capacity_map(tenant_id: Any, plans: list[Plan]) -> dict[str, dict[str, Any]]:
+        device_count = BillingController.get_tenant_device_count(tenant_id)
+        capacity = {}
+        for plan in plans:
+            eligible = device_count <= int(plan.max_devices or 0)
+            capacity[str(plan.id)] = {
+                "eligible": eligible,
+                "device_count": device_count,
+                "max_devices": int(plan.max_devices or 0),
+                "reason": (
+                    f"Esse plano suporta ate {int(plan.max_devices or 0)} dispositivos e este cliente possui {device_count}."
+                    if not eligible
+                    else ""
+                ),
+            }
+        return capacity
 
     @staticmethod
     def get_tenant_invoices(tenant_id):
@@ -238,6 +269,7 @@ class BillingController:
             plan = db.query(Plan).filter(Plan.id == plan_uuid, Plan.is_active.is_(True)).first()
             if not plan:
                 raise ValueError("Plano nao encontrado ou inativo.")
+            TenantAccessService.validate_plan_selection(plan, TenantAccessService.get_device_count(db, tenant.id))
 
             amount_cents = BillingController._plan_amount_cents(plan, billing_cycle)
             now = datetime.utcnow()

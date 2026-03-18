@@ -17,10 +17,12 @@ from app.models.device_group import DeviceGroup
 from app.models.invoice import Invoice, InvoiceStatus
 from app.models.notification import Notification
 from app.models.payment import PaymentMethod, Subscription
+from app.models.plan import Plan
 from app.models.report import Report
 from app.models.schedule import Schedule
 from app.models.tenant import Tenant
 from app.models.user import User, UserRole
+from app.services.tenant_access_service import TenantAccessService
 
 bp = Blueprint("superadmin_tenants", __name__, url_prefix="/admin/tenants")
 
@@ -43,6 +45,20 @@ def _parse_tenant_uuid(raw_value: str):
         return uuid.UUID(str(raw_value))
     except Exception:
         return None
+
+
+def _parse_plan_uuid(raw_value: str | None):
+    value = (raw_value or "").strip()
+    if not value:
+        return None
+    try:
+        return uuid.UUID(str(value))
+    except Exception:
+        return None
+
+
+def _active_plans_query(db):
+    return db.query(Plan).filter(Plan.is_active.is_(True)).order_by(Plan.price_monthly.asc(), Plan.name.asc())
 
 
 def _safe_admin_return_url(raw_value: str | None) -> str | None:
@@ -125,7 +141,7 @@ def list_tenants():
         if subscription != "all":
             query = query.filter(Tenant.subscription_status == subscription)
         if ops == "no_plan":
-            query = query.filter(Tenant.plan_id.is_(None))
+            query = query.filter(Tenant.plan_id.is_(None), Tenant.access_unlimited.is_(False))
         elif ops == "payment_risk":
             query = query.filter(Tenant.subscription_status.in_(["trial", "past_due", "canceled"]))
         elif ops == "payment_pending":
@@ -219,6 +235,7 @@ def list_tenants():
             rows.append(
                 {
                     "tenant": tenant,
+                    "plan_label": TenantAccessService.get_plan_display_name(tenant),
                     "devices_count": device_counts.get(tid, 0),
                     "users_count": user_counts.get(tid, 0),
                     "success_24h": backup["success_24h"],
@@ -242,7 +259,13 @@ def list_tenants():
             "subscription_canceled": (
                 db.query(func.count(Tenant.id)).filter(Tenant.subscription_status == "canceled").scalar() or 0
             ),
-            "no_plan": db.query(func.count(Tenant.id)).filter(Tenant.plan_id.is_(None)).scalar() or 0,
+            "no_plan": (
+                db.query(func.count(Tenant.id))
+                .filter(Tenant.plan_id.is_(None), Tenant.access_unlimited.is_(False))
+                .scalar()
+                or 0
+            ),
+            "unlimited_access": db.query(func.count(Tenant.id)).filter(Tenant.access_unlimited.is_(True)).scalar() or 0,
         }
 
         return render_template(
@@ -442,6 +465,7 @@ def view_tenant(tenant_id):
         return render_template(
             "superadmin/tenants/detail.html",
             tenant=tenant,
+            plan_label=TenantAccessService.get_plan_display_name(tenant),
             stats=stats,
             recent_users=recent_users,
             recent_invoices=recent_invoices,
@@ -454,27 +478,35 @@ def view_tenant(tenant_id):
 
 @bp.route("/add", methods=["GET", "POST"])
 def add_tenant():
-    if request.method == "POST":
-        db = SessionLocal()
-        try:
+    db = SessionLocal()
+    try:
+        plans = _active_plans_query(db).all()
+        if request.method == "POST":
             name = (request.form.get("name") or "").strip()
             slug = _normalize_slug(request.form.get("slug"))
             owner_email = (request.form.get("owner_email") or "").strip().lower()
             owner_password = (request.form.get("owner_password") or "").strip()
             owner_full_name = (request.form.get("owner_full_name") or "").strip() or f"Admin {name}"
             company_name = (request.form.get("company_name") or "").strip() or name
+            access_unlimited = request.form.get("access_unlimited") == "on"
+            plan_uuid = _parse_plan_uuid(request.form.get("plan_id"))
+            selected_plan = db.query(Plan).filter(Plan.id == plan_uuid, Plan.is_active.is_(True)).first() if plan_uuid else None
 
             if not name or not slug or not owner_email or not owner_password:
                 flash("Todos os campos obrigatórios devem ser preenchidos.", "error")
-                return render_template("superadmin/tenants/add.html")
+                return render_template("superadmin/tenants/add.html", plans=plans)
+
+            if not access_unlimited and not selected_plan:
+                flash("Todo cliente precisa de um plano ativo ou acesso ilimitado.", "error")
+                return render_template("superadmin/tenants/add.html", plans=plans)
 
             if db.query(Tenant).filter(Tenant.slug == slug).first():
                 flash("Esse slug já está em uso por outro cliente.", "error")
-                return render_template("superadmin/tenants/add.html")
+                return render_template("superadmin/tenants/add.html", plans=plans)
 
             if db.query(User).filter(User.email == owner_email).first():
                 flash("Esse e-mail já está em uso por outro usuário.", "error")
-                return render_template("superadmin/tenants/add.html")
+                return render_template("superadmin/tenants/add.html", plans=plans)
 
             tenant = Tenant(
                 name=name,
@@ -483,7 +515,10 @@ def add_tenant():
                 company_name=company_name,
                 subscription_status="trial",
                 is_active=True,
+                access_unlimited=access_unlimited,
             )
+            if selected_plan:
+                TenantAccessService.seed_trial_plan_fields(tenant, selected_plan)
             db.add(tenant)
             db.flush()
 
@@ -501,19 +536,20 @@ def add_tenant():
 
             flash("Cliente criado com sucesso.", "success")
             return redirect(url_for("superadmin_tenants.list_tenants"))
-        except Exception as exc:
-            db.rollback()
-            flash(f"Erro ao criar cliente: {str(exc)}", "error")
-        finally:
-            db.close()
-
-    return render_template("superadmin/tenants/add.html")
+        return render_template("superadmin/tenants/add.html", plans=plans)
+    except Exception as exc:
+        db.rollback()
+        flash(f"Erro ao criar cliente: {str(exc)}", "error")
+        return render_template("superadmin/tenants/add.html", plans=plans)
+    finally:
+        db.close()
 
 
 @bp.route("/<tenant_id>/edit", methods=["GET", "POST"])
 def edit_tenant(tenant_id):
     db = SessionLocal()
     try:
+        plans = _active_plans_query(db).all()
         tenant_uuid = _parse_tenant_uuid(tenant_id)
         if not tenant_uuid:
             flash("Cliente inválido.", "error")
@@ -529,6 +565,9 @@ def edit_tenant(tenant_id):
             slug = _normalize_slug(request.form.get("slug"))
             company_name = (request.form.get("company_name") or "").strip()
             email = (request.form.get("email") or "").strip().lower()
+            access_unlimited = request.form.get("access_unlimited") == "on"
+            plan_uuid = _parse_plan_uuid(request.form.get("plan_id"))
+            selected_plan = db.query(Plan).filter(Plan.id == plan_uuid, Plan.is_active.is_(True)).first() if plan_uuid else None
             subscription_status = (request.form.get("subscription_status") or tenant.subscription_status or "trial").strip().lower()
             allowed_sub_status = {"trial", "active", "past_due", "canceled"}
             if subscription_status not in allowed_sub_status:
@@ -536,7 +575,11 @@ def edit_tenant(tenant_id):
 
             if not name or not slug or not email:
                 flash("Nome, slug e e-mail são obrigatórios.", "error")
-                return render_template("superadmin/tenants/edit.html", tenant=tenant)
+                return render_template("superadmin/tenants/edit.html", tenant=tenant, plans=plans)
+
+            if not access_unlimited and not selected_plan:
+                flash("Todo cliente precisa de um plano ativo ou acesso ilimitado.", "error")
+                return render_template("superadmin/tenants/edit.html", tenant=tenant, plans=plans)
 
             exists_slug = (
                 db.query(Tenant)
@@ -545,7 +588,11 @@ def edit_tenant(tenant_id):
             )
             if exists_slug:
                 flash("Esse slug já está em uso por outro cliente.", "error")
-                return render_template("superadmin/tenants/edit.html", tenant=tenant)
+                return render_template("superadmin/tenants/edit.html", tenant=tenant, plans=plans)
+
+            device_count = TenantAccessService.get_device_count(db, tenant.id)
+            if selected_plan:
+                TenantAccessService.validate_plan_selection(selected_plan, device_count)
 
             tenant.name = name
             tenant.slug = slug
@@ -553,15 +600,20 @@ def edit_tenant(tenant_id):
             tenant.email = email
             tenant.is_active = request.form.get("is_active") == "on"
             tenant.subscription_status = subscription_status
+            tenant.access_unlimited = access_unlimited
+            tenant.plan_id = selected_plan.id if selected_plan else None
 
             db.commit()
             flash("Cliente atualizado com sucesso.", "success")
             return redirect(url_for("superadmin_tenants.list_tenants"))
 
-        return render_template("superadmin/tenants/edit.html", tenant=tenant)
+        return render_template("superadmin/tenants/edit.html", tenant=tenant, plans=plans)
     except Exception as exc:
         db.rollback()
         flash(f"Erro ao editar cliente: {str(exc)}", "error")
+        if request.method == "POST" and "tenant" in locals():
+            plans = _active_plans_query(db).all()
+            return render_template("superadmin/tenants/edit.html", tenant=tenant, plans=plans)
         return redirect(url_for("superadmin_tenants.list_tenants"))
     finally:
         db.close()
@@ -611,6 +663,13 @@ def delete_tenant(tenant_id):
         if not tenant:
             flash("Cliente não encontrado.", "error")
             return redirect(url_for("superadmin_tenants.list_tenants"))
+
+        if bool(tenant.protected_system_tenant) or tenant.slug in TenantAccessService.PROTECTED_DEFAULT_SLUGS:
+            flash("Esse cliente é protegido e não pode ser apagado.", "error")
+            return _redirect_after_client_action(
+                "superadmin_tenants.view_tenant",
+                tenant_id=tenant.id,
+            )
 
         client_name = tenant.name
         _delete_client_dependencies(db, tenant.id)

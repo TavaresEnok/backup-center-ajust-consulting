@@ -17,6 +17,7 @@ from app.models.plan import Plan
 from app.models.tenant import Tenant
 from app.models.user import User, UserRole
 from app.services.platform_settings_service import PlatformSettingsService
+from app.services.tenant_access_service import TenantAccessService
 
 bp = Blueprint("superadmin_dashboard", __name__, url_prefix="/admin")
 
@@ -200,7 +201,12 @@ def dashboard():
             .all()
         )
         plan_usage = [{"name": name, "tenants": int(count or 0)} for name, count in plan_usage_rows]
-        tenants_without_plan = db.query(func.count(Tenant.id)).filter(Tenant.plan_id.is_(None)).scalar() or 0
+        tenants_without_plan = (
+            db.query(func.count(Tenant.id))
+            .filter(Tenant.plan_id.is_(None), Tenant.access_unlimited.is_(False))
+            .scalar()
+            or 0
+        )
 
         mrr_cents = (
             db.query(func.coalesce(func.sum(Plan.price_monthly), 0))
@@ -381,7 +387,7 @@ def dashboard():
                 "email": tenant.email,
                 "is_active": bool(tenant.is_active),
                 "subscription_status": (tenant.subscription_status or "unknown").lower(),
-                "plan_name": tenant.plan.name if tenant.plan else "Sem plano",
+                "plan_name": TenantAccessService.get_plan_display_name(tenant),
                 "devices_count": device_count_by_tenant.get(tid, 0),
                 "users_count": user_count_by_tenant.get(tid, 0),
                 "admin_users_count": admin_user_count_by_tenant.get(tid, 0),

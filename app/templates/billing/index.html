@@ -25,7 +25,7 @@
                 <div class="space-y-4">
                     <div>
                         <span class="text-3xl font-bold text-gray-900 dark:text-white">
-                            {{ tenant.plan.name if tenant.plan else 'Trial / Gratuito' }}
+                            {% if tenant.plan %}{{ tenant.plan.name }}{% elif tenant.access_unlimited %}Acesso ilimitado{% else %}Sem plano{% endif %}
                         </span>
                         <span class="ml-3 inline-flex items-center rounded-full px-3 py-1 text-xs font-medium
                             {% if tenant.subscription_status == 'active' %}bg-success-50 text-success-700 dark:bg-success-500/10 dark:text-success-400
@@ -43,6 +43,15 @@
                                 'N/A' }}
                             </span>
                         </p>
+                        <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                            Dispositivos cadastrados:
+                            <span class="font-semibold text-gray-900 dark:text-white">{{ current_device_count }}</span>
+                        </p>
+                        {% if tenant.access_unlimited %}
+                        <p class="mt-2 inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold bg-blue-500/15 text-blue-300 border border-blue-500/30">
+                            Acesso ilimitado ativo
+                        </p>
+                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -157,15 +166,21 @@
                     {% endfor %}
                     {% endif %}
                 </ul>
+                {% set plan_info = plan_capacity.get(plan.id|string, {}) %}
+                {% if not plan_info.get('eligible', True) %}
+                <div class="mb-4 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-200">
+                    {{ plan_info.reason }}
+                </div>
+                {% endif %}
 
                 <!-- CTA Button -->
                 <form action="{{ url_for('billing.subscribe', tenant_slug=tenant.slug, plan_id=plan.id) }}"
                     method="POST">
                 {% include 'partials/csrf.html' %}
                     <input type="hidden" name="billing_cycle" value="monthly">
-                    <button type="submit" {% if tenant.plan_id == plan.id or not payment_ready %}disabled{% endif %}
+                    <button type="submit" {% if tenant.plan_id == plan.id or not payment_ready or not plan_info.get('eligible', True) %}disabled{% endif %}
                         class="w-full rounded-xl py-3 px-4 font-semibold transition-all
-                        {% if tenant.plan_id == plan.id or not payment_ready %}
+                        {% if tenant.plan_id == plan.id or not payment_ready or not plan_info.get('eligible', True) %}
                             bg-gray-100 text-gray-500 cursor-not-allowed dark:bg-gray-800 dark:text-gray-500
                         {% else %}
                             bg-brand-600 text-white hover:bg-brand-700 shadow-lg shadow-brand-500/30 hover:shadow-xl hover:shadow-brand-500/40
@@ -173,6 +188,8 @@
                         {% if tenant.plan_id == plan.id %}
                         <i data-lucide="check" class="w-4 h-4 inline mr-1"></i>
                         Plano Atual
+                        {% elif not plan_info.get('eligible', True) %}
+                        Limite insuficiente
                         {% elif not payment_ready %}
                         Indisponivel no momento
                         {% else %}

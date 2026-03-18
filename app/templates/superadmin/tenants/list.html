@@ -183,6 +183,7 @@
             <span class="rounded-lg border border-[var(--line-color)] px-2.5 py-1 text-xs text-[var(--text-main)]">Past due: {{ stats.subscription_past_due }}</span>
             <span class="rounded-lg border border-[var(--line-color)] px-2.5 py-1 text-xs text-[var(--text-main)]">Trial: {{ stats.subscription_trial }}</span>
             <span class="rounded-lg border border-[var(--line-color)] px-2.5 py-1 text-xs text-[var(--text-main)]">Sem plano: {{ stats.no_plan }}</span>
+            <span class="rounded-lg border border-[var(--line-color)] px-2.5 py-1 text-xs text-[var(--text-main)]">Acesso ilimitado: {{ stats.unlimited_access }}</span>
         </div>
     </section>
 
@@ -281,7 +282,7 @@
                             <p class="text-xs text-[var(--text-muted)]">{{ t.slug }} • {{ t.email }}</p>
                         </td>
                         <td>
-                            <p class="text-[var(--text-main)]">{{ t.plan.name if t.plan else 'Sem plano' }}</p>
+                            <p class="text-[var(--text-main)]">{{ row.plan_label }}</p>
                             <p class="text-xs text-[var(--text-muted)]">{{ (t.subscription_status or 'unknown')|replace('_', ' ')|title }}</p>
                         </td>
                         <td>{{ row.devices_count }} disp. • {{ row.users_count }} usuários</td>
@@ -335,7 +336,7 @@
                                     onsubmit="return confirm(this.dataset.confirm);">
                                     {% include 'partials/csrf.html' %}
                                     <input type="hidden" name="return_url" value="{{ request.full_path.rstrip('?') }}">
-                                    <button type="submit"
+                                    <button type="submit" {% if t.protected_system_tenant %}disabled{% endif %}
                                         class="rounded-lg border border-rose-500/30 px-2.5 py-1.5 text-xs font-medium text-rose-300 hover:bg-rose-500/10">
                                         Apagar
                                     </button>
