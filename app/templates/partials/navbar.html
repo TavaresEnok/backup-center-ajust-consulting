@@ -85,7 +85,7 @@
                 </div>
 
                 <!-- Notifications Dropdown -->
-                <div class="relative" x-data="{ notifOpen: false }">
+                <div class="relative" x-data="{ notifOpen: false }" @keydown.escape.window="notifOpen = false">
                     {% set notif_count = notifications_count|default(0) %}
                     <button @click="notifOpen = !notifOpen"
                         class="relative flex h-11 w-11 items-center justify-center rounded-full text-gray-500 hover:text-brand-500 bg-[var(--line-color)] text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-[var(--card-border)] transition-colors">
@@ -99,7 +99,7 @@
                     </button>
 
                     <!-- Notifications Panel -->
-                    <div x-show="notifOpen" @click.outside="notifOpen = false"
+                    <div x-show="notifOpen" @click.outside.window="notifOpen = false"
                         x-transition:enter="transition ease-out duration-200"
                         x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
                         x-transition:leave="transition ease-in duration-150"
@@ -140,7 +140,7 @@
             </div>
 
             <!-- User Menu -->
-            <div class="relative" x-data="{ dropdownOpen: false }" @click.outside="dropdownOpen = false">
+            <div class="relative" x-data="{ dropdownOpen: false }" @click.outside.window="dropdownOpen = false" @keydown.escape.window="dropdownOpen = false">
                 <a class="flex items-center gap-4" href="#" @click.prevent="dropdownOpen = !dropdownOpen">
                     <span class="hidden text-right lg:block">
                         <span class="block text-sm font-medium text-[var(--text-main)]">{{
