@@ -8,6 +8,10 @@ Reduzir superfície de ataque imediata no ambiente do Backup Center (tenant e ad
 - Aplicação web bindada somente em `127.0.0.1:5000` (acesso público deve vir via nginx/proxy com TLS).
 - Worker `celery_vpn` deixou de usar `network_mode: host` e privilégios elevados. Agora usa rede interna, conecta em `db:5432` e `redis:6379`, mantém apenas `NET_ADMIN` para VPN, removido `privileged`/`SYS_ADMIN`/`apparmor:unconfined`.
 - Documentação deste hardening criada para rastreabilidade.
+- Segredos rotacionados (.env): `SECRET_KEY`, `DB_PASSWORD`, `REDIS_PASSWORD`, `MERCADO_PAGO_WEBHOOK_TOKEN`. Banco teve senha aplicada via `ALTER USER backup_user WITH PASSWORD '...'`.
+- Serviços recompostos com `docker-compose up -d --build` para aplicar novas variáveis/segurança e confirmar saúde dos containers.
+- Cabeçalhos de segurança adicionados globalmente (CSP, HSTS em HTTPS, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy) em Flask/FastAPI. Redireciono para HTTPS em produção.
+- Proteção extra: bloqueio de uso da ENCRYPTION_KEY default em produção; forço defaults seguros (DEBUG off, SESSION_COOKIE_SECURE on) quando APP_ENV != development.
 
 ## Riscos residuais e próximos passos recomendados
 - Rotacionar todos os segredos de produção (`SECRET_KEY`, `ENCRYPTION_KEY`, senhas DB/Redis/MercadoPago) fora do repositório; usar vault/variáveis de ambiente seguras. Atenção: trocar `ENCRYPTION_KEY` requer recriptografar credenciais já salvas.
