@@ -55,6 +55,8 @@ def validate_settings():
 
     if settings.APP_ENV != "development" and settings.SECRET_KEY == "change-me-in-production":
         raise RuntimeError("SECRET_KEY must be set for non-development environments.")
+    if settings.APP_ENV != "development" and settings.ENCRYPTION_KEY.startswith("AYCJU4fRMZE61g04GsT653mApiwswOwvwlrpUK1lmgk"):
+        raise RuntimeError("ENCRYPTION_KEY must be rotated for non-development environments.")
 
     # Force secure defaults in non-dev environments
     if settings.APP_ENV.lower() != "development":

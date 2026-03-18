@@ -100,6 +100,21 @@ def create_flask_app():
         finally:
             db.close()
 
+    @app.before_request
+    def _enforce_https():
+        if settings.APP_ENV.lower() == "development":
+            return
+        host = (request.host or "").split(":")[0]
+        proto = request.headers.get("X-Forwarded-Proto", "http").lower()
+        is_secure = request.is_secure or proto == "https"
+        if is_secure:
+            return
+        # Allow local access without redirect for troubleshooting
+        if host in {"127.0.0.1", "localhost"}:
+            return
+        url = request.url.replace("http://", "https://", 1)
+        return redirect(url, code=301)
+
     @app.after_request
     def _set_security_headers(resp):
         proto = request.headers.get("X-Forwarded-Proto", "http").lower()
