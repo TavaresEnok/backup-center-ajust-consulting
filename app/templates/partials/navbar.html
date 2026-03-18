@@ -64,7 +64,7 @@
         </div>
 
         <!-- Header Right: Theme, Notifications, User -->
-        <div class="hidden lg:flex items-center justify-end gap-3 sm:gap-7">
+        <div class="hidden lg:flex items-center justify-end gap-3 sm:gap-7" x-data="{ headerMenuOpen: null }" @click.outside="headerMenuOpen = null" @keydown.escape.window="headerMenuOpen = null">
 
             <div class="flex items-center gap-2 2xsm:gap-4">
                 <!-- Theme Toggler (Functional) -->
@@ -85,9 +85,9 @@
                 </div>
 
                 <!-- Notifications Dropdown -->
-                <div class="relative" x-data="{ notifOpen: false }" @keydown.escape.window="notifOpen = false">
+                <div class="relative">
                     {% set notif_count = notifications_count|default(0) %}
-                    <button @click.stop="notifOpen = !notifOpen"
+                    <button @click.stop="headerMenuOpen = (headerMenuOpen === 'notif' ? null : 'notif')"
                         class="relative flex h-11 w-11 items-center justify-center rounded-full text-gray-500 hover:text-brand-500 bg-[var(--line-color)] text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-[var(--card-border)] transition-colors">
                         {% if notif_count > 0 %}
                         <span
@@ -99,7 +99,7 @@
                     </button>
 
                     <!-- Notifications Panel -->
-                    <div x-show="notifOpen" @click.outside.window="notifOpen = false" @click.away="notifOpen = false"
+                    <div x-show="headerMenuOpen === 'notif'" @click.outside="headerMenuOpen = null"
                         x-transition:enter="transition ease-out duration-200"
                         x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
                         x-transition:leave="transition ease-in duration-150"
@@ -140,8 +140,8 @@
             </div>
 
             <!-- User Menu -->
-            <div class="relative" x-data="{ dropdownOpen: false }" @click.outside.window="dropdownOpen = false" @click.away="dropdownOpen = false" @keydown.escape.window="dropdownOpen = false">
-                <a class="flex items-center gap-4" href="#" @click.prevent.stop="dropdownOpen = !dropdownOpen">
+            <div class="relative">
+                <a class="flex items-center gap-4" href="#" @click.prevent.stop="headerMenuOpen = (headerMenuOpen === 'user' ? null : 'user')">
                     <span class="hidden text-right lg:block">
                         <span class="block text-sm font-medium text-[var(--text-main)]">{{
                             session.get('user_name', 'Admin User') }}</span>
@@ -173,11 +173,11 @@
 
                     <i data-lucide="chevron-down"
                         class="hidden w-4 h-4 text-gray-500 lg:block transition-transform duration-200"
-                        :class="dropdownOpen ? 'rotate-180' : ''"></i>
+                        :class="headerMenuOpen === 'user' ? 'rotate-180' : ''"></i>
                 </a>
 
                 <!-- Dropdown -->
-                <div x-show="dropdownOpen" x-transition:enter="transition ease-out duration-200"
+                <div x-show="headerMenuOpen === 'user'" x-transition:enter="transition ease-out duration-200"
                     x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
                     x-transition:leave="transition ease-in duration-150"
                     x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
