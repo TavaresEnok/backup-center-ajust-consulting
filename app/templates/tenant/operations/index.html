@@ -8,123 +8,15 @@
 {% set role = session.get('user_role') %}
 {% set can_manage_admin = role in ['super_admin', 'tenant_owner', 'tenant_admin'] %}
 
-<style>
-    .groups-shell {
-        --group-surface: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.94));
-        --group-border: rgba(148, 163, 184, 0.24);
-        --group-shadow: 0 18px 40px rgba(15, 23, 42, 0.06);
-    }
-
-    html.dark .groups-shell {
-        --group-surface: linear-gradient(180deg, rgba(15, 23, 42, 0.92), rgba(15, 23, 42, 0.82));
-        --group-border: rgba(96, 165, 250, 0.16);
-        --group-shadow: 0 18px 40px rgba(2, 6, 23, 0.24);
-    }
-
-    .groups-hero,
-    .group-search-card,
-    .group-card,
-    .groups-empty {
-        border: 1px solid var(--group-border);
-        border-radius: 1rem;
-        background: var(--group-surface);
-        box-shadow: var(--group-shadow);
-    }
-
-    .group-card {
-        position: relative;
-        overflow: hidden;
-        transition: transform .16s ease, border-color .16s ease, box-shadow .16s ease;
-    }
-
-    .group-card::before {
-        content: "";
-        position: absolute;
-        inset: 0 auto 0 0;
-        width: 4px;
-        background: linear-gradient(180deg, rgba(37, 99, 235, 0.9), rgba(14, 165, 233, 0.6));
-    }
-
-    .group-card[data-vpn="1"]::before {
-        background: linear-gradient(180deg, rgba(16, 185, 129, 0.95), rgba(6, 182, 212, 0.55));
-    }
-
-    .group-card:hover {
-        transform: translateY(-2px);
-        border-color: rgba(59, 130, 246, 0.34);
-        box-shadow: 0 20px 44px rgba(15, 23, 42, 0.10);
-    }
-
-    .group-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 1rem;
-    }
-
-    .group-pill {
-        display: inline-flex;
-        align-items: center;
-        border-radius: 9999px;
-        padding: .28rem .72rem;
-        font-size: .7rem;
-        font-weight: 700;
-        letter-spacing: .03em;
-        border: 1px solid transparent;
-        white-space: nowrap;
-    }
-
-    .group-pill-neutral {
-        color: var(--text-muted);
-        border-color: rgba(148, 163, 184, 0.24);
-        background: rgba(148, 163, 184, 0.08);
-    }
-
-    .group-pill-vpn {
-        color: #34d399;
-        border-color: rgba(16, 185, 129, 0.24);
-        background: rgba(16, 185, 129, 0.10);
-    }
-
-    .group-pill-direct {
-        color: #60a5fa;
-        border-color: rgba(59, 130, 246, 0.24);
-        background: rgba(59, 130, 246, 0.10);
-    }
-
-    .group-mini-stat {
-        border-radius: .9rem;
-        border: 1px solid rgba(148, 163, 184, 0.16);
-        background: rgba(148, 163, 184, 0.06);
-    }
-
-    html.dark .group-mini-stat {
-        background: rgba(255, 255, 255, 0.03);
-    }
-</style>
-
-<div class="groups-shell space-y-4 pb-4">
-    <section class="groups-hero p-5 md:p-6">
-        <div class="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-            <div>
-                <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-sky-500">Operação</p>
-                <h3 class="mt-1 text-2xl font-bold text-gray-900 dark:text-white">Grupos / Provedores</h3>
-                <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                    Visual compacto para localizar grupos rápido e entrar direto em edição ou dispositivos.
-                </p>
-            </div>
-            <div class="flex flex-wrap gap-2 text-xs">
-                <span class="group-pill group-pill-neutral">{{ group_rows|length }} grupos visíveis</span>
-                <span class="group-pill group-pill-vpn">
-                    {{ group_rows|selectattr('uses_vpn')|list|length }} com VPN
-                </span>
-                <span class="group-pill group-pill-direct">
-                    {{ group_rows|rejectattr('uses_vpn')|list|length }} sem VPN
-                </span>
-            </div>
-        </div>
+<div class="space-y-4 pb-4">
+    <section class="rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900/60">
+        <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Grupos / Provedores</h3>
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            Lista objetiva dos grupos, com status e acesso rápido para dispositivos e edição.
+        </p>
     </section>
 
-    <section class="group-search-card p-4">
+    <section class="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900/60">
         <div class="grid grid-cols-1 gap-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
             <div>
                 <label for="groupSearchInput" class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
@@ -134,39 +26,43 @@
                     id="groupSearchInput"
                     type="text"
                     placeholder="Digite o nome do grupo..."
-                    class="mt-1 w-full rounded-xl border border-gray-300 bg-white px-3.5 py-2.5 text-sm text-gray-900 focus:border-brand-500 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+                    class="mt-1 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-brand-500 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-white"
                 >
             </div>
-            <div class="flex items-center gap-2">
-                <p id="groupVisibleCount" class="text-sm font-medium text-gray-600 dark:text-gray-300"></p>
+            <div class="flex flex-wrap items-center gap-2 text-xs">
+                <span class="rounded-full border border-gray-200 px-2.5 py-1 text-gray-600 dark:border-gray-700 dark:text-gray-300">
+                    {{ group_rows|length }} grupos
+                </span>
+                <span class="rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-emerald-700 dark:border-emerald-800/40 dark:bg-emerald-900/20 dark:text-emerald-300">
+                    {{ group_rows|selectattr('uses_vpn')|list|length }} com VPN
+                </span>
+                <span class="rounded-full border border-blue-200 bg-blue-50 px-2.5 py-1 text-blue-700 dark:border-blue-800/40 dark:bg-blue-900/20 dark:text-blue-300">
+                    {{ group_rows|rejectattr('uses_vpn')|list|length }} sem VPN
+                </span>
+                <p id="groupVisibleCount" class="ml-1 text-sm font-medium text-gray-600 dark:text-gray-300"></p>
             </div>
         </div>
     </section>
 
     {% if group_rows %}
-    <section class="group-grid">
+    <section class="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
         {% for row in group_rows %}
-        <article class="group-card group-item p-4 md:p-5" data-group-name="{{ row.name|lower }}" data-vpn="{{ 1 if row.uses_vpn else 0 }}">
-            <div class="space-y-4">
+        <article class="group-item rounded-xl border border-gray-200 bg-white p-4 transition-colors hover:border-gray-300 dark:border-gray-800 dark:bg-gray-900/60 dark:hover:border-gray-700" data-group-name="{{ row.name|lower }}">
+            <div class="space-y-3">
                 <div class="flex items-start justify-between gap-3">
                     <div class="min-w-0">
-                        <h4 class="truncate text-base font-semibold text-gray-900 dark:text-white">{{ row.name }}</h4>
-                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                            {{ 'Com VPN' if row.uses_vpn else 'Sem VPN' }} • {{ row.connection_type|replace('_', ' ')|title }}
-                        </p>
+                        <h4 class="truncate text-sm font-semibold text-gray-900 dark:text-white">{{ row.name }}</h4>
+                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ row.connection_type|replace('_', ' ')|title }}</p>
                     </div>
-                    <span class="group-pill {{ 'group-pill-vpn' if row.uses_vpn else 'group-pill-direct' }}">
-                        {{ 'VPN' if row.uses_vpn else 'Direto' }}
+                    <span class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium {% if row.uses_vpn %}border border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800/40 dark:bg-emerald-900/20 dark:text-emerald-300{% else %}border border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-800/40 dark:bg-blue-900/20 dark:text-blue-300{% endif %}">
+                        {{ 'Com VPN' if row.uses_vpn else 'Sem VPN' }}
                     </span>
                 </div>
 
-                <div class="group-mini-stat flex items-center justify-between gap-3 px-3.5 py-3">
+                <div class="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2.5 dark:border-gray-800 dark:bg-gray-800/40">
                     <div>
                         <p class="text-[11px] font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Dispositivos</p>
-                        <p class="mt-1 text-2xl font-bold text-gray-900 dark:text-white">{{ row.total_devices }}</p>
-                    </div>
-                    <div class="text-right text-xs text-gray-500 dark:text-gray-400">
-                        <p>{{ 'Estrutura VPN' if row.uses_vpn else 'Acesso direto' }}</p>
+                        <p class="mt-0.5 text-xl font-semibold text-gray-900 dark:text-white">{{ row.total_devices }}</p>
                     </div>
                 </div>
 
@@ -174,14 +70,14 @@
                     {% if row.id %}
                     <a
                         href="{{ url_for('tenant_devices.list_devices', tenant_slug=tenant.slug, group_id=row.id) }}"
-                        class="inline-flex items-center rounded-xl border border-gray-300 px-3.5 py-2 text-xs font-semibold text-gray-700 transition-colors hover:bg-gray-100 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
+                        class="inline-flex items-center rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-100 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
                     >
                         Ver dispositivos
                     </a>
                     {% if can_manage_admin %}
                     <a
                         href="{{ url_for('tenant_groups.edit_group', tenant_slug=tenant.slug, group_id=row.id) }}"
-                        class="inline-flex items-center rounded-xl bg-brand-600 px-3.5 py-2 text-xs font-semibold text-white transition-colors hover:bg-brand-700"
+                        class="inline-flex items-center rounded-lg bg-brand-600 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-brand-700"
                     >
                         Editar grupo
                     </a>
@@ -189,7 +85,7 @@
                     {% else %}
                     <a
                         href="{{ url_for('tenant_devices.list_devices', tenant_slug=tenant.slug) }}"
-                        class="inline-flex items-center rounded-xl border border-gray-300 px-3.5 py-2 text-xs font-semibold text-gray-700 transition-colors hover:bg-gray-100 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
+                        class="inline-flex items-center rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-100 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
                     >
                         Ver dispositivos
                     </a>
@@ -202,12 +98,12 @@
 
     <div
         id="groupFilterEmptyState"
-        class="groups-empty hidden px-4 py-5 text-sm text-amber-700 dark:text-amber-300"
+        class="hidden rounded-xl border border-amber-200 bg-amber-50 px-4 py-5 text-sm text-amber-700 dark:border-amber-900/40 dark:bg-amber-900/10 dark:text-amber-300"
     >
         Nenhum grupo corresponde à busca.
     </div>
     {% else %}
-    <div class="groups-empty px-4 py-5 text-sm text-green-700 dark:text-green-300">
+    <div class="rounded-xl border border-green-200 bg-green-50 px-4 py-5 text-sm text-green-700 dark:border-green-900/40 dark:bg-green-900/10 dark:text-green-300">
         Nenhum grupo cadastrado no momento.
     </div>
     {% endif %}
