@@ -121,7 +121,7 @@ def create_flask_app():
         is_secure = request.is_secure or proto == "https"
         csp = (
             "default-src 'self'; "
-            "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://unpkg.com https://cdn.jsdelivr.net/npm; "
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://unpkg.com https://cdn.jsdelivr.net/npm; "
             "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
             "img-src 'self' data: https:; "
             "font-src 'self' data: https://fonts.gstatic.com; "
@@ -335,7 +335,7 @@ def create_fastapi_app():
         is_secure = request.url.scheme == "https" or proto == "https"
         csp = (
             "default-src 'self'; "
-            "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://unpkg.com https://cdn.jsdelivr.net/npm; "
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://unpkg.com https://cdn.jsdelivr.net/npm; "
             "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
             "img-src 'self' data: https:; "
             "font-src 'self' data: https://fonts.gstatic.com; "
