@@ -15,6 +15,7 @@ from sqlalchemy import text
 from redis import Redis
 from werkzeug.exceptions import HTTPException
 from urllib.parse import urlsplit, urlunsplit
+from starlette.middleware.base import BaseHTTPMiddleware
 
 def create_flask_app():
     app = Flask(__name__)
@@ -98,6 +99,30 @@ def create_flask_app():
                 return redirect(url_for("auth.login"))
         finally:
             db.close()
+
+    @app.after_request
+    def _set_security_headers(resp):
+        proto = request.headers.get("X-Forwarded-Proto", "http").lower()
+        is_secure = request.is_secure or proto == "https"
+        csp = (
+            "default-src 'self'; "
+            "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://unpkg.com https://cdn.jsdelivr.net/npm; "
+            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+            "img-src 'self' data: https:; "
+            "font-src 'self' data: https://fonts.gstatic.com; "
+            "connect-src 'self'; "
+            "frame-ancestors 'none'; "
+            "object-src 'none'; "
+            "base-uri 'self'"
+        )
+        resp.headers.setdefault("Content-Security-Policy", csp)
+        resp.headers.setdefault("X-Frame-Options", "DENY")
+        resp.headers.setdefault("X-Content-Type-Options", "nosniff")
+        resp.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
+        resp.headers.setdefault("Permissions-Policy", "camera=(), microphone=(), geolocation=()")
+        if is_secure:
+            resp.headers.setdefault("Strict-Transport-Security", "max-age=63072000; includeSubDomains; preload")
+        return resp
 
     app.jinja_env.globals["csrf_token"] = _generate_csrf_token
 
@@ -287,6 +312,36 @@ def create_flask_app():
 
 def create_fastapi_app():
     app = FastAPI(title=settings.APP_NAME)
+
+    @app.middleware("http")
+    async def add_security_headers(request, call_next):
+        response = await call_next(request)
+        proto = request.headers.get("x-forwarded-proto", "http").lower()
+        is_secure = request.url.scheme == "https" or proto == "https"
+        csp = (
+            "default-src 'self'; "
+            "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://unpkg.com https://cdn.jsdelivr.net/npm; "
+            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+            "img-src 'self' data: https:; "
+            "font-src 'self' data: https://fonts.gstatic.com; "
+            "connect-src 'self'; "
+            "frame-ancestors 'none'; "
+            "object-src 'none'; "
+            "base-uri 'self'"
+        )
+        headers = {
+            "Content-Security-Policy": csp,
+            "X-Frame-Options": "DENY",
+            "X-Content-Type-Options": "nosniff",
+            "Referrer-Policy": "strict-origin-when-cross-origin",
+            "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
+        }
+        if is_secure:
+            headers["Strict-Transport-Security"] = "max-age=63072000; includeSubDomains; preload"
+        for k, v in headers.items():
+            if k not in response.headers:
+                response.headers[k] = v
+        return response
 
     @app.get("/healthz")
     async def api_healthz():

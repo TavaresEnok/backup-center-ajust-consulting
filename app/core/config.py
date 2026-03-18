@@ -56,6 +56,14 @@ def validate_settings():
     if settings.APP_ENV != "development" and settings.SECRET_KEY == "change-me-in-production":
         raise RuntimeError("SECRET_KEY must be set for non-development environments.")
 
+    # Force secure defaults in non-dev environments
+    if settings.APP_ENV.lower() != "development":
+        settings.DEBUG = False
+        settings.AUTO_CREATE_SCHEMA = False
+        settings.SESSION_COOKIE_SECURE = True
+        if (settings.SESSION_COOKIE_SAMESITE or "").lower() not in {"lax", "strict"}:
+            settings.SESSION_COOKIE_SAMESITE = "Lax"
+
     try:
         Fernet(settings.ENCRYPTION_KEY.encode())
     except Exception as exc:
