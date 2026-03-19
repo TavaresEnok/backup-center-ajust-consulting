@@ -255,6 +255,27 @@ def payment_settings():
     )
 
 
+@bp.route("/settings/mode", methods=["POST"])
+def payment_settings_mode():
+    mode = (request.form.get("mode") or "").strip().lower()
+    if mode not in {"sandbox", "production"}:
+        flash("Modo de pagamento invalido.", "error")
+        return redirect(url_for("superadmin_billing.payment_settings"))
+
+    try:
+        PlatformSettingsService.set_payment_mode(use_sandbox=(mode == "sandbox"))
+        flash(
+            "Ambiente de pagamento alterado para Sandbox."
+            if mode == "sandbox"
+            else "Ambiente de pagamento alterado para Produção.",
+            "success",
+        )
+    except Exception as exc:
+        flash(f"Erro ao alternar ambiente de pagamento: {exc}", "error")
+
+    return redirect(url_for("superadmin_billing.payment_settings"))
+
+
 @bp.route("/settings/test", methods=["POST"])
 def payment_settings_test():
     try:

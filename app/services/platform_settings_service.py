@@ -134,3 +134,22 @@ class PlatformSettingsService:
             raise
         finally:
             db.close()
+
+    @classmethod
+    def set_payment_mode(cls, *, use_sandbox: bool) -> None:
+        cls.ensure_schema()
+        db = SessionLocal()
+        try:
+            row = db.query(SystemSetting).filter(SystemSetting.key == "MERCADO_PAGO_USE_SANDBOX").first()
+            if not row:
+                row = SystemSetting(key="MERCADO_PAGO_USE_SANDBOX", is_secret=False)
+                db.add(row)
+            row.is_secret = False
+            row.value_text = "1" if use_sandbox else "0"
+            row.value_encrypted = None
+            db.commit()
+        except Exception:
+            db.rollback()
+            raise
+        finally:
+            db.close()

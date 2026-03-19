@@ -65,6 +65,25 @@
             <span class="rounded-lg border border-[var(--line-color)] px-2.5 py-1 text-[var(--text-main)]">Modo: {{ 'Sandbox' if sandbox_mode else 'Produção' }}</span>
             <span class="rounded-lg border border-[var(--line-color)] px-2.5 py-1 text-[var(--text-main)]">Webhook efetivo: {{ effective_webhook or 'não definido' }}</span>
         </div>
+        <div class="mt-4 flex flex-wrap gap-3">
+            <form method="POST" action="{{ url_for('superadmin_billing.payment_settings_mode') }}">
+                {% include 'partials/csrf.html' %}
+                <input type="hidden" name="mode" value="production">
+                <button type="submit"
+                    class="inline-flex items-center rounded-lg px-4 py-2 text-sm font-semibold transition {% if not sandbox_mode %}bg-emerald-600 text-white hover:bg-emerald-700{% else %}border border-[var(--card-border)] text-[var(--text-main)] hover:bg-[var(--line-color)]{% endif %}">
+                    Usar Produção
+                </button>
+            </form>
+            <form method="POST" action="{{ url_for('superadmin_billing.payment_settings_mode') }}">
+                {% include 'partials/csrf.html' %}
+                <input type="hidden" name="mode" value="sandbox">
+                <button type="submit"
+                    class="inline-flex items-center rounded-lg px-4 py-2 text-sm font-semibold transition {% if sandbox_mode %}bg-amber-500 text-slate-950 hover:bg-amber-400{% else %}border border-[var(--card-border)] text-[var(--text-main)] hover:bg-[var(--line-color)]{% endif %}">
+                    Usar Sandbox
+                </button>
+            </form>
+            <p class="self-center text-xs text-[var(--text-muted)]">A troca de ambiente mantém os segredos já salvos. Só altere token e chave se quiser trocar de conta.</p>
+        </div>
     </section>
 
     <div class="grid grid-cols-1 gap-4 xl:grid-cols-3">
@@ -98,6 +117,7 @@
                         <input type="password" name="mercado_pago_access_token"
                             placeholder="{{ 'Preenchido no momento. Informe novo valor para trocar a conta.' if form_data.has_access_token else 'APP_USR-...' }}"
                             class="admin-control mt-2">
+                        <p class="mt-2 text-xs text-[var(--text-muted)]">Deixe em branco para manter o token atual.</p>
                         <label class="mt-3 flex items-center gap-2 text-xs text-[var(--text-muted)]">
                             <input type="checkbox" name="clear_access_token" class="rounded border-[var(--line-color)]">
                             Limpar token atual salvo
@@ -108,6 +128,7 @@
                         <input type="password" name="mercado_pago_public_key"
                             placeholder="{{ 'Preenchida no momento. Informe novo valor para trocar.' if form_data.has_public_key else 'APP_USR-...' }}"
                             class="admin-control mt-2">
+                        <p class="mt-2 text-xs text-[var(--text-muted)]">Deixe em branco para manter a chave atual.</p>
                         <label class="mt-3 flex items-center gap-2 text-xs text-[var(--text-muted)]">
                             <input type="checkbox" name="clear_public_key" class="rounded border-[var(--line-color)]">
                             Limpar chave pública salva
@@ -118,6 +139,7 @@
                         <input type="password" name="mercado_pago_webhook_token"
                             placeholder="{{ 'Preenchido no momento. Informe novo valor para trocar.' if form_data.has_webhook_token else 'Token opcional para proteger o webhook' }}"
                             class="admin-control mt-2">
+                        <p class="mt-2 text-xs text-[var(--text-muted)]">Deixe em branco para manter o token atual.</p>
                         <label class="mt-3 flex items-center gap-2 text-xs text-[var(--text-muted)]">
                             <input type="checkbox" name="clear_webhook_token" class="rounded border-[var(--line-color)]">
                             Limpar token do webhook salvo
@@ -129,7 +151,7 @@
                     <input type="checkbox" name="mercado_pago_use_sandbox" {% if form_data.mercado_pago_use_sandbox %}checked{% endif %}>
                     <span>
                         <span class="block text-sm font-semibold text-[var(--text-main)]">Usar Sandbox</span>
-                        <span class="block text-xs text-[var(--text-muted)]">Ative para testar pagamentos em conta de homologação do Mercado Pago.</span>
+                        <span class="block text-xs text-[var(--text-muted)]">Ative para testar pagamentos em conta de homologação do Mercado Pago. Para trocar só o ambiente, use os botões no topo.</span>
                     </span>
                 </label>
 
