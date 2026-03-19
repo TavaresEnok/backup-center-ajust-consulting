@@ -28,6 +28,7 @@ class AuthService:
         full_name: str,
         company_name: str,
         plan_id: str | None = None,
+        activate_trial: bool = True,
     ) -> User:
         selected_plan = None
         if plan_id:
@@ -57,8 +58,12 @@ class AuthService:
             slug=slug,
             email=email,
             company_name=company_name,
+            is_active=bool(activate_trial),
         )
-        TenantAccessService.seed_trial_plan_fields(tenant, selected_plan)
+        if activate_trial:
+            TenantAccessService.seed_trial_plan_fields(tenant, selected_plan)
+        else:
+            TenantAccessService.seed_pending_payment_plan_fields(tenant, selected_plan)
         db.add(tenant)
         db.flush()  # Get tenant.id
         

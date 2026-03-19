@@ -141,7 +141,7 @@ def list_billing():
             .scalar()
             or 0,
             "tenants_pending_payment": db.query(func.count(Tenant.id))
-            .filter(Tenant.subscription_status.in_(["trial", "past_due"]))
+            .filter(Tenant.subscription_status.in_(["trial", "past_due", "pending_payment"]))
             .scalar()
             or 0,
         }

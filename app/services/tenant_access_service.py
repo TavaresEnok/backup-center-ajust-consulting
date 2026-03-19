@@ -130,3 +130,14 @@ class TenantAccessService:
         tenant.subscription_status = "trial"
         trial_days = int(plan.trial_days or 0)
         tenant.trial_ends_at = datetime.utcnow() + timedelta(days=trial_days) if trial_days > 0 else None
+
+    @staticmethod
+    def seed_pending_payment_plan_fields(tenant: Tenant, plan: Plan | None) -> None:
+        if not plan:
+            return
+        tenant.plan_id = plan.id
+        tenant.subscription_status = "pending_payment"
+        tenant.trial_ends_at = None
+        tenant.current_period_end = None
+        tenant.billing_blocked_at = None
+        tenant.is_active = False

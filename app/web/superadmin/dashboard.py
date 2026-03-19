@@ -170,7 +170,11 @@ def dashboard():
         )
         tenants_payment_pending = (
             db.query(func.count(Tenant.id))
-            .filter(Tenant.subscription_status.in_([SubscriptionStatus.TRIAL.value, SubscriptionStatus.PAST_DUE.value]))
+            .filter(
+                Tenant.subscription_status.in_(
+                    [SubscriptionStatus.TRIAL.value, SubscriptionStatus.PAST_DUE.value, "pending_payment"]
+                )
+            )
             .scalar()
             or 0
         )

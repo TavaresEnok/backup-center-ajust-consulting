@@ -427,6 +427,7 @@ def register():
                 full_name=full_name,
                 company_name=company_name,
                 plan_id=plan_id,
+                activate_trial=not payment_ready,
             )
 
             from app.services.activity_service import ActivityService

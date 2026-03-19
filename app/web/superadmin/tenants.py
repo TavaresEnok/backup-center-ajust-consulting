@@ -143,9 +143,9 @@ def list_tenants():
         if ops == "no_plan":
             query = query.filter(Tenant.plan_id.is_(None), Tenant.access_unlimited.is_(False))
         elif ops == "payment_risk":
-            query = query.filter(Tenant.subscription_status.in_(["trial", "past_due", "canceled"]))
+            query = query.filter(Tenant.subscription_status.in_(["trial", "past_due", "pending_payment", "canceled"]))
         elif ops == "payment_pending":
-            query = query.filter(Tenant.subscription_status.in_(["trial", "past_due"]))
+            query = query.filter(Tenant.subscription_status.in_(["trial", "past_due", "pending_payment"]))
         elif ops == "past_due":
             query = query.filter(Tenant.subscription_status == "past_due")
         elif ops == "canceled":
@@ -252,6 +252,9 @@ def list_tenants():
             ),
             "subscription_trial": (
                 db.query(func.count(Tenant.id)).filter(Tenant.subscription_status == "trial").scalar() or 0
+            ),
+            "subscription_pending_payment": (
+                db.query(func.count(Tenant.id)).filter(Tenant.subscription_status == "pending_payment").scalar() or 0
             ),
             "subscription_past_due": (
                 db.query(func.count(Tenant.id)).filter(Tenant.subscription_status == "past_due").scalar() or 0
