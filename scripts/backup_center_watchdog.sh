@@ -113,8 +113,8 @@ check_auth_anomalies() {
     if docker logs --since 120s "${APP_CONTAINER}" 2>&1 | grep -Eiq "auth lockout triggered|auth login blocked|forgot-password rate limited"; then
         emit_alert "auth_lockout_or_rate_limit" "WARN" "Anomalia de autenticacao detectada (lockout/rate-limit)"
     fi
-    if docker logs --since 120s "${APP_CONTAINER}" 2>&1 | grep -Eiq "critical account without 2fa"; then
-        emit_alert "critical_without_2fa" "WARN" "Conta critica acessou sem 2FA configurado"
+    if docker logs --since 120s "${APP_CONTAINER}" 2>&1 | grep -Eiq "account without 2fa|critical account without 2fa"; then
+        emit_alert "account_without_2fa" "WARN" "Conta acessou sem 2FA configurado"
     fi
 }
 

@@ -26,12 +26,12 @@ Reduzir superfície de ataque imediata no ambiente do Backup Center (tenant e ad
 - Hardening adicional de autenticacao (2026-03-19):
   - login com lockout por IP e por email (janela + bloqueio temporario), com Redis e fallback local;
   - rate-limit no fluxo `esqueci senha` por IP;
-  - log de seguranca para lockout/rate-limit e aviso de conta critica sem 2FA configurado.
+  - log de seguranca para lockout/rate-limit e aviso de conta sem 2FA configurado.
 - Watchdog atualizado para alertar anomalias de autenticacao:
   - lockout/rate-limit de login/forgot-password;
-  - login de conta critica sem 2FA.
+  - login de conta sem 2FA.
 - Fase 2 (2026-03-19) aplicada:
-  - 2FA obrigatorio para `super_admin` e `tenant_owner` no login;
+  - 2FA obrigatorio para todos os perfis de usuario no login (admin e tenant);
   - fluxo de setup inicial (`/auth/2fa/setup`) e validacao (`/auth/2fa/verify`);
   - sessao de login pendente com TTL e amarrada ao IP de origem;
   - cancelamento explicito da autenticacao pendente (`/auth/2fa/cancel`).

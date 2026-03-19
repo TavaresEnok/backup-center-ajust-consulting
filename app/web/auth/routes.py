@@ -25,7 +25,6 @@ FORGOT_PASSWORD_LOCKOUT_SECONDS = 1800
 PENDING_2FA_SESSION_KEY = "pending_2fa_login"
 PENDING_2FA_SETUP_SECRET_KEY = "pending_2fa_setup_secret"
 PENDING_2FA_TTL_SECONDS = 600
-CRITICAL_ROLES_REQUIRE_2FA = {UserRole.SUPER_ADMIN, UserRole.TENANT_OWNER}
 
 _login_attempts_ip = {}
 _login_attempts_email = {}
@@ -208,10 +207,12 @@ def _send_reset_email(to_email: str, reset_url: str):
 
 def _is_role_2fa_required(role) -> bool:
     try:
-        parsed_role = role if isinstance(role, UserRole) else UserRole(role)
+        _parsed_role = role if isinstance(role, UserRole) else UserRole(role)
     except Exception:
         return False
-    return parsed_role in CRITICAL_ROLES_REQUIRE_2FA
+    if _parsed_role is None:
+        return False
+    return True
 
 
 def _build_totp_uri(email: str, secret: str) -> str:
@@ -346,12 +347,12 @@ def login():
                         return redirect(url_for('auth.two_factor_verify'))
                     session[PENDING_2FA_SETUP_SECRET_KEY] = generate_totp_secret()
                     logging.getLogger(__name__).warning(
-                        "critical account without 2fa user=%s role=%s ip=%s",
+                        "account without 2fa user=%s role=%s ip=%s",
                         user.email,
                         user.role.value,
                         client_ip,
                     )
-                    flash('Conta administrativa: configure o 2FA para concluir o acesso.', 'warning')
+                    flash('Configure o 2FA para concluir o acesso.', 'warning')
                     return redirect(url_for('auth.two_factor_setup'))
 
                 _finalize_authenticated_session(db, user, client_ip)
