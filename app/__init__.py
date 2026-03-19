@@ -104,7 +104,9 @@ def create_flask_app():
             tenant = db.query(Tenant).filter(Tenant.slug == tenant_slug).first()
             if tenant and not tenant.is_active:
                 session.clear()
-                if getattr(tenant, "billing_blocked_at", None):
+                if getattr(tenant, "deleted_at", None):
+                    flash("Este cliente foi movido para a lixeira e não está disponível.", "error")
+                elif getattr(tenant, "billing_blocked_at", None):
                     flash("Cliente bloqueado por inadimplencia. Entre em contato com o suporte para reativacao.", "error")
                 else:
                     flash("Este cliente esta desativado. Entre em contato com o suporte.", "error")

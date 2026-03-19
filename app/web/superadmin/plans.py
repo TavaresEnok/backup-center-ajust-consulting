@@ -63,7 +63,7 @@ def list_plans():
         usage_counts = {
             str(plan_id): int(count or 0)
             for plan_id, count in db.query(Tenant.plan_id, func.count(Tenant.id))
-            .filter(Tenant.plan_id.isnot(None))
+            .filter(Tenant.plan_id.isnot(None), Tenant.deleted_at.is_(None))
             .group_by(Tenant.plan_id)
             .all()
         }

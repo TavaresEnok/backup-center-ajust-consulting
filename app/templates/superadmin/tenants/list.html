@@ -163,7 +163,7 @@
     }
 </style>
 
-{% set commercial_risk = stats.subscription_trial + stats.subscription_past_due + stats.subscription_canceled %}
+{% set commercial_risk = stats.subscription_trial + stats.subscription_pending_payment + stats.subscription_past_due + stats.subscription_canceled %}
 
 <div class="page-shell space-y-6 pb-5">
     <section class="tenant-hero p-6">
@@ -182,8 +182,10 @@
             <span class="rounded-lg border border-[var(--line-color)] bg-[var(--line-color)] px-2.5 py-1 text-xs text-[var(--text-main)]">Ativos em cobrança: {{ stats.subscription_active }}</span>
             <span class="rounded-lg border border-[var(--line-color)] px-2.5 py-1 text-xs text-[var(--text-main)]">Past due: {{ stats.subscription_past_due }}</span>
             <span class="rounded-lg border border-[var(--line-color)] px-2.5 py-1 text-xs text-[var(--text-main)]">Trial: {{ stats.subscription_trial }}</span>
+            <span class="rounded-lg border border-[var(--line-color)] px-2.5 py-1 text-xs text-[var(--text-main)]">Pagamento pendente: {{ stats.subscription_pending_payment }}</span>
             <span class="rounded-lg border border-[var(--line-color)] px-2.5 py-1 text-xs text-[var(--text-main)]">Sem plano: {{ stats.no_plan }}</span>
             <span class="rounded-lg border border-[var(--line-color)] px-2.5 py-1 text-xs text-[var(--text-main)]">Acesso ilimitado: {{ stats.unlimited_access }}</span>
+            <a href="{{ url_for('superadmin_tenants.list_tenants', status='trash') }}" class="rounded-lg border border-rose-500/30 bg-rose-500/10 px-2.5 py-1 text-xs text-rose-300">Lixeira: {{ stats.trash }}</a>
         </div>
     </section>
 
@@ -201,12 +203,17 @@
         <a href="{{ url_for('superadmin_tenants.list_tenants', ops='payment_risk') }}" class="metric-card metric-danger p-4">
             <p class="card-label">Risco comercial</p>
             <p class="card-value-xl text-rose-300">{{ commercial_risk }}</p>
-            <p class="card-caption">Trial, past due ou cancelado</p>
+            <p class="card-caption">Trial, pagamento pendente, past due ou cancelado</p>
         </a>
         <a href="{{ url_for('superadmin_tenants.list_tenants', ops='no_plan') }}" class="metric-card metric-warning p-4">
             <p class="card-label">Sem plano</p>
             <p class="card-value-xl text-amber-300">{{ stats.no_plan }}</p>
             <p class="card-caption">Revisao de faturamento</p>
+        </a>
+        <a href="{{ url_for('superadmin_tenants.list_tenants', status='trash') }}" class="metric-card p-4">
+            <p class="card-label">Na lixeira</p>
+            <p class="card-value-xl text-rose-300">{{ stats.trash }}</p>
+            <p class="card-caption">Clientes removidos com restauração</p>
         </a>
     </div>
 
@@ -222,11 +229,13 @@
                 <option value="all" {% if status == 'all' %}selected{% endif %}>Status: todos</option>
                 <option value="active" {% if status == 'active' %}selected{% endif %}>Ativos</option>
                 <option value="inactive" {% if status == 'inactive' %}selected{% endif %}>Inativos</option>
+                <option value="trash" {% if status == 'trash' %}selected{% endif %}>Lixeira</option>
             </select>
             <select name="subscription" class="rounded-lg border border-[var(--card-border)] bg-[var(--card-bg)] px-3 py-2 text-sm text-[var(--text-main)]">
                 <option value="all" {% if subscription == 'all' %}selected{% endif %}>Assinatura: todas</option>
                 <option value="trial" {% if subscription == 'trial' %}selected{% endif %}>Trial</option>
                 <option value="active" {% if subscription == 'active' %}selected{% endif %}>Active</option>
+                <option value="pending_payment" {% if subscription == 'pending_payment' %}selected{% endif %}>Pending payment</option>
                 <option value="past_due" {% if subscription == 'past_due' %}selected{% endif %}>Past due</option>
                 <option value="canceled" {% if subscription == 'canceled' %}selected{% endif %}>Canceled</option>
             </select>
@@ -294,13 +303,21 @@
                         <td>
                             {% if t.is_active %}
                             <span class="status-pill status-pill-good">Ativo</span>
+                            {% elif t.deleted_at %}
+                            <span class="status-pill status-pill-danger">Na lixeira</span>
                             {% else %}
                             <span class="status-pill status-pill-danger">Inativo</span>
+                            {% endif %}
+                            {% if (t.subscription_status or '') == 'pending_payment' %}
+                            <span class="status-pill status-pill-warn mt-1">Pagamento pendente</span>
                             {% endif %}
                             {% if (t.subscription_status or '') == 'past_due' %}
                             <span class="status-pill status-pill-warn mt-1">Past due</span>
                             {% elif (t.subscription_status or '') == 'canceled' %}
                             <span class="status-pill status-pill-danger mt-1">Canceled</span>
+                            {% endif %}
+                            {% if t.deleted_at %}
+                            <p class="mt-1 text-[11px] text-[var(--text-muted)]">{{ format_datetime(t.deleted_at, "%d/%m/%Y %H:%M", "-") }}</p>
                             {% endif %}
                         </td>
                         <td class="text-right">
@@ -309,18 +326,31 @@
                                     class="rounded-lg border border-[var(--card-border)] px-2.5 py-1.5 text-xs font-medium text-[var(--text-main)] hover:bg-[var(--line-color)]">
                                     Visao 360
                                 </a>
+                                {% if t.deleted_at %}
+                                <span class="rounded-lg border border-[var(--card-border)] px-2.5 py-1.5 text-xs font-medium text-[var(--text-muted)]">
+                                    Usuários
+                                </span>
+                                {% else %}
                                 <a href="{{ url_for('superadmin_users.list_users', scope='tenant', tenant=t.id) }}"
                                     class="rounded-lg border border-[var(--card-border)] px-2.5 py-1.5 text-xs font-medium text-[var(--text-main)] hover:bg-[var(--line-color)]">
                                     Usuários
                                 </a>
+                                {% endif %}
                                 <a href="{{ url_for('superadmin_billing.list_billing', q=t.name) }}"
                                     class="rounded-lg border border-[var(--card-border)] px-2.5 py-1.5 text-xs font-medium text-[var(--text-main)] hover:bg-[var(--line-color)]">
                                     Cobrança
                                 </a>
+                                {% if t.deleted_at %}
+                                <span class="rounded-lg border border-[var(--card-border)] px-2.5 py-1.5 text-xs font-medium text-[var(--text-muted)]">
+                                    Editar
+                                </span>
+                                {% else %}
                                 <a href="{{ url_for('superadmin_tenants.edit_tenant', tenant_id=t.id) }}"
                                     class="rounded-lg border border-[var(--card-border)] px-2.5 py-1.5 text-xs font-medium text-[var(--text-main)] hover:bg-[var(--line-color)]">
                                     Editar
                                 </a>
+                                {% endif %}
+                                {% if not t.deleted_at %}
                                 <form method="POST" action="{{ url_for('superadmin_tenants.toggle_tenant_active', tenant_id=t.id) }}" class="inline"
                                     data-confirm="{{ 'Desativar' if t.is_active else 'Ativar' }} o cliente {{ t.name }} agora?"
                                     onsubmit="return confirm(this.dataset.confirm);">
@@ -332,15 +362,37 @@
                                     </button>
                                 </form>
                                 <form method="POST" action="{{ url_for('superadmin_tenants.delete_tenant', tenant_id=t.id) }}" class="inline"
-                                    data-confirm="Apagar o cliente {{ t.name }} agora? Esta ação remove usuários, dispositivos, faturamento e configurações vinculadas."
+                                    data-confirm="Enviar o cliente {{ t.name }} para a lixeira agora?"
                                     onsubmit="return confirm(this.dataset.confirm);">
                                     {% include 'partials/csrf.html' %}
                                     <input type="hidden" name="return_url" value="{{ request.full_path.rstrip('?') }}">
                                     <button type="submit" {% if t.protected_system_tenant %}disabled{% endif %}
                                         class="rounded-lg border border-rose-500/30 px-2.5 py-1.5 text-xs font-medium text-rose-300 hover:bg-rose-500/10">
-                                        Apagar
+                                        Lixeira
                                     </button>
                                 </form>
+                                {% else %}
+                                <form method="POST" action="{{ url_for('superadmin_tenants.restore_tenant', tenant_id=t.id) }}" class="inline"
+                                    data-confirm="Restaurar o cliente {{ t.name }} agora?"
+                                    onsubmit="return confirm(this.dataset.confirm);">
+                                    {% include 'partials/csrf.html' %}
+                                    <input type="hidden" name="return_url" value="{{ request.full_path.rstrip('?') }}">
+                                    <button type="submit"
+                                        class="rounded-lg border border-emerald-500/30 px-2.5 py-1.5 text-xs font-medium text-emerald-300 hover:bg-emerald-500/10">
+                                        Restaurar
+                                    </button>
+                                </form>
+                                <form method="POST" action="{{ url_for('superadmin_tenants.purge_tenant', tenant_id=t.id) }}" class="inline"
+                                    data-confirm="Apagar permanentemente o cliente {{ t.name }}? Esta ação remove usuários, dispositivos, faturamento e configurações vinculadas."
+                                    onsubmit="return confirm(this.dataset.confirm);">
+                                    {% include 'partials/csrf.html' %}
+                                    <input type="hidden" name="return_url" value="{{ request.full_path.rstrip('?') }}">
+                                    <button type="submit" {% if t.protected_system_tenant %}disabled{% endif %}
+                                        class="rounded-lg border border-rose-500/30 px-2.5 py-1.5 text-xs font-medium text-rose-300 hover:bg-rose-500/10">
+                                        Apagar definitivo
+                                    </button>
+                                </form>
+                                {% endif %}
                             </div>
                         </td>
                     </tr>

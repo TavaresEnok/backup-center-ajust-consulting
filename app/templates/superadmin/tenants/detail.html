@@ -77,7 +77,11 @@
                 <p class="mt-2 text-sm text-[var(--text-muted)]">{{ tenant.slug }} • {{ tenant.email }}</p>
                 <div class="mt-4 flex flex-wrap gap-2 text-xs">
                     <span class="rounded-lg border border-[var(--line-color)] bg-[var(--line-color)] px-2.5 py-1 text-[var(--text-main)]">
+                        {% if tenant.deleted_at %}
+                        Na lixeira
+                        {% else %}
                         {{ 'Ativo' if tenant.is_active else 'Inativo' }}
+                        {% endif %}
                     </span>
                     <span class="rounded-lg border border-[var(--line-color)] px-2.5 py-1 text-[var(--text-main)]">
                         Assinatura: {{ subscription|replace('_', ' ')|title }}
@@ -95,6 +99,16 @@
                         Cliente protegido
                     </span>
                     {% endif %}
+                    {% if tenant.deleted_at %}
+                    <span class="rounded-lg border border-rose-500/30 bg-rose-500/10 px-2.5 py-1 text-rose-300">
+                        Na lixeira desde {{ format_datetime(tenant.deleted_at, "%d/%m/%Y %H:%M", "-") }}
+                    </span>
+                    {% if tenant.delete_reason %}
+                    <span class="rounded-lg border border-rose-500/20 px-2.5 py-1 text-rose-200">
+                        Motivo: {{ tenant.delete_reason }}
+                    </span>
+                    {% endif %}
+                    {% endif %}
                     {% if tenant.company_name %}
                     <span class="rounded-lg border border-[var(--line-color)] px-2.5 py-1 text-[var(--text-main)]">
                         Empresa: {{ tenant.company_name }}
@@ -103,6 +117,7 @@
                 </div>
             </div>
             <div class="flex flex-wrap gap-2">
+                {% if not tenant.deleted_at %}
                 <a href="{{ url_for('tenant.dashboard', tenant_slug=tenant.slug, admin_return=admin_return_url, admin_return_label='Voltar ao Cliente 360') }}"
                     class="rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700">
                     Abrir cliente
@@ -138,15 +153,37 @@
                     </button>
                 </form>
                 <form method="POST" action="{{ url_for('superadmin_tenants.delete_tenant', tenant_id=tenant.id) }}" class="inline"
-                    data-confirm="Apagar o cliente {{ tenant.name }} agora? Esta ação remove usuários, dispositivos, faturamento e configurações vinculadas."
+                    data-confirm="Enviar o cliente {{ tenant.name }} para a lixeira agora?"
                     onsubmit="return confirm(this.dataset.confirm);">
                     {% include 'partials/csrf.html' %}
                     <input type="hidden" name="return_url" value="{{ url_for('superadmin_tenants.list_tenants') }}">
                     <button type="submit" {% if tenant.protected_system_tenant %}disabled{% endif %}
                         class="rounded-xl border border-rose-500/30 px-4 py-2.5 text-sm font-semibold text-rose-300 hover:bg-rose-500/10">
-                        Apagar cliente
+                        Enviar para lixeira
                     </button>
                 </form>
+                {% else %}
+                <form method="POST" action="{{ url_for('superadmin_tenants.restore_tenant', tenant_id=tenant.id) }}" class="inline"
+                    data-confirm="Restaurar o cliente {{ tenant.name }} agora?"
+                    onsubmit="return confirm(this.dataset.confirm);">
+                    {% include 'partials/csrf.html' %}
+                    <input type="hidden" name="return_url" value="{{ request.path }}">
+                    <button type="submit"
+                        class="rounded-xl border border-emerald-500/30 px-4 py-2.5 text-sm font-semibold text-emerald-300 hover:bg-emerald-500/10">
+                        Restaurar cliente
+                    </button>
+                </form>
+                <form method="POST" action="{{ url_for('superadmin_tenants.purge_tenant', tenant_id=tenant.id) }}" class="inline"
+                    data-confirm="Apagar permanentemente o cliente {{ tenant.name }}? Esta ação remove usuários, dispositivos, faturamento e configurações vinculadas."
+                    onsubmit="return confirm(this.dataset.confirm);">
+                    {% include 'partials/csrf.html' %}
+                    <input type="hidden" name="return_url" value="{{ url_for('superadmin_tenants.list_tenants', status='trash') }}">
+                    <button type="submit" {% if tenant.protected_system_tenant %}disabled{% endif %}
+                        class="rounded-xl border border-rose-500/30 px-4 py-2.5 text-sm font-semibold text-rose-300 hover:bg-rose-500/10">
+                        Apagar definitivo
+                    </button>
+                </form>
+                {% endif %}
             </div>
         </div>
     </section>

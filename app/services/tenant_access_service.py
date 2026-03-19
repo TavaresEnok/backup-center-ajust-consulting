@@ -31,6 +31,30 @@ class TenantAccessService:
                     "ADD COLUMN IF NOT EXISTS protected_system_tenant BOOLEAN NOT NULL DEFAULT FALSE"
                 )
             )
+            conn.execute(
+                text(
+                    "ALTER TABLE tenants "
+                    "ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP NULL"
+                )
+            )
+            conn.execute(
+                text(
+                    "ALTER TABLE tenants "
+                    "ADD COLUMN IF NOT EXISTS deleted_by UUID NULL"
+                )
+            )
+            conn.execute(
+                text(
+                    "ALTER TABLE tenants "
+                    "ADD COLUMN IF NOT EXISTS delete_reason TEXT NULL"
+                )
+            )
+            conn.execute(
+                text(
+                    "ALTER TABLE tenants "
+                    "ADD COLUMN IF NOT EXISTS deleted_was_active BOOLEAN NOT NULL DEFAULT FALSE"
+                )
+            )
 
     @classmethod
     def apply_builtin_overrides(cls) -> None:
@@ -90,6 +114,10 @@ class TenantAccessService:
         if bool(getattr(tenant, "access_unlimited", False)):
             return "Acesso ilimitado"
         return "Sem plano"
+
+    @staticmethod
+    def is_deleted(tenant: Tenant) -> bool:
+        return bool(getattr(tenant, "deleted_at", None))
 
     @staticmethod
     def can_operate_without_plan(tenant: Tenant) -> bool:

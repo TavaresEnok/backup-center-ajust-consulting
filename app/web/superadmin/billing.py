@@ -26,7 +26,7 @@ def list_billing():
 
     db = SessionLocal()
     try:
-        tenants_query = db.query(Tenant).options(joinedload(Tenant.plan))
+        tenants_query = db.query(Tenant).options(joinedload(Tenant.plan)).filter(Tenant.deleted_at.is_(None))
         if q:
             term = f"%{q}%"
             tenants_query = tenants_query.filter(
@@ -60,7 +60,7 @@ def list_billing():
                 .subquery()
             )
             tenants_query = tenants_query.filter(
-                Tenant.subscription_status.in_(["trial", "past_due", "canceled"]) | Tenant.id.in_(select(at_risk_subq.c.tenant_id))
+                Tenant.subscription_status.in_(["trial", "past_due", "pending_payment", "canceled"]) | Tenant.id.in_(select(at_risk_subq.c.tenant_id))
             )
         elif focus == "active":
             tenants_query = tenants_query.filter(Tenant.subscription_status == "active")
@@ -121,27 +121,30 @@ def list_billing():
         recent_invoices = (
             db.query(Invoice)
             .options(joinedload(Invoice.tenant))
+            .join(Tenant, Invoice.tenant_id == Tenant.id)
+            .filter(Tenant.deleted_at.is_(None))
             .order_by(Invoice.created_at.desc())
             .limit(80)
             .all()
         )
 
         stats = {
-            "invoices_total": db.query(func.count(Invoice.id)).scalar() or 0,
-            "invoices_paid": db.query(func.count(Invoice.id)).filter(Invoice.status == InvoiceStatus.PAID).scalar()
+            "invoices_total": db.query(func.count(Invoice.id)).join(Tenant, Invoice.tenant_id == Tenant.id).filter(Tenant.deleted_at.is_(None)).scalar() or 0,
+            "invoices_paid": db.query(func.count(Invoice.id)).join(Tenant, Invoice.tenant_id == Tenant.id).filter(Tenant.deleted_at.is_(None), Invoice.status == InvoiceStatus.PAID).scalar()
             or 0,
             "invoices_pending": db.query(func.count(Invoice.id))
-            .filter(Invoice.status == InvoiceStatus.PENDING)
+            .join(Tenant, Invoice.tenant_id == Tenant.id)
+            .filter(Tenant.deleted_at.is_(None), Invoice.status == InvoiceStatus.PENDING)
             .scalar()
             or 0,
-            "invoices_failed": db.query(func.count(Invoice.id)).filter(Invoice.status == InvoiceStatus.FAILED).scalar()
+            "invoices_failed": db.query(func.count(Invoice.id)).join(Tenant, Invoice.tenant_id == Tenant.id).filter(Tenant.deleted_at.is_(None), Invoice.status == InvoiceStatus.FAILED).scalar()
             or 0,
             "tenants_active_payment": db.query(func.count(Tenant.id))
-            .filter(Tenant.subscription_status == "active")
+            .filter(Tenant.deleted_at.is_(None), Tenant.subscription_status == "active")
             .scalar()
             or 0,
             "tenants_pending_payment": db.query(func.count(Tenant.id))
-            .filter(Tenant.subscription_status.in_(["trial", "past_due", "pending_payment"]))
+            .filter(Tenant.deleted_at.is_(None), Tenant.subscription_status.in_(["trial", "past_due", "pending_payment"]))
             .scalar()
             or 0,
         }

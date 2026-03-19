@@ -45,6 +45,7 @@
                 <select name="subscription_status" id="subscription_status" class="admin-control">
                     <option value="trial" {% if (tenant.subscription_status or '') == 'trial' %}selected{% endif %}>Trial</option>
                     <option value="active" {% if (tenant.subscription_status or '') == 'active' %}selected{% endif %}>Active</option>
+                    <option value="pending_payment" {% if (tenant.subscription_status or '') == 'pending_payment' %}selected{% endif %}>Pending payment</option>
                     <option value="past_due" {% if (tenant.subscription_status or '') == 'past_due' %}selected{% endif %}>Past due</option>
                     <option value="canceled" {% if (tenant.subscription_status or '') == 'canceled' %}selected{% endif %}>Canceled</option>
                 </select>

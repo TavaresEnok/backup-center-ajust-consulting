@@ -167,7 +167,7 @@ class BillingPolicyService:
             tenants = (
                 db.query(Tenant)
                 .options(joinedload(Tenant.plan))
-                .filter(Tenant.access_unlimited.is_(False))
+                .filter(Tenant.access_unlimited.is_(False), Tenant.deleted_at.is_(None))
                 .all()
             )
             for tenant in tenants:

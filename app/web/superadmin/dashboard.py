@@ -72,8 +72,8 @@ def dashboard():
         window_start = now - window_duration
         prev_window_start = window_start - window_duration
 
-        tenants_total = db.query(func.count(Tenant.id)).scalar() or 0
-        tenants_active = db.query(func.count(Tenant.id)).filter(Tenant.is_active.is_(True)).scalar() or 0
+        tenants_total = db.query(func.count(Tenant.id)).filter(Tenant.deleted_at.is_(None)).scalar() or 0
+        tenants_active = db.query(func.count(Tenant.id)).filter(Tenant.deleted_at.is_(None), Tenant.is_active.is_(True)).scalar() or 0
         tenants_inactive = max(0, tenants_total - tenants_active)
 
         users_total = db.query(func.count(User.id)).scalar() or 0
@@ -166,11 +166,12 @@ def dashboard():
         )
 
         tenants_payment_active = (
-            db.query(func.count(Tenant.id)).filter(Tenant.subscription_status == SubscriptionStatus.ACTIVE.value).scalar() or 0
+            db.query(func.count(Tenant.id)).filter(Tenant.deleted_at.is_(None), Tenant.subscription_status == SubscriptionStatus.ACTIVE.value).scalar() or 0
         )
         tenants_payment_pending = (
             db.query(func.count(Tenant.id))
             .filter(
+                Tenant.deleted_at.is_(None),
                 Tenant.subscription_status.in_(
                     [SubscriptionStatus.TRIAL.value, SubscriptionStatus.PAST_DUE.value, "pending_payment"]
                 )
@@ -179,13 +180,14 @@ def dashboard():
             or 0
         )
         tenants_payment_canceled = (
-            db.query(func.count(Tenant.id)).filter(Tenant.subscription_status == SubscriptionStatus.CANCELED.value).scalar() or 0
+            db.query(func.count(Tenant.id)).filter(Tenant.deleted_at.is_(None), Tenant.subscription_status == SubscriptionStatus.CANCELED.value).scalar() or 0
         )
 
         trial_expiring_7d = (
             db.query(func.count(Tenant.id))
             .filter(
                 Tenant.subscription_status == SubscriptionStatus.TRIAL.value,
+                Tenant.deleted_at.is_(None),
                 Tenant.trial_ends_at.isnot(None),
                 Tenant.trial_ends_at >= now,
                 Tenant.trial_ends_at <= (now + timedelta(days=7)),
@@ -199,7 +201,7 @@ def dashboard():
 
         plan_usage_rows = (
             db.query(Plan.name, func.count(Tenant.id))
-            .outerjoin(Tenant, Tenant.plan_id == Plan.id)
+            .outerjoin(Tenant, (Tenant.plan_id == Plan.id) & Tenant.deleted_at.is_(None))
             .group_by(Plan.id, Plan.name)
             .order_by(func.count(Tenant.id).desc(), Plan.name.asc())
             .all()
@@ -207,7 +209,7 @@ def dashboard():
         plan_usage = [{"name": name, "tenants": int(count or 0)} for name, count in plan_usage_rows]
         tenants_without_plan = (
             db.query(func.count(Tenant.id))
-            .filter(Tenant.plan_id.is_(None), Tenant.access_unlimited.is_(False))
+            .filter(Tenant.deleted_at.is_(None), Tenant.plan_id.is_(None), Tenant.access_unlimited.is_(False))
             .scalar()
             or 0
         )
@@ -216,17 +218,17 @@ def dashboard():
             db.query(func.coalesce(func.sum(Plan.price_monthly), 0))
             .select_from(Tenant)
             .join(Plan, Tenant.plan_id == Plan.id)
-            .filter(Tenant.subscription_status == SubscriptionStatus.ACTIVE.value)
+            .filter(Tenant.deleted_at.is_(None), Tenant.subscription_status == SubscriptionStatus.ACTIVE.value)
             .scalar()
             or 0
         )
 
         current_30d_start = now - timedelta(days=30)
         previous_30d_start = now - timedelta(days=60)
-        new_tenants_30d = db.query(func.count(Tenant.id)).filter(Tenant.created_at >= current_30d_start).scalar() or 0
+        new_tenants_30d = db.query(func.count(Tenant.id)).filter(Tenant.deleted_at.is_(None), Tenant.created_at >= current_30d_start).scalar() or 0
         prev_tenants_30d = (
             db.query(func.count(Tenant.id))
-            .filter(Tenant.created_at >= previous_30d_start, Tenant.created_at < current_30d_start)
+            .filter(Tenant.deleted_at.is_(None), Tenant.created_at >= previous_30d_start, Tenant.created_at < current_30d_start)
             .scalar()
             or 0
         )
@@ -375,7 +377,7 @@ def dashboard():
             for tid, paid, pending, failed in invoice_by_tenant_rows
         }
 
-        all_tenants = db.query(Tenant).order_by(Tenant.created_at.desc()).all()
+        all_tenants = db.query(Tenant).filter(Tenant.deleted_at.is_(None)).order_by(Tenant.created_at.desc()).all()
 
         tenant_rows = []
         risk_rows = []
@@ -454,6 +456,7 @@ def dashboard():
         tenants_without_devices_subq = (
             db.query(Tenant.id)
             .outerjoin(Device, Device.tenant_id == Tenant.id)
+            .filter(Tenant.deleted_at.is_(None))
             .group_by(Tenant.id)
             .having(func.count(Device.id) == 0)
             .subquery()
@@ -467,6 +470,7 @@ def dashboard():
                 (User.tenant_id == Tenant.id)
                 & (User.role.in_([UserRole.TENANT_OWNER, UserRole.TENANT_ADMIN])),
             )
+            .filter(Tenant.deleted_at.is_(None))
             .group_by(Tenant.id)
             .having(func.count(User.id) == 0)
             .subquery()
@@ -662,6 +666,7 @@ def search():
             tenants = (
                 db.query(Tenant)
                 .filter(
+                    Tenant.deleted_at.is_(None),
                     or_(
                         Tenant.name.ilike(term),
                         Tenant.slug.ilike(term),

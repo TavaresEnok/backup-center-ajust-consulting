@@ -58,7 +58,7 @@ def _parse_uuid(raw):
 
 
 def _tenant_options(db):
-    tenants = db.query(Tenant).order_by(Tenant.name.asc()).all()
+    tenants = db.query(Tenant).filter(Tenant.deleted_at.is_(None)).order_by(Tenant.name.asc()).all()
     return [{"id": str(t.id), "name": t.name, "slug": t.slug} for t in tenants]
 
 
@@ -72,7 +72,12 @@ def list_users():
 
     db = SessionLocal()
     try:
-        query = db.query(User).options(joinedload(User.tenant))
+        query = (
+            db.query(User)
+            .options(joinedload(User.tenant))
+            .outerjoin(Tenant, User.tenant_id == Tenant.id)
+            .filter(or_(User.tenant_id.is_(None), Tenant.deleted_at.is_(None)))
+        )
 
         if tenant_filter == "__platform__":
             query = query.filter(User.tenant_id.is_(None))
@@ -99,7 +104,7 @@ def list_users():
 
         if q:
             term = f"%{q}%"
-            query = query.outerjoin(Tenant, User.tenant_id == Tenant.id).filter(
+            query = query.filter(
                 or_(
                     User.full_name.ilike(term),
                     User.email.ilike(term),
@@ -122,11 +127,11 @@ def list_users():
             )
 
         stats = {
-            "total": db.query(func.count(User.id)).scalar() or 0,
-            "active": db.query(func.count(User.id)).filter(User.is_active.is_(True)).scalar() or 0,
-            "inactive": db.query(func.count(User.id)).filter(User.is_active.is_(False)).scalar() or 0,
+            "total": db.query(func.count(User.id)).outerjoin(Tenant, User.tenant_id == Tenant.id).filter(or_(User.tenant_id.is_(None), Tenant.deleted_at.is_(None))).scalar() or 0,
+            "active": db.query(func.count(User.id)).outerjoin(Tenant, User.tenant_id == Tenant.id).filter(or_(User.tenant_id.is_(None), Tenant.deleted_at.is_(None)), User.is_active.is_(True)).scalar() or 0,
+            "inactive": db.query(func.count(User.id)).outerjoin(Tenant, User.tenant_id == Tenant.id).filter(or_(User.tenant_id.is_(None), Tenant.deleted_at.is_(None)), User.is_active.is_(False)).scalar() or 0,
             "admin_users": db.query(func.count(User.id)).filter(User.role == UserRole.SUPER_ADMIN).scalar() or 0,
-            "tenant_users": db.query(func.count(User.id)).filter(User.tenant_id.isnot(None)).scalar() or 0,
+            "tenant_users": db.query(func.count(User.id)).join(Tenant, User.tenant_id == Tenant.id).filter(Tenant.deleted_at.is_(None)).scalar() or 0,
         }
 
         role_options = [{"value": "all", "label": "Todas funcoes"}] + [
@@ -201,7 +206,12 @@ def add_user():
                         tenant_roles=TENANT_ALLOWED_ROLES,
                         role_labels=ROLE_LABELS,
                     )
-                tenant_exists = db.query(Tenant).options(joinedload(Tenant.plan)).filter(Tenant.id == tenant_id).first()
+                tenant_exists = (
+                    db.query(Tenant)
+                    .options(joinedload(Tenant.plan))
+                    .filter(Tenant.id == tenant_id, Tenant.deleted_at.is_(None))
+                    .first()
+                )
                 if not tenant_exists:
                     flash("Tenant informado nao existe.", "error")
                     return render_template(
@@ -317,7 +327,12 @@ def edit_user(user_id):
                 if not tenant_id:
                     flash("Selecione um tenant para usuario de cliente.", "error")
                     return _render_edit(db, user)
-                tenant_exists = db.query(Tenant).options(joinedload(Tenant.plan)).filter(Tenant.id == tenant_id).first()
+                tenant_exists = (
+                    db.query(Tenant)
+                    .options(joinedload(Tenant.plan))
+                    .filter(Tenant.id == tenant_id, Tenant.deleted_at.is_(None))
+                    .first()
+                )
                 if not tenant_exists:
                     flash("Tenant informado nao existe.", "error")
                     return _render_edit(db, user)
@@ -382,7 +397,12 @@ def toggle_active(user_id):
 
         target_state = not bool(user.is_active)
         if target_state and user.tenant_id:
-            tenant = db.query(Tenant).options(joinedload(Tenant.plan)).filter(Tenant.id == user.tenant_id).first()
+            tenant = (
+                db.query(Tenant)
+                .options(joinedload(Tenant.plan))
+                .filter(Tenant.id == user.tenant_id, Tenant.deleted_at.is_(None))
+                .first()
+            )
             if tenant:
                 limit_check = PlanLimitsService.check_can_add_user(db, tenant)
                 if not limit_check.allowed:

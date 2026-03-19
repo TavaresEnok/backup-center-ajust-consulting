@@ -335,7 +335,9 @@ def login():
             user = AuthService.authenticate_user(db, email, password)
             if user:
                 if user.role != UserRole.SUPER_ADMIN and user.tenant and not user.tenant.is_active:
-                    if getattr(user.tenant, "billing_blocked_at", None):
+                    if getattr(user.tenant, "deleted_at", None):
+                        flash('Este cliente foi movido para a lixeira e nao esta disponivel.', 'error')
+                    elif getattr(user.tenant, "billing_blocked_at", None):
                         flash('Cliente bloqueado por inadimplencia. Entre em contato com o suporte para reativacao.', 'error')
                     else:
                         flash('Este cliente esta desativado. Entre em contato com o suporte.', 'error')
@@ -483,7 +485,9 @@ def two_factor_setup():
 
         if user.role != UserRole.SUPER_ADMIN and user.tenant and not user.tenant.is_active:
             _clear_pending_2fa_session()
-            if getattr(user.tenant, "billing_blocked_at", None):
+            if getattr(user.tenant, "deleted_at", None):
+                flash('Este cliente foi movido para a lixeira e nao esta disponivel.', 'error')
+            elif getattr(user.tenant, "billing_blocked_at", None):
                 flash('Cliente bloqueado por inadimplencia. Entre em contato com o suporte para reativacao.', 'error')
             else:
                 flash('Este cliente esta desativado. Entre em contato com o suporte.', 'error')
@@ -547,7 +551,9 @@ def two_factor_verify():
 
         if user.role != UserRole.SUPER_ADMIN and user.tenant and not user.tenant.is_active:
             _clear_pending_2fa_session()
-            if getattr(user.tenant, "billing_blocked_at", None):
+            if getattr(user.tenant, "deleted_at", None):
+                flash('Este cliente foi movido para a lixeira e nao esta disponivel.', 'error')
+            elif getattr(user.tenant, "billing_blocked_at", None):
                 flash('Cliente bloqueado por inadimplencia. Entre em contato com o suporte para reativacao.', 'error')
             else:
                 flash('Este cliente esta desativado. Entre em contato com o suporte.', 'error')

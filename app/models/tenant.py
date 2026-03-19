@@ -23,6 +23,10 @@ class Tenant(Base, TimestampMixin):
     subscription_status = Column(String(20), default='trial') # trial, active, past_due, canceled
     current_period_end = Column(DateTime, nullable=True)
     billing_blocked_at = Column(DateTime, nullable=True)
+    deleted_at = Column(DateTime, nullable=True)
+    deleted_by = Column(UUID(as_uuid=True), nullable=True)
+    delete_reason = Column(Text, nullable=True)
+    deleted_was_active = Column(Boolean, default=False, nullable=False)
     
     # Billing
     plan_id = Column(UUID(as_uuid=True), ForeignKey('plans.id'), nullable=True)

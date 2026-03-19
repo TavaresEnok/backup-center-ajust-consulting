@@ -131,6 +131,7 @@
                 <option value="all" {% if subscription == 'all' %}selected{% endif %}>Assinatura: todas</option>
                 <option value="active" {% if subscription == 'active' %}selected{% endif %}>Ativas</option>
                 <option value="trial" {% if subscription == 'trial' %}selected{% endif %}>Trial</option>
+                <option value="pending_payment" {% if subscription == 'pending_payment' %}selected{% endif %}>Pending payment</option>
                 <option value="past_due" {% if subscription == 'past_due' %}selected{% endif %}>Past due</option>
                 <option value="canceled" {% if subscription == 'canceled' %}selected{% endif %}>Canceladas</option>
             </select>

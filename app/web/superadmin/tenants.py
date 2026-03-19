@@ -80,6 +80,13 @@ def _redirect_after_client_action(default_endpoint: str = "superadmin_tenants.li
     return redirect(url_for(default_endpoint, **values))
 
 
+def _current_superadmin_uuid():
+    try:
+        return uuid.UUID(str(session.get("user_id") or ""))
+    except Exception:
+        return None
+
+
 def _delete_client_dependencies(db, tenant_id):
     user_ids = [row[0] for row in db.query(User.id).filter(User.tenant_id == tenant_id).all()]
     device_ids = [row[0] for row in db.query(Device.id).filter(Device.tenant_id == tenant_id).all()]
@@ -134,10 +141,16 @@ def list_tenants():
             query = query.filter(
                 Tenant.name.ilike(term) | Tenant.slug.ilike(term) | Tenant.email.ilike(term)
             )
+        if status == "trash":
+            query = query.filter(Tenant.deleted_at.isnot(None))
+        else:
+            query = query.filter(Tenant.deleted_at.is_(None))
         if status == "active":
             query = query.filter(Tenant.is_active.is_(True))
         elif status == "inactive":
             query = query.filter(Tenant.is_active.is_(False))
+        elif status != "trash":
+            status = "all"
         if subscription != "all":
             query = query.filter(Tenant.subscription_status == subscription)
         if ops == "no_plan":
@@ -244,31 +257,32 @@ def list_tenants():
             )
 
         stats = {
-            "total": db.query(func.count(Tenant.id)).scalar() or 0,
-            "active": db.query(func.count(Tenant.id)).filter(Tenant.is_active.is_(True)).scalar() or 0,
-            "inactive": db.query(func.count(Tenant.id)).filter(Tenant.is_active.is_(False)).scalar() or 0,
+            "total": db.query(func.count(Tenant.id)).filter(Tenant.deleted_at.is_(None)).scalar() or 0,
+            "active": db.query(func.count(Tenant.id)).filter(Tenant.deleted_at.is_(None), Tenant.is_active.is_(True)).scalar() or 0,
+            "inactive": db.query(func.count(Tenant.id)).filter(Tenant.deleted_at.is_(None), Tenant.is_active.is_(False)).scalar() or 0,
+            "trash": db.query(func.count(Tenant.id)).filter(Tenant.deleted_at.isnot(None)).scalar() or 0,
             "subscription_active": (
-                db.query(func.count(Tenant.id)).filter(Tenant.subscription_status == "active").scalar() or 0
+                db.query(func.count(Tenant.id)).filter(Tenant.deleted_at.is_(None), Tenant.subscription_status == "active").scalar() or 0
             ),
             "subscription_trial": (
-                db.query(func.count(Tenant.id)).filter(Tenant.subscription_status == "trial").scalar() or 0
+                db.query(func.count(Tenant.id)).filter(Tenant.deleted_at.is_(None), Tenant.subscription_status == "trial").scalar() or 0
             ),
             "subscription_pending_payment": (
-                db.query(func.count(Tenant.id)).filter(Tenant.subscription_status == "pending_payment").scalar() or 0
+                db.query(func.count(Tenant.id)).filter(Tenant.deleted_at.is_(None), Tenant.subscription_status == "pending_payment").scalar() or 0
             ),
             "subscription_past_due": (
-                db.query(func.count(Tenant.id)).filter(Tenant.subscription_status == "past_due").scalar() or 0
+                db.query(func.count(Tenant.id)).filter(Tenant.deleted_at.is_(None), Tenant.subscription_status == "past_due").scalar() or 0
             ),
             "subscription_canceled": (
-                db.query(func.count(Tenant.id)).filter(Tenant.subscription_status == "canceled").scalar() or 0
+                db.query(func.count(Tenant.id)).filter(Tenant.deleted_at.is_(None), Tenant.subscription_status == "canceled").scalar() or 0
             ),
             "no_plan": (
                 db.query(func.count(Tenant.id))
-                .filter(Tenant.plan_id.is_(None), Tenant.access_unlimited.is_(False))
+                .filter(Tenant.deleted_at.is_(None), Tenant.plan_id.is_(None), Tenant.access_unlimited.is_(False))
                 .scalar()
                 or 0
             ),
-            "unlimited_access": db.query(func.count(Tenant.id)).filter(Tenant.access_unlimited.is_(True)).scalar() or 0,
+            "unlimited_access": db.query(func.count(Tenant.id)).filter(Tenant.deleted_at.is_(None), Tenant.access_unlimited.is_(True)).scalar() or 0,
         }
 
         return render_template(
@@ -562,6 +576,9 @@ def edit_tenant(tenant_id):
         if not tenant:
             flash("Cliente não encontrado.", "error")
             return redirect(url_for("superadmin_tenants.list_tenants"))
+        if TenantAccessService.is_deleted(tenant):
+            flash("Cliente está na lixeira. Restaure antes de editar.", "error")
+            return redirect(url_for("superadmin_tenants.view_tenant", tenant_id=tenant.id))
 
         if request.method == "POST":
             name = (request.form.get("name") or "").strip()
@@ -572,7 +589,7 @@ def edit_tenant(tenant_id):
             plan_uuid = _parse_plan_uuid(request.form.get("plan_id"))
             selected_plan = db.query(Plan).filter(Plan.id == plan_uuid, Plan.is_active.is_(True)).first() if plan_uuid else None
             subscription_status = (request.form.get("subscription_status") or tenant.subscription_status or "trial").strip().lower()
-            allowed_sub_status = {"trial", "active", "past_due", "canceled"}
+            allowed_sub_status = {"trial", "active", "pending_payment", "past_due", "canceled"}
             if subscription_status not in allowed_sub_status:
                 subscription_status = "trial"
 
@@ -640,6 +657,12 @@ def toggle_tenant_active(tenant_id):
         if not tenant:
             flash("Cliente não encontrado.", "error")
             return redirect(url_for("superadmin_tenants.list_tenants"))
+        if TenantAccessService.is_deleted(tenant):
+            flash("Cliente está na lixeira. Restaure antes de alterar o status.", "error")
+            return _redirect_after_client_action(
+                "superadmin_tenants.view_tenant",
+                tenant_id=tenant.id,
+            )
 
         tenant.is_active = not bool(tenant.is_active)
         db.commit()
@@ -679,16 +702,113 @@ def delete_tenant(tenant_id):
                 tenant_id=tenant.id,
             )
 
-        client_name = tenant.name
-        _delete_client_dependencies(db, tenant.id)
-        db.query(Tenant).filter(Tenant.id == tenant.id).delete(synchronize_session=False)
+        if TenantAccessService.is_deleted(tenant):
+            flash("Cliente já está na lixeira.", "warning")
+            return _redirect_after_client_action(
+                "superadmin_tenants.view_tenant",
+                tenant_id=tenant.id,
+            )
+
+        tenant.deleted_was_active = bool(tenant.is_active)
+        tenant.is_active = False
+        tenant.deleted_at = datetime.utcnow()
+        tenant.deleted_by = _current_superadmin_uuid()
+        tenant.delete_reason = (request.form.get("delete_reason") or "").strip() or None
         db.commit()
 
-        flash(f"Cliente {client_name} apagado com sucesso.", "success")
+        flash(f"Cliente {tenant.name} enviado para a lixeira.", "success")
         return _redirect_after_client_action()
     except Exception as exc:
         db.rollback()
         flash(f"Erro ao apagar cliente: {str(exc)}", "error")
         return redirect(url_for("superadmin_tenants.list_tenants"))
+    finally:
+        db.close()
+
+
+@bp.route("/<tenant_id>/restore", methods=["POST"])
+def restore_tenant(tenant_id):
+    db = SessionLocal()
+    try:
+        tenant_uuid = _parse_tenant_uuid(tenant_id)
+        if not tenant_uuid:
+            flash("Cliente inválido.", "error")
+            return redirect(url_for("superadmin_tenants.list_tenants", status="trash"))
+
+        tenant = db.query(Tenant).filter(Tenant.id == tenant_uuid).first()
+        if not tenant:
+            flash("Cliente não encontrado.", "error")
+            return redirect(url_for("superadmin_tenants.list_tenants", status="trash"))
+        if not TenantAccessService.is_deleted(tenant):
+            flash("Cliente não está na lixeira.", "warning")
+            return _redirect_after_client_action(
+                "superadmin_tenants.view_tenant",
+                tenant_id=tenant.id,
+            )
+
+        can_reactivate = bool(tenant.deleted_was_active) and not bool(tenant.billing_blocked_at) and (
+            (tenant.subscription_status or "").strip().lower() not in {"pending_payment", "canceled"}
+        )
+        tenant.is_active = can_reactivate
+        tenant.deleted_at = None
+        tenant.deleted_by = None
+        tenant.delete_reason = None
+        tenant.deleted_was_active = False
+        db.commit()
+
+        flash(
+            f"Cliente {tenant.name} restaurado com sucesso."
+            + ("" if can_reactivate else " O cliente voltou inativo e pode ser revisado antes de reabrir o acesso."),
+            "success",
+        )
+        return _redirect_after_client_action(
+            "superadmin_tenants.view_tenant",
+            tenant_id=tenant.id,
+        )
+    except Exception as exc:
+        db.rollback()
+        flash(f"Erro ao restaurar cliente: {str(exc)}", "error")
+        return redirect(url_for("superadmin_tenants.list_tenants", status="trash"))
+    finally:
+        db.close()
+
+
+@bp.route("/<tenant_id>/purge", methods=["POST"])
+def purge_tenant(tenant_id):
+    db = SessionLocal()
+    try:
+        tenant_uuid = _parse_tenant_uuid(tenant_id)
+        if not tenant_uuid:
+            flash("Cliente inválido.", "error")
+            return redirect(url_for("superadmin_tenants.list_tenants", status="trash"))
+
+        tenant = db.query(Tenant).filter(Tenant.id == tenant_uuid).first()
+        if not tenant:
+            flash("Cliente não encontrado.", "error")
+            return redirect(url_for("superadmin_tenants.list_tenants", status="trash"))
+        if bool(tenant.protected_system_tenant) or tenant.slug in TenantAccessService.PROTECTED_DEFAULT_SLUGS:
+            flash("Esse cliente é protegido e não pode ser apagado permanentemente.", "error")
+            return _redirect_after_client_action(
+                "superadmin_tenants.view_tenant",
+                tenant_id=tenant.id,
+            )
+        if not TenantAccessService.is_deleted(tenant):
+            flash("Envie o cliente para a lixeira antes de apagar permanentemente.", "error")
+            return _redirect_after_client_action(
+                "superadmin_tenants.view_tenant",
+                tenant_id=tenant.id,
+            )
+
+        client_name = tenant.name
+        _delete_client_dependencies(db, tenant.id)
+        db.query(Tenant).filter(Tenant.id == tenant.id).delete(synchronize_session=False)
+        db.commit()
+
+        flash(f"Cliente {client_name} apagado permanentemente.", "success")
+        return redirect(url_for("superadmin_tenants.list_tenants", status="trash"))
+    except Exception as exc:
+        db.rollback()
+        flash(f"Erro ao apagar definitivamente o cliente: {str(exc)}", "error")
+        return redirect(url_for("superadmin_tenants.list_tenants", status="trash"))
     finally:
         db.close()
