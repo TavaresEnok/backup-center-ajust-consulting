@@ -21,6 +21,8 @@ Reduzir superfície de ataque imediata no ambiente do Backup Center (tenant e ad
   - timer systemd: `backup-center-watchdog.timer` (1 minuto)
   - alertas em `logger` + arquivo `/var/log/backup_center/critical_alerts.log`
   - monitora: erro 502 no proxy, queda de workers/app, falha de lote e erro de webhook de pagamento.
+- Smoke check da fase crítica adicionado em `scripts/critical_phase_smoke_check.sh` para validar em um comando:
+  - proxy + health + containers + portas + firewall + legado + watchdog.
 
 ## Riscos residuais e próximos passos recomendados
 - Rotacionar periodicamente os segredos de produção (`SECRET_KEY`, `ENCRYPTION_KEY`, senhas DB/Redis/MercadoPago). Atenção: trocar `ENCRYPTION_KEY` requer recriptografar credenciais já salvas.
@@ -37,3 +39,8 @@ Reduzir superfície de ataque imediata no ambiente do Backup Center (tenant e ad
 - Reativar serviços legados, se necessário: `systemctl enable --now mikrotik-legacy-gunicorn mikrotik-legacy-celery mikrotik-legacy-celery-vpn mikrotik-legacy-flower`.
 - Desativar firewall emergencialmente: `/usr/sbin/ufw disable`.
 - Desativar watchdog: `systemctl disable --now backup-center-watchdog.timer`.
+
+## Verificação rápida (operacional)
+- Executar pós-alteração:
+  - `ROOT_PASS='***' ./scripts/critical_phase_smoke_check.sh`
+- Resultado esperado: todos os checks `[OK]` e final `smoke check da fase critica concluido`.
