@@ -287,6 +287,50 @@
                                         <p>{{ plan.backup_retention_days }} dias de retencao</p>
                                     </div>
                                 </div>
+                                <div class="mt-4 grid grid-cols-2 gap-2 text-[11px] text-slate-300">
+                                    <div class="rounded-lg border border-slate-700/70 bg-slate-950/35 px-2.5 py-2">
+                                        <span class="block text-slate-500">Dispositivos</span>
+                                        <span class="font-semibold text-slate-100">{{ plan.max_devices }}</span>
+                                    </div>
+                                    <div class="rounded-lg border border-slate-700/70 bg-slate-950/35 px-2.5 py-2">
+                                        <span class="block text-slate-500">Usuarios</span>
+                                        <span class="font-semibold text-slate-100">{{ plan.max_users }}</span>
+                                    </div>
+                                    <div class="rounded-lg border border-slate-700/70 bg-slate-950/35 px-2.5 py-2">
+                                        <span class="block text-slate-500">Storage</span>
+                                        <span class="font-semibold text-slate-100">
+                                            {% if (plan.storage_quota_gb or 0) > 0 %}
+                                            {{ plan.storage_quota_gb }} GB
+                                            {% else %}
+                                            Ilimitado
+                                            {% endif %}
+                                        </span>
+                                    </div>
+                                    <div class="rounded-lg border border-slate-700/70 bg-slate-950/35 px-2.5 py-2">
+                                        <span class="block text-slate-500">Download/mês</span>
+                                        <span class="font-semibold text-slate-100">
+                                            {% if (plan.download_quota_gb_month or 0) > 0 %}
+                                            {{ plan.download_quota_gb_month }} GB
+                                            {% else %}
+                                            Ilimitado
+                                            {% endif %}
+                                        </span>
+                                    </div>
+                                    <div class="rounded-lg border border-slate-700/70 bg-slate-950/35 px-2.5 py-2">
+                                        <span class="block text-slate-500">Retencao</span>
+                                        <span class="font-semibold text-slate-100">{{ plan.backup_retention_days }} dias</span>
+                                    </div>
+                                    <div class="rounded-lg border border-slate-700/70 bg-slate-950/35 px-2.5 py-2">
+                                        <span class="block text-slate-500">Velocidade</span>
+                                        <span class="font-semibold text-slate-100">
+                                            {% if (plan.max_download_rate_mbps or 0) > 0 %}
+                                            {{ plan.max_download_rate_mbps }} Mbps
+                                            {% else %}
+                                            Ilimitada
+                                            {% endif %}
+                                        </span>
+                                    </div>
+                                </div>
                             </label>
                             {% endfor %}
                         </div>
