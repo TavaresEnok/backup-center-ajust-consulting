@@ -264,6 +264,8 @@
                                     {% if loop.first %}checked{% endif %}
                                     @change="selectedPlan = '{{ plan_id }}'"
                                 >
+                                <input type="hidden" x-ref="monthlyPrice{{ loop.index }}" value="{{ '%.2f'|format((plan.price_monthly or 0) / 100) }}">
+                                <input type="hidden" x-ref="yearlyPrice{{ loop.index }}" value="{{ '%.2f'|format((plan.price_yearly or 0) / 100) }}">
                                 <div class="flex items-start justify-between gap-3">
                                     <div class="min-w-0">
                                         <p class="text-sm font-semibold text-slate-100">{{ plan.name }}</p>
@@ -278,9 +280,9 @@
                                 <div class="mt-4 flex items-end justify-between gap-3">
                                     <div>
                                         <p class="text-2xl font-bold text-slate-100">
-                                            R$ {{ '%.2f'|format((plan.price_monthly or 0) / 100) }}
+                                            <span x-text="billingCycle === 'yearly' ? 'R$ ' + $refs.yearlyPrice{{ loop.index }}.value : 'R$ ' + $refs.monthlyPrice{{ loop.index }}.value"></span>
                                         </p>
-                                        <p class="text-xs text-slate-400">mensal</p>
+                                        <p class="text-xs text-slate-400" x-text="billingCycle === 'yearly' ? 'anual' : 'mensal'"></p>
                                     </div>
                                     <div class="text-right text-xs text-slate-400">
                                         <p>{{ plan.max_users }} usuarios</p>
