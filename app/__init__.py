@@ -109,8 +109,8 @@ def create_flask_app():
         is_secure = request.is_secure or proto == "https"
         if is_secure:
             return
-        # Allow local access without redirect for troubleshooting
-        if host in {"127.0.0.1", "localhost"}:
+        # Allow local/direct access without redirect for troubleshooting/operations.
+        if host in {"127.0.0.1", "localhost", "168.194.14.85"}:
             return
         url = request.url.replace("http://", "https://", 1)
         return redirect(url, code=301)
