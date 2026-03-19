@@ -1,40 +1,116 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="pt-BR">
 
-{% block content %}
-<div class="flex items-center justify-center min-h-[80vh] px-4 py-10">
-    <div class="card w-full max-w-lg bg-base-100 shadow-2xl border border-base-300">
-        <div class="card-body">
-            <h2 class="card-title text-2xl font-bold text-center justify-center mb-4">Criar Conta</h2>
-            <form action="{{ url_for('auth.register') }}" method="POST" class="space-y-4">
-            {% include 'partials/csrf.html' %}
-                <div class="form-control">
-                    <label class="label"><span class="label-text">Nome Completo</span></label>
-                    <input type="text" name="full_name" placeholder="João Silva" class="input input-bordered"
-                        required />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro | Backup Center</title>
+    <link href="{{ url_for('static', filename='css/output.css') }}?v=17384" rel="stylesheet">
+</head>
+
+<body class="min-h-screen bg-slate-950 text-slate-100 font-outfit">
+    <main class="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
+        <div class="rounded-3xl border border-slate-700/60 bg-slate-900/75 p-6 shadow-2xl sm:p-8">
+            <header class="mb-6">
+                <h1 class="text-3xl font-bold">Criar conta e escolher plano</h1>
+                <p class="mt-2 text-sm text-slate-400">Você já inicia escolhendo o plano do seu tenant.</p>
+            </header>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            <div class="mb-6 space-y-2">
+                {% for category, message in messages %}
+                <div class="rounded-xl p-3 text-sm border {% if category == 'success' %}bg-emerald-500/10 border-emerald-400/30 text-emerald-200{% elif category == 'warning' %}bg-amber-500/10 border-amber-400/30 text-amber-200{% elif category == 'info' %}bg-sky-500/10 border-sky-400/30 text-sky-200{% else %}bg-red-500/10 border-red-400/30 text-red-200{% endif %}">
+                    {{ message }}
                 </div>
-                <div class="form-control">
-                    <label class="label"><span class="label-text">Email</span></label>
-                    <input type="email" name="email" placeholder="seu@email.com" class="input input-bordered"
-                        required />
+                {% endfor %}
+            </div>
+            {% endif %}
+            {% endwith %}
+
+            {% if not payment_ready %}
+            <div class="mb-6 rounded-xl border border-amber-400/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-100">
+                Checkout online temporariamente indisponível. O cadastro será criado e o pagamento pode ser feito depois.
+            </div>
+            {% endif %}
+
+            <form action="{{ url_for('auth.register') }}" method="POST" class="space-y-6">
+                {% include 'partials/csrf.html' %}
+
+                <div class="grid gap-4 md:grid-cols-2">
+                    <div>
+                        <label class="mb-1.5 block text-sm font-medium text-slate-200">Nome completo</label>
+                        <input type="text" name="full_name" required
+                            class="h-11 w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3 text-slate-100 focus:border-cyan-400 focus:outline-none"
+                            placeholder="Seu nome">
+                    </div>
+                    <div>
+                        <label class="mb-1.5 block text-sm font-medium text-slate-200">E-mail</label>
+                        <input type="email" name="email" required
+                            class="h-11 w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3 text-slate-100 focus:border-cyan-400 focus:outline-none"
+                            placeholder="voce@empresa.com">
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="mb-1.5 block text-sm font-medium text-slate-200">Nome da empresa</label>
+                        <input type="text" name="company_name" required
+                            class="h-11 w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3 text-slate-100 focus:border-cyan-400 focus:outline-none"
+                            placeholder="Empresa LTDA">
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="mb-1.5 block text-sm font-medium text-slate-200">Senha</label>
+                        <input type="password" name="password" required minlength="8"
+                            class="h-11 w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3 text-slate-100 focus:border-cyan-400 focus:outline-none"
+                            placeholder="Mínimo 8 caracteres">
+                    </div>
                 </div>
-                <div class="form-control">
-                    <label class="label"><span class="label-text">Nome da Empresa</span></label>
-                    <input type="text" name="company_name" placeholder="Sua Empresa LTDA" class="input input-bordered"
-                        required />
+
+                <section>
+                    <div class="mb-2 flex items-center justify-between">
+                        <h2 class="text-base font-semibold text-slate-100">Escolha seu plano</h2>
+                        <span class="text-xs text-slate-400">{{ plans|length }} plano(s) disponível(is)</span>
+                    </div>
+                    <div class="grid gap-3 md:grid-cols-2">
+                        {% for plan in plans %}
+                        <label class="cursor-pointer rounded-xl border border-slate-700 bg-slate-950/60 p-4 transition hover:border-cyan-400/60">
+                            <div class="flex items-start gap-3">
+                                <input type="radio" name="plan_id" value="{{ plan.id }}" required class="mt-1 h-4 w-4">
+                                <div class="min-w-0">
+                                    <p class="text-sm font-semibold text-slate-100">{{ plan.name }}</p>
+                                    <p class="mt-0.5 text-xs text-slate-400">{{ plan.description or 'Plano Backup Center' }}</p>
+                                    <p class="mt-2 text-sm font-semibold text-cyan-300">R$ {{ '%.2f'|format((plan.price_monthly or 0) / 100) }}/mês</p>
+                                    <p class="mt-1 text-xs text-slate-400">{{ plan.max_devices }} dispositivos • {{ plan.max_users }} usuários</p>
+                                </div>
+                            </div>
+                        </label>
+                        {% else %}
+                        <div class="rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-200 md:col-span-2">
+                            Nenhum plano ativo disponível. Fale com o administrador.
+                        </div>
+                        {% endfor %}
+                    </div>
+                </section>
+
+                <div>
+                    <label class="mb-1.5 block text-sm font-medium text-slate-200">Ciclo de cobrança</label>
+                    <select name="billing_cycle"
+                        class="h-11 w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3 text-slate-100 focus:border-cyan-400 focus:outline-none">
+                        <option value="monthly">Mensal</option>
+                        <option value="yearly">Anual</option>
+                    </select>
                 </div>
-                <div class="form-control">
-                    <label class="label"><span class="label-text">Senha</span></label>
-                    <input type="password" name="password" placeholder="••••••••" class="input input-bordered"
-                        required />
-                    <label class="label-text-alt opacity-50 px-1 mt-1">Mínimo 8 caracteres</label>
-                </div>
-                <div class="form-control mt-6">
-                    <button type="submit" class="btn-premium">Começar Teste Grátis</button>
-                </div>
+
+                <button type="submit"
+                    class="h-12 w-full rounded-xl bg-gradient-to-r from-cyan-300 to-sky-300 font-semibold text-slate-950 transition hover:from-cyan-200 hover:to-sky-200">
+                    Criar conta e continuar
+                </button>
             </form>
-            <p class="text-center text-sm mt-4">Já tem uma contac <a href="{{ url_for('auth.login') }}"
-                    class="link link-primary font-bold">Faça Login</a></p>
+
+            <p class="mt-6 text-center text-sm text-slate-400">
+                Já possui conta?
+                <a href="{{ url_for('auth.login') }}" class="font-semibold text-cyan-300 hover:text-cyan-200">Entrar</a>
+            </p>
         </div>
-    </div>
-</div>
-{% endblock %}
+    </main>
+</body>
+
+</html>

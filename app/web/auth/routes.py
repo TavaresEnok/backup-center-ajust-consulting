@@ -1,6 +1,7 @@
 ﻿from flask import Blueprint, render_template, redirect, url_for, request, flash, session
 from app.services.auth_service import AuthService
 from app.models.user import UserRole
+from app.models.plan import Plan
 from app.core.database import SessionLocal
 from flask_login import login_user, logout_user, login_required, current_user
 from datetime import datetime, timedelta
@@ -391,34 +392,77 @@ def login():
 
 @bp.route('/register', methods=['GET', 'POST'])
 def register():
+    db = SessionLocal()
+    plans = (
+        db.query(Plan)
+        .filter(Plan.is_active.is_(True))
+        .order_by(Plan.price_monthly.asc(), Plan.created_at.asc())
+        .all()
+    )
+    from app.web.billing.controller import BillingController
+    from app.services.platform_settings_service import PlatformSettingsService
+
+    payment_ready = BillingController.is_checkout_available()
+
     if request.method == 'POST':
-        full_name = request.form.get('full_name')
-        email = request.form.get('email')
-        company_name = request.form.get('company_name')
+        full_name = (request.form.get('full_name') or '').strip()
+        email = (request.form.get('email') or '').strip().lower()
+        company_name = (request.form.get('company_name') or '').strip()
         password = request.form.get('password')
-        db = SessionLocal()
+        plan_id = (request.form.get('plan_id') or '').strip()
+        billing_cycle = (request.form.get('billing_cycle') or 'monthly').strip().lower()
         try:
-            # Check if user exists
             from app.models.user import User
+            if not plan_id:
+                flash('Selecione um plano para continuar.', 'error')
+                return render_template('auth/register.html', plans=plans, payment_ready=payment_ready)
             if db.query(User).filter(User.email == email).first():
                 flash('Este email ja esta cadastrado.', 'error')
-                return render_template('auth/register.html')
-            
-            user = AuthService.register_tenant(db, email, password, full_name, company_name)
-            
-            # LOG ACTIVITY: Register
+                return render_template('auth/register.html', plans=plans, payment_ready=payment_ready)
+
+            user = AuthService.register_tenant(
+                db,
+                email=email,
+                password=password,
+                full_name=full_name,
+                company_name=company_name,
+                plan_id=plan_id,
+            )
+
             from app.services.activity_service import ActivityService
-            ActivityService.log_action(db, user.tenant.id, user.id, "REGISTER", f"Tenant registered: {company_name}", request.remote_addr)
+            ActivityService.log_action(
+                db,
+                user.tenant.id,
+                user.id,
+                "REGISTER",
+                f"Tenant registered: {company_name}",
+                request.remote_addr,
+            )
+
+            if payment_ready:
+                base_url = (PlatformSettingsService.get_payment_config().get("app_public_url") or request.url_root).rstrip("/")
+                checkout = BillingController.create_checkout_for_plan(
+                    tenant_id=user.tenant.id,
+                    tenant_slug=user.tenant.slug,
+                    plan_id=plan_id,
+                    payer_email=email,
+                    base_url=base_url,
+                    billing_cycle=billing_cycle,
+                )
+                flash('Conta criada! Agora finalize o pagamento para liberar seu plano.', 'success')
+                return redirect(checkout["checkout_url"])
 
             flash('Conta criada com sucesso! Faca login para comecar.', 'success')
             return redirect(url_for('auth.login'))
         except Exception as e:
             db.rollback()
             flash(f'Erro ao criar conta: {str(e)}', 'error')
+            return render_template('auth/register.html', plans=plans, payment_ready=payment_ready)
         finally:
             db.close()
-            
-    return render_template('auth/register.html')
+
+    db.close()
+    return render_template('auth/register.html', plans=plans, payment_ready=payment_ready)
 
 
 @bp.route('/2fa/setup', methods=['GET', 'POST'])
