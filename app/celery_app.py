@@ -13,8 +13,10 @@ from celery.schedules import crontab
 from kombu import Queue
 import os
 from app.core.logging_config import setup_logging
+from app.services.billing_policy_service import BillingPolicyService
 
 setup_logging()
+BillingPolicyService.ensure_schema()
 
 # ConfiguraÃ§Ã£o do broker (Redis)
 REDIS_URL = os.environ.get('REDIS_URL', 'redis://localhost:6379/0')
@@ -33,7 +35,7 @@ celery_app = Celery(
     'backup_center',
     broker=REDIS_URL,
     backend=REDIS_URL,
-    include=['app.tasks.monitoring', 'app.tasks.reports', 'app.tasks.backups']
+    include=['app.tasks.monitoring', 'app.tasks.reports', 'app.tasks.backups', 'app.tasks.billing']
 )
 
 # ConfiguraÃ§Ãµes
@@ -86,6 +88,11 @@ celery_app.conf.beat_schedule = {
     'purge-expired-backups': {
         'task': 'app.tasks.backups.purge_expired_backups',
         'schedule': crontab(hour=2, minute=30),
+    },
+    # Politica de cobranca/acesso (a cada hora)
+    'enforce-tenant-billing-access-hourly': {
+        'task': 'app.tasks.billing.enforce_tenant_billing_access',
+        'schedule': crontab(minute=0),
     },
 }
 

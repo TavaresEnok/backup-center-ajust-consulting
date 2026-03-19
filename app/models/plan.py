@@ -18,6 +18,8 @@ class Plan(Base, TimestampMixin):
     price_monthly = Column(Integer, nullable=False)  # In cents
     price_yearly = Column(Integer, nullable=False)
     trial_days = Column(Integer, default=14)
+    billing_period_days = Column(Integer, nullable=False, default=30)
+    payment_grace_days = Column(Integer, nullable=False, default=3)
     
     # Limits
     max_devices = Column(Integer, nullable=False)

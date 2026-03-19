@@ -447,6 +447,23 @@
                     {% endif %}
                     {% endwith %}
 
+                    {% if tenant_billing_alert %}
+                    <div class="mb-6">
+                        <div class="flex items-start w-full p-4 rounded-lg bg-orange-50 text-orange-800 border border-orange-200 dark:bg-orange-500/10 dark:text-orange-300 dark:border-orange-500/20">
+                            <div class="flex-shrink-0 mt-0.5">
+                                <i data-lucide="alert-triangle" class="w-5 h-5"></i>
+                            </div>
+                            <div class="ml-3 text-sm font-medium">
+                                <p>{{ tenant_billing_alert.message }}</p>
+                                <a href="{{ tenant_billing_url }}"
+                                    class="mt-1 inline-flex items-center text-xs font-semibold underline underline-offset-2 hover:opacity-80">
+                                    Ir para faturamento
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
                     {% block content %}{% endblock %}
                 </div>
 

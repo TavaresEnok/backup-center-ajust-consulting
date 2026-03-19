@@ -11,6 +11,7 @@ from app.models.invoice import Invoice, InvoiceStatus
 from app.models.payment import Subscription, SubscriptionStatus
 from app.models.plan import Plan
 from app.models.tenant import Tenant
+from app.services.billing_policy_service import BillingPolicyService
 from app.services.mercadopago_service import MercadoPagoError, MercadoPagoService
 from app.services.platform_settings_service import PlatformSettingsService
 from app.services.tenant_access_service import TenantAccessService
@@ -39,6 +40,7 @@ class BillingController:
 
     @staticmethod
     def get_available_plans():
+        BillingPolicyService.ensure_schema()
         db = SessionLocal()
         try:
             return db.query(Plan).filter(Plan.is_active.is_(True)).order_by(Plan.price_monthly.asc()).all()
@@ -102,7 +104,10 @@ class BillingController:
         return int(plan.price_monthly)
 
     @staticmethod
-    def _period_delta_days(billing_cycle: str) -> int:
+    def _period_delta_days(plan: Plan, billing_cycle: str) -> int:
+        custom_period = BillingPolicyService.plan_period_days(plan)
+        if custom_period > 0:
+            return custom_period
         return 365 if (billing_cycle or "").strip().lower() == "yearly" else 30
 
     @staticmethod
@@ -193,6 +198,8 @@ class BillingController:
         tenant.plan_id = plan.id
         tenant.subscription_status = SubscriptionStatus.ACTIVE.value
         tenant.current_period_end = period_end
+        tenant.is_active = True
+        tenant.billing_blocked_at = None
         return subscription
 
     @staticmethod
@@ -252,6 +259,7 @@ class BillingController:
         base_url: str,
         billing_cycle: str = "monthly",
     ) -> Dict[str, Any]:
+        BillingPolicyService.ensure_schema()
         config = BillingController.payment_config()
         access_token = (config.get("mercado_pago_access_token") or "").strip()
         use_sandbox = bool(config.get("mercado_pago_use_sandbox"))
@@ -273,7 +281,7 @@ class BillingController:
 
             amount_cents = BillingController._plan_amount_cents(plan, billing_cycle)
             now = datetime.utcnow()
-            period_end = now + timedelta(days=BillingController._period_delta_days(billing_cycle))
+            period_end = now + timedelta(days=BillingController._period_delta_days(plan, billing_cycle))
             invoice = Invoice(
                 tenant_id=tenant.id,
                 invoice_number=BillingController._new_invoice_number(),
@@ -329,6 +337,7 @@ class BillingController:
         payer_email: str,
         base_url: str,
     ) -> Dict[str, Any]:
+        BillingPolicyService.ensure_schema()
         config = BillingController.payment_config()
         access_token = (config.get("mercado_pago_access_token") or "").strip()
         use_sandbox = bool(config.get("mercado_pago_use_sandbox"))
@@ -396,6 +405,7 @@ class BillingController:
 
     @staticmethod
     def process_mercadopago_payment(payment_id: Any, source: str = "manual") -> Dict[str, Any]:
+        BillingPolicyService.ensure_schema()
         config = BillingController.payment_config()
         access_token = (config.get("mercado_pago_access_token") or "").strip()
         if not access_token:

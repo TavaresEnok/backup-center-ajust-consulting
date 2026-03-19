@@ -334,7 +334,10 @@ def login():
             user = AuthService.authenticate_user(db, email, password)
             if user:
                 if user.role != UserRole.SUPER_ADMIN and user.tenant and not user.tenant.is_active:
-                    flash('Este cliente esta desativado. Entre em contato com o suporte.', 'error')
+                    if getattr(user.tenant, "billing_blocked_at", None):
+                        flash('Cliente bloqueado por inadimplencia. Entre em contato com o suporte para reativacao.', 'error')
+                    else:
+                        flash('Este cliente esta desativado. Entre em contato com o suporte.', 'error')
                     return render_template('auth/login.html')
 
                 logging.getLogger(__name__).info("user authenticated: %s", user.email)
@@ -435,7 +438,10 @@ def two_factor_setup():
 
         if user.role != UserRole.SUPER_ADMIN and user.tenant and not user.tenant.is_active:
             _clear_pending_2fa_session()
-            flash('Este cliente esta desativado. Entre em contato com o suporte.', 'error')
+            if getattr(user.tenant, "billing_blocked_at", None):
+                flash('Cliente bloqueado por inadimplencia. Entre em contato com o suporte para reativacao.', 'error')
+            else:
+                flash('Este cliente esta desativado. Entre em contato com o suporte.', 'error')
             return redirect(url_for('auth.login'))
 
         if getattr(user, "totp_secret", None):
@@ -496,7 +502,10 @@ def two_factor_verify():
 
         if user.role != UserRole.SUPER_ADMIN and user.tenant and not user.tenant.is_active:
             _clear_pending_2fa_session()
-            flash('Este cliente esta desativado. Entre em contato com o suporte.', 'error')
+            if getattr(user.tenant, "billing_blocked_at", None):
+                flash('Cliente bloqueado por inadimplencia. Entre em contato com o suporte para reativacao.', 'error')
+            else:
+                flash('Este cliente esta desativado. Entre em contato com o suporte.', 'error')
             return redirect(url_for('auth.login'))
 
         if not getattr(user, "totp_secret", None):

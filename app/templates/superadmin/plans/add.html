@@ -43,7 +43,7 @@
                 <p class="admin-form-copy">Esses valores controlam uso maximo e politica operacional do cliente.</p>
             </div>
 
-            <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
                 <div>
                     <label for="max_devices" class="admin-label">Max. dispositivos</label>
                     <input type="number" name="max_devices" id="max_devices" required value="10" class="admin-control">
@@ -59,6 +59,16 @@
                 <div>
                     <label for="trial_days" class="admin-label">Trial (dias)</label>
                     <input type="number" name="trial_days" id="trial_days" required value="14" class="admin-control">
+                </div>
+                <div>
+                    <label for="billing_period_days" class="admin-label">Duracao do plano (dias)</label>
+                    <input type="number" name="billing_period_days" id="billing_period_days" min="1" required value="30" class="admin-control">
+                    <p class="admin-help">Ex.: 1 para plano de teste diario, 30 para mensal, 60 para bimestral.</p>
+                </div>
+                <div>
+                    <label for="payment_grace_days" class="admin-label">Dias de aviso apos vencimento</label>
+                    <input type="number" name="payment_grace_days" id="payment_grace_days" min="0" required value="3" class="admin-control">
+                    <p class="admin-help">Durante esse periodo o cliente recebe alerta. Apos isso, o acesso e bloqueado automaticamente.</p>
                 </div>
             </div>
         </div>

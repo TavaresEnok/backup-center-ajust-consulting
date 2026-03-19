@@ -22,6 +22,7 @@ class Tenant(Base, TimestampMixin):
     trial_ends_at = Column(DateTime, nullable=True)
     subscription_status = Column(String(20), default='trial') # trial, active, past_due, canceled
     current_period_end = Column(DateTime, nullable=True)
+    billing_blocked_at = Column(DateTime, nullable=True)
     
     # Billing
     plan_id = Column(UUID(as_uuid=True), ForeignKey('plans.id'), nullable=True)

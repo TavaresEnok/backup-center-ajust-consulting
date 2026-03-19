@@ -154,6 +154,16 @@
                             class="w-5 h-5 text-success-600 dark:text-success-400 shrink-0"></i>
                         Retenção {{ plan.backup_retention_days }} dias
                     </li>
+                    <li class="flex items-center gap-3 text-sm text-gray-700 dark:text-gray-300">
+                        <i data-lucide="check-circle"
+                            class="w-5 h-5 text-success-600 dark:text-success-400 shrink-0"></i>
+                        Ciclo de cobrança: {{ plan.billing_period_days or 30 }} dia(s)
+                    </li>
+                    <li class="flex items-center gap-3 text-sm text-gray-700 dark:text-gray-300">
+                        <i data-lucide="check-circle"
+                            class="w-5 h-5 text-success-600 dark:text-success-400 shrink-0"></i>
+                        Aviso após vencimento: {{ plan.payment_grace_days if plan.payment_grace_days is not none else 3 }} dia(s)
+                    </li>
                     {% if plan.features %}
                     {% for feature, enabled in plan.features.items() %}
                     {% if enabled %}

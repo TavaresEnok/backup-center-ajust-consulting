@@ -45,7 +45,7 @@
                 <p class="admin-form-copy">Use esse bloco para rever capacidade contratada e politica de trial.</p>
             </div>
 
-            <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
                 <div>
                     <label for="max_devices" class="admin-label">Max. dispositivos</label>
                     <input type="number" name="max_devices" id="max_devices" value="{{ plan.max_devices }}" required class="admin-control">
@@ -63,6 +63,18 @@
                     <label for="trial_days" class="admin-label">Trial (dias)</label>
                     <input type="number" name="trial_days" id="trial_days"
                         value="{{ plan.trial_days or 14 }}" required class="admin-control">
+                </div>
+                <div>
+                    <label for="billing_period_days" class="admin-label">Duracao do plano (dias)</label>
+                    <input type="number" name="billing_period_days" id="billing_period_days" min="1"
+                        value="{{ plan.billing_period_days or 30 }}" required class="admin-control">
+                    <p class="admin-help">Ex.: 1 para teste diario, 30 para mensal, 60 para bimestral.</p>
+                </div>
+                <div>
+                    <label for="payment_grace_days" class="admin-label">Dias de aviso apos vencimento</label>
+                    <input type="number" name="payment_grace_days" id="payment_grace_days" min="0"
+                        value="{{ plan.payment_grace_days if plan.payment_grace_days is not none else 3 }}" required class="admin-control">
+                    <p class="admin-help">Apos esse prazo, o cliente e bloqueado automaticamente sem apagar os dados.</p>
                 </div>
             </div>
         </div>

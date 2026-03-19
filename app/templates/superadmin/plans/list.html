@@ -82,6 +82,7 @@
                         <td>
                             {{ p.max_devices }} disp. • {{ p.max_users }} usuários
                             <p class="text-xs text-[var(--text-muted)]">Retenção: {{ p.backup_retention_days }} dias</p>
+                            <p class="text-xs text-[var(--text-muted)]">Ciclo: {{ p.billing_period_days or 30 }} dias • Aviso: {{ p.payment_grace_days if p.payment_grace_days is not none else 3 }} dias</p>
                         </td>
                         <td>
                             {{ row.tenant_count }} cliente(s)

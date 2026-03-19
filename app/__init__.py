@@ -16,6 +16,7 @@ from redis import Redis
 from werkzeug.exceptions import HTTPException
 from urllib.parse import urlsplit, urlunsplit
 from starlette.middleware.base import BaseHTTPMiddleware
+from sqlalchemy.orm import joinedload
 
 def create_flask_app():
     app = Flask(__name__)
@@ -27,6 +28,12 @@ def create_flask_app():
     app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=settings.SESSION_MAX_AGE_MINUTES)
     setup_logging()
     validate_settings()
+    from app.services.platform_settings_service import PlatformSettingsService
+    from app.services.tenant_access_service import TenantAccessService
+    from app.services.billing_policy_service import BillingPolicyService
+    PlatformSettingsService.ensure_schema()
+    TenantAccessService.apply_builtin_overrides()
+    BillingPolicyService.ensure_schema()
 
     def _generate_csrf_token():
         token = session.get("_csrf_token")
@@ -95,7 +102,10 @@ def create_flask_app():
             tenant = db.query(Tenant).filter(Tenant.slug == tenant_slug).first()
             if tenant and not tenant.is_active:
                 session.clear()
-                flash("Este cliente esta desativado. Entre em contato com o suporte.", "error")
+                if getattr(tenant, "billing_blocked_at", None):
+                    flash("Cliente bloqueado por inadimplencia. Entre em contato com o suporte para reativacao.", "error")
+                else:
+                    flash("Este cliente esta desativado. Entre em contato com o suporte.", "error")
                 return redirect(url_for("auth.login"))
         finally:
             db.close()
@@ -210,6 +220,37 @@ def create_flask_app():
             "superadmin_return_label": return_label,
             "is_superadmin_tenant_view": is_active,
         }
+
+    @app.context_processor
+    def inject_tenant_billing_alert():
+        if session.get("user_role") == "super_admin":
+            return {}
+        tenant_slug = (session.get("tenant_slug") or "").strip()
+        if not tenant_slug or tenant_slug == "admin":
+            return {}
+
+        db = SessionLocal()
+        try:
+            tenant = (
+                db.query(Tenant)
+                .options(joinedload(Tenant.plan))
+                .filter(Tenant.slug == tenant_slug)
+                .first()
+            )
+            if not tenant or not tenant.is_active:
+                return {}
+
+            from app.services.billing_policy_service import BillingPolicyService
+
+            alert = BillingPolicyService.build_runtime_alert(tenant)
+            if not alert:
+                return {}
+            return {
+                "tenant_billing_alert": alert,
+                "tenant_billing_url": url_for("billing.dashboard", tenant_slug=tenant_slug),
+            }
+        finally:
+            db.close()
     
     logger = logging.getLogger(__name__)
 

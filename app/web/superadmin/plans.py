@@ -7,6 +7,7 @@ from app.core.database import SessionLocal
 from app.models.plan import Plan
 from app.models.tenant import Tenant
 from app.models.user import UserRole
+from app.services.billing_policy_service import BillingPolicyService
 
 bp = Blueprint("superadmin_plans", __name__, url_prefix="/admin/plans")
 
@@ -21,8 +22,17 @@ def _to_cents(value: str) -> int:
     return int(round(float(value or 0) * 100))
 
 
+def _to_int(value: str, default: int, minimum: int) -> int:
+    try:
+        parsed = int(str(value or "").strip())
+    except Exception:
+        parsed = default
+    return max(parsed, minimum)
+
+
 @bp.route("/")
 def list_plans():
+    BillingPolicyService.ensure_schema()
     q = (request.args.get("q") or "").strip()
     status = (request.args.get("status") or "all").strip().lower()
     sort = (request.args.get("sort") or "price_monthly_asc").strip().lower()
@@ -84,6 +94,7 @@ def list_plans():
 
 @bp.route("/add", methods=["GET", "POST"])
 def add_plan():
+    BillingPolicyService.ensure_schema()
     if request.method == "POST":
         db = SessionLocal()
         try:
@@ -102,6 +113,8 @@ def add_plan():
                 price_monthly=_to_cents(request.form.get("price_monthly")),
                 price_yearly=_to_cents(request.form.get("price_yearly")),
                 trial_days=int(request.form.get("trial_days") or 14),
+                billing_period_days=_to_int(request.form.get("billing_period_days"), 30, 1),
+                payment_grace_days=_to_int(request.form.get("payment_grace_days"), 3, 0),
                 max_devices=int(request.form.get("max_devices") or 0),
                 max_users=int(request.form.get("max_users") or 0),
                 backup_retention_days=int(request.form.get("backup_retention_days") or 30),
@@ -122,6 +135,7 @@ def add_plan():
 
 @bp.route("/<plan_id>/edit", methods=["GET", "POST"])
 def edit_plan(plan_id):
+    BillingPolicyService.ensure_schema()
     db = SessionLocal()
     try:
         try:
@@ -151,6 +165,8 @@ def edit_plan(plan_id):
             plan.price_monthly = _to_cents(request.form.get("price_monthly"))
             plan.price_yearly = _to_cents(request.form.get("price_yearly"))
             plan.trial_days = int(request.form.get("trial_days") or 14)
+            plan.billing_period_days = _to_int(request.form.get("billing_period_days"), 30, 1)
+            plan.payment_grace_days = _to_int(request.form.get("payment_grace_days"), 3, 0)
             plan.max_devices = int(request.form.get("max_devices") or 0)
             plan.max_users = int(request.form.get("max_users") or 0)
             plan.backup_retention_days = int(request.form.get("backup_retention_days") or 30)
@@ -167,4 +183,3 @@ def edit_plan(plan_id):
         return redirect(url_for("superadmin_plans.list_plans"))
     finally:
         db.close()
-
