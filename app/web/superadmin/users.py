@@ -12,6 +12,7 @@ from app.models.backup import Backup
 from app.models.notification import Notification
 from app.models.tenant import Tenant
 from app.models.user import User, UserRole
+from app.services.plan_limits_service import PlanLimitsService
 from app.web.auth.decorators import login_required
 
 bp = Blueprint("superadmin_users", __name__, url_prefix="/admin/users")
@@ -152,6 +153,7 @@ def list_users():
 def add_user():
     db = SessionLocal()
     try:
+        PlanLimitsService.ensure_schema()
         if request.method == "POST":
             user_scope = (request.form.get("user_scope") or "tenant").strip().lower()
             full_name = (request.form.get("full_name") or "").strip()
@@ -199,9 +201,18 @@ def add_user():
                         tenant_roles=TENANT_ALLOWED_ROLES,
                         role_labels=ROLE_LABELS,
                     )
-                tenant_exists = db.query(Tenant).filter(Tenant.id == tenant_id).first()
+                tenant_exists = db.query(Tenant).options(joinedload(Tenant.plan)).filter(Tenant.id == tenant_id).first()
                 if not tenant_exists:
                     flash("Tenant informado nao existe.", "error")
+                    return render_template(
+                        "superadmin/users/add.html",
+                        tenant_options=_tenant_options(db),
+                        tenant_roles=TENANT_ALLOWED_ROLES,
+                        role_labels=ROLE_LABELS,
+                    )
+                limit_check = PlanLimitsService.check_can_add_user(db, tenant_exists)
+                if not limit_check.allowed:
+                    flash(limit_check.reason, "error")
                     return render_template(
                         "superadmin/users/add.html",
                         tenant_options=_tenant_options(db),
@@ -251,6 +262,7 @@ def edit_user(user_id):
 
     db = SessionLocal()
     try:
+        PlanLimitsService.ensure_schema()
         user_uuid = _parse_uuid(user_id)
         if not user_uuid:
             flash("Usuario invalido.", "error")
@@ -262,6 +274,8 @@ def edit_user(user_id):
             return redirect(url_for("superadmin_users.list_users"))
 
         if request.method == "POST":
+            was_active = bool(user.is_active)
+            previous_tenant_id = user.tenant_id
             full_name = (request.form.get("full_name") or "").strip()
             email = (request.form.get("email") or "").strip().lower()
             password = (request.form.get("password") or "").strip()
@@ -287,14 +301,13 @@ def edit_user(user_id):
             if current_user_id and str(user.id) == str(current_user_id) and not is_active:
                 flash("Nao e permitido desativar o usuario logado.", "error")
                 return _render_edit(db, user)
-
-            user.full_name = full_name
-            user.email = email
-            user.is_active = is_active
+            target_tenant = None
+            target_tenant_id = None
+            target_role = UserRole.SUPER_ADMIN
 
             if user_scope == "platform":
-                user.tenant_id = None
-                user.role = UserRole.SUPER_ADMIN
+                target_tenant_id = None
+                target_role = UserRole.SUPER_ADMIN
             else:
                 if current_user_id and str(user.id) == str(current_user_id):
                     flash("Nao e permitido remover seu proprio perfil da plataforma.", "error")
@@ -304,12 +317,28 @@ def edit_user(user_id):
                 if not tenant_id:
                     flash("Selecione um tenant para usuario de cliente.", "error")
                     return _render_edit(db, user)
-                tenant_exists = db.query(Tenant).filter(Tenant.id == tenant_id).first()
+                tenant_exists = db.query(Tenant).options(joinedload(Tenant.plan)).filter(Tenant.id == tenant_id).first()
                 if not tenant_exists:
                     flash("Tenant informado nao existe.", "error")
                     return _render_edit(db, user)
-                user.tenant_id = tenant_id
-                user.role = role
+                target_tenant = tenant_exists
+                target_tenant_id = tenant_id
+                target_role = role
+
+            if target_tenant and is_active:
+                switched_tenant = str(previous_tenant_id or "") != str(target_tenant_id or "")
+                needs_capacity = (not was_active) or switched_tenant
+                if needs_capacity:
+                    limit_check = PlanLimitsService.check_can_add_user(db, target_tenant)
+                    if not limit_check.allowed:
+                        flash(limit_check.reason, "error")
+                        return _render_edit(db, user)
+
+            user.full_name = full_name
+            user.email = email
+            user.is_active = is_active
+            user.tenant_id = target_tenant_id
+            user.role = target_role
 
             if password:
                 if len(password) < 6:
@@ -335,6 +364,7 @@ def edit_user(user_id):
 def toggle_active(user_id):
     db = SessionLocal()
     try:
+        PlanLimitsService.ensure_schema()
         user_uuid = _parse_uuid(user_id)
         if not user_uuid:
             flash("Usuario invalido.", "error")
@@ -350,7 +380,16 @@ def toggle_active(user_id):
             flash("Nao e permitido desativar o usuario logado.", "error")
             return redirect(url_for("superadmin_users.list_users"))
 
-        user.is_active = not bool(user.is_active)
+        target_state = not bool(user.is_active)
+        if target_state and user.tenant_id:
+            tenant = db.query(Tenant).options(joinedload(Tenant.plan)).filter(Tenant.id == user.tenant_id).first()
+            if tenant:
+                limit_check = PlanLimitsService.check_can_add_user(db, tenant)
+                if not limit_check.allowed:
+                    flash(limit_check.reason, "error")
+                    return redirect(url_for("superadmin_users.list_users"))
+
+        user.is_active = target_state
         db.commit()
         flash("Status do usuario atualizado com sucesso.", "success")
         return redirect(url_for("superadmin_users.list_users"))

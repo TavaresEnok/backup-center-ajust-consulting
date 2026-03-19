@@ -4,7 +4,9 @@ from app.core.database import SessionLocal
 from app.models.tenant import Tenant
 from app.models.user import User, UserRole
 from app.core.security import get_password_hash
+from app.services.plan_limits_service import PlanLimitsService
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import joinedload
 import uuid
 
 bp = Blueprint('tenant_users', __name__, url_prefix='/tenant/<tenant_slug>/users')
@@ -16,7 +18,8 @@ def get_db_and_tenant(tenant_slug):
         abort(403)
         
     db = SessionLocal()
-    tenant = db.query(Tenant).filter(Tenant.slug == tenant_slug).first()
+    PlanLimitsService.ensure_schema()
+    tenant = db.query(Tenant).options(joinedload(Tenant.plan)).filter(Tenant.slug == tenant_slug).first()
     return db, tenant
 
 
@@ -71,6 +74,11 @@ def add_user(tenant_slug):
     
     if request.method == 'POST':
         try:
+            limit_check = PlanLimitsService.check_can_add_user(db, tenant)
+            if not limit_check.allowed:
+                flash(limit_check.reason, 'error')
+                return redirect(url_for('tenant_users.list_users', tenant_slug=tenant_slug))
+
             email = request.form.get('email')
             
             # Verifica se email jÃ¡ existe
@@ -130,9 +138,22 @@ def edit_user(tenant_slug, user_id):
     
     if request.method == 'POST':
         try:
+            was_active = bool(user.is_active)
+            new_is_active = request.form.get('is_active') == 'on'
+            if new_is_active and not was_active:
+                limit_check = PlanLimitsService.check_can_add_user(db, tenant)
+                if not limit_check.allowed:
+                    flash(limit_check.reason, 'error')
+                    return render_template(
+                        'tenant/users/edit.html',
+                        tenant=tenant,
+                        user=user,
+                        UserRole=UserRole
+                    )
+
             user.full_name = request.form.get('full_name')
             user.email = request.form.get('email')
-            user.is_active = request.form.get('is_active') == 'on'
+            user.is_active = new_is_active
             
             role_str = request.form.get('role')
             if role_str:

@@ -25,6 +25,9 @@ class Plan(Base, TimestampMixin):
     max_devices = Column(Integer, nullable=False)
     max_users = Column(Integer, nullable=False)
     backup_retention_days = Column(Integer, default=30)
+    storage_quota_gb = Column(Integer, nullable=False, default=10)
+    download_quota_gb_month = Column(Integer, nullable=False, default=20)
+    max_download_rate_mbps = Column(Integer, nullable=False, default=0)
     
     # Features (JSON for flexibility)
     features = Column(JSON, default=dict)

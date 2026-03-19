@@ -47,6 +47,31 @@
                             Dispositivos cadastrados:
                             <span class="font-semibold text-gray-900 dark:text-white">{{ current_device_count }}</span>
                         </p>
+                        <div class="mt-3 space-y-2">
+                            <div>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">
+                                    Storage usado: <span class="font-semibold text-gray-900 dark:text-white">{{ usage_snapshot.storage_used_label }}</span>
+                                    / {{ usage_snapshot.storage_limit_label }}
+                                </p>
+                                {% if usage_snapshot.storage_limit_bytes > 0 %}
+                                <div class="mt-1 h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-800">
+                                    <div class="h-full bg-brand-500" style="width: {{ usage_snapshot.storage_usage_pct }}%;"></div>
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">
+                                    Download {{ usage_snapshot.download_period_key }}:
+                                    <span class="font-semibold text-gray-900 dark:text-white">{{ usage_snapshot.download_used_label }}</span>
+                                    / {{ usage_snapshot.download_limit_label }}
+                                </p>
+                                {% if usage_snapshot.download_limit_bytes > 0 %}
+                                <div class="mt-1 h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-800">
+                                    <div class="h-full bg-emerald-500" style="width: {{ usage_snapshot.download_usage_pct }}%;"></div>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
                         {% if tenant.access_unlimited %}
                         <p class="mt-2 inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold bg-blue-500/15 text-blue-300 border border-blue-500/30">
                             Acesso ilimitado ativo
@@ -153,6 +178,36 @@
                         <i data-lucide="check-circle"
                             class="w-5 h-5 text-success-600 dark:text-success-400 shrink-0"></i>
                         Retenção {{ plan.backup_retention_days }} dias
+                    </li>
+                    <li class="flex items-center gap-3 text-sm text-gray-700 dark:text-gray-300">
+                        <i data-lucide="check-circle"
+                            class="w-5 h-5 text-success-600 dark:text-success-400 shrink-0"></i>
+                        Storage:
+                        {% if (plan.storage_quota_gb or 0) > 0 %}
+                        {{ plan.storage_quota_gb }} GB
+                        {% else %}
+                        Ilimitado
+                        {% endif %}
+                    </li>
+                    <li class="flex items-center gap-3 text-sm text-gray-700 dark:text-gray-300">
+                        <i data-lucide="check-circle"
+                            class="w-5 h-5 text-success-600 dark:text-success-400 shrink-0"></i>
+                        Download/mês:
+                        {% if (plan.download_quota_gb_month or 0) > 0 %}
+                        {{ plan.download_quota_gb_month }} GB
+                        {% else %}
+                        Ilimitado
+                        {% endif %}
+                    </li>
+                    <li class="flex items-center gap-3 text-sm text-gray-700 dark:text-gray-300">
+                        <i data-lucide="check-circle"
+                            class="w-5 h-5 text-success-600 dark:text-success-400 shrink-0"></i>
+                        Velocidade de download:
+                        {% if (plan.max_download_rate_mbps or 0) > 0 %}
+                        {{ plan.max_download_rate_mbps }} Mbps
+                        {% else %}
+                        Ilimitada
+                        {% endif %}
                     </li>
                     <li class="flex items-center gap-3 text-sm text-gray-700 dark:text-gray-300">
                         <i data-lucide="check-circle"

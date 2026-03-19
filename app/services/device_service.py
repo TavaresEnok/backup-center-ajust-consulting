@@ -4,7 +4,9 @@ from app.models.device import Device
 from app.models.device_type import DeviceType
 from app.models.device_group import DeviceGroup
 from app.models.schedule import Schedule
+from app.models.tenant import Tenant
 from app.core.security import encrypt_password, decrypt_password
+from app.services.plan_limits_service import PlanLimitsService
 from datetime import datetime
 import uuid
 from typing import List, Optional, Dict, Any
@@ -13,6 +15,19 @@ from typing import List, Optional, Dict, Any
 class DeviceService:
     @staticmethod
     def create_device(db: Session, tenant_id: uuid.UUID, data: dict) -> Device:
+        PlanLimitsService.ensure_schema()
+        tenant = (
+            db.query(Tenant)
+            .options(joinedload(Tenant.plan))
+            .filter(Tenant.id == tenant_id)
+            .first()
+        )
+        if not tenant:
+            raise ValueError("Tenant nao encontrado.")
+        limit_check = PlanLimitsService.check_can_add_device(db, tenant)
+        if not limit_check.allowed:
+            raise ValueError(limit_check.reason)
+
         device = Device(
             tenant_id=tenant_id,
             name=data['name'],

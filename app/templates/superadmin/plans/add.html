@@ -70,6 +70,21 @@
                     <input type="number" name="payment_grace_days" id="payment_grace_days" min="0" required value="3" class="admin-control">
                     <p class="admin-help">Durante esse periodo o cliente recebe alerta. Apos isso, o acesso e bloqueado automaticamente.</p>
                 </div>
+                <div>
+                    <label for="storage_quota_gb" class="admin-label">Storage maximo (GB)</label>
+                    <input type="number" name="storage_quota_gb" id="storage_quota_gb" min="0" required value="10" class="admin-control">
+                    <p class="admin-help">0 = ilimitado.</p>
+                </div>
+                <div>
+                    <label for="download_quota_gb_month" class="admin-label">Download mensal (GB)</label>
+                    <input type="number" name="download_quota_gb_month" id="download_quota_gb_month" min="0" required value="20" class="admin-control">
+                    <p class="admin-help">0 = ilimitado.</p>
+                </div>
+                <div>
+                    <label for="max_download_rate_mbps" class="admin-label">Limite de download (Mbps)</label>
+                    <input type="number" name="max_download_rate_mbps" id="max_download_rate_mbps" min="0" required value="0" class="admin-control">
+                    <p class="admin-help">0 = sem limite aplicado pelo sistema.</p>
+                </div>
             </div>
         </div>
 

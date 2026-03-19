@@ -9,6 +9,7 @@ from app.models.schedule import Schedule
 from app.models.tenant import Tenant
 from app.models.user import UserRole
 from app.services.monitor_service import MonitorService
+from app.services.plan_limits_service import PlanLimitsService
 from sqlalchemy import func, or_
 from sqlalchemy.orm import joinedload
 from datetime import datetime, timedelta
@@ -27,6 +28,7 @@ def dashboard(tenant_slug):
 
     db = SessionLocal()
     try:
+        PlanLimitsService.ensure_schema()
         tenant = db.query(Tenant).filter(Tenant.slug == tenant_slug).first()
         if not tenant:
             return "Tenant not found", 404
@@ -105,9 +107,8 @@ def dashboard(tenant_slug):
         conn_ping_ok = conn_ready + conn_ping_ok_login_fail
         conn_tested_total = conn_no_ping + conn_ping_ok_login_fail + conn_ready
 
-        storage_bytes = db.query(func.coalesce(func.sum(Backup.file_size_bytes), 0)).join(Device).filter(
-            Device.tenant_id == tenant.id
-        ).scalar()
+        usage_snapshot = PlanLimitsService.build_usage_snapshot(db, tenant)
+        storage_bytes = int(usage_snapshot.get("storage_used_bytes") or 0)
         
         recent_backups = (
             db.query(Backup)
@@ -124,7 +125,7 @@ def dashboard(tenant_slug):
             'online_devices': online_devices,
             'offline_devices': offline_devices,
             'unknown_devices': unknown_devices,
-            'storage_used': _format_bytes(storage_bytes)
+            'storage_used': usage_snapshot.get("storage_used_label") or _format_bytes(storage_bytes)
         }
 
         # Backup metrics (fuso local do tenant/operacao).
@@ -443,6 +444,7 @@ def dashboard(tenant_slug):
                              monthly_labels=json.dumps(monthly_labels),
                              monthly_values=json.dumps(monthly_values),
                              storage_total_bytes=storage_total_bytes,
+                             usage_snapshot=usage_snapshot,
                              current_time=now_local
                              )
     finally:

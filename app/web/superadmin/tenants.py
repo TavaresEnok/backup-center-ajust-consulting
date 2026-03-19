@@ -592,7 +592,12 @@ def edit_tenant(tenant_id):
 
             device_count = TenantAccessService.get_device_count(db, tenant.id)
             if selected_plan:
-                TenantAccessService.validate_plan_selection(selected_plan, device_count)
+                TenantAccessService.validate_plan_selection(
+                    selected_plan,
+                    device_count,
+                    user_count=TenantAccessService.get_active_user_count(db, tenant.id),
+                    storage_used_bytes=TenantAccessService.get_storage_used_bytes(db, tenant.id),
+                )
 
             tenant.name = name
             tenant.slug = slug

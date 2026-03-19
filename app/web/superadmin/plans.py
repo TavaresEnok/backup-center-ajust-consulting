@@ -8,6 +8,7 @@ from app.models.plan import Plan
 from app.models.tenant import Tenant
 from app.models.user import UserRole
 from app.services.billing_policy_service import BillingPolicyService
+from app.services.plan_limits_service import PlanLimitsService
 
 bp = Blueprint("superadmin_plans", __name__, url_prefix="/admin/plans")
 
@@ -33,6 +34,7 @@ def _to_int(value: str, default: int, minimum: int) -> int:
 @bp.route("/")
 def list_plans():
     BillingPolicyService.ensure_schema()
+    PlanLimitsService.ensure_schema()
     q = (request.args.get("q") or "").strip()
     status = (request.args.get("status") or "all").strip().lower()
     sort = (request.args.get("sort") or "price_monthly_asc").strip().lower()
@@ -95,6 +97,7 @@ def list_plans():
 @bp.route("/add", methods=["GET", "POST"])
 def add_plan():
     BillingPolicyService.ensure_schema()
+    PlanLimitsService.ensure_schema()
     if request.method == "POST":
         db = SessionLocal()
         try:
@@ -118,6 +121,9 @@ def add_plan():
                 max_devices=int(request.form.get("max_devices") or 0),
                 max_users=int(request.form.get("max_users") or 0),
                 backup_retention_days=int(request.form.get("backup_retention_days") or 30),
+                storage_quota_gb=_to_int(request.form.get("storage_quota_gb"), 10, 0),
+                download_quota_gb_month=_to_int(request.form.get("download_quota_gb_month"), 20, 0),
+                max_download_rate_mbps=_to_int(request.form.get("max_download_rate_mbps"), 0, 0),
                 is_active=request.form.get("is_active") == "on",
             )
             db.add(new_plan)
@@ -136,6 +142,7 @@ def add_plan():
 @bp.route("/<plan_id>/edit", methods=["GET", "POST"])
 def edit_plan(plan_id):
     BillingPolicyService.ensure_schema()
+    PlanLimitsService.ensure_schema()
     db = SessionLocal()
     try:
         try:
@@ -170,6 +177,9 @@ def edit_plan(plan_id):
             plan.max_devices = int(request.form.get("max_devices") or 0)
             plan.max_users = int(request.form.get("max_users") or 0)
             plan.backup_retention_days = int(request.form.get("backup_retention_days") or 30)
+            plan.storage_quota_gb = _to_int(request.form.get("storage_quota_gb"), 10, 0)
+            plan.download_quota_gb_month = _to_int(request.form.get("download_quota_gb_month"), 20, 0)
+            plan.max_download_rate_mbps = _to_int(request.form.get("max_download_rate_mbps"), 0, 0)
             plan.is_active = request.form.get("is_active") == "on"
 
             db.commit()

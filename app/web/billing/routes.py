@@ -5,6 +5,7 @@ from app.models.invoice import Invoice
 from app.models.tenant import Tenant
 from app.models.user import UserRole
 from app.services.platform_settings_service import PlatformSettingsService
+from app.services.plan_limits_service import PlanLimitsService
 from app.web.auth.decorators import login_required, tenant_owner_required
 from app.web.billing.controller import BillingController
 
@@ -34,6 +35,7 @@ def dashboard(tenant_slug):
 
     db = SessionLocal()
     try:
+        PlanLimitsService.ensure_schema()
         tenant = db.query(Tenant).filter(Tenant.slug == tenant_slug).first()
         if not tenant:
             return "Tenant Not Found", 404
@@ -49,6 +51,7 @@ def dashboard(tenant_slug):
         payment_ready = BillingController.is_checkout_available()
         current_device_count = BillingController.get_tenant_device_count(tenant.id)
         plan_capacity = BillingController.get_plan_capacity_map(tenant.id, plans)
+        usage_snapshot = PlanLimitsService.build_usage_snapshot(db, tenant)
 
         return render_template(
             "billing/index.html",
@@ -59,6 +62,7 @@ def dashboard(tenant_slug):
             payment_ready=payment_ready,
             current_device_count=current_device_count,
             plan_capacity=plan_capacity,
+            usage_snapshot=usage_snapshot,
         )
     finally:
         db.close()

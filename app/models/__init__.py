@@ -14,6 +14,7 @@ from app.models.report import Report, ReportType, ReportSchedule
 from app.models.activity_log import ActivityLog
 from app.models.api_token import ApiToken
 from app.models.system_setting import SystemSetting
+from app.models.tenant_usage_metric import TenantUsageMetric
 
 __all__ = [
     "TimestampMixin",
@@ -40,5 +41,6 @@ __all__ = [
     "ActivityLog",
     "ApiToken",
     "SystemSetting",
+    "TenantUsageMetric",
 ]
 

@@ -2,12 +2,14 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta
 
-from sqlalchemy import text
+from sqlalchemy import func, text
 
 from app.core.database import engine
+from app.models.backup import Backup
 from app.models.device import Device
 from app.models.plan import Plan
 from app.models.tenant import Tenant
+from app.models.user import User
 
 
 class TenantAccessService:
@@ -55,7 +57,31 @@ class TenantAccessService:
 
     @staticmethod
     def get_device_count(db, tenant_id) -> int:
-        return int(db.query(Device.id).filter(Device.tenant_id == tenant_id).count() or 0)
+        return int(
+            db.query(Device.id)
+            .filter(Device.tenant_id == tenant_id, Device.is_active.isnot(False))
+            .count()
+            or 0
+        )
+
+    @staticmethod
+    def get_active_user_count(db, tenant_id) -> int:
+        return int(
+            db.query(User.id)
+            .filter(User.tenant_id == tenant_id, User.is_active.is_(True))
+            .count()
+            or 0
+        )
+
+    @staticmethod
+    def get_storage_used_bytes(db, tenant_id) -> int:
+        return int(
+            db.query(func.coalesce(func.sum(Backup.file_size_bytes), 0))
+            .join(Device, Backup.device_id == Device.id)
+            .filter(Device.tenant_id == tenant_id)
+            .scalar()
+            or 0
+        )
 
     @staticmethod
     def get_plan_display_name(tenant: Tenant) -> str:
@@ -70,13 +96,31 @@ class TenantAccessService:
         return bool(tenant.plan_id or getattr(tenant, "access_unlimited", False))
 
     @staticmethod
-    def validate_plan_selection(plan: Plan | None, device_count: int) -> None:
+    def validate_plan_selection(
+        plan: Plan | None,
+        device_count: int,
+        user_count: int | None = None,
+        storage_used_bytes: int | None = None,
+    ) -> None:
         if not plan:
             raise ValueError("Selecione um plano valido.")
         if device_count > int(plan.max_devices or 0):
             raise ValueError(
                 f"Esse plano suporta ate {int(plan.max_devices or 0)} dispositivos, mas este cliente possui {device_count}."
             )
+        if user_count is not None and user_count > int(plan.max_users or 0):
+            raise ValueError(
+                f"Esse plano suporta ate {int(plan.max_users or 0)} usuarios ativos, mas este cliente possui {user_count}."
+            )
+        if storage_used_bytes is not None:
+            storage_limit_gb = int(getattr(plan, "storage_quota_gb", 0) or 0)
+            if storage_limit_gb > 0:
+                storage_limit_bytes = storage_limit_gb * 1024 * 1024 * 1024
+                if storage_used_bytes > storage_limit_bytes:
+                    used_gb = storage_used_bytes / float(1024 * 1024 * 1024)
+                    raise ValueError(
+                        f"Storage atual ({used_gb:.2f} GB) acima do limite do plano ({storage_limit_gb} GB)."
+                    )
 
     @staticmethod
     def seed_trial_plan_fields(tenant: Tenant, plan: Plan | None) -> None:

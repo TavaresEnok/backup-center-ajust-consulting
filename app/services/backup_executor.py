@@ -19,6 +19,7 @@ from app.core.security import decrypt_password
 from app.models import Device, DeviceType, DeviceGroup, Backup, BackupStatus, Notification, NotificationType, User, UserRole
 from app.services.vpn_service import vpn_service, VpnError
 from app.services.realtime_backup_logs import append_task_log
+from app.services.plan_limits_service import PlanLimitsService
 from app.services.backup_diagnostics import (
     classify_failure,
     failure_label,
@@ -294,6 +295,7 @@ class BackupExecutor:
         db = SessionLocal()
         
         try:
+            PlanLimitsService.ensure_schema()
             device = db.query(Device).filter_by(id=device_id).first()
             if not device:
                 return False, "Dispositivo nao encontrado"
@@ -336,6 +338,23 @@ class BackupExecutor:
                         "Backup gerado, mas invalidado por integridade: "
                         f"{integrity.get('reason') or 'erro de validacao'}."
                     )
+
+            if success and file_size and device.tenant:
+                quota_check = PlanLimitsService.check_storage_before_backup(db, device.tenant, file_size)
+                if not quota_check.allowed:
+                    success = False
+                    message = quota_check.reason
+                    if file_path and os.path.exists(file_path):
+                        try:
+                            os.remove(file_path)
+                        except Exception:
+                            logging.getLogger(__name__).exception(
+                                "Falha ao remover arquivo acima da cota de storage (%s)",
+                                file_path,
+                            )
+                    file_path = None
+                    file_size = None
+                    file_hash = None
 
             failure_category = None
             failure_category_label = None

@@ -31,9 +31,11 @@ def create_flask_app():
     from app.services.platform_settings_service import PlatformSettingsService
     from app.services.tenant_access_service import TenantAccessService
     from app.services.billing_policy_service import BillingPolicyService
+    from app.services.plan_limits_service import PlanLimitsService
     PlatformSettingsService.ensure_schema()
     TenantAccessService.apply_builtin_overrides()
     BillingPolicyService.ensure_schema()
+    PlanLimitsService.ensure_schema()
 
     def _generate_csrf_token():
         token = session.get("_csrf_token")

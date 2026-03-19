@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, redirect, url_for, request, flash, session, abort, send_file, jsonify
+from flask import Blueprint, render_template, redirect, url_for, request, flash, session, abort, send_file, jsonify, Response, stream_with_context
 from app.web.auth.decorators import login_required
 from app.core.database import SessionLocal
 from app.models.backup import Backup, BackupStatus
@@ -8,11 +8,13 @@ from app.models.user import UserRole
 from app.celery_app import celery_app
 from app.services.realtime_backup_logs import get_task_meta, get_task_logs, get_global_logs, update_task_meta, append_task_log
 from app.services.backup_diagnostics import classify_failure, failure_label
+from app.services.plan_limits_service import PlanLimitsService
 from sqlalchemy import desc, func
 import logging
 from sqlalchemy.orm import joinedload
 import uuid
 import os
+import time
 from collections import defaultdict
 
 bp = Blueprint('tenant_backups', __name__, url_prefix='/tenant/<tenant_slug>/backups')
@@ -419,6 +421,7 @@ def download_backup(tenant_slug, backup_id):
     if not tenant:
         db.close()
         return "Tenant not found", 404
+    PlanLimitsService.ensure_schema()
     
     try:
         backup_uuid = uuid.UUID(backup_id)
@@ -448,19 +451,51 @@ def download_backup(tenant_slug, backup_id):
         db.close()
         flash('Arquivo de backup não encontrado no servidor.', 'error')
         return redirect(url_for('tenant_backups.list_backups', tenant_slug=tenant_slug))
-    
-    db.close()
-    
+
+    file_size_bytes = int(backup.file_size_bytes or 0)
+    if file_size_bytes <= 0:
+        try:
+            file_size_bytes = int(os.path.getsize(absolute_path) or 0)
+        except Exception:
+            file_size_bytes = 0
+
+    quota_check = PlanLimitsService.consume_download_bytes(db, tenant, file_size_bytes)
+    if not quota_check.allowed:
+        db.rollback()
+        db.close()
+        flash(quota_check.reason, 'error')
+        return redirect(url_for('tenant_backups.list_backups', tenant_slug=tenant_slug))
+
+    db.commit()
+
     # Gera nome de download amigável
     device_name = backup.device.name.replace(' ', '_')
     timestamp = backup.created_at.strftime('%Y%m%d_%H%M%S') if backup.created_at else 'unknown'
     download_name = f"{device_name}_{timestamp}.rsc"
-    
-    return send_file(
-        absolute_path,
-        as_attachment=True,
-        download_name=download_name
-    )
+    download_rate_mbps = int(getattr(getattr(tenant, "plan", None), "max_download_rate_mbps", 0) or 0)
+
+    db.close()
+
+    if download_rate_mbps > 0:
+        bytes_per_second = max(int((download_rate_mbps * 1024 * 1024) / 8), 16 * 1024)
+        chunk_size = min(256 * 1024, bytes_per_second)
+
+        def _throttled_stream():
+            with open(absolute_path, 'rb') as fh:
+                while True:
+                    chunk = fh.read(chunk_size)
+                    if not chunk:
+                        break
+                    yield chunk
+                    time.sleep(max(len(chunk) / bytes_per_second, 0.0))
+
+        response = Response(stream_with_context(_throttled_stream()), mimetype='application/octet-stream')
+        response.headers['Content-Disposition'] = f'attachment; filename="{download_name}"'
+        response.headers['Content-Length'] = str(file_size_bytes or os.path.getsize(absolute_path))
+        response.headers['X-Plan-Download-Limit-Mbps'] = str(download_rate_mbps)
+        return response
+
+    return send_file(absolute_path, as_attachment=True, download_name=download_name)
 
 
 @bp.route('/tasks/<task_id>/status')

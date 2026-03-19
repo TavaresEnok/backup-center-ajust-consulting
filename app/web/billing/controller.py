@@ -11,8 +11,10 @@ from app.models.invoice import Invoice, InvoiceStatus
 from app.models.payment import Subscription, SubscriptionStatus
 from app.models.plan import Plan
 from app.models.tenant import Tenant
+from app.models.user import User
 from app.services.billing_policy_service import BillingPolicyService
 from app.services.mercadopago_service import MercadoPagoError, MercadoPagoService
+from app.services.plan_limits_service import PlanLimitsService
 from app.services.platform_settings_service import PlatformSettingsService
 from app.services.tenant_access_service import TenantAccessService
 
@@ -41,6 +43,7 @@ class BillingController:
     @staticmethod
     def get_available_plans():
         BillingPolicyService.ensure_schema()
+        PlanLimitsService.ensure_schema()
         db = SessionLocal()
         try:
             return db.query(Plan).filter(Plan.is_active.is_(True)).order_by(Plan.price_monthly.asc()).all()
@@ -58,19 +61,53 @@ class BillingController:
 
     @staticmethod
     def get_plan_capacity_map(tenant_id: Any, plans: list[Plan]) -> dict[str, dict[str, Any]]:
+        PlanLimitsService.ensure_schema()
         device_count = BillingController.get_tenant_device_count(tenant_id)
+        tenant_uuid = BillingController._parse_uuid(tenant_id, "tenant_id")
+        db = SessionLocal()
+        try:
+            user_count = int(
+                db.query(User.id)
+                .filter(User.tenant_id == tenant_uuid, User.is_active.is_(True))
+                .count()
+                or 0
+            )
+            storage_used_bytes = PlanLimitsService.get_storage_used_bytes(db, tenant_uuid)
+        finally:
+            db.close()
+
         capacity = {}
         for plan in plans:
-            eligible = device_count <= int(plan.max_devices or 0)
+            reasons = []
+            max_devices = int(plan.max_devices or 0)
+            max_users = int(plan.max_users or 0)
+            storage_limit_bytes = PlanLimitsService.storage_limit_bytes(plan)
+            eligible = True
+            if max_devices > 0 and device_count > max_devices:
+                eligible = False
+                reasons.append(
+                    f"Esse plano suporta ate {max_devices} dispositivos e este cliente possui {device_count}."
+                )
+            if max_users > 0 and user_count > max_users:
+                eligible = False
+                reasons.append(
+                    f"Esse plano suporta ate {max_users} usuarios ativos e este cliente possui {user_count}."
+                )
+            if storage_limit_bytes > 0 and storage_used_bytes > storage_limit_bytes:
+                eligible = False
+                reasons.append(
+                    "Storage atual acima do limite do plano "
+                    f"({PlanLimitsService.format_bytes(storage_used_bytes)} / {PlanLimitsService.format_bytes(storage_limit_bytes)})."
+                )
             capacity[str(plan.id)] = {
                 "eligible": eligible,
                 "device_count": device_count,
-                "max_devices": int(plan.max_devices or 0),
-                "reason": (
-                    f"Esse plano suporta ate {int(plan.max_devices or 0)} dispositivos e este cliente possui {device_count}."
-                    if not eligible
-                    else ""
-                ),
+                "max_devices": max_devices,
+                "user_count": user_count,
+                "max_users": max_users,
+                "storage_used_bytes": storage_used_bytes,
+                "storage_limit_bytes": storage_limit_bytes,
+                "reason": " ".join(reasons),
             }
         return capacity
 
@@ -277,7 +314,12 @@ class BillingController:
             plan = db.query(Plan).filter(Plan.id == plan_uuid, Plan.is_active.is_(True)).first()
             if not plan:
                 raise ValueError("Plano nao encontrado ou inativo.")
-            TenantAccessService.validate_plan_selection(plan, TenantAccessService.get_device_count(db, tenant.id))
+            TenantAccessService.validate_plan_selection(
+                plan,
+                TenantAccessService.get_device_count(db, tenant.id),
+                user_count=TenantAccessService.get_active_user_count(db, tenant.id),
+                storage_used_bytes=TenantAccessService.get_storage_used_bytes(db, tenant.id),
+            )
 
             amount_cents = BillingController._plan_amount_cents(plan, billing_cycle)
             now = datetime.utcnow()

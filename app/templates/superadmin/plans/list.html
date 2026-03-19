@@ -83,6 +83,8 @@
                             {{ p.max_devices }} disp. • {{ p.max_users }} usuários
                             <p class="text-xs text-[var(--text-muted)]">Retenção: {{ p.backup_retention_days }} dias</p>
                             <p class="text-xs text-[var(--text-muted)]">Ciclo: {{ p.billing_period_days or 30 }} dias • Aviso: {{ p.payment_grace_days if p.payment_grace_days is not none else 3 }} dias</p>
+                            <p class="text-xs text-[var(--text-muted)]">Storage: {{ p.storage_quota_gb if p.storage_quota_gb is not none else 10 }} GB • Download: {{ p.download_quota_gb_month if p.download_quota_gb_month is not none else 20 }} GB/mês</p>
+                            <p class="text-xs text-[var(--text-muted)]">Velocidade download: {% if (p.max_download_rate_mbps or 0) > 0 %}{{ p.max_download_rate_mbps }} Mbps{% else %}Ilimitado{% endif %}</p>
                         </td>
                         <td>
                             {{ row.tenant_count }} cliente(s)
