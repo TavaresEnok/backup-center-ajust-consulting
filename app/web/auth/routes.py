@@ -11,7 +11,9 @@ import smtplib
 from email.message import EmailMessage
 import redis
 import uuid
+from urllib.parse import quote
 from sqlalchemy import func
+from app.core.totp import generate_totp_secret, verify_totp
 
 MAX_LOGIN_ATTEMPTS_PER_IP = 20
 MAX_LOGIN_ATTEMPTS_PER_EMAIL = 8
@@ -20,6 +22,10 @@ LOGIN_LOCKOUT_SECONDS = 900
 MAX_FORGOT_PASSWORD_PER_IP = 8
 FORGOT_PASSWORD_WINDOW_SECONDS = 3600
 FORGOT_PASSWORD_LOCKOUT_SECONDS = 1800
+PENDING_2FA_SESSION_KEY = "pending_2fa_login"
+PENDING_2FA_SETUP_SECRET_KEY = "pending_2fa_setup_secret"
+PENDING_2FA_TTL_SECONDS = 600
+CRITICAL_ROLES_REQUIRE_2FA = {UserRole.SUPER_ADMIN, UserRole.TENANT_OWNER}
 
 _login_attempts_ip = {}
 _login_attempts_email = {}
@@ -199,6 +205,108 @@ def _send_reset_email(to_email: str, reset_url: str):
         smtp.login(settings.SMTP_USERNAME, settings.SMTP_PASSWORD)
         smtp.send_message(msg)
 
+
+def _is_role_2fa_required(role) -> bool:
+    try:
+        parsed_role = role if isinstance(role, UserRole) else UserRole(role)
+    except Exception:
+        return False
+    return parsed_role in CRITICAL_ROLES_REQUIRE_2FA
+
+
+def _build_totp_uri(email: str, secret: str) -> str:
+    issuer = "Backup Center"
+    label = quote(f"{issuer}:{email}")
+    return (
+        f"otpauth://totp/{label}?secret={secret}&issuer={quote(issuer)}"
+        "&algorithm=SHA1&digits=6&period=30"
+    )
+
+
+def _clear_pending_2fa_session():
+    session.pop(PENDING_2FA_SESSION_KEY, None)
+    session.pop(PENDING_2FA_SETUP_SECRET_KEY, None)
+
+
+def _store_pending_2fa_login(user, client_ip: str):
+    session[PENDING_2FA_SESSION_KEY] = {
+        "user_id": str(user.id),
+        "email": _normalize_email(user.email),
+        "ip": client_ip,
+        "issued_at": int(datetime.utcnow().timestamp()),
+    }
+
+
+def _load_pending_2fa_user(db, client_ip: str):
+    pending = session.get(PENDING_2FA_SESSION_KEY)
+    if not isinstance(pending, dict):
+        return None
+
+    issued_at = int(pending.get("issued_at") or 0)
+    if not issued_at or int(datetime.utcnow().timestamp()) - issued_at > PENDING_2FA_TTL_SECONDS:
+        _clear_pending_2fa_session()
+        return None
+
+    stored_ip = (pending.get("ip") or "").strip()
+    if stored_ip and stored_ip != client_ip:
+        logging.getLogger(__name__).warning(
+            "2fa pending session ip mismatch expected=%s got=%s", stored_ip, client_ip
+        )
+        _clear_pending_2fa_session()
+        return None
+
+    try:
+        user_uuid = uuid.UUID(str(pending.get("user_id") or ""))
+    except (TypeError, ValueError):
+        _clear_pending_2fa_session()
+        return None
+
+    from app.models.user import User
+
+    user = db.query(User).filter(User.id == user_uuid, User.is_active.is_(True)).first()
+    if not user:
+        _clear_pending_2fa_session()
+        return None
+
+    if _normalize_email(user.email) != _normalize_email(pending.get("email")):
+        _clear_pending_2fa_session()
+        return None
+
+    return user
+
+
+def _finalize_authenticated_session(db, user, client_ip: str):
+    _clear_pending_2fa_session()
+    session.permanent = True
+    session["user_id"] = str(user.id)
+    session["user_name"] = user.full_name
+    session["user_role"] = user.role.value
+    session["tenant_slug"] = user.tenant.slug if user.tenant else "admin"
+
+    from app.services.activity_service import ActivityService
+
+    tenant_id = user.tenant_id if user.tenant else None
+    ActivityService.log_action(
+        db,
+        tenant_id,
+        user.id,
+        "LOGIN",
+        f"User logged in from IP {client_ip}",
+        client_ip,
+    )
+
+
+def _redirect_after_login(user):
+    if user.role == UserRole.SUPER_ADMIN:
+        logging.getLogger(__name__).info("superadmin login")
+        return redirect(url_for("superadmin_dashboard.dashboard"))
+    if user.tenant:
+        logging.getLogger(__name__).info("tenant login: %s", user.tenant.slug)
+        return redirect(url_for("tenant.dashboard", tenant_slug=user.tenant.slug))
+    logging.getLogger(__name__).warning("user without tenant")
+    flash("Sua conta nao possui uma empresa associada.", "error")
+    return redirect(url_for("auth.login"))
+
 bp = Blueprint('auth', __name__, url_prefix='/auth')
 
 @bp.route('/login', methods=['GET', 'POST'])
@@ -228,41 +336,27 @@ def login():
                     flash('Este cliente esta desativado. Entre em contato com o suporte.', 'error')
                     return render_template('auth/login.html')
 
-                if user.role in {UserRole.SUPER_ADMIN, UserRole.TENANT_OWNER} and not getattr(user, "totp_secret", None):
+                logging.getLogger(__name__).info("user authenticated: %s", user.email)
+                _clear_login_attempts(client_ip, normalized_email)
+
+                if _is_role_2fa_required(user.role):
+                    _store_pending_2fa_login(user, client_ip)
+                    if getattr(user, "totp_secret", None):
+                        flash('Digite o codigo de autenticacao para concluir o login.', 'info')
+                        return redirect(url_for('auth.two_factor_verify'))
+                    session[PENDING_2FA_SETUP_SECRET_KEY] = generate_totp_secret()
                     logging.getLogger(__name__).warning(
                         "critical account without 2fa user=%s role=%s ip=%s",
                         user.email,
                         user.role.value,
                         client_ip,
                     )
-                    flash('Seguranca recomendada: habilite 2FA para esta conta administrativa.', 'warning')
+                    flash('Conta administrativa: configure o 2FA para concluir o acesso.', 'warning')
+                    return redirect(url_for('auth.two_factor_setup'))
 
-                logging.getLogger(__name__).info("user authenticated: %s", user.email)
-                session.permanent = True
-                session['user_id'] = str(user.id)
-                session['user_name'] = user.full_name
-                session['user_role'] = user.role.value
-                session['tenant_slug'] = user.tenant.slug if user.tenant else 'admin'
-                _clear_login_attempts(client_ip, normalized_email)
-                
-                # LOG ACTIVITY: Login Success
-                from app.services.activity_service import ActivityService
-                tenant_id = user.tenant_id if user.tenant else None
-                ActivityService.log_action(db, tenant_id, user.id, "LOGIN", f"User logged in from IP {request.remote_addr}", request.remote_addr)
-                
+                _finalize_authenticated_session(db, user, client_ip)
                 flash('Login realizado com sucesso!', 'success')
-                
-                if user.role == UserRole.SUPER_ADMIN:
-                    logging.getLogger(__name__).info("superadmin login")
-                    return redirect(url_for('superadmin_dashboard.dashboard'))
-                
-                if user.tenant:
-                    logging.getLogger(__name__).info("tenant login: %s", user.tenant.slug)
-                    return redirect(url_for('tenant.dashboard', tenant_slug=user.tenant.slug))
-                
-                logging.getLogger(__name__).warning("user without tenant")
-                flash('Sua conta nao possui uma empresa associada.', 'error')
-                return redirect(url_for('auth.login'))
+                return _redirect_after_login(user)
             else:
                 logging.getLogger(__name__).warning("authentication failed")
                 flash('Email ou senha invalidos.', 'error')
@@ -321,6 +415,122 @@ def register():
             db.close()
             
     return render_template('auth/register.html')
+
+
+@bp.route('/2fa/setup', methods=['GET', 'POST'])
+def two_factor_setup():
+    client_ip = _get_client_ip()
+    db = SessionLocal()
+    try:
+        user = _load_pending_2fa_user(db, client_ip)
+        if not user:
+            flash('Sessao de autenticacao expirada. Faca login novamente.', 'error')
+            return redirect(url_for('auth.login'))
+
+        if not _is_role_2fa_required(user.role):
+            _finalize_authenticated_session(db, user, client_ip)
+            flash('Login realizado com sucesso!', 'success')
+            return _redirect_after_login(user)
+
+        if user.role != UserRole.SUPER_ADMIN and user.tenant and not user.tenant.is_active:
+            _clear_pending_2fa_session()
+            flash('Este cliente esta desativado. Entre em contato com o suporte.', 'error')
+            return redirect(url_for('auth.login'))
+
+        if getattr(user, "totp_secret", None):
+            return redirect(url_for('auth.two_factor_verify'))
+
+        setup_secret = session.get(PENDING_2FA_SETUP_SECRET_KEY)
+        if not setup_secret:
+            setup_secret = generate_totp_secret()
+            session[PENDING_2FA_SETUP_SECRET_KEY] = setup_secret
+
+        if request.method == 'POST':
+            code = request.form.get('code')
+            if verify_totp(setup_secret, code):
+                user.totp_secret = setup_secret
+                db.commit()
+                _clear_login_attempts(client_ip, _normalize_email(user.email))
+                _finalize_authenticated_session(db, user, client_ip)
+                flash('2FA configurado e login concluido com sucesso!', 'success')
+                return _redirect_after_login(user)
+
+            _record_failed_login_attempt(client_ip, _normalize_email(user.email), datetime.utcnow())
+            blocked, _ = _is_login_blocked(client_ip, _normalize_email(user.email), datetime.utcnow())
+            if blocked:
+                _clear_pending_2fa_session()
+                flash('Muitas tentativas. Faca login novamente em alguns minutos.', 'error')
+                return redirect(url_for('auth.login'))
+            flash('Codigo invalido. Confira o app autenticador e tente novamente.', 'error')
+
+        return render_template(
+            'auth/two_factor_setup.html',
+            email=user.email,
+            secret=setup_secret,
+            otp_uri=_build_totp_uri(user.email, setup_secret),
+        )
+    except Exception:
+        db.rollback()
+        logging.getLogger(__name__).exception("error during 2fa setup")
+        flash('Erro ao configurar 2FA. Tente novamente.', 'error')
+        return redirect(url_for('auth.login'))
+    finally:
+        db.close()
+
+
+@bp.route('/2fa/verify', methods=['GET', 'POST'])
+def two_factor_verify():
+    client_ip = _get_client_ip()
+    db = SessionLocal()
+    try:
+        user = _load_pending_2fa_user(db, client_ip)
+        if not user:
+            flash('Sessao de autenticacao expirada. Faca login novamente.', 'error')
+            return redirect(url_for('auth.login'))
+
+        if not _is_role_2fa_required(user.role):
+            _finalize_authenticated_session(db, user, client_ip)
+            flash('Login realizado com sucesso!', 'success')
+            return _redirect_after_login(user)
+
+        if user.role != UserRole.SUPER_ADMIN and user.tenant and not user.tenant.is_active:
+            _clear_pending_2fa_session()
+            flash('Este cliente esta desativado. Entre em contato com o suporte.', 'error')
+            return redirect(url_for('auth.login'))
+
+        if not getattr(user, "totp_secret", None):
+            return redirect(url_for('auth.two_factor_setup'))
+
+        if request.method == 'POST':
+            code = request.form.get('code')
+            if verify_totp(user.totp_secret, code):
+                _clear_login_attempts(client_ip, _normalize_email(user.email))
+                _finalize_authenticated_session(db, user, client_ip)
+                flash('Login realizado com sucesso!', 'success')
+                return _redirect_after_login(user)
+
+            _record_failed_login_attempt(client_ip, _normalize_email(user.email), datetime.utcnow())
+            blocked, _ = _is_login_blocked(client_ip, _normalize_email(user.email), datetime.utcnow())
+            if blocked:
+                _clear_pending_2fa_session()
+                flash('Muitas tentativas. Faca login novamente em alguns minutos.', 'error')
+                return redirect(url_for('auth.login'))
+            flash('Codigo 2FA invalido.', 'error')
+
+        return render_template('auth/two_factor_verify.html', email=user.email)
+    except Exception:
+        logging.getLogger(__name__).exception("error during 2fa verify")
+        flash('Erro ao validar 2FA. Faca login novamente.', 'error')
+        return redirect(url_for('auth.login'))
+    finally:
+        db.close()
+
+
+@bp.route('/2fa/cancel', methods=['POST'])
+def two_factor_cancel():
+    _clear_pending_2fa_session()
+    flash('Autenticacao cancelada. Faca login novamente.', 'info')
+    return redirect(url_for('auth.login'))
 
 
 @bp.route('/logout', methods=['POST'])

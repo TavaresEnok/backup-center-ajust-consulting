@@ -30,6 +30,14 @@ Reduzir superfície de ataque imediata no ambiente do Backup Center (tenant e ad
 - Watchdog atualizado para alertar anomalias de autenticacao:
   - lockout/rate-limit de login/forgot-password;
   - login de conta critica sem 2FA.
+- Fase 2 (2026-03-19) aplicada:
+  - 2FA obrigatorio para `super_admin` e `tenant_owner` no login;
+  - fluxo de setup inicial (`/auth/2fa/setup`) e validacao (`/auth/2fa/verify`);
+  - sessao de login pendente com TTL e amarrada ao IP de origem;
+  - cancelamento explicito da autenticacao pendente (`/auth/2fa/cancel`).
+- Watchdog com alerta externo opcional:
+  - script passa a ler configuracao em `/etc/backup_center/watchdog.env`;
+  - suporta `ALERT_WEBHOOK_URL` e `ALERT_WEBHOOK_TOKEN` para envio HTTP POST dos alertas criticos.
 
 ## Riscos residuais e próximos passos recomendados
 - Rotacionar periodicamente os segredos de produção (`SECRET_KEY`, `ENCRYPTION_KEY`, senhas DB/Redis/MercadoPago). Atenção: trocar `ENCRYPTION_KEY` requer recriptografar credenciais já salvas.
@@ -56,3 +64,6 @@ Reduzir superfície de ataque imediata no ambiente do Backup Center (tenant e ad
 - Tentar 9 logins errados no mesmo email para validar lockout por conta.
 - Tentar alta taxa de `esqueci senha` do mesmo IP para validar rate-limit.
 - Verificar alertas em `/var/log/backup_center/critical_alerts.log` e `journalctl -t backup-center-alert`.
+- Para alerta externo, criar `/etc/backup_center/watchdog.env` com permissao `600`:
+  - `ALERT_WEBHOOK_URL=https://...`
+  - `ALERT_WEBHOOK_TOKEN=...` (opcional).

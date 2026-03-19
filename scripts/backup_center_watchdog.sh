@@ -9,6 +9,14 @@ APACHE_ERROR_LOG="/var/log/apache2/backupcenter_error.log"
 APP_CONTAINER="backup_sys_app"
 WATCH_CONTAINERS=("backup_sys_app" "backup_sys_celery" "backup_sys_celery_vpn" "backup_sys_celery_beat")
 ALERT_COOLDOWN_SECONDS=600
+WATCHDOG_ENV_FILE="/etc/backup_center/watchdog.env"
+ALERT_WEBHOOK_URL="${ALERT_WEBHOOK_URL:-}"
+ALERT_WEBHOOK_TOKEN="${ALERT_WEBHOOK_TOKEN:-}"
+
+if [[ -f "${WATCHDOG_ENV_FILE}" ]]; then
+    # shellcheck disable=SC1090
+    source "${WATCHDOG_ENV_FILE}"
+fi
 
 mkdir -p "${LOG_DIR}" "${STATE_DIR}"
 touch "${LOG_FILE}"
@@ -36,6 +44,25 @@ emit_alert() {
     line="$(date -Is) [${level}] ${message}"
     echo "${line}" >> "${LOG_FILE}"
     logger -t backup-center-alert "${line}"
+    send_external_alert "${line}"
+}
+
+send_external_alert() {
+    local message="$1"
+    if [[ -z "${ALERT_WEBHOOK_URL:-}" ]]; then
+        return 0
+    fi
+
+    local auth_header=()
+    if [[ -n "${ALERT_WEBHOOK_TOKEN:-}" ]]; then
+        auth_header=(-H "Authorization: Bearer ${ALERT_WEBHOOK_TOKEN}")
+    fi
+
+    curl -fsS -m 8 -X POST \
+        -H "Content-Type: application/json" \
+        "${auth_header[@]}" \
+        -d "{\"source\":\"backup-center-watchdog\",\"message\":\"${message//\"/\\\"}\"}" \
+        "${ALERT_WEBHOOK_URL}" >/dev/null 2>&1 || true
 }
 
 check_http_502() {
