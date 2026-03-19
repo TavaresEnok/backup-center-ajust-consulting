@@ -82,12 +82,22 @@ check_webhook_failures() {
     fi
 }
 
+check_auth_anomalies() {
+    if docker logs --since 120s "${APP_CONTAINER}" 2>&1 | grep -Eiq "auth lockout triggered|auth login blocked|forgot-password rate limited"; then
+        emit_alert "auth_lockout_or_rate_limit" "WARN" "Anomalia de autenticacao detectada (lockout/rate-limit)"
+    fi
+    if docker logs --since 120s "${APP_CONTAINER}" 2>&1 | grep -Eiq "critical account without 2fa"; then
+        emit_alert "critical_without_2fa" "WARN" "Conta critica acessou sem 2FA configurado"
+    fi
+}
+
 main() {
     check_http_502
     check_workers_up
     check_health
     check_bulk_failures
     check_webhook_failures
+    check_auth_anomalies
 }
 
 main "$@"

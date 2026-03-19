@@ -13,9 +13,20 @@ import redis
 import uuid
 from sqlalchemy import func
 
-MAX_LOGIN_ATTEMPTS = 5
+MAX_LOGIN_ATTEMPTS_PER_IP = 20
+MAX_LOGIN_ATTEMPTS_PER_EMAIL = 8
 LOGIN_WINDOW_SECONDS = 900
-_login_attempts = {}
+LOGIN_LOCKOUT_SECONDS = 900
+MAX_FORGOT_PASSWORD_PER_IP = 8
+FORGOT_PASSWORD_WINDOW_SECONDS = 3600
+FORGOT_PASSWORD_LOCKOUT_SECONDS = 1800
+
+_login_attempts_ip = {}
+_login_attempts_email = {}
+_login_blocks_ip = {}
+_login_blocks_email = {}
+_forgot_attempts_ip = {}
+_forgot_blocks_ip = {}
 _redis_client = None
 
 try:
@@ -32,41 +43,136 @@ def _get_client_ip():
     return request.remote_addr
 
 
-def _prune_attempts(attempts, now):
-    return [ts for ts in attempts if (now - ts).total_seconds() < LOGIN_WINDOW_SECONDS]
+def _normalize_email(email: str | None) -> str:
+    return (email or "").strip().lower()
 
 
-def _attempt_key(client_ip: str) -> str:
-    return f"login_attempts:{client_ip}"
+def _prune_attempts(attempts, now, window_seconds):
+    return [ts for ts in attempts if (now - ts).total_seconds() < window_seconds]
 
 
-def _get_attempt_count(client_ip: str, now: datetime) -> int:
-    if _redis_client:
-        value = _redis_client.get(_attempt_key(client_ip))
+def _redis_get_int(key: str) -> int:
+    if not _redis_client:
+        return 0
+    try:
+        value = _redis_client.get(key)
         return int(value) if value else 0
-    attempts = _login_attempts.get(client_ip, [])
-    attempts = _prune_attempts(attempts, now)
-    _login_attempts[client_ip] = attempts
-    return len(attempts)
+    except Exception:
+        return 0
 
 
-def _record_failed_attempt(client_ip: str, now: datetime):
+def _login_ip_attempt_key(client_ip: str) -> str:
+    return f"auth:login:attempts:ip:{client_ip}"
+
+
+def _login_email_attempt_key(email: str) -> str:
+    return f"auth:login:attempts:email:{email}"
+
+
+def _login_ip_block_key(client_ip: str) -> str:
+    return f"auth:login:block:ip:{client_ip}"
+
+
+def _login_email_block_key(email: str) -> str:
+    return f"auth:login:block:email:{email}"
+
+
+def _forgot_ip_attempt_key(client_ip: str) -> str:
+    return f"auth:forgot:attempts:ip:{client_ip}"
+
+
+def _forgot_ip_block_key(client_ip: str) -> str:
+    return f"auth:forgot:block:ip:{client_ip}"
+
+
+def _is_login_blocked(client_ip: str, email: str, now: datetime) -> tuple[bool, int]:
     if _redis_client:
-        count = _redis_client.incr(_attempt_key(client_ip))
+        ip_ttl = _redis_client.ttl(_login_ip_block_key(client_ip))
+        email_ttl = _redis_client.ttl(_login_email_block_key(email)) if email else -2
+        ttl = max(ip_ttl if ip_ttl > 0 else 0, email_ttl if email_ttl > 0 else 0)
+        return ttl > 0, ttl
+    ip_until = _login_blocks_ip.get(client_ip)
+    if ip_until and ip_until > now:
+        return True, int((ip_until - now).total_seconds())
+    email_until = _login_blocks_email.get(email) if email else None
+    if email_until and email_until > now:
+        return True, int((email_until - now).total_seconds())
+    return False, 0
+
+
+def _record_failed_login_attempt(client_ip: str, email: str, now: datetime):
+    if _redis_client:
+        ip_key = _login_ip_attempt_key(client_ip)
+        ip_count = _redis_client.incr(ip_key)
+        if ip_count == 1:
+            _redis_client.expire(ip_key, LOGIN_WINDOW_SECONDS)
+        if ip_count >= MAX_LOGIN_ATTEMPTS_PER_IP:
+            _redis_client.setex(_login_ip_block_key(client_ip), LOGIN_LOCKOUT_SECONDS, "1")
+
+        if email:
+            email_key = _login_email_attempt_key(email)
+            email_count = _redis_client.incr(email_key)
+            if email_count == 1:
+                _redis_client.expire(email_key, LOGIN_WINDOW_SECONDS)
+            if email_count >= MAX_LOGIN_ATTEMPTS_PER_EMAIL:
+                _redis_client.setex(_login_email_block_key(email), LOGIN_LOCKOUT_SECONDS, "1")
+        return
+
+    ip_attempts = _login_attempts_ip.get(client_ip, [])
+    ip_attempts = _prune_attempts(ip_attempts, now, LOGIN_WINDOW_SECONDS)
+    ip_attempts.append(now)
+    _login_attempts_ip[client_ip] = ip_attempts
+    if len(ip_attempts) >= MAX_LOGIN_ATTEMPTS_PER_IP:
+        _login_blocks_ip[client_ip] = now + timedelta(seconds=LOGIN_LOCKOUT_SECONDS)
+
+    if email:
+        email_attempts = _login_attempts_email.get(email, [])
+        email_attempts = _prune_attempts(email_attempts, now, LOGIN_WINDOW_SECONDS)
+        email_attempts.append(now)
+        _login_attempts_email[email] = email_attempts
+        if len(email_attempts) >= MAX_LOGIN_ATTEMPTS_PER_EMAIL:
+            _login_blocks_email[email] = now + timedelta(seconds=LOGIN_LOCKOUT_SECONDS)
+
+
+def _clear_login_attempts(client_ip: str, email: str):
+    if _redis_client:
+        keys = [_login_ip_attempt_key(client_ip), _login_ip_block_key(client_ip)]
+        if email:
+            keys.extend([_login_email_attempt_key(email), _login_email_block_key(email)])
+        _redis_client.delete(*keys)
+        return
+    _login_attempts_ip.pop(client_ip, None)
+    _login_blocks_ip.pop(client_ip, None)
+    if email:
+        _login_attempts_email.pop(email, None)
+        _login_blocks_email.pop(email, None)
+
+
+def _consume_forgot_password_attempt(client_ip: str, now: datetime) -> tuple[bool, int]:
+    if _redis_client:
+        block_ttl = _redis_client.ttl(_forgot_ip_block_key(client_ip))
+        if block_ttl > 0:
+            return False, int(block_ttl)
+        key = _forgot_ip_attempt_key(client_ip)
+        count = _redis_client.incr(key)
         if count == 1:
-            _redis_client.expire(_attempt_key(client_ip), LOGIN_WINDOW_SECONDS)
-        return
-    attempts = _login_attempts.get(client_ip, [])
-    attempts = _prune_attempts(attempts, now)
+            _redis_client.expire(key, FORGOT_PASSWORD_WINDOW_SECONDS)
+        if count > MAX_FORGOT_PASSWORD_PER_IP:
+            _redis_client.setex(_forgot_ip_block_key(client_ip), FORGOT_PASSWORD_LOCKOUT_SECONDS, "1")
+            return False, FORGOT_PASSWORD_LOCKOUT_SECONDS
+        return True, 0
+
+    until = _forgot_blocks_ip.get(client_ip)
+    if until and until > now:
+        return False, int((until - now).total_seconds())
+    attempts = _forgot_attempts_ip.get(client_ip, [])
+    attempts = _prune_attempts(attempts, now, FORGOT_PASSWORD_WINDOW_SECONDS)
     attempts.append(now)
-    _login_attempts[client_ip] = attempts
-
-
-def _clear_attempts(client_ip: str):
-    if _redis_client:
-        _redis_client.delete(_attempt_key(client_ip))
-        return
-    _login_attempts.pop(client_ip, None)
+    _forgot_attempts_ip[client_ip] = attempts
+    if len(attempts) > MAX_FORGOT_PASSWORD_PER_IP:
+        _forgot_blocks_ip[client_ip] = now + timedelta(seconds=FORGOT_PASSWORD_LOCKOUT_SECONDS)
+        return False, FORGOT_PASSWORD_LOCKOUT_SECONDS
+    return True, 0
 
 
 def _get_serializer():
@@ -99,11 +205,18 @@ bp = Blueprint('auth', __name__, url_prefix='/auth')
 def login():
     if request.method == 'POST':
         email = request.form.get('email')
+        normalized_email = _normalize_email(email)
         password = request.form.get('password')
         now = datetime.utcnow()
         client_ip = _get_client_ip()
-        attempt_count = _get_attempt_count(client_ip, now)
-        if attempt_count >= MAX_LOGIN_ATTEMPTS:
+        blocked, retry_after = _is_login_blocked(client_ip, normalized_email, now)
+        if blocked:
+            logging.getLogger(__name__).warning(
+                "auth login blocked ip=%s email=%s retry_after=%ss",
+                client_ip,
+                normalized_email or "empty",
+                retry_after,
+            )
             flash('Muitas tentativas. Tente novamente em alguns minutos.', 'error')
             return render_template('auth/login.html')
         
@@ -115,13 +228,22 @@ def login():
                     flash('Este cliente esta desativado. Entre em contato com o suporte.', 'error')
                     return render_template('auth/login.html')
 
+                if user.role in {UserRole.SUPER_ADMIN, UserRole.TENANT_OWNER} and not getattr(user, "totp_secret", None):
+                    logging.getLogger(__name__).warning(
+                        "critical account without 2fa user=%s role=%s ip=%s",
+                        user.email,
+                        user.role.value,
+                        client_ip,
+                    )
+                    flash('Seguranca recomendada: habilite 2FA para esta conta administrativa.', 'warning')
+
                 logging.getLogger(__name__).info("user authenticated: %s", user.email)
                 session.permanent = True
                 session['user_id'] = str(user.id)
                 session['user_name'] = user.full_name
                 session['user_role'] = user.role.value
                 session['tenant_slug'] = user.tenant.slug if user.tenant else 'admin'
-                _clear_attempts(client_ip)
+                _clear_login_attempts(client_ip, normalized_email)
                 
                 # LOG ACTIVITY: Login Success
                 from app.services.activity_service import ActivityService
@@ -144,7 +266,15 @@ def login():
             else:
                 logging.getLogger(__name__).warning("authentication failed")
                 flash('Email ou senha invalidos.', 'error')
-                _record_failed_attempt(client_ip, now)
+                _record_failed_login_attempt(client_ip, normalized_email, now)
+                now_blocked, now_retry_after = _is_login_blocked(client_ip, normalized_email, now)
+                if now_blocked:
+                    logging.getLogger(__name__).warning(
+                        "auth lockout triggered ip=%s email=%s retry_after=%ss",
+                        client_ip,
+                        normalized_email or "empty",
+                        now_retry_after,
+                    )
                 from app.services.activity_service import ActivityService
                 from app.models.user import User
                 existing_user = db.query(User).filter(User.email == email).first()
@@ -202,6 +332,18 @@ def logout():
 @bp.route('/forgot-password', methods=['GET', 'POST'])
 def forgot_password():
     if request.method == 'POST':
+        now = datetime.utcnow()
+        client_ip = _get_client_ip()
+        allowed, retry_after = _consume_forgot_password_attempt(client_ip, now)
+        if not allowed:
+            logging.getLogger(__name__).warning(
+                "forgot-password rate limited ip=%s retry_after=%ss",
+                client_ip,
+                retry_after,
+            )
+            flash('Muitas solicitacoes. Tente novamente em alguns minutos.', 'error')
+            return redirect(url_for('auth.forgot_password'))
+
         email = (request.form.get('email') or "").strip()
         email_lookup = email.lower()
         

@@ -23,6 +23,13 @@ Reduzir superfície de ataque imediata no ambiente do Backup Center (tenant e ad
   - monitora: erro 502 no proxy, queda de workers/app, falha de lote e erro de webhook de pagamento.
 - Smoke check da fase crítica adicionado em `scripts/critical_phase_smoke_check.sh` para validar em um comando:
   - proxy + health + containers + portas + firewall + legado + watchdog.
+- Hardening adicional de autenticacao (2026-03-19):
+  - login com lockout por IP e por email (janela + bloqueio temporario), com Redis e fallback local;
+  - rate-limit no fluxo `esqueci senha` por IP;
+  - log de seguranca para lockout/rate-limit e aviso de conta critica sem 2FA configurado.
+- Watchdog atualizado para alertar anomalias de autenticacao:
+  - lockout/rate-limit de login/forgot-password;
+  - login de conta critica sem 2FA.
 
 ## Riscos residuais e próximos passos recomendados
 - Rotacionar periodicamente os segredos de produção (`SECRET_KEY`, `ENCRYPTION_KEY`, senhas DB/Redis/MercadoPago). Atenção: trocar `ENCRYPTION_KEY` requer recriptografar credenciais já salvas.
@@ -44,3 +51,8 @@ Reduzir superfície de ataque imediata no ambiente do Backup Center (tenant e ad
 - Executar pós-alteração:
   - `ROOT_PASS='***' ./scripts/critical_phase_smoke_check.sh`
 - Resultado esperado: todos os checks `[OK]` e final `smoke check da fase critica concluido`.
+
+## Teste funcional de auth (manual)
+- Tentar 9 logins errados no mesmo email para validar lockout por conta.
+- Tentar alta taxa de `esqueci senha` do mesmo IP para validar rate-limit.
+- Verificar alertas em `/var/log/backup_center/critical_alerts.log` e `journalctl -t backup-center-alert`.
