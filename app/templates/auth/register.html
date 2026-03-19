@@ -130,9 +130,9 @@
 <body class="font-outfit">
     {% set default_plan = (plans[0].id|string) if plans else '' %}
     <main class="min-h-screen flex items-center justify-center p-4 sm:p-8 lg:p-10">
-        <div class="auth-shell w-full max-w-6xl rounded-3xl overflow-hidden fade-up">
-            <div class="grid xl:grid-cols-[1.05fr,1.45fr]">
-                <aside class="panel p-7 sm:p-9 lg:p-10 border-b xl:border-b-0 xl:border-r border-slate-600/30">
+        <div class="auth-shell w-full max-w-5xl rounded-3xl overflow-hidden fade-up">
+            <div class="grid lg:grid-cols-2">
+                <aside class="panel p-7 sm:p-9 lg:p-10 border-b lg:border-b-0 lg:border-r border-slate-600/30">
                     <div class="inline-flex items-center gap-3 px-4 py-2 rounded-xl panel-soft">
                         <div class="h-9 w-9 rounded-lg bg-cyan-500/20 border border-cyan-300/30 flex items-center justify-center">
                             <i data-lucide="layers-3" class="h-5 w-5 text-cyan-300"></i>
@@ -167,7 +167,7 @@
                         </div>
                     </div>
 
-                    <div class="mt-8 grid sm:grid-cols-3 xl:grid-cols-1 gap-3">
+                    <div class="mt-8 grid sm:grid-cols-3 lg:grid-cols-1 gap-3">
                         <div class="panel-soft rounded-xl p-4">
                             <p class="text-xs uppercase tracking-wide text-slate-400">Multi-tenant</p>
                             <p class="mt-1 text-xl font-semibold text-slate-100">Isolado por cliente</p>
@@ -249,7 +249,7 @@
                             </div>
 
                             {% if plans %}
-                            <div class="grid gap-3 xl:grid-cols-2">
+                            <div class="grid gap-3">
                                 {% for plan in plans %}
                                 {% set plan_id = plan.id|string %}
                                 <label
@@ -302,7 +302,7 @@
                                 <h3 class="text-base font-semibold text-slate-100">Ciclo de cobranca</h3>
                                 <p class="text-sm text-slate-400">Defina como o checkout vai ser aberto para o cliente.</p>
                             </div>
-                            <div class="grid gap-3 sm:grid-cols-2">
+                            <div class="grid gap-3">
                                 <label class="cycle-pill cursor-pointer" :class="{ 'is-active': billingCycle === 'monthly' }">
                                     <input type="radio" name="billing_cycle" value="monthly" class="sr-only" checked @change="billingCycle = 'monthly'">
                                     <div class="flex items-center justify-between gap-3">
