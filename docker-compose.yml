@@ -84,6 +84,7 @@ services:
       - ./app:/app/app
     ports:
       - "5000:8000"
+      - "8050:8000"
     depends_on:
       db:
         condition: service_healthy
