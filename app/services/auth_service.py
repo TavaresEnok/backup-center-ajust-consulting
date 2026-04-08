@@ -1,14 +1,22 @@
 from sqlalchemy.orm import Session
+from sqlalchemy import text
 from app.models.user import User, UserRole
 from app.models.tenant import Tenant
 from app.models.plan import Plan
 from app.core.security import get_password_hash, verify_password
 from app.services.tenant_access_service import TenantAccessService
 from typing import Optional
+from datetime import datetime
 import re
 import uuid
 
 class AuthService:
+    @staticmethod
+    def ensure_schema(db: Session) -> None:
+        db.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS must_change_password BOOLEAN NOT NULL DEFAULT FALSE"))
+        db.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS password_changed_at TIMESTAMP NULL"))
+        db.commit()
+
     @staticmethod
     def _build_unique_slug(db: Session, company_name: str) -> str:
         base = re.sub(r"[^a-z0-9-]+", "-", (company_name or "").strip().lower())
@@ -29,7 +37,9 @@ class AuthService:
         company_name: str,
         plan_id: str | None = None,
         activate_trial: bool = True,
+        require_password_change: bool = False,
     ) -> User:
+        AuthService.ensure_schema(db)
         selected_plan = None
         if plan_id:
             try:
@@ -74,7 +84,9 @@ class AuthService:
             full_name=full_name,
             tenant_id=tenant.id,
             role=UserRole.TENANT_OWNER,
-            email_verified=False
+            email_verified=False,
+            must_change_password=bool(require_password_change),
+            password_changed_at=None if require_password_change else datetime.utcnow(),
         )
         db.add(user)
         db.commit()

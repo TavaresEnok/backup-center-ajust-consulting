@@ -1,0 +1,59 @@
+device_id,device_name,effective_mode,before_status,before_error,retest_ok,retest_message,after_status,after_error,failure_category,failure_label,inferred_bucket,tested_at_utc
+08d62b51-ffd0-4437-ab29-9329c1236bd9,CCR-1036-EVENTO-VIBE,vpn,BackupStatus.FAILED,Rede inalcançável (nc): Não foi possível acessar a porta 5895. Backup abortado via precheck/fail-fast.,False,Rede inalcançável (nc): Não foi possível acessar a porta 5895. Backup abortado via precheck/fail-fast.,BackupStatus.FAILED,Rede inalcançável (nc): Não foi possível acessar a porta 5895. Backup abortado via precheck/fail-fast.,unknown,Outros,indefinido_requer_analise,2026-04-01T15:02:08.052555Z
+c76b9253-1338-4896-bcfb-f348d2295a19,Escola Soledade - RB3011,vpn,BackupStatus.FAILED,"A conexao foi fechada, recusada ou as credenciais estao incorretas. Detalhe: NetmikoTimeoutException: TCP connection to device failed.
+
+Common causes of this problem are:
+1. Incorrect hostname or IP address.
+2. Wrong TCP port.
+3. Intermediate firewall blocking access.
+
+Device settings: mikrotik_routeros 168.194.12.106:22022
+
+",False,"A conexao foi fechada, recusada ou as credenciais estao incorretas. Detalhe: NetmikoTimeoutException: Paramiko: 'No existing session' error: try increasing 'conn_timeout' to 15 seconds or larger.",BackupStatus.FAILED,"A conexao foi fechada, recusada ou as credenciais estao incorretas. Detalhe: NetmikoTimeoutException: Paramiko: 'No existing session' error: try increasing 'conn_timeout' to 15 seconds or larger.",timeout,Timeout,infra_rede_credencial,2026-04-01T15:03:13.852729Z
+5c9104ce-0529-48e0-9bbf-7fd36d9656fe,FLASHNET - SW ACESSO-LOCAL 01,jump_host,BackupStatus.FAILED,Falha inesperada durante o backup: ValueError: O dispositivo nao retornou uma configuracao valida.,True,Backup do Switch Huawei 'FLASHNET - SW ACESSO-LOCAL 01' concluido com sucesso (display current-configuration).,BackupStatus.SUCCESS,,unknown,Outros,indefinido_requer_analise,2026-04-01T15:03:37.612569Z
+5c097eb1-4b4d-4747-9b14-6b217c961958,FLASHNET - SW CORE-BOMBA_HEMETERIO,jump_host,BackupStatus.SUCCESS,,True,Backup do Switch Huawei 'FLASHNET - SW CORE-BOMBA_HEMETERIO' concluido com sucesso (display current-configuration).,BackupStatus.SUCCESS,,unknown,Outros,indefinido_requer_analise,2026-04-01T15:03:56.224149Z
+ecfba98e-f0bf-4cdb-91c7-ca0718bfe729,FLASHNET - SW CORE-CABO_S.A.,jump_host,BackupStatus.FAILED,"A conexao foi fechada, recusada ou as credenciais estao incorretas. Detalhes: huawei: ConnectionResetError: [Errno 104] Connection reset by peer; cisco_ios: SSHException: Timeout opening channel.; tplink_jetstream: SSHException: Timeout opening channel.",False,"A conexao foi fechada, recusada ou as credenciais estao incorretas. Detalhes: huawei: SSHException: Timeout opening channel.; cisco_ios: SSHException: Timeout opening channel.; tplink_jetstream: SSHException: Timeout opening channel.",BackupStatus.FAILED,"A conexao foi fechada, recusada ou as credenciais estao incorretas. Detalhes: huawei: SSHException: Timeout opening channel.; cisco_ios: SSHException: Timeout opening channel.; tplink_jetstream: SSHException: Timeout opening channel.",timeout,Timeout,infra_rede_credencial,2026-04-01T15:08:29.398104Z
+fe20488c-afd4-4d7b-9c59-db2c4a6ef08b,FLASHNET - SW CORE-CARPINA,jump_host,BackupStatus.FAILED,Falha inesperada durante o backup: ValueError: O dispositivo nao retornou uma configuracao valida.,True,Backup do Switch Huawei 'FLASHNET - SW CORE-CARPINA' concluido com sucesso (display current-configuration).,BackupStatus.SUCCESS,,unknown,Outros,indefinido_requer_analise,2026-04-01T15:09:05.872846Z
+84492b3e-a8cc-448b-83ca-0153c8be442c,FLASHNET - SW CORE-FLASHNET,jump_host,BackupStatus.FAILED,Falha inesperada durante o backup: ValueError: O dispositivo nao retornou uma configuracao valida.,True,Backup do Switch Huawei 'FLASHNET - SW CORE-FLASHNET' concluido com sucesso (display current-configuration).,BackupStatus.SUCCESS,,unknown,Outros,indefinido_requer_analise,2026-04-01T15:09:36.324790Z
+c1a6949d-922c-438c-99cb-ca65bd1ee291,FLASHNET - SW CORE-ITAPSSUMA,jump_host,BackupStatus.SUCCESS,,True,Backup do Switch Huawei 'FLASHNET - SW CORE-ITAPSSUMA' concluido com sucesso (display current-configuration).,BackupStatus.SUCCESS,,unknown,Outros,indefinido_requer_analise,2026-04-01T15:09:56.502765Z
+d9d9ec99-cc1b-479e-9662-05288015d55a,FLASHNET - SW CORE-MARANGUAPE-01,jump_host,BackupStatus.FAILED,Falha inesperada durante o backup: ValueError: O dispositivo nao retornou uma configuracao valida.,True,Backup do Switch Huawei 'FLASHNET - SW CORE-MARANGUAPE-01' concluido com sucesso (display current-configuration).,BackupStatus.SUCCESS,,unknown,Outros,indefinido_requer_analise,2026-04-01T15:10:15.326691Z
+0a961b1c-a1f4-495f-b1a5-000d4e9d1d84,FLASHNET - SW CORE-MARANGUAPE-02,jump_host,BackupStatus.SUCCESS,,True,Backup do Switch Huawei 'FLASHNET - SW CORE-MARANGUAPE-02' concluido com sucesso (display current-configuration).,BackupStatus.SUCCESS,,unknown,Outros,indefinido_requer_analise,2026-04-01T15:10:35.990869Z
+40fb49c2-7467-48ea-afb8-12977753e562,FLASHNET - SW CORE-OURO-PRETO,jump_host,BackupStatus.SUCCESS,,True,Backup do Switch Huawei 'FLASHNET - SW CORE-OURO-PRETO' concluido com sucesso (display current-configuration).,BackupStatus.SUCCESS,,unknown,Outros,indefinido_requer_analise,2026-04-01T15:10:56.347621Z
+bb37c073-fa34-4d22-8cbd-b8b9771dd96e,FLASHNET - SW CORE-PASSARINHO,jump_host,BackupStatus.FAILED,Falha inesperada durante o backup: ValueError: O dispositivo nao retornou uma configuracao valida.,True,Backup do Switch Huawei 'FLASHNET - SW CORE-PASSARINHO' concluido com sucesso (display current-configuration).,BackupStatus.SUCCESS,,unknown,Outros,indefinido_requer_analise,2026-04-01T15:11:21.803307Z
+49781f66-e009-422d-8ceb-81c4972f9f6c,FLASHNET - SW CORE-RIO-DOCE,jump_host,BackupStatus.FAILED,Falha inesperada durante o backup: ValueError: O dispositivo nao retornou uma configuracao valida.,True,Backup do Switch Huawei 'FLASHNET - SW CORE-RIO-DOCE' concluido com sucesso (display current-configuration).,BackupStatus.SUCCESS,,unknown,Outros,indefinido_requer_analise,2026-04-01T15:11:47.435403Z
+d3202db9-6511-4339-87a1-1b7d5f1802b9,FLASHNET - SW CORE-SOCORRO,jump_host,BackupStatus.FAILED,Falha inesperada durante o backup: ValueError: O dispositivo nao retornou uma configuracao valida.,True,Backup do Switch Huawei 'FLASHNET - SW CORE-SOCORRO' concluido com sucesso (display current-configuration).,BackupStatus.SUCCESS,,unknown,Outros,indefinido_requer_analise,2026-04-01T15:12:07.928092Z
+6531dc02-6f31-4784-8f4f-c4581efa3001,FLASHNET - SW CORE-TEJIPIO,jump_host,BackupStatus.SUCCESS,,True,Backup do Switch Huawei 'FLASHNET - SW CORE-TEJIPIO' concluido com sucesso (display current-configuration).,BackupStatus.SUCCESS,,unknown,Outros,indefinido_requer_analise,2026-04-01T15:12:28.598255Z
+60db7f2d-7d58-4b9a-be2d-e3938490ddaa,FLASHNET - SW CORE-VASCO,jump_host,BackupStatus.FAILED,Falha inesperada durante o backup: ValueError: O dispositivo nao retornou uma configuracao valida.,True,Backup do Switch Huawei 'FLASHNET - SW CORE-VASCO' concluido com sucesso (display current-configuration).,BackupStatus.SUCCESS,,unknown,Outros,indefinido_requer_analise,2026-04-01T15:12:47.228177Z
+3a7dc5a1-a328-423e-b02d-d0b0fe76493c,Gerencia Flashnet,vpn,BackupStatus.FAILED,"A conexao foi fechada, recusada ou as credenciais estao incorretas. Detalhe: NetmikoTimeoutException: Paramiko: 'No existing session' error: try increasing 'conn_timeout' to 15 seconds or larger.",False,"A conexao foi fechada, recusada ou as credenciais estao incorretas. Detalhe: NetmikoTimeoutException: Paramiko: 'No existing session' error: try increasing 'conn_timeout' to 15 seconds or larger.",BackupStatus.FAILED,"A conexao foi fechada, recusada ou as credenciais estao incorretas. Detalhe: NetmikoTimeoutException: Paramiko: 'No existing session' error: try increasing 'conn_timeout' to 15 seconds or larger.",timeout,Timeout,infra_rede_credencial,2026-04-01T15:13:53.770302Z
+6b972bf1-90b7-4263-8d8f-0573b1d297cc,NOC FLASHNET,vpn,BackupStatus.FAILED,Rede inalcançável (nc): Não foi possível acessar a porta 5895. Backup abortado via precheck/fail-fast.,False,Rede inalcançável (nc): Não foi possível acessar a porta 5895. Backup abortado via precheck/fail-fast.,BackupStatus.FAILED,Rede inalcançável (nc): Não foi possível acessar a porta 5895. Backup abortado via precheck/fail-fast.,unknown,Outros,indefinido_requer_analise,2026-04-01T15:14:22.883294Z
+e67a4cee-e2db-4a86-9cb8-a9bf50664e13,RB 2011 - COMERCIAL BEZERRA - CENTRO,vpn,BackupStatus.FAILED,"A conexao foi fechada, recusada ou as credenciais estao incorretas. Detalhe: NetmikoTimeoutException: TCP connection to device failed.
+
+Common causes of this problem are:
+1. Incorrect hostname or IP address.
+2. Wrong TCP port.
+3. Intermediate firewall blocking access.
+
+Device settings: mikrotik_routeros 170.79.169.91:22022
+
+",False,"A conexao foi fechada, recusada ou as credenciais estao incorretas. Detalhe: NetmikoTimeoutException: Paramiko: 'No existing session' error: try increasing 'conn_timeout' to 15 seconds or larger.",BackupStatus.FAILED,"A conexao foi fechada, recusada ou as credenciais estao incorretas. Detalhe: NetmikoTimeoutException: Paramiko: 'No existing session' error: try increasing 'conn_timeout' to 15 seconds or larger.",timeout,Timeout,infra_rede_credencial,2026-04-01T15:15:29.877667Z
+5c3687b1-a59a-4093-9b8a-21e4881777a4,RB 2011 - COMERCIAL BEZERRA - MARANGUAPE,vpn,BackupStatus.FAILED,"A conexao foi fechada, recusada ou as credenciais estao incorretas. Detalhe: NetmikoTimeoutException: TCP connection to device failed.
+
+Common causes of this problem are:
+1. Incorrect hostname or IP address.
+2. Wrong TCP port.
+3. Intermediate firewall blocking access.
+
+Device settings: mikrotik_routeros 170.79.169.92:22022
+
+",False,"A conexao foi fechada, recusada ou as credenciais estao incorretas. Detalhe: NetmikoTimeoutException: Paramiko: 'No existing session' error: try increasing 'conn_timeout' to 15 seconds or larger.",BackupStatus.FAILED,"A conexao foi fechada, recusada ou as credenciais estao incorretas. Detalhe: NetmikoTimeoutException: Paramiko: 'No existing session' error: try increasing 'conn_timeout' to 15 seconds or larger.",timeout,Timeout,infra_rede_credencial,2026-04-01T15:16:35.631989Z
+01c53628-bd4a-4505-bd67-dedd2dac2a34,RB 2011 - COMERCIAL BEZERRA - PE 15,vpn,BackupStatus.FAILED,"A conexao foi fechada, recusada ou as credenciais estao incorretas. Detalhe: NetmikoTimeoutException: TCP connection to device failed.
+
+Common causes of this problem are:
+1. Incorrect hostname or IP address.
+2. Wrong TCP port.
+3. Intermediate firewall blocking access.
+
+Device settings: mikrotik_routeros 170.79.169.90:22022
+
+",False,"A conexao foi fechada, recusada ou as credenciais estao incorretas. Detalhe: NetmikoTimeoutException: Paramiko: 'No existing session' error: try increasing 'conn_timeout' to 15 seconds or larger.",BackupStatus.FAILED,"A conexao foi fechada, recusada ou as credenciais estao incorretas. Detalhe: NetmikoTimeoutException: Paramiko: 'No existing session' error: try increasing 'conn_timeout' to 15 seconds or larger.",timeout,Timeout,infra_rede_credencial,2026-04-01T15:17:41.479714Z
+81b98c5b-6148-4274-93d1-01e7748a8ab8,RENOVENET - ROUTER - HW NE8000 BORDA,jump_host,BackupStatus.SUCCESS,,True,Backup de 1 configuracoes criado com sucesso.,BackupStatus.SUCCESS,,unknown,Outros,indefinido_requer_analise,2026-04-01T15:18:02.644271Z

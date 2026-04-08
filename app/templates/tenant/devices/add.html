@@ -41,7 +41,8 @@
                         <option value="{{ type.id }}"
                             data-default-port="{{ type.default_port or 22 }}"
                             data-use-telnet="{{ '1' if type.use_telnet else '0' }}"
-                            data-script="{{ type.script_name or '' }}">
+                            data-script="{{ type.script_name or '' }}"
+                            data-required-parameters="{{ (type.required_parameters or '')|replace('\n', ',') }}">
                             {{ type.name }}{% if type.category %} ({{ type.category|upper }}){% endif %}
                         </option>
                         {% endfor %}
@@ -101,6 +102,16 @@
                     class="rounded text-brand-600 focus:ring-brand-500 dark:bg-gray-700 dark:border-gray-600">
                 <label for="use_telnet" class="text-sm text-gray-700 dark:text-gray-300">Usar Telnet (legado)</label>
             </div>
+
+            <div id="extra-parameters-panel" class="mt-6 pt-6 border-t border-gray-100 dark:border-gray-700 hidden">
+                <div class="flex items-center justify-between gap-3 mb-4">
+                    <div>
+                        <h4 class="text-sm font-semibold text-gray-900 dark:text-white">Parametros extras do script</h4>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">Campos como `enable_password`, `root_password`, `api_key` e segredos de Telnet/enable.</p>
+                    </div>
+                </div>
+                <div id="extra-parameters-fields" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
+            </div>
         </div>
 
         <div class="p-6 bg-white border border-gray-200 rounded-xl dark:bg-gray-800 dark:border-gray-700">
@@ -147,11 +158,71 @@
         const portInput = document.getElementById('port');
         const telnetCheckbox = document.getElementById('use_telnet');
         const scriptHint = document.getElementById('script-hint');
+        const extraPanel = document.getElementById('extra-parameters-panel');
+        const extraFields = document.getElementById('extra-parameters-fields');
+        const typeMetadata = {{ type_metadata|tojson }};
+
+        function prettifyLabel(name) {
+            return (name || '')
+                .replace(/_/g, ' ')
+                .replace(/\b\w/g, (char) => char.toUpperCase());
+        }
+
+        function isSensitiveParameter(name) {
+            return /(password|secret|token|key)/i.test(name || '');
+        }
+
+        function renderExtraParameters(typeId) {
+            extraFields.innerHTML = '';
+            const metadata = typeMetadata[typeId] || {};
+            const params = (metadata.required_parameters || []).filter((item) => {
+                return !['username', 'password', 'ip_address', 'host', 'hostname', 'port', 'use_telnet'].includes(item);
+            });
+
+            if (!params.length) {
+                extraPanel.classList.add('hidden');
+                return;
+            }
+
+            params.forEach((paramName) => {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'form-control';
+
+                const label = document.createElement('label');
+                label.className = 'block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1';
+                label.setAttribute('for', `extra__${paramName}`);
+                label.textContent = prettifyLabel(paramName);
+
+                const input = document.createElement('input');
+                input.type = isSensitiveParameter(paramName) ? 'password' : 'text';
+                input.name = `extra__${paramName}`;
+                input.id = `extra__${paramName}`;
+                input.className = 'w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-brand-500 focus:border-brand-500';
+                input.autocomplete = 'off';
+                input.placeholder = isSensitiveParameter(paramName)
+                    ? `Informe ${prettifyLabel(paramName)}`
+                    : `Valor de ${prettifyLabel(paramName)}`;
+
+                const help = document.createElement('p');
+                help.className = 'mt-1 text-xs text-gray-500 dark:text-gray-400';
+                help.textContent = isSensitiveParameter(paramName)
+                    ? 'Segredo adicional usado pelo script.'
+                    : 'Parametro adicional exigido pelo script deste tipo.';
+
+                wrapper.appendChild(label);
+                wrapper.appendChild(input);
+                wrapper.appendChild(help);
+                extraFields.appendChild(wrapper);
+            });
+
+            extraPanel.classList.remove('hidden');
+        }
 
         function applyTypeDefaults() {
             const selected = typeSelect.options[typeSelect.selectedIndex];
             if (!selected || !selected.value) {
                 scriptHint.classList.add('hidden');
+                renderExtraParameters(null);
                 return;
             }
             const defaultPort = selected.dataset.defaultPort;
@@ -169,9 +240,12 @@
             } else {
                 scriptHint.classList.add('hidden');
             }
+
+            renderExtraParameters(selected.value);
         }
 
         typeSelect.addEventListener('change', applyTypeDefaults);
+        applyTypeDefaults();
     });
 </script>
 {% endblock %}

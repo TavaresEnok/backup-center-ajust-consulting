@@ -10,7 +10,7 @@ from sqlalchemy.orm import joinedload
 from app.models.activity_log import ActivityLog
 from app.models.api_token import ApiToken
 from app.core.database import SessionLocal
-from app.core.security import get_password_hash
+from app.core.security import get_password_hash, validate_password_strength
 from app.models.backup import Backup, BackupStatus
 from app.models.device import Device
 from app.models.device_group import DeviceGroup
@@ -517,6 +517,11 @@ def add_tenant():
                 flash("Todo cliente precisa de um plano ativo ou acesso ilimitado.", "error")
                 return render_template("superadmin/tenants/add.html", plans=plans)
 
+            password_error = validate_password_strength(owner_password)
+            if password_error:
+                flash(password_error, "error")
+                return render_template("superadmin/tenants/add.html", plans=plans)
+
             if db.query(Tenant).filter(Tenant.slug == slug).first():
                 flash("Esse slug já está em uso por outro cliente.", "error")
                 return render_template("superadmin/tenants/add.html", plans=plans)
@@ -547,6 +552,8 @@ def add_tenant():
                 role=UserRole.TENANT_OWNER,
                 is_active=True,
                 email_verified=False,
+                must_change_password=True,
+                password_changed_at=None,
             )
             db.add(owner)
             db.commit()

@@ -5,7 +5,7 @@ from sqlalchemy import func, or_
 from sqlalchemy.orm import joinedload
 
 from app.core.database import SessionLocal
-from app.core.security import get_password_hash
+from app.core.security import get_password_hash, validate_password_strength
 from app.models.activity_log import ActivityLog
 from app.models.api_token import ApiToken
 from app.models.backup import Backup
@@ -175,8 +175,9 @@ def add_user():
                     tenant_roles=TENANT_ALLOWED_ROLES,
                     role_labels=ROLE_LABELS,
                 )
-            if len(password) < 6:
-                flash("A senha deve ter no minimo 6 caracteres.", "error")
+            password_error = validate_password_strength(password)
+            if password_error:
+                flash(password_error, "error")
                 return render_template(
                     "superadmin/users/add.html",
                     tenant_options=_tenant_options(db),
@@ -237,6 +238,8 @@ def add_user():
                 password_hash=get_password_hash(password),
                 role=role,
                 is_active=True,
+                must_change_password=True,
+                password_changed_at=None,
             )
             db.add(user)
             db.commit()
@@ -356,10 +359,13 @@ def edit_user(user_id):
             user.role = target_role
 
             if password:
-                if len(password) < 6:
-                    flash("A senha deve ter no minimo 6 caracteres.", "error")
+                password_error = validate_password_strength(password)
+                if password_error:
+                    flash(password_error, "error")
                     return _render_edit(db, user)
                 user.password_hash = get_password_hash(password)
+                user.must_change_password = True
+                user.password_changed_at = None
 
             db.commit()
             flash("Usuario atualizado com sucesso.", "success")

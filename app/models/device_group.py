@@ -46,4 +46,5 @@ class DeviceGroup(Base, TimestampMixin):
     # Relationships
     tenant = relationship('Tenant', back_populates='device_groups')
     devices = relationship('Device', back_populates='group')
+    subgroups = relationship('DeviceSubgroup', back_populates='group', cascade='all, delete-orphan')
 

@@ -1,0 +1,877 @@
+asset_id,name,domain,ip,port,protocol,use_telnet,username,password,platform,payload_kind
+2c301fef-4d52-4bb4-a72d-b32617add555,ICONLINK - SW DM4380,GRUPO VESC(f088cb75-3312-44c1-a776-7a31382dddc9),10.255.254.3,22,ssh,False,ajust,j8]{78u*_M&e,Switch--ssh(35),switch
+8a98f138-4d15-4dd6-b84a-a37173279da6,GRUPO VESC - SW HW 6730 - CORE,GRUPO VESC(f088cb75-3312-44c1-a776-7a31382dddc9),10.255.254.1,22,ssh,False,vescnet,vescnet174,Switch--ssh(35),switch
+551fc045-0fb1-47e8-ad7e-b06d007ff481,BVNET - SW HUAWEI - CORE BVNET,BVNET(ebeee47d-ff40-4a6a-ad4f-3eb3562ebdb9),10.255.254.2,22,ssh,False,ajustconsulting,"T""2.zn}-a2I7",Switch--ssh(35),switch
+3dad51e6-a595-4ff7-9bd5-b1735959a52d,PIX FIBRA - OLT TPLINK - IBURA DE BAIXO,PIX FIBRA(2cceaf18-31a3-4e4f-87ad-9058af12b176),10.40.0.2,23,telnet,True,admin,123@mudar,OLT--telnet(40),olt
+a767013e-06a1-4b51-baa9-ebbbc52c202e,CYBERNET - OLT VSOL REAL GARDEN,CYBERNET(17e3eb3b-90c4-4d09-a991-c56725a2cd90),10.15.10.102,23,telnet,True,ajustconsulting,123@ajust,OLT--telnet(40),olt
+0368b67a-7354-4407-bd39-9a0ffe085bdd,ULTRANET - ROUTER - HW NE8000-M4,ULTRANET(88ab9cfe-afa6-46be-ad0e-e04107f02260),45.189.160.33,2241,ssh,False,ajustconsulting,@#$Keycode..1,Router--ssh(36),router
+beb6820f-b2e6-4af0-9892-dcbe08e7617d,PGI TELECOM - OLT INTELBRAS - GAMBA,PGI TELECOM*(29f662b9-fabe-4749-a733-336c78813f86),10.20.26.1,23,telnet,True,admin,@R3d3pg1#,OLT--telnet(40),olt
+c3701918-b126-4ed7-b0ef-eeef2678f233,PIX FIBRA - SW HW 5720 - JORDAO,PIX FIBRA(2cceaf18-31a3-4e4f-87ad-9058af12b176),172.16.2.50,22,ssh,False,ajust,4j0st@3819@#!,Switch--ssh(35),switch
+49b3e4e5-1a4f-47ae-9c47-2237fbab9ff0,RCR TELECOM - MK RB 1036 - AUT,-,190.89.58.96,8291,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+27afdf59-3fce-414c-81c7-5d4e7f096989,PIX FIBRA - OLT HW - MANGUEIRA UP CONNECT,PIX FIBRA(2cceaf18-31a3-4e4f-87ad-9058af12b176),172.19.53.62,23,telnet,True,ajust@emfibra,4j0st@3819@#!,OLT--telnet(40),olt
+ef545d5f-7080-46b7-95f6-c0143346a716,INSNET - MK RB CCR 1036 - AUT ABREU,-,45.160.221.252,8293,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+f1d11719-6074-4b14-9425-bd7bef9212b2,INSNET - MK RB CCR 2116 - AUT AURORA,-,45.160.221.32,45201,ssh,False,ajustconsulting,"pf""ZxKA1g28_",Winbox(46),router
+919ab3c4-9b64-45f9-975d-f8f4d83e140f,INSNET - MK RB CCR 1072 - BORDA/CGNAT,-,45.160.221.32,8294,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+83d8a1d3-673a-4403-b0d8-bb916a701f37,ULTRAFIBRA - MK RB 1036 - AUT ULTRAFIBRA,-,190.89.58.64,45003,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+6325fc2b-b6f7-4baa-85d8-a5081239e8de,NEW CONNECT - GATEWAY - ZABBIX - PEDRO - CLOUDSOLUTION,NEW CONNECT(29f4474f-0c20-4b58-bfc3-1ae5b902aabb),128.201.76.26,22120,ssh,False,claudio,34813379a,Gateway(11),router
+fbb12f86-ff01-4d48-b584-b41c22461864,ULTRAFIBRA - MK RB 2004 - BORDA ULTRAFIBRA,-,190.89.58.64,45002,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+12912ccb-9233-4253-9ad9-9934829f7613,INFOTEL - OLT ZTE - NOVA CAPITAL,INFOTEL(3c543b38-5d00-497c-aa7d-268bb90fbfa3),10.120.0.98,23,telnet,True,Infoz0n31,Infoz0n31,OLT--telnet(40),olt
+45f34993-8285-4691-9890-94d7e9c3f20c,GRUPO FLASH PB - OLT HW - RIO TINTO,-,177.221.47.5,23233,telnet,True,root,admin123,OLT--telnet(40),olt
+a67ad156-d888-4375-bc30-e654cf15d1a0,GRUPO FLASH PB - OLT HW - JACARAU,-,177.221.47.15,23051,telnet,True,sgpsgp1,sgpsgp18,OLT--telnet(40),olt
+a02f5032-09d6-4d2f-a37e-7bc4b052cfa1,GRUPO FLASH - A10,-,168.194.12.126,22,ssh,False,admin,lbu2e6tG07K3CfFW,A10(38),router
+1aa71c24-91a6-4e25-8e7d-38a930aebadb,GRUPO FLASH - ROUTER - HW NE20 AUT/BORDA,-,170.79.170.130,53267,ssh,False,ajustconsulting,@#$Ajust..1,Huawei(15),router
+d6617425-f403-485e-b25d-8ca2e8a10f40,GRUPO FLASH - GATEWAY - ZABBIX SERVER,GRUPO FLASHNET(13eafede-b004-438a-9b47-f28ff39368c4),170.79.171.238,24567,ssh,False,ibtelecom,",307*C59H+cu",Gateway(11),router
+6e7c4b6d-4789-4a09-b9b1-d53911c60d38,GRUPO FLASH - OLT HW - ARTHUR,-,168.194.15.42,23088,telnet,True,ajustconsulting,6mKOJyHtkguy,OLT--telnet(40),olt
+48994720-4210-4c92-9e52-a3710fc52f7f,GRUPO FLASH - OLT HW - AURORA,-,170.79.170.150,23088,telnet,True,ajustconsulting,0tNGxnoVs8Ts,OLT--telnet(40),olt
+e942b60c-f236-4ec3-97af-1bac67070ba3,GRUPO FLASH - OLT HW - BEIRA MAR,-,170.79.170.138,23088,telnet,True,ajustconsulting,8YxZSlIYfu6f,OLT--telnet(40),olt
+f2d13670-6007-43fa-9f4a-5473a437acac,GRUPO FLASH - OLT HW - JAGUARANA,-,170.79.170.134,23051,telnet,True,sgpacesso,sgp18tripas,OLT--telnet(40),olt
+67ec7bbe-0707-4e4f-83e5-3d7de31a2878,GRUPO FLASH - OLT HW - MARANGUAPE 1,-,170.79.169.206,23088,telnet,True,sgpsgp,!@#AJUST123,OLT--telnet(40),olt
+f771bbc6-8ac5-49f6-bd73-dbc0ef9c729f,GRUPO FLASH - OLT HW - NOBRE,-,170.79.170.154,23088,telnet,True,sgpacesso,sgp18tripas,OLT--telnet(40),olt
+d4b6db54-4039-4d21-8d2a-b597326f73b3,GRUPO FLASH - OLT HW - VILA TORRES GALVAO,-,170.79.168.134,23088,telnet,True,sgpacesso,sgp18tripas,OLT--telnet(40),olt
+afb5be1c-e15c-4ab0-8949-f78acb2bd783,GRUPO FLASH - SW HW 5732 - ARTHUR,-,10.77.77.12,22,ssh,False,ajustconsulting,@#$ajust..,Switch--ssh(35),switch
+590a3d06-7d3c-4eac-9062-415012f57454,GRUPO FLASH - SW HW 6730 - NOBRE,-,10.77.77.1,22,ssh,False,ajustconsulting,@#$ajust..1,Switch--ssh(35),switch
+1480f7f1-65b6-46cc-bafb-d7b730b4e929,GRUPO FLASH - SW HW 5732 - MARANGUAPE,-,10.77.77.13,22,ssh,False,ajustconsulting,@#$ajust..,Switch--ssh(35),switch
+1c20deb1-bcc8-4043-b439-e65983b9bc9c,GRUPO FLASH - SW HW 5732 - AURORA,-,10.77.77.11,22,ssh,False,ajust,6(]WfMB-KK6n,Switch--ssh(35),switch
+ee256959-bad1-4b00-a4e1-c33c4256aa67,GRUPO FLASH - SW HW 5732 - JAGUARANA,-,10.77.77.14,22,ssh,False,ajustconsulting,@#$ajust..1,Switch--ssh(35),switch
+577186e4-6e5c-4f88-8cf9-fc624497f9a8,PIX FIBRA - OLT HW CLICKNET,PIX FIBRA(2cceaf18-31a3-4e4f-87ad-9058af12b176),172.19.51.2,22,ssh,False,ajust@emfibra,4j0st@3819@#!,OLT--ssh(39),olt
+e935d10e-2483-453f-a8d4-135791212af2,CELLNET - OLT INTELBRAS - G8,-,190.89.232.2,3023,telnet,True,ajust,123@mudar,OLT--telnet(40),olt
+53c6dbee-c152-4735-9d48-0d3060fe1b51,PIX FIBRA - OLT DISCOVERY,PIX FIBRA(2cceaf18-31a3-4e4f-87ad-9058af12b176),172.19.51.142,22,ssh,False,ajust@emfibra,4j0st@3819@#!,OLT--ssh(39),olt
+1a1ac118-c393-4184-8a7b-ec4e596464a6,PIX FIBRA - MK CRS 309 DISCOVERY,-,10.31.254.86,8272,ssh,False,ajust,4j0st@3819@#!,Winbox(46),router
+0fb1d502-5876-40d3-b27c-95e073b3d100,CELLNET - ROUTER - HW NE8000 AUT/BORDA,-,190.89.232.3,27039,ssh,False,ajust@consulting,RK$Q6i^s]68b,Huawei(15),router
+a0256709-7271-4cab-89c7-f8917fd8e89a,UP CONNECT FIBRA - OLT HW - BOMBA,UP CONNECT FIBRA(e9ef84ae-0aa2-4b20-9c02-171026968e95),10.200.0.26,22,ssh,False,ajustcon,@Ajust$mudar1,OLT--ssh(39),olt
+51183883-999e-4304-b90a-d13fac7ec23e,UP CONNECT FIBRA - OLT HW,UP CONNECT FIBRA(e9ef84ae-0aa2-4b20-9c02-171026968e95),172.19.50.6,22,ssh,False,ajustcon,@Ajust$mudar1,OLT--ssh(39),olt
+e238ca89-9b69-4163-b04c-09af1c35b9a7,SOFIANET - SW HW - JAGUARANA,SOFIANET(b5dfae2d-13da-4bc3-82e0-944170fd14c6),10.11.22.2,22,ssh,False,sofianet,@S0fianet#$321,Switch--ssh(35),switch
+475a1502-1f1b-489f-afb3-f71687cf4c60,VOICE CORCP - SW HW S620,-,190.89.34.2,2323,telnet,True,ajustc,ajustc123,Switch--telnet(47),switch
+f8e0aa82-6873-422e-ad3c-67b3fc5c8eba,PIX FIBRA - OLT HW UP,PIX FIBRA(2cceaf18-31a3-4e4f-87ad-9058af12b176),172.19.53.62,23,telnet,True,ajust@emfibra,4j0st@3819@#!,OLT--telnet(40),olt
+46898d4a-8f61-490d-9811-a48bb0f31f77,PONTE DIGITAL - SW HW - CORE 6730,PONTE DIGITAL(42477ec3-a5c5-4c79-a070-a72872e00b5a),10.200.150.4,22250,ssh,False,ajust,5r0j1c\KmJ$/,Switch--ssh(35),switch
+b5c7bd6b-5e38-48f7-a223-6e6f829396af,MAXIMANET - SW HW 6720 - CORE CABO,-,45.164.8.24,22653,ssh,False,ajustconsulting,@#$ajust..1,Switch--ssh(35),switch
+00f81a40-00a3-4f51-bf1d-badb7f76cf46,ULTRANET - MK RB 1016 - CREA,-,192.141.107.42,5895,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+6a93e689-e92c-4f72-a45b-6244978a7f0a,ULTRANET - MK RB 1036 - GERENCIA,-,192.141.106.6,8484,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+b598c4ac-48d8-4fc0-8b52-672983ee645e,PIX FIBRA - MK RB 2011 GERENCIA-OSPF,-,172.16.0.89,8291,ssh,False,ajust,4j0st@3819@#!,Winbox(46),router
+6cb3b28d-b2d8-4938-be13-5c95fd364244,PONTE DIGITAL - MK RB 1036 -  GERÊNCIA,-,170.80.48.1,22190,ssh,False,ajust,3;a1H_gw^f~2[]JseK?,Winbox(46),router
+cc1c53dd-f487-4a98-b3bb-7ff171f8bf46,PIX FIBRA - SW CISCO - TOTO TERRIE_FIBRA,PIX FIBRA(2cceaf18-31a3-4e4f-87ad-9058af12b176),172.31.255.36,22,ssh,False,ajust,",]'N5c81q,&v",Cisco(14),router
+aca19643-b216-483b-9ec8-216c29d7f585,I4 TELECOM - SW HW CORE MATUTA,-,45.187.169.228,22455,ssh,False,ajust,@#$ajust..,Huawei(15),router
+c069051b-f141-4025-b80d-24d1fe5dfa57,REALNET - MK RB 4011 - GRAMAME,-,45.234.9.30,8291,ssh,False,ajustconsulting,L2^@A}2/sP4S,Winbox(46),router
+bfacb33c-ea3b-425d-801c-5761b43cb1f5,PIX FIBRA - OLT ZTE - CURCURANA-LINEFIBRA,PIX FIBRA(2cceaf18-31a3-4e4f-87ad-9058af12b176),172.19.53.14,22,ssh,False,lideri,9psUG^K7Ea3),OLT--ssh(39),olt
+24219c05-039f-473d-b6e5-083704804f77,INFORTEC - ROUTER - HW NE8000 M8 AUT,-,138.94.215.2,22022,ssh,False,ajustconsulting,7%aG4g1z%321,Huawei(15),router
+723d7f0e-5ce1-485d-b34c-77c2c40c4f6f,INFORTEC - ROUTER - HW NE8000 M8 BORDA,-,138.94.215.1,22022,ssh,False,ajustconsulting,7%aG4g1z%321,Huawei(15),router
+7747a566-a4a8-4db3-8157-5898458ef17a,UP CONNECT FIBRA - OLT ZTE - CENTRO,UP CONNECT FIBRA(e9ef84ae-0aa2-4b20-9c02-171026968e95),172.19.50.42,22,ssh,False,ajustcon,@Ajust$mudar1,OLT--ssh(39),olt
+2069385e-33a1-4739-9219-f1061ee63736,AF TELECOM - HILLSTONE,-,179.51.148.22,22,ssh,False,hillstone,@aftelecom#$321,Hillstone(37),router
+0aebfc2c-4a2e-41e7-86c7-fd4314a0e07e,AF TELECOM - MK SW CRS - JARDIM ATLÂNTICO 01,-,179.51.150.12,23036,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+b8e4cbb6-a4c7-4eb4-bcb5-4f310c6c7c77,AF TELECOM - MK SW CRS - JARDIM ATLÂNTICO 02,-,179.51.150.12,23037,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+1d2d00c9-de4f-4bef-996b-2449e279fa79,AF TELECOM - MK SW CRS - MIRUEIRA,-,179.51.150.12,8299,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+f506ae75-33e9-4b1d-a067-82d2c0c72b39,AF TELECOM - MK RB 3011 - GERENCIA / VPN,-,179.51.148.10,5895,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+2ab08c94-debb-4ea7-b013-eecbfe462e83,AF TELECOM - SW HW 5732 - JANGA,-,179.51.150.14,22783,ssh,False,ajust,@#$ajust..,Switch--ssh(35),switch
+ef84bf59-a58e-47af-96d9-a08167866e93,AF TELECOM -  SW HW S732  - JARDIM ATLANTICO 02,-,179.51.150.12,2223,ssh,False,ajust,@ajust#$321,Switch--ssh(35),switch
+e4ece42e-931e-492b-92a8-d075ad7d1f7a,AF TELECOM - SW HW S6730 - CORE OLINDA,-,179.51.150.12,20006,ssh,False,ajustconsulting,@#$ajust..1,Switch--ssh(35),switch
+af396729-e983-48f5-b7b7-494169c9c592,AF TELECOM - OLT HW MA5800,-,179.51.150.12,2303,telnet,True,sgpsgp,sgp142536,OLT--telnet(40),olt
+8c7ab972-44dc-4fad-9af7-0c50951d76b6,AF TELECOM - MK SW CRS 317 - RIO DOCE,-,179.51.150.14,23035,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+348321a7-76b3-45f2-b1ae-836d198eff9f,AF TELECOM - MK SW CRS 317 - BEIRA MAR,-,179.51.151.1,58951,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+941db53f-3537-416e-b19e-ae66c4ce407b,AF TELECOM - MK RB 1009 - BORDA JANGA,-,179.51.150.14,58951,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+ce680108-9fe3-4191-9253-584b391a7ae6,AF TELECOM - MK RB 1036 - BEIRA MAR,-,179.51.151.0,58951,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+af5eda9d-5a37-4efd-b621-813d21ff7c39,AF TELECOM - MK SW CRS 317 - JANGA,-,179.51.148.68,58951,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+6b115e4c-4bad-4092-bb09-ea738ae357da,AF TELECOM - MK RB 1036 - GERENCIA,-,179.51.150.12,58951,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+461c1283-571d-4ea4-8625-353001c8f7ed,AF TELECOM - ROUTER - HW NE8000 AUT/BORDA,-,179.51.150.15,21179,ssh,False,ajustconsulting,@#$Ajust..1,Huawei(15),router
+c86251b9-0545-410a-ad54-3ad29da198f3,AF TELECOM - GATEWAY - ZABBIX SERVER,AF TELECOM(0cd0c3af-be1b-421c-8015-453a1e200608),179.51.150.18,22187,ssh,False,ajust,jx2NI1}x43%M,Gateway(11),router
+f1656536-50f3-4885-93da-b37318ccbb1d,AF TELECOM - OLT TPLINK - MIRUEIRA,-,179.51.150.12,2023,telnet,True,admin,123@mudar,OLT--telnet(40),olt
+9dbb2f30-d8ab-4f37-95fc-a48a708f291f,AF TELECOM - OLT VSOL GPON - BEIRA MAR,-,179.51.151.0,4323,telnet,True,ajust,@#$ajust..,OLT--telnet(40),olt
+ef383c24-2bc3-42e0-b7ed-f2988aab1727,AF TELECOM - OLT VSOL EPON - JANGA 01,-,179.51.150.14,2042,telnet,True,ajust,"8X{""XGsv>Lo0W).-",OLT--telnet(40),olt
+233225da-1f3b-441e-9851-f0a3dd6b9f75,AF TELECOM - OLT VSOL EPON - JANGA 02,AF TELECOM(0cd0c3af-be1b-421c-8015-453a1e200608),179.51.150.14,2041,telnet,True,ajust,6<IH&@?R9;53V;NE,OLT--telnet(40),olt
+2a879ba5-7195-49cb-a37d-49cc7bac83d8,AF TELECOM - OLT VSOL EPON - RIODOCE,-,179.51.150.14,2040,telnet,True,ajust,123@ajust,OLT--telnet(40),olt
+c2a94080-e643-4e9f-8825-9a54eae0795e,AF TELECOM - OLT VSOL GPON - RIODOCE,-,179.51.150.14,2023,telnet,True,ajust,123@ajust,OLT--telnet(40),olt
+485b45b4-1783-469a-94bb-775a032dbcf8,PIX FIBRA - SW HW 6730 - COMPULINE,PIX FIBRA(2cceaf18-31a3-4e4f-87ad-9058af12b176),172.16.0.2,22,ssh,False,ajust@emfibra,4j0st@3819@#!,Switch--ssh(35),switch
+e973397a-a0e9-41d0-bf4f-f988e7c175e8,PIX FIBRA - SW HW 6730 - COMPULINE-BVIAGEM,PIX FIBRA(2cceaf18-31a3-4e4f-87ad-9058af12b176),172.16.0.33,22,ssh,False,ajust@emfibra,4j0st@3819@#!,Switch--ssh(35),switch
+080817f1-ec1c-4661-a4eb-c308e3f86459,PIX FIBRA - SW HW 6720 - BARRA-DE-JANGADA,PIX FIBRA(2cceaf18-31a3-4e4f-87ad-9058af12b176),172.16.0.101,22,ssh,False,ajust@emfibra,4j0st@3819@#!,Switch--ssh(35),switch
+8aa0814c-3bc3-4bf4-a01b-285a9bee9fc1,PONTE DIGITAL - HILLSTONE,-,170.80.48.58,22,ssh,False,hillstone,8lFVOYYZuUyV@,Hillstone(37),router
+9a75a462-c03f-4f30-b496-82b24b3d007d,MOOD TELECOM - OLT HW X17 - NOVA MANGUABEIRA,MOOD TELECOM(e20791d7-c179-4927-a97d-fcedee37770f),172.17.0.1,22,ssh,False,ajustconsulting,7hmtE!GEVfcC,OLT--ssh(39),olt
+99c05355-a5c4-40c5-9c2a-a9f823a03ffe,FLASHNET - GATEWAY - ZABBIX SERVER,FLASHNET(2760dac8-09a1-4e72-bbb2-a9ca6608cd9b),168.194.12.14,2279,ssh,False,ajust,S8c2mvieoEj2Zc!L,Gateway(11),router
+8feb3b4d-880d-415f-a908-5c502daf819f,PIX FIBRA - OLT HW - HWNET MADALENA,PIX FIBRA(2cceaf18-31a3-4e4f-87ad-9058af12b176),172.16.29.130,22,ssh,False,ajust@emfibra,4j0st@3819@#!,OLT--ssh(39),olt
+61f3f339-2563-4b0f-ae61-aa1fe744c76d,MULTNET - MK CRS 317 - SW CORE CURADO,-,200.81.55.129,5310,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+928b3d4f-d06e-441a-87be-af0a67af3f43,MULTNET - MK RB 1036 - AUT CURADO,-,200.81.55.129,5311,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+ea212c3b-a490-4b9e-bebd-951cca7a1626,PIX FIBRA - SW HW 6730 - CORE EFIBRA BARRA,PIX FIBRA(2cceaf18-31a3-4e4f-87ad-9058af12b176),172.16.0.35,22,ssh,False,ajust@emfibra,4j0st@3819@#!,Switch--ssh(35),switch
+3feb998f-e166-4d6d-bac4-b5cb59e87e0e,I4 TELECOM - MK CCR - EVENTOS HOTSPOT,-,45.187.168.208,5558,ssh,False,ajust,7\=2w`nt4`Gw,Winbox(46),router
+fcc11398-cd90-4885-99bf-3fd2aa4575bf,G5 CABO - OLT FH,-,45.187.19.6,2330,telnet,True,GEPON,GEPON,OLT--telnet(40),olt
+b6c31ec2-ec38-44c3-83e7-7bade2f407de,MULTNET - MK RB 3011 - MULTNET-CAVAELEIRO,-,200.81.55.129,5312,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+7f8a24b4-e856-4923-bc31-69e04b8c2060,MULTNET - MK CCR 1009 - BORDA CURADO,-,200.81.55.129,5300,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+aa957e81-9879-4174-949e-7ee33a756a48,MOOD TELECOM - OLT HUAWEI - SAN MARTIN,-,45.234.100.210,23523,telnet,True,ajustconsulting,4|Xy5;uELJ=k,OLT--telnet(40),olt
+e1e4fa40-7d3b-43b2-9fa1-f28450d2271e,MOOD TELECOM - MK RB 1009 - CONCENTRADOR  CURADO1,-,45.234.100.206,20391,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+f2c2b0d6-7b63-418a-b85c-fc15e0d38ac8,MOOD TELECOM - MK RB 1009 - CONCENTRADOR SAN-MARTIN CONCENTRADOR,-,45.234.100.210,18291,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+2642f3f4-49a4-473e-8bda-5cf729a259ae,INFORTEC - MK TIMBI,-,187.86.163.14,12233,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+b8d13a1c-26e8-41f5-9d81-9ccce64e717a,VIBE TELECOM - SW HW 5720 - POP ABREU,VIBE TELECOM(48f83ff4-913c-438a-9ad8-be29afcf10fa),172.31.255.20,22,ssh,False,ajust,@#$ajust..,Switch--ssh(35),switch
+cca26d9d-21ed-4e41-a141-bc9f869a4850,POWERNET - OLT HW - IPSEP,-,187.17.137.188,23352,ssh,False,ajustconsulting,@#$!Ajust..12,OLT--ssh(39),olt
+a5ddf7b6-21ce-4778-ae69-87b5a58e3f5f,GRUPO TELECOM - OLT HW - INFORNET,-,181.225.168.128,2331,telnet,True,sgpinfornet,sgp@2021,OLT--telnet(40),olt
+1bcc9d3d-4cbe-4554-a06b-e5ceb889b47f,REALNET - OLT HW,-,170.81.76.168,50022,ssh,False,ajustconsulting,7(9QKze529vf6,OLT--ssh(39),olt
+46042638-895b-4a54-b689-1fb3fe12f2a0,INET - OLT FH - 01,-,177.71.83.255,22534,telnet,True,GEPON,GEPON,OLT--telnet(40),olt
+9b20e59d-1dc6-4ea6-b2a0-17579f3cf699,INET - OLT FH - CAIC,-,177.71.83.255,22533,telnet,True,GEPON,GEPON,OLT--telnet(40),olt
+42b1878a-403c-4a24-8ba7-350bfc7e99be,PONTE DIGITAL - OLT DIGISTAR - COHAB,PONTE DIGITAL(42477ec3-a5c5-4c79-a070-a72872e00b5a),10.12.108.2,22,ssh,False,admin,1rEJLQiLbtxq,OLT--ssh(39),olt
+f0412308-5884-4e30-bf23-2f344cab8cb9,PONTE DIGITAL - OLT INTELBRAS - CANDEIAS,PONTE DIGITAL(42477ec3-a5c5-4c79-a070-a72872e00b5a),10.12.106.2,23,telnet,True,admin,admin,OLT--telnet(40),olt
+ad538108-0066-4d0c-b036-1f3704673feb,PONTE DIGITAL - OLT HW - PC,PONTE DIGITAL(42477ec3-a5c5-4c79-a070-a72872e00b5a),10.12.104.2,22,ssh,False,ajustconsulting,5r0j1c\KmJ$/,OLT--ssh(39),olt
+0a73de74-3ac7-4291-a89e-13cf58b80c38,PONTE DIGITAL - OLT HW - MEGAMIDIA,PONTE DIGITAL(42477ec3-a5c5-4c79-a070-a72872e00b5a),10.12.107.2,22,ssh,False,ajustconsulting,5r0j1c\KmJ$/,OLT--ssh(39),olt
+df1dd0f8-9344-4783-befb-e4314be6f3e1,PONTE DIGITAL - OLT HW - MANGUEIRINHA,-,170.80.49.76,23,telnet,True,ajustconsulting,5r0j1c\KmJ$/,OLT--telnet(40),olt
+9085c502-1dbd-46fb-beec-5092b13d4685,PONTE DIGITAL - OLT HW - GAIBU,-,170.80.49.78,23,telnet,True,equipeti,digital01,OLT--telnet(40),olt
+b0cc0a4c-d705-485f-a2fa-2fa8241a6421,PONTE DIGITAL - OLT HW - SOTAVE / PONTEZINHA,PONTE DIGITAL(42477ec3-a5c5-4c79-a070-a72872e00b5a),10.12.110.2,23,telnet,True,equipeti,digital01,OLT--telnet(40),olt
+526faa05-c059-4db7-9f69-ea735268c950,FLASHNET - SW CORE-CDN,FLASHNET(2760dac8-09a1-4e72-bbb2-a9ca6608cd9b),10.99.88.25,53276,ssh,False,ajust,@#$keycode..,Switch--ssh(35),switch
+3a8f3364-65b0-4509-88a0-26a422da6e8d,PIX FIBRA - SW HW 6730 - JARDIM,PIX FIBRA(2cceaf18-31a3-4e4f-87ad-9058af12b176),172.16.0.34,22,ssh,False,thiago,753War159@,Switch--ssh(35),switch
+5d415610-38e8-4931-b096-ae646f434557,PIX FIBRA - OLT ZTE - OLT UP CONNECT,-,172.19.53.74,22,ssh,False,zte,kolx2yksu@123,OLT--ssh(39),olt
+4d9b2ebf-134c-4b58-afb1-68b1c80e8aca,MULTNET - OLT HUAWEI - CURADO,-,45.235.0.42,8655,ssh,False,ajustconsulting,@47t0Pqz!Tye3,OLT--ssh(39),olt
+05a8c174-ed02-48e5-b1bf-9e912eee19f2,JRNET - MK RB CCR 1036 - AUT,-,168.194.15.174,7979,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+9f2b94da-eef9-4ca5-ac28-a8e7ac5eda41,VIBE TELECOM - OLT ZTE - PAU AMARELO,-,187.17.137.188,3321,telnet,True,acessosgp,Oo&DyT%G/XYR,OLT--telnet(40),olt
+82befa5f-7149-4e6d-a17a-79130ce69180,PGI TELECOM - OLT HW - PONTA DE PEDRAS,PGI TELECOM*(29f662b9-fabe-4749-a733-336c78813f86),10.15.10.102,23,telnet,True,root,admin123,OLT--telnet(40),olt
+95fe32ee-b780-416f-8ba9-8f7c250569a3,ONDANET - OLT HW - MARIA FARINHA,-,187.17.137.188,33051,telnet,True,sgpsgp,sgphw18,OLT--telnet(40),olt
+4fb5f221-45a2-463f-b079-18647e868545,INFORTEC - SW HW 6730 - JPII,-,187.86.163.14,2232,ssh,False,ajustconsulting,Keycode..!@#,Switch--ssh(35),switch
+ce04d0fc-a64c-41b6-b419-b2dacb2ddc8c,UP CONNECT FIBRA - MK CCR 1009 - AUT JORDÃO,-,179.48.12.10,8272,ssh,False,ajust,p(5ck{821Ev?,Winbox(46),router
+4473ba8a-f416-46ea-b1b5-4ae675113434,LINECONECT - OLT HW X15,-,170.150.139.249,2862,telnet,True,sgpsgp,suporte@2024@,OLT--telnet(40),olt
+9707bf20-dbbf-4974-b174-bde789ed0736,LINECONECT - OLT ZTE - TAQUARI,-,170.150.139.249,37175,ssh,False,zte,L1N3@2018,OLT--ssh(39),olt
+6780a35f-f351-4b0f-815b-e3fb9c858308,INFOTEL - OLT DM - SILVANOPOLIS - SVP,INFOTEL(3c543b38-5d00-497c-aa7d-268bb90fbfa3),10.120.0.14,22088,ssh,False,sgpconexaoolt,sgp@suporte.oltinfotel,OLT--ssh(39),olt
+ca263592-3f9c-4665-b852-6db57cb6e83a,INFOTEL - OLT DM - PONTE ALTA - POL,INFOTEL(3c543b38-5d00-497c-aa7d-268bb90fbfa3),10.120.0.34,22088,ssh,False,sgpconexaoolt,sgp@Suporte.oltinfotel1,OLT--ssh(39),olt
+598b1997-e0aa-41a2-90c2-6d658e3c8697,INFOTEL - OLT DM - PINHEIROPOLIS - PNRP,INFOTEL(3c543b38-5d00-497c-aa7d-268bb90fbfa3),10.120.0.10,22088,ssh,False,sgpconexaoolt,sgp@suporte.oltinfotel,OLT--ssh(39),olt
+e2fee59d-a502-4f8b-b832-0e64f583d56a,INFOTEL - OLT DM - PINDORAMA - PMG,INFOTEL(3c543b38-5d00-497c-aa7d-268bb90fbfa3),10.120.0.42,22088,ssh,False,sgpconexaoolt,sgp@suporte.oltinfotel,OLT--ssh(39),olt
+9e52e7d2-961d-43bb-9888-6fe5184b2b36,INFOTEL - OLT DM - MONTE DO CARMO - MTC,INFOTEL(3c543b38-5d00-497c-aa7d-268bb90fbfa3),10.120.0.38,22088,ssh,False,sgpconexaoolt,sgp@suporte.oltinfotel,OLT--ssh(39),olt
+b6772d8f-b94a-4158-95a2-39a65173aa8b,INFOTEL - OLT DM - IPUEIRAS - IPUI,INFOTEL(3c543b38-5d00-497c-aa7d-268bb90fbfa3),10.120.0.6,22088,ssh,False,sgpconexaoolt,sgp@suporte.oltinfotel,OLT--ssh(39),olt
+9b931aad-9034-4235-9ed1-312bf810b3ab,INFOTEL - OLT DM - BREJINHO - BNZ,INFOTEL(3c543b38-5d00-497c-aa7d-268bb90fbfa3),10.10.10.126,22088,ssh,False,sgpconexaoolt,sgp@suporte.oltinfotel,OLT--ssh(39),olt
+f0903128-0259-4e0b-a07a-20f482f1a0ba,PONTE DIGITAL - OLT HW - COQUINHO,PONTE DIGITAL(42477ec3-a5c5-4c79-a070-a72872e00b5a),10.12.105.2,22,ssh,False,ajustconsulting,5r0j1c\KmJ$/,OLT--ssh(39),olt
+7d4a6733-419a-4f24-b576-661598198d95,RIONET - OLT DIGISTAR - BEACH CLASS,-,45.162.225.182,9922,ssh,False,admin,mgmt@oltecolife,OLT--ssh(39),olt
+9c27628b-4739-4867-9044-5e749d0f37e1,GL SOLUCOES - WINBOX - CCR 1036 ARENA,-,45.191.105.175,5559,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+4a1be432-6bba-47df-9cce-8462ef2018d2,JRNET - AUTENTICADOR JAGUARIBE - CCR2004,-,168.194.13.248,8989,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+f7760bf6-6bb9-41a8-8819-667a347e2367,WELL FIBRA - OLT HW 01,WELLFIBRA*(a1a8ea60-e403-4938-af37-cfe1d4266a12),10.255.255.13,23088,telnet,True,ajustconsulting,827YRCPD1Q33,OLT--telnet(40),olt
+f4452040-a8f7-4b74-8cbb-f72ccb0e3f1c,UP CONNECT FIBRA - MK RB 3011 - HOTSPOT,-,179.48.12.28,5955,ssh,False,ajust,4Ri%3s[:b[w~,Winbox(46),router
+f9204a2e-5ce6-4c52-a845-7a78f6511158,ESCOLA ARCO IRIS - MIKROTIK - RB3011,-,170.78.96.33,5559,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+2390c320-f9c4-4ed7-b11c-d0645444d70b,OGA FIBRA TELECOM - MK CCR 1009  - PORTO DE GALINHAS,-,179.51.151.225,5895,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+1a80b8ad-7eab-4c37-a86f-02f4a8d30af1,CYBERNET - OLT HW - CONDOMINIO,-,170.80.112.2,4749,telnet,True,ajustconsulting,9SlNTl9!juSN43,OLT--telnet(40),olt
+fb87b0e3-97a4-49a9-83e3-d5da1f9eb21d,INFOTEL - MK SW CRS - ESCOLA FAUSTINO,-,10.120.0.74,8230,ssh,False,ajust,ajust@ITL2023,Winbox(46),router
+d9d35f9a-490a-44bf-8a34-45d371277c46,PIX FIBRA - SW DM 4270 - POP TOTO,PIX FIBRA(2cceaf18-31a3-4e4f-87ad-9058af12b176),172.31.255.34,22,ssh,False,ajust,",]'N5c81q,&v",Switch--ssh(35),switch
+073d155f-7f65-414a-9ba9-a42b99e5bcf1,PIX FIBRA - SW DM 4270 - IBURA DE CIMA,PIX FIBRA(2cceaf18-31a3-4e4f-87ad-9058af12b176),172.31.255.35,22,ssh,False,ajust,",]'N5c81q,&v",Switch--ssh(35),switch
+2fb51cc3-c860-4e8a-ab52-3100ec7a26d5,PGI TELECOM - MK RB 1016 - SITIO FRAZAO,-,177.125.8.214,65443,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+5674afb4-dbb7-472b-b82e-ee8d1705fcb0,PGI TELECOM - MK RB 1016 - ESC ACAÚ,-,177.125.8.165,65443,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+4eb2d17f-c615-4f96-801e-699ef26dd76b,PGI TELECOM - MK RB  - ESC TEJICUPAPO*,-,177.125.11.249,65443,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+f0fbc628-aef7-4a7c-8e87-28df1d2ae933,PGI TELECOM - MK RB 750 - ESC PDP,-,177.125.14.21,65443,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+98086815-b0db-4845-b920-98d251c30914,PGI TELECOM - MK RB 1100 -  GERENCIA,-,177.125.8.237,65443,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+5df7b2c9-909f-4056-ab8f-0e284132d65a,PGI TELECOM - MK RB 2011 - KLABIN,-,177.125.8.230,65443,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+d545f0a6-2e75-444d-ba19-3fabaa5add0b,PGI TELECOM - MK RB 1036 - CGNAT,-,177.125.10.1,65443,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+1d404d00-e550-448c-a1a8-c62ac1ba6d36,PGI TELECOM - MK CCR 1009 - CONCENTRADOR GAMBA,-,177.125.8.94,65443,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+edf68843-9376-41ce-b04c-8ecba8da1003,PGI TELECOM - MK CCR 1036 - CONCENTRADOR PONTA DE PEDRAS,-,177.125.8.9,65443,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+0a8320b7-baaa-415b-8ccc-8fc92f29f5f8,PGI TELECOM - MK CCR 1036 - CONCENTRADOR ACAU,-,177.125.8.42,56443,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+e339bd3d-4281-4f88-a589-e5d660d38166,PGI TELECOM - MK CCR 1016 - CONCENTRADOR GOIANA,-,177.125.8.45,65443,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+9abafaa7-e8fc-4a14-b695-25232a7c80ce,PGI TELECOM - MK RB 1016 - CARNE DE VACA,-,177.125.8.234,65443,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+d7a720a0-6d4c-47ef-bbf2-eeef9b91560a,ULTRANET - ROUTER - HW NE8000 AUT/BORDA,ULTRANET(88ab9cfe-afa6-46be-ad0e-e04107f02260),192.141.106.2,27270,ssh,False,ultranet,@Ultra#$321,Huawei(15),router
+c62453bc-2ab2-427d-b758-2d082da9124d,PIX FIBRA - SW HW 5700 - POP EMPETEL,PIX FIBRA(2cceaf18-31a3-4e4f-87ad-9058af12b176),10.31.254.78,22,ssh,False,ajust,4j0st@3819@#!,Huawei(15),router
+220bfe4a-db35-46b3-b5ed-2c6c80f32104,ZOOM FIBRA - MK SW CRS 309 - POP-IBIRITINGA*,-,179.189.243.6,8292,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+b8100f24-5fef-4bd8-bf1f-62c0cc1cb6d9,SOFIANET - OLT HW - SEBASTIAO AMARAL,-,128.201.156.218,23088,telnet,True,ajustconsulting,5OWZD0VjscX2,OLT--telnet(40),olt
+60fdd62f-2134-4794-9f05-dac137095e46,VIBE TELECOM - OLT HW - ARTHUR/PARATIBE,-,187.17.137.188,33744,telnet,True,speednet,"Tgz6%`~8y,vy",OLT--telnet(40),olt
+42dcfef5-d93c-415d-b689-e72950647e17,VIBE TELECOM - OLT HW - JANGA,-,187.17.137.188,33749,telnet,True,ajustconsulting,4dF0VQ8tVc92,OLT--telnet(40),olt
+8f459b77-bc4f-4578-8cb5-2dda840e2e64,VIBE TELECOM - OLT HW - MARANGUAPE 2,-,187.17.137.188,33755,telnet,True,sgpolt,S@>:c}8!%3d~,OLT--telnet(40),olt
+febab02c-571f-4371-819e-12f2c3e10c2a,VIBE TELECOM - OLT HW - RIO DOCE,-,187.17.137.188,34744,ssh,False,sgpsgp,"F(2""!8j\__5w",OLT--ssh(39),olt
+feabcc9d-f11e-45d0-87fa-5bc606609396,VIBE TELECOM - OLT ZTE - IGARASSU,-,187.17.137.188,3331,ssh,False,acessosgp,Ld]nz/u%ln7>,OLT--ssh(39),olt
+61a042fa-70de-4c5e-a9bf-1279ac60e1ac,PONTE DIGITAL - GATEWAY - ZABBIX,PONTE DIGITAL(42477ec3-a5c5-4c79-a070-a72872e00b5a),170.80.48.28,26345,ssh,False,ajust,\fU1yR2.f5CKfEH,Gateway(11),router
+9d3a223e-e76c-4a36-ad65-ff1d9cf82754,VIBE TELECOM - OLT ZTE - NOBRE,-,187.17.137.188,33733,telnet,True,acessosgp,H%'ga5(e^f[c,OLT--telnet(40),olt
+d2f52253-b223-44ae-8204-5fa650197f82,INET - HILLSTONE,-,177.71.83.162,22,ssh,False,ajustconsulting,9_gB9MB3FIc,Hillstone(37),router
+1b047e3b-0f12-4660-bcf4-d562cae33d6d,INET - ROUTER - HW NE8000 - AUT/BORDA,-,177.71.83.253,22,ssh,False,ajust,9_gB9MB3FIc{,Huawei(15),router
+bef1f4ae-f4b9-4c15-a659-519484de9ecf,INET - SW HW 6730 - CORE,-,177.71.83.255,5557,ssh,False,ajust,9_gB9MB3FIc{,Switch--ssh(35),switch
+4a66f535-8bc4-45d3-9cba-955be2b3f8d7,INET - MK RB CCR 1036 - GERENCIA,-,177.71.83.255,8291,ssh,False,ajust,9_gB9MB3FIc{,Winbox(46),router
+f58ee3f1-4abc-456b-ba04-935c5b59d3d9,INFOTEL - MK SW CRS - NOVA CAPITAL,-,10.120.0.82,8230,ssh,False,ajust,ajust@ITL2023,Winbox(46),router
+ef014887-38b3-4cb9-babb-94d09cace408,PLANALTONET - SW CORE DATACENTER,PLANALTONET(13d92c05-3f61-4534-a7e1-8f38436aa543),10.12.255.202,22,ssh,False,ajust,!UdWSBQC9y@8HUxrH9#l,Huawei(15),router
+9e12ef34-277b-492b-90e3-f477ba51255b,RIONET - OLT HW - IPOJUCA,-,45.162.225.246,23088,telnet,True,ajustconsulting,6ydq9aFerSoA,OLT--telnet(40),olt
+7a3376aa-fe58-4d9d-a297-2d1c0e2b2508,QUALYNET - OLT HW,-,170.79.169.254,2823,telnet,True,ajustconsulting,8JjGupf67OBj,OLT--telnet(40),olt
+cc328338-6520-4068-a481-277e4ee142b5,PONTE DIGITAL - MK RB 1036 - CGNAT,-,170.80.48.1,22190,ssh,False,ajust,3;a1H_gw^f~2[]JseK?,Winbox(46),router
+2b1626c0-1684-4068-a45e-dfbb184f4a81,PONTE DIGITAL - ROUTER - HW NE8000 AUT,-,170.80.48.40,2250,ssh,False,ajustpd,Ajust@pd2025,Huawei(15),router
+133533ea-ea68-4342-910e-d05b75b4fff9,PONTE DIGITAL - ROUTER - HW NE20 BORDA,-,170.80.51.162,2299,ssh,False,ajustpd,R33W[76K1moc,Huawei(15),router
+f69a9425-2b90-45af-a296-6d8164da5e82,CNB TELECOM - MK RB 1009 - BORDA*,-,10.255.255.2,8291,ssh,False,ajust,Ajust$#..1,Winbox(46),router
+946ab60b-091c-400b-96ac-c477140701df,CYBERNET - OLT DM - BAIRRO NOVO (DESATIVADA),CYBERNET(17e3eb3b-90c4-4d09-a991-c56725a2cd90),10.32.50.2,23023,telnet,True,cybernet,CBahs$12ddj,OLT--telnet(40),olt
+26e31dc3-9d5d-4dc1-bc2e-deadab1f9809,PONTONET - OLT HW,PONTONET*(999367c4-1033-45af-a7a4-5264a1686b07),10.100.2.2,23088,telnet,True,root,1aA@125879,OLT--telnet(40),olt
+d90fc44f-4676-4e74-98bd-6d96f305c818,PGI TELECOM - OLT HW - ACAÚ,-,10.20.8.253,23232,telnet,True,ajustconsulting,@Z30dO1X7zqk,OLT--telnet(40),olt
+20e03795-cb9e-4212-82b2-85bdaab24928,ONDANET - OLT HW - ALAMEDA,-,187.17.137.188,23793,telnet,True,sgpacesso,8YUv$AIzrzdz.,OLT--telnet(40),olt
+26fbe80b-24e8-488c-8054-8b0511bf4202,NAVEGANET - OLT HW - CAETES,-,160.19.44.26,23088,telnet,True,ajustconsulting,9DVLNZBGVH0F,OLT--telnet(40),olt
+75229ef6-8840-4838-adba-7d6dfd46deb5,NAVEGANET - OLT HW - ABREU,-,160.19.44.162,23088,telnet,True,ajustconsulting,9DVLNZBGVH0F,OLT--telnet(40),olt
+2dc4a68d-fa19-4f6c-9e0b-e8d3b98c03b9,INFOTEL - MK RB CCR 1036 - GERENCIA OSPF,-,170.150.136.56,8230,ssh,False,ajust,"G""4N7;l0=0Vm",Winbox(46),router
+8c6069a2-50cb-4449-8c23-549a577e17e9,CYBERNET - OLT HW - BAIRRO NOVO,-,170.80.112.2,4747,telnet,True,ajustconsulting,7SSnNt@78hF1,OLT--telnet(40),olt
+c99ff46e-6f67-41b1-8d4a-982ddf882b92,G5 JABOATAO - OLT - POÇO DANTAS,G5 JABOATAO(2bdcc9a2-ea8e-409f-8ba6-d7c6b2b6d4f7),10.0.51.244,23,telnet,True,ajust,123@ajust,OLT--telnet(40),olt
+22d82758-5789-4828-a969-3bd495edc954,CNB TELECOM - OLT FIBERHOME - FLORES TELNET,CNB TELECOM*(bbecb26e-7b5c-4822-8e67-0154dbc64288),172.19.19.2,23,telnet,True,sgp,s@#gppp203!,Switch--telnet(47),switch
+3e692881-bccb-4f30-8f5d-72d492e84fdc,CNB TELECOM - OLT FIBERHOME - FLORES,CNB TELECOM*(bbecb26e-7b5c-4822-8e67-0154dbc64288),172.19.19.2,22,ssh,False,sgp,s@#gppp203!,OLT--ssh(39),olt
+9313c3b9-7962-4106-b701-8d6b9da1b0ab,MGN FIBRA - OLT HW X17,-,45.235.104.62,22,ssh,False,root,123@mgn!@#,OLT--ssh(39),olt
+1b6e889a-7d40-45ce-bf82-392361ef9ce9,MEGANET - MK RB 3011 - AUT SERRAMBI,-,45.176.56.220,5895,ssh,False,ajustconsulting,ss1@236'Mq9e,Winbox(46),router
+e6116ae8-5724-4c03-9d25-a646cf32cbcd,NEWCONNECT - SW HW - UR11,NEW CONNECT(29f4474f-0c20-4b58-bfc3-1ae5b902aabb),1.2.1.2,22,ssh,False,ericcastro,0&#mD5S9YAP\,Switch--ssh(35),switch
+8789da15-6d7c-46d9-9091-3326ef2b15a8,FLASHNET - SW CORE-BR.DIGITAL-02,FLASHNET(2760dac8-09a1-4e72-bbb2-a9ca6608cd9b),10.99.88.43,53276,ssh,False,flashnet,@#Keycode..1,Switch--ssh(35),switch
+d51e4d3a-8287-495d-a558-be64ca2232c4,VIBE TELECOM - MK RB 1036 - EVENTOS,-,168.194.15.84,5895,ssh,False,ajust,5?1Og-H;[!^F,Winbox(46),router
+b0e3bb6b-6e33-4c19-adaa-ee0195408f2b,CNB TELECOM - MK RB 1009 FLORES (PREFEITURA),-,179.124.141.169,8291,ssh,False,ajust,Ajust$#..1,Winbox(46),router
+f92e7206-7f8f-4846-a54f-121b280c2d0a,CELLNET - MK RB 1036 - CGNAT,-,190.89.232.2,8299,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+224abf8c-5172-4697-969c-76222d04e364,ECOTELECOM - OLT HW - CAVALEIRO,ECO TELECOM(786c5d87-9435-422a-99a0-9f54b8db7cff),45.71.170.6,1075,telnet,True,sgpsistema,flGM@6e#h3$O,OLT--telnet(40),olt
+c9753beb-935c-4f5a-a56f-d1e5699928f3,DINHONET - MK RB CCR 1072 - AUT/BORDA,-,181.174.208.168,18291,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+ba0dd7eb-d17f-4ef3-ae04-dca7480c7258,VIBE TELECOM - OLT ZTE - NOBRE NOVA,-,187.17.137.188,23783,telnet,True,ajustconsulting,"3e0UbRFo""sp9",OLT--telnet(40),olt
+d5289b87-fe3b-4992-8c75-51787ff87118,PIX FIBRA - SW HW 5732 - IBURA DE BAIXO,PIX FIBRA(2cceaf18-31a3-4e4f-87ad-9058af12b176),10.31.255.34,22,ssh,False,ajust@emfibra,4j0st@3819@#!,Huawei(15),router
+476d818f-6c7b-4129-a17a-b7b1c363965b,INFORTEC - OLT HW - SLM,-,187.86.163.100,23088,telnet,True,ajustconsulting,7%aG4g1z%321,OLT--telnet(40),olt
+ee6ffeeb-8c08-4686-9b29-354f8aa48b6f,PLANALTONET - ROUTER - HW NE8000 AUT,PLANALTONET(13d92c05-3f61-4534-a7e1-8f38436aa543),10.12.255.203,22,ssh,False,ajust,!UdWSBQC9y@8HUxrH9#l,Huawei(15),router
+2e6591d0-396a-449b-9717-e1d317cdbd68,VIBE TELECOM - OLT HW - ALAMEDA,-,187.17.137.188,23793,telnet,True,ajustconsulting,5l7'YqqiC!8R.,OLT--telnet(40),olt
+4f00124e-5831-479d-b969-2d6050d8220d,CAVALCANTINET - MK RB 1036 - AUT OLINDA,-,45.179.131.240,56829,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+f23aae9c-3953-40bf-a7bb-a13e9cf9fe3f,CAVALCANTINET - MK RB 3011 - AUT INOCOOP,-,45.234.101.236,36101,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+4167b445-ebc5-4c3e-876a-b8d77a811d80,CAVALCANTINET - MK RB 1036 - AUT CAXANGA 01,-,45.164.11.6,35101,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+d6ff8c2b-a988-4ef4-a86c-94422201be54,CAVALCANTINET - MK RB 1036 - AUT CAXANGA 02,-,45.164.11.10,8291,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+d9c7cada-9a33-4758-9ced-a4e6b5bf2f09,CAVALCANTINET - MK RB 2016 - BORDA,-,45.164.11.1,5895,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+fcfeee3f-28e4-4038-b75d-6819c957b3ad,CAVALCANTINET - OLT HW MA5600 - CAXANGA,-,45.164.11.6,45901,telnet,True,suporte,@suporte#$321,OLT--telnet(40),olt
+924f266c-4f2a-41df-9ea5-3af7b83510e3,CAVALCANTINET - OLT HW MA5600 - OLINDA,-,45.179.131.240,2222,ssh,False,sgpsgp,@cal#$321,OLT--ssh(39),olt
+1d9d3f3c-8c7c-4951-b3e1-84cf56ca0b27,MEGANET - OLT HW - TABAJARA,-,45.176.56.240,23433,telnet,True,sgpolt,meganet2020@,OLT--telnet(40),olt
+860a12ed-93bb-466f-b5bc-d88a1a18f8f5,MEGANET - OLT HW - MARANGUAPE,-,45.176.57.90,23088,telnet,True,foxfox,fox18fox,OLT--telnet(40),olt
+1d71d424-fcb0-4c2f-878f-d8e080a08a28,G5 JABOATAO - MK RB CCR 3011 - GERENCIA,-,192.141.105.3,5897,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+f8b4fbc6-deec-4747-94c5-5640052d489a,DUNET - MK RB 4011 - AUT,-,45.224.219.44,6904,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+1865551c-f726-4e72-917d-8aed4404e4e5,RIONET - SW HW 5720 - OCAPORAN*,-,45.162.224.126,22022,ssh,False,rionet,@rionet#$321,Switch--ssh(35),switch
+cf9d11b8-c5e6-4279-9fca-71a25c97a263,UP CONNECT FIBRA - LINUX - GENIE ACS-cópia,UP CONNECT FIBRA(e9ef84ae-0aa2-4b20-9c02-171026968e95),172.16.3.211,2278,ssh,False,upconnect,pass@upconnect,Gateway(11),router
+1e0d3e5e-84b3-4a92-a385-a160eed81ff1,SN TELECOM - LINUX - TR069,-,181.189.92.18,2244,ssh,False,sntelecom,access@snt7l3c0m@,Gateway(11),router
+c3809d30-cb64-430c-aca0-b3b23b48196c,SN TELECOM - LINUX - OMV,-,181.189.92.6,2198,ssh,False,sntelecom,SN@P@HDK$..1,Gateway(11),router
+da871bfe-b086-47cd-9bd7-9f1dd1e151a6,INSNET - OLT HW - AURORA,-,45.160.221.253,2235,ssh,False,ajustconsulting,@3ZQ4jhjoBkoW1,OLT--ssh(39),olt
+80ee8699-faf1-4649-a104-c9afa8a14904,MAXIMANET - LINUX - ZABBIX - GATEWAY,MAXIMANET*(8cb12c72-ab63-47e7-8961-253807341019),45.164.8.18,29876,ssh,False,maxima,f7QO5=5?Al8;,Gateway(11),router
+a1fbc261-d897-4ca4-a0d5-90a62a01f62f,INSNET - OLT HW - ABREU,-,45.160.221.252,45098,telnet,True,ajustconsulting,3#H%.nCLgC>B,OLT--telnet(40),olt
+f32b529a-5d62-4f99-971e-bc8dae77a2ba,PIX FIBRA - SW DM EDD 2104G2,PIX FIBRA(2cceaf18-31a3-4e4f-87ad-9058af12b176),10.31.254.90,23,telnet,True,admin,Emfibra.net123,Switch--telnet(47),switch
+a4538870-dc3f-47fe-ae66-427c28a23a61,INFORTEC - GATEWAY - ZABBIX SERVER,INFORTEC(468c0344-c1f2-48b8-8b69-c4f6f7cbd99b),187.86.163.14,3021,ssh,False,infortec,:?f?zz;HPh@K1IqywW-YdQ7P,Gateway(11),router
+a7bb465f-c028-4900-8335-e27c64d4e614,PIX FIBRA - SW HW 6720 - POP VARZEA,PIX FIBRA(2cceaf18-31a3-4e4f-87ad-9058af12b176),172.16.0.4,22,ssh,False,ajust@emfibra,4j0st@3819@#!,Switch--ssh(35),switch
+e805b37a-33d1-4e89-8abc-72973ecb2901,PIX FIBRA - SW HW 6730 - BOA VIAGEM,PIX FIBRA(2cceaf18-31a3-4e4f-87ad-9058af12b176),172.16.0.3,22,ssh,False,ajust@emfibra,4j0st@3819@#!,Switch--ssh(35),switch
+ecf4c045-03d3-4f61-b951-65c23024b7f6,INFOTEL - SW DM 4380 - LUZIMANGUES,INFOTEL(3c543b38-5d00-497c-aa7d-268bb90fbfa3),10.10.10.122,26504,ssh,False,ajust,ajust@ITL2023,Switch--ssh(35),switch
+002363a0-a904-4dd9-9913-b2b60b2a7368,UP CONNECT FIBRA - MK RB 1036 - SERVIDORES SERVICOS,-,179.48.12.138,8272,ssh,False,ajust,@ajust$mudar,Winbox(46),router
+48f25510-c128-4450-b054-d42c094033f8,I4 TELECOM - SW HW 6730 - CORE OURO PRETO,-,45.187.169.228,22454,ssh,False,ajust,@ajust#$321@,Switch--ssh(35),switch
+0ab5245d-c366-467c-8026-bc8dd150370f,INFOTEL - GATEWAY - ZABBIX SERVER,INFOTEL(3c543b38-5d00-497c-aa7d-268bb90fbfa3),170.150.139.249,29679,ssh,False,infotel,u19~u9HN£D3.,Gateway(11),router
+8fbcc9ba-28aa-48d8-a1f5-47815be83e30,INFOTEL - ROUTER - HW NE8000 M4 BORDA,-,170.150.139.255,26504,ssh,False,ajustconsulting,@#Ajust..1,Huawei(15),router
+508da7fc-979e-4f77-8897-f7a9bbfc609d,I4 TELECOM - OLT HW - RIO DOCE,-,45.187.170.54,23088,telnet,True,ajustconsulting,8RUNH9E8t!d1B,OLT--telnet(40),olt
+c32c11f0-f648-4a34-82a0-ce6e32cfce88,I4 TELECOM - OLT HW - PEIXINHOS,-,45.187.168.46,23088,telnet,True,ajustconsulting,6nQX6ny1rkBR,OLT--telnet(40),olt
+411d9352-139a-4882-8f50-d2d41106cd91,I4 TELECOM - OLT HW - OURO PRETO,-,45.187.168.30,23088,telnet,True,sgpsgp,sgp18sgp,OLT--telnet(40),olt
+8390ef25-c741-40ce-bef8-8f5bfcba65fd,SN TELECOM - CRS 317 CORE,-,181.189.92.6,9816,ssh,False,ajustconsulting,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+e114d0f8-f041-4fe7-a556-7d7af73c1005,I4 TELECOM - OLT HW - CASA CAIADA RIONET,-,45.187.170.10,23088,telnet,True,ajustconsulting,6WrsYhXaTk1N,OLT--telnet(40),olt
+5cf6585e-49bc-4a87-bc68-039e2746dbc7,GL SOLUCOES - OLT HW,-,45.191.104.54,23088,telnet,True,glsolucoes,@gl#$321,OLT--telnet(40),olt
+ff6bb4ba-66c2-4778-b93f-cc336efd31c2,G5 JABOATAO - OLT HW - UNYNET,G5 JABOATAO(2bdcc9a2-ea8e-409f-8ba6-d7c6b2b6d4f7),172.30.31.2,23088,telnet,True,ajustconsulting,36AD9izT6yak,OLT--telnet(40),olt
+b6eea54a-6486-4a11-a4ff-2183ff112b92,G5 BARRA DE JANGADA - OLT HW,-,128.201.76.176,22220,ssh,False,ajustconsulting,"074OE,Mq,f|*",OLT--ssh(39),olt
+c3cfeba9-3ff6-41cc-8760-0aaa94cd554d,QUALYNET - MK RB 1036 - AUT,-,170.79.169.254,8291,ssh,False,ajustconsulting,7to(7h_M:tl3,Winbox(46),router
+0687c783-92ea-45c2-8cc1-5b7e68705d1b,CONECT FIBRA - OLT HW MA5800 X2 - PARATIBE,-,45.5.88.78,22999,ssh,False,sgpacesso,1Ui|f_[Z+='$!,OLT--ssh(39),olt
+0d13af33-0592-4372-87cd-3aa075ecee4f,CONECT FIBRA - OLT HW MA5800 X17 - CAETES 01,-,45.5.88.50,23088,telnet,True,sgpolt,conect@#$321,OLT--telnet(40),olt
+115132c4-af93-4166-8b24-b7257e6d9b71,CNB TELECOM - OLT HW - CARNAIBA,-,179.124.142.93,2211,ssh,False,cnbtelecom,CNbtel@@!@222,OLT--ssh(39),olt
+26a3daa9-8c0a-4fa6-87ce-21a0f8ff73b9,MUNDONET - OLT INTELBRAS - LOTEAMENTO,-,179.42.37.40,11444,telnet,True,admin,admin,OLT--telnet(40),olt
+bd6956e8-2ab9-4c4b-9a8f-b6a5568f8371,MUNDONET - OLT HW - CORTES,-,179.42.37.40,11427,telnet,True,ajustconsulting,7$=NGT9|mj[X,OLT--telnet(40),olt
+d9f6d21d-f4ed-4429-b168-1ed771d3012b,TC+FIBRA - OLT HW 01,-,164.163.20.78,35999,telnet,True,ajustconsulting,14ekGP68YwN3,OLT--telnet(40),olt
+c37f70c2-dc53-411a-902b-30dc4249f93c,G5 CABO - GATEWAY - ZABBIX SERVER,G5 CABO(c1e1ac80-9c5a-4c3a-8572-591af6479d63),45.187.19.21,27643,ssh,False,ajust,5McB93uNR9qUXgxFubHa,Gateway(11),router
+ecd7e832-0b70-43c6-9c54-9d8cbcae0053,POWERNET - MK RB 1016 - AUT,-,170.79.168.52,1016,ssh,False,powernet,2023,Winbox(46),router
+93cac2fc-22ae-4c85-8273-b1d06dbb44f4,POWERNET - MK RB 2004 - BORDA,-,170.79.168.32,2004,ssh,False,powernet,*2031AR2026#2022@,Winbox(46),router
+42388a50-fba9-4a30-a178-4a088fd3f218,WELL FIBRA - OLT HW 02,-,190.89.145.21,23332,telnet,True,root,@3c00TD2jCpdl12,OLT--telnet(40),olt
+b417d1b7-2800-4ada-ac99-d28347a7b6c5,UP CONNECT FIBRA - SW HW S6730 - MANGUEIRA,UP CONNECT FIBRA(e9ef84ae-0aa2-4b20-9c02-171026968e95),172.16.144.1,22,ssh,False,connect,@Luciano230107,Switch--ssh(35),switch
+5bcca309-4d89-4f43-9d0c-3fe85a0a7481,SOFIANET - MK RB CCR 1009 - COMNET,-,128.201.156.114,5895,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+0413c722-66c7-473a-aaf7-3588a865d8ea,INFOTEL - SW DM 4380 - PONTE ALTA - POL,-,10.10.10.133,22,ssh,False,ajust,123@Mudar,Switch--ssh(35),switch
+1771e757-8f20-4f6a-982f-e8bc9874334e,INFOTEL - SW DM 4380 - PINHEIROPOLIS,INFOTEL(3c543b38-5d00-497c-aa7d-268bb90fbfa3),10.10.10.129,22,ssh,False,ajust,t(M*4G83lE7,Switch--ssh(35),switch
+6c36c0fa-26e3-4d19-b6c2-b7fdf283b82e,INFOTEL - SW DM 4380 - NATIVIDADE,INFOTEL(3c543b38-5d00-497c-aa7d-268bb90fbfa3),10.10.10.130,22,ssh,False,ajust,t(M*4G83lE7,Switch--ssh(35),switch
+2da4efdb-9927-4ae5-9848-4da5d5b10b91,INFOTEL - SW DM 4380 - MTC,INFOTEL(3c543b38-5d00-497c-aa7d-268bb90fbfa3),10.10.10.132,22,ssh,False,ajust,t(M*4G83lE7,Switch--ssh(35),switch
+299efa3e-d4f6-4ee0-8e8b-8f53403054f7,INFOTEL - SW DM 4380 - LAGOA TO,INFOTEL(3c543b38-5d00-497c-aa7d-268bb90fbfa3),10.10.10.136,22,ssh,False,infotel,Inf3tel@,Switch--ssh(35),switch
+9a86d81c-8b7d-47ac-9eed-51ccaed8ca44,INFOTEL - SW DM 4380 - IPUEIRAS,INFOTEL(3c543b38-5d00-497c-aa7d-268bb90fbfa3),10.10.10.125,26504,ssh,False,admin,admin,Switch--ssh(35),switch
+49a011fc-7335-4ccd-89bc-c7f2b322a102,INFOTEL - SW DM 4380 - AURENI 02,INFOTEL(3c543b38-5d00-497c-aa7d-268bb90fbfa3),10.10.10.124,26504,ssh,False,ajust,LVf20N0y8yRV,Switch--ssh(35),switch
+32e59972-dfb2-46e5-857b-80059658d02b,INFOTEL - SW DM 4380 - ALMAS,INFOTEL(3c543b38-5d00-497c-aa7d-268bb90fbfa3),10.10.10.131,22,ssh,False,ajust,t(M*4G83lE7,Switch--ssh(35),switch
+58f75ba7-c3a3-4fcc-b6dc-d6b3d227d028,INFOTEL - SW DM 4380 - ALIANCA,INFOTEL(3c543b38-5d00-497c-aa7d-268bb90fbfa3),10.10.10.134,22,ssh,False,ajust,t(M*4G83lE7,Switch--ssh(35),switch
+bdc12c14-cc12-4818-a4c1-1c9b2b8ed044,SOFIANET - SW DM - SEBASTIAO AMARAL,SOFIANET(b5dfae2d-13da-4bc3-82e0-944170fd14c6),192.168.0.25,22,ssh,False,admin,@sofianet#$321,Switch--ssh(35),switch
+ad79f805-0a32-4a4c-9dab-9f9072bfa357,INFOTEL - SW DM 4380 - SILVANOPOLIS,INFOTEL(3c543b38-5d00-497c-aa7d-268bb90fbfa3),10.10.10.127,22,ssh,False,ajust,t(M*4G83lE7,Switch--ssh(35),switch
+aa54265f-e171-4932-8a2d-bc717aaa322c,INFOTEL - SW DM 4380 - SANTA ROSA,INFOTEL(3c543b38-5d00-497c-aa7d-268bb90fbfa3),10.10.10.128,22,ssh,False,ajust,t(M*4G83lE7,Switch--ssh(35),switch
+46801f3f-9eba-4f00-9f2d-5ad38396a4d4,INFOTEL - SW DM 4380 - APARECIDA,INFOTEL(3c543b38-5d00-497c-aa7d-268bb90fbfa3),10.10.10.135,22,ssh,False,admin,123@Mudar,Switch--ssh(35),switch
+ed84d6af-0cc9-4edc-9ccf-781fe6281baa,INFOTEL - SW DM 4380 - SANTA TEREZA,INFOTEL(3c543b38-5d00-497c-aa7d-268bb90fbfa3),10.10.10.137,22,ssh,False,ajust,123@Mudar,Switch--ssh(35),switch
+39ff8cad-82dc-438e-b4c5-7a7613589e59,DINHONET - OLT FH,-,131.108.155.144,2323,telnet,True,ajustconsulting,2CaCvVh06Uur,OLT--telnet(40),olt
+4a7d5599-453a-4389-8176-ba05f39ec3bf,DINHONET - OLT HW,-,131.108.155.144,12323,telnet,True,ajustconsulting,4OXXjJBTDV14,OLT--telnet(40),olt
+42a90fba-c6fb-4229-83ad-08b296d37a93,INFOTEL - SW HW S6730 STACK - PXC,INFOTEL(3c543b38-5d00-497c-aa7d-268bb90fbfa3),10.10.10.254,26504,ssh,False,ajust,@infotel#$321,Switch--ssh(35),switch
+cb7b4044-0743-48ba-9947-0bf4dbd14664,SOFIANET - SW HW - JARDIM PAULISTA,SOFIANET(b5dfae2d-13da-4bc3-82e0-944170fd14c6),192.168.120.2,22,ssh,False,sofianet,@sofianet#$321,Switch--ssh(35),switch
+a3374f98-e781-4e18-8a4b-c8c3d827a688,SOFIANET - SW HW - OLINDA,SOFIANET(b5dfae2d-13da-4bc3-82e0-944170fd14c6),192.168.251.2,22,ssh,False,sofianet,@S0fianet#$321,Switch--ssh(35),switch
+dc6a13b7-8d4c-4821-8467-13dbf9f2f5ce,SOFIANET - SW HW - PE22,SOFIANET(b5dfae2d-13da-4bc3-82e0-944170fd14c6),192.168.253.2,22,ssh,False,sofianet,-,Switch--ssh(35),switch
+a0ed5c75-e112-41ae-b6ac-2e143fe290ab,SOFIANET - SW HW ATN 910C-A - SEBASTIAO AMARAL,SOFIANET(b5dfae2d-13da-4bc3-82e0-944170fd14c6),192.168.190.10,22,ssh,False,sofianet,@Sofi@net..1,Switch--ssh(35),switch
+c57dfad0-677c-43e8-8270-b2326af17cae,INFOTEL - SW HW S5720 - PXC,INFOTEL(3c543b38-5d00-497c-aa7d-268bb90fbfa3),10.150.137.8,26504,ssh,False,ajust,ajust@ITL2023,Switch--ssh(35),switch
+f9921a22-caf9-4f5a-88ef-ddb02b864020,INFOTEL - SW HW S6730 - APITO,INFOTEL(3c543b38-5d00-497c-aa7d-268bb90fbfa3),10.10.10.121,26504,ssh,False,ajustconsulting,123@mudar,Switch--ssh(35),switch
+ff784d6d-848e-4bd5-9f40-92056a10b06d,INFOTEL - SW HW S6730 - PMJ FLORENCA,INFOTEL(3c543b38-5d00-497c-aa7d-268bb90fbfa3),10.10.10.123,26504,ssh,False,ajust,123@ajust!@#,Switch--ssh(35),switch
+b7a1671d-cc87-460d-9d73-fc55d9bfb678,INFOTEL - SW HW S6730 - PMJ JD PAULISTA,INFOTEL(3c543b38-5d00-497c-aa7d-268bb90fbfa3),10.10.10.120,26504,ssh,False,ajust,@infotel#$321,Switch--ssh(35),switch
+96dea26f-41a5-44f6-a52e-e8f463c3b901,INFOTEL - OLT DM - PORTO NACIONAL / SIM 03,INFOTEL(3c543b38-5d00-497c-aa7d-268bb90fbfa3),172.16.121.16,3812,ssh,False,infortel,Infortel2024@,OLT--ssh(39),olt
+b597d963-088b-4041-ab0e-6b1d3bab170c,I4 TELECOM - OLT DM - PAU AMARELO,-,45.187.169.228,22777,ssh,False,admin,"tcZ8s,_:w95'",OLT--ssh(39),olt
+6322c060-5929-4efc-b88d-ef480cb8356b,INFOTEL - OLT DM - PORTO NACIONAL / SIM 01,INFOTEL(3c543b38-5d00-497c-aa7d-268bb90fbfa3),172.16.121.16,3810,ssh,False,infortel,infortel2024,OLT--ssh(39),olt
+ec8705d5-79e6-4472-8b9d-2315273dc02f,INFOTEL - OLT DM - PORTO NACIONAL / SIM 02,INFOTEL(3c543b38-5d00-497c-aa7d-268bb90fbfa3),172.16.121.16,3811,ssh,False,infortel,infortel2024,OLT--ssh(39),olt
+1fa42707-c6e3-4632-afbd-0da465acceed,G5 CABO - OLT HW,-,45.187.19.14,2387,telnet,True,g5provedor,Hw!@#10203040,OLT--telnet(40),olt
+c627bb93-22af-4dc9-b9c3-7ead53165740,G5 PIEDADE - OLT HW X7,-,192.141.105.40,23088,telnet,True,ajustconsulting,8meJTCkQTlgR,OLT--telnet(40),olt
+572adfa3-a766-4210-bfb9-1d53014f44cc,MEGANET - OLT HW - MONTE,-,45.176.56.240,23434,telnet,True,ajustconsulting,@#$ajust..1.!,OLT--telnet(40),olt
+8f5141b1-0dcb-451c-9811-f0fb89b88421,MEGANET - OLT HW - AGUA FRIA,-,45.176.56.240,23435,telnet,True,root,@#$m3g4n3t..!,OLT--telnet(40),olt
+43d2d44c-4456-406b-93d1-34f1935f29b8,MEGANET - OLT HW - JARDIM ATLANTICO,-,45.176.56.240,23432,telnet,True,ajustconsulting,4nUlMBrzHAvz,OLT--telnet(40),olt
+5f4a7f04-709d-4ef6-8e3b-8d133e8ecf47,GRUPO TELECOM - OLT HW,-,181.225.170.5,2503,ssh,False,sgpacesso,acesso2020,OLT--ssh(39),olt
+c024a181-37d8-4ff0-8475-9224fe2696df,GRUPO VESC - OLT HW - IPSEP,-,201.76.98.98,2323,telnet,True,sgpsgp,sgp2021,OLT--telnet(40),olt
+f38fd3d3-e169-43dc-9e89-2472fa7db40c,GRUPO VESC - OLT HW - MURIBECA,-,201.76.98.98,2333,telnet,True,vescnet,160873174v,OLT--telnet(40),olt
+5caf32bf-fbaf-4626-baa4-f5af979ae50e,G5 WILL - OLT HW X2,-,201.71.4.9,22120,ssh,False,ajustconsulting,7C1D28cNw51a,OLT--ssh(39),olt
+a673508d-b554-4095-8218-1fa292fc844f,I4 TELECOM - OLT HW - CASA CAIADA SIDERAL,-,45.187.169.228,2322,telnet,True,sgpsgp,Suporte7611.,OLT--telnet(40),olt
+603517e9-299a-4f78-91b8-e0e6e643c85f,ICONLINK - OLT HW,-,201.76.98.98,23088,telnet,True,ajustconsulting,@#$AJust..88,OLT--telnet(40),olt
+30bd19c8-9761-4c3d-8d2e-9a2832060630,INFORTEC - OLT HW - JPII,-,187.86.163.100,22001,ssh,False,ajustconsulting,7%aG4g1z%321,OLT--ssh(39),olt
+9183fd06-cb1c-4860-bfa9-dbe4de46d97c,INFORTEC - OLT HW - TIMBI,-,187.86.163.100,22002,ssh,False,ajustconsulting,7%aG4g1z%321,OLT--ssh(39),olt
+d5488dad-3862-4e48-a1ba-b91d4e1b32fe,INFOTEL - OLT HW - BREJINHO DE NAZARE,INFOTEL(3c543b38-5d00-497c-aa7d-268bb90fbfa3),10.120.0.18,22,ssh,False,oltsgp,liberacao3261,OLT--ssh(39),olt
+2087172c-b990-406c-bac2-4edd84597a40,JANET - OLT HW,-,190.89.233.128,23755,telnet,True,ajustconsulting,@A34vwkc3xau0,OLT--telnet(40),olt
+f19bc54e-ceed-4d5c-b788-9868729ad41a,KMTELECOM - OLT HW,-,45.170.192.3,2250,ssh,False,sgpolt,Sgp@2020,OLT--ssh(39),olt
+c44b1048-1068-4350-902f-70bfe87edc87,MASNET - OLT HW,-,170.79.170.0,2233,ssh,False,sgpsgp,sgp142536,OLT--ssh(39),olt
+0b83f8ec-51d4-44c6-9b62-3f1cfdb12949,MASNET - OLT HW - CRUZ,-,170.79.170.8,8523,telnet,True,admin,Senhasegura123,OLT--telnet(40),olt
+fbc29526-2b7a-4170-9e6f-2ae7659c88c5,MAXIMANET - OLT HW - ESCADA,-,45.164.8.10,23564,telnet,True,sgpsgp,Sgp@#$321,OLT--telnet(40),olt
+4cc32e37-40ba-487e-abc9-10bacc52e35c,MAXIMANET - OLT HW - CABO,-,45.164.8.10,2223,ssh,False,sgpsgp,sgp@123,OLT--ssh(39),olt
+fa037a2d-f86d-4b03-80d8-5788b6aeb308,MAXIMANET - OLT HW - GAIBU,MAXIMANET*(8cb12c72-ab63-47e7-8961-253807341019),172.16.134.12,2211,ssh,False,sgpsgp,sgp125467,OLT--ssh(39),olt
+067a9309-a7da-4a93-9762-e94c5ccc3c9a,MAXIMANET - OLT HW - MANGUEIRINHA,MAXIMANET*(8cb12c72-ab63-47e7-8961-253807341019),172.16.134.12,2212,ssh,False,sgpsgp,sgp125467,OLT--ssh(39),olt
+a0363e05-fe22-4d92-817e-0bf26fe610b5,MCNET - OLT HW,-,45.164.10.128,45100,telnet,True,sgpolt,sgphw18,OLT--telnet(40),olt
+97c64411-d692-427e-a32a-60f4339ee45c,MOND TELECOM - OLT HW,-,45.164.181.192,22022,ssh,False,sgpsgp,Sgpolthw@2022,OLT--ssh(39),olt
+d01351e7-4fa5-4c72-9cb6-b18d9d63eda8,MOND TELECOM - OLT HW - RUA DA LAMA HWNET,-,45.164.181.192,2212,telnet,True,fabiosilva,Qwerpoiu@123,OLT--telnet(40),olt
+f8c113a4-9b11-41d4-9418-4d2f131be39e,MOND TELECOM - OLT HW - IPUTINGA HWNET,-,45.164.181.192,2213,telnet,True,sgpacesso,Ac3ss0@123,OLT--telnet(40),olt
+ec2d69ff-99a4-45d0-9f3c-62b975097062,MOND TELECOM - OLT HW - DATACENTER HWNET,-,45.164.181.192,2210,ssh,False,sgpacesso,Sgp@ac3ss0,OLT--ssh(39),olt
+2ba34e7c-c8d3-4b8c-8cff-0540f601de21,MOND TELECOM - OLT HW - CDU HWNET,-,45.164.181.192,2211,telnet,True,jairopessoa,jairo@123,OLT--telnet(40),olt
+b804914a-e946-441f-a913-fc8e4bd9e0aa,MOND TELECOM - OLT HW - VARZEA HWNET,-,45.164.181.192,2214,telnet,True,fabiosilva,Qwerpoiu@123,OLT--telnet(40),olt
+41a17b12-4140-49f7-bfda-e4531253b021,MOOD TELECOM - OLT HW - MANGUABEIRA PB,-,187.17.136.128,22011,ssh,False,sgpsgp,sgphw18,OLT--ssh(39),olt
+57c9f374-1eb8-4aa1-aed7-5ca9f9e73551,MOOD TELECOM - OLT HW - FUNCIONARIOS PB,-,187.17.136.128,22012,ssh,False,sgpsgp,sgphw18,OLT--ssh(39),olt
+a54e719b-8de9-4304-88a9-752a2f2c1bdb,MOOD TELECOM - OLT HW - JANGA,-,187.17.137.188,23748,telnet,True,grupovibe,vibe@731,OLT--telnet(40),olt
+7ed1d64e-2d7d-4eec-a32b-4eb438b6b1d7,MOOD TELECOM - OLT HW - PARATIBE,-,187.17.137.188,23744,telnet,True,speednet,"Tgz6%`~8y,vy",OLT--telnet(40),olt
+bc2cb7ca-d2bc-4eb8-b174-a1300c9aa893,MURILONET - OLT HW,-,170.245.66.102,3323,telnet,True,smartoltusr,Alfabr2020,OLT--telnet(40),olt
+4c6b0b31-643b-483e-8bf7-c54391de1e5c,NAVEGANET - OLT HW - TIBIRI,-,190.89.144.44,2321,telnet,True,sgpsgp,sgp142536,OLT--telnet(40),olt
+49b03378-888e-44a5-bdb7-869db577d49c,NAVEGANET - OLT HW - BAYEUX,-,190.89.144.44,53721,telnet,True,sgpsgp,sgp142536,OLT--telnet(40),olt
+a77fdb2f-3dd2-479f-a5b9-a012667b5eca,NAVEGANET - OLT HW - OTIZEIRO,-,190.89.144.44,2224,telnet,True,sgpsgp,sgp142536,OLT--telnet(40),olt
+2303608f-91c2-4f6b-a1d3-bb8d1cdbd4be,NAVEGANET - OLT HW - COLINAS,-,190.89.144.44,2225,telnet,True,sgpsgp,sgp142536,OLT--telnet(40),olt
+387f8926-864f-4078-b823-c597a83af369,NAVEGANET - OLT HW - GASNET,NAVEGANET(fa2db509-b284-4dec-bf39-28a187cec504),172.17.50.2,23,telnet,True,sgpsgp,sgp142536,OLT--telnet(40),olt
+b0f58b33-0579-4155-ae89-045c2cfaf520,NAVEGANET - OLT HW - ALTIPLANO,-,190.89.144.44,2220,telnet,True,sgpsgp,+#&wqah2&;yNvjA,OLT--telnet(40),olt
+48d0571a-e492-4015-b00b-09f8f5832b73,PGI TELECOM - OLT HW - CARNE DE VACA,PGI TELECOM*(29f662b9-fabe-4749-a733-336c78813f86),10.20.4.17,23,telnet,True,root,-,OLT--telnet(40),olt
+9ab75089-d21d-4f83-81b7-1fd1e8e98b55,PGI TELECOM - OLT HW - ATAPUZ,PGI TELECOM*(29f662b9-fabe-4749-a733-336c78813f86),10.20.4.249,22,ssh,False,root,admin123,OLT--ssh(39),olt
+58aef9dd-bad9-4ca0-a96d-c13b4bc385fa,PLANALTONET - OLT HW - PAUDALHO,PLANALTONET(13d92c05-3f61-4534-a7e1-8f38436aa543),10.12.1.10,23,telnet,True,ajustc,!UdWSBQC9y@8HUxrH9#l,OLT--telnet(40),olt
+697c3282-9e9d-469e-9813-959d6b48dcfd,PLANALTONET - OLT HW 05,PLANALTONET(13d92c05-3f61-4534-a7e1-8f38436aa543),10.12.1.8,23,telnet,True,ajustc,Ajust@123,OLT--telnet(40),olt
+ce7c6860-363e-4935-b84a-a7736f651822,PLANALTONET - OLT HW 04,PLANALTONET(13d92c05-3f61-4534-a7e1-8f38436aa543),10.12.1.7,23,telnet,True,ajustc,Ajust@123,OLT--telnet(40),olt
+ed05f8a2-046b-49ce-b2bc-5264ca8943bd,PLANALTONET - OLT HW 03,PLANALTONET(13d92c05-3f61-4534-a7e1-8f38436aa543),10.12.1.6,23,telnet,True,ajustc,Ajust@123,OLT--telnet(40),olt
+1b8a5ace-c200-40a6-aaf1-39789ece83e9,PLANALTONET - OLT HW 02,PLANALTONET(13d92c05-3f61-4534-a7e1-8f38436aa543),10.12.1.5,23,telnet,True,ajustc,Ajust@123,OLT--telnet(40),olt
+651a4935-40f7-4f12-ac12-111b1a6c8e1c,PLANALTONET - OLT HW 01,PLANALTONET(13d92c05-3f61-4534-a7e1-8f38436aa543),10.12.1.4,23,telnet,True,ajustc,Ajust@123,OLT--telnet(40),olt
+94fd5d01-1ced-4218-a851-ced7fc051b27,POWER FIBRA - OLT HW,-,187.17.137.188,23722,telnet,True,ajustconsulting,2IzgKDIxA31T,OLT--telnet(40),olt
+f7ed9151-c927-47d2-aeb2-d20d0879b486,RIONET - OLT HW - MURO ALTO,-,45.162.225.66,2300,telnet,True,sgpsgp,sgp142536,OLT--telnet(40),olt
+1f49720e-f019-4a24-a076-a84b53304dca,SINFIBRA - OLT HW - SAN MARTIN,-,160.19.44.22,23055,telnet,True,ajustconsulting,6U6crMHwhY9H,OLT--telnet(40),olt
+6082a5d0-4793-4fb0-8a84-822ec3c07b9e,SN TELECOM - OLT HW - JATAUBA,-,181.189.92.6,3019,ssh,False,ajustconsulting,69YVLqgkRuwD,OLT--ssh(39),olt
+29537881-344e-40be-8f1f-83d40491af49,SOFIANET - OLT HW - PE 22,-,128.201.156.214,23033,telnet,True,ajustconsulting,5EuUq4ggfFiE,OLT--telnet(40),olt
+2597b7bc-41df-4f18-ab78-95b74b46e22f,SOFIANET - OLT HW - JARDIM PAULISTA,-,128.201.156.214,23088,telnet,True,ajustconsulting,5QvE67jlTcRe,OLT--telnet(40),olt
+91aaff1f-cabf-4666-922e-fbf3dccd8d4b,CONECT FIBRA - OLT HW 5800 X2 -CAETES 02,-,45.5.88.78,22883,ssh,False,ajustconsulting,7IO9XsgQPAZ8,OLT--ssh(39),olt
+a178f490-4c63-44bc-a294-f9c204811cc5,CONECT FIBRA - OLT HW MA5800 X2 - JARDIM PAULISTA,-,45.5.88.78,22893,ssh,False,sgpolt,@SGPa1s2d3f4g5h6,OLT--ssh(39),olt
+c17344ed-d4f3-4c1c-8845-484908e59008,INFOTEL - OLT HW - SANTA ROSA - STD,INFOTEL(3c543b38-5d00-497c-aa7d-268bb90fbfa3),172.16.121.16,3813,ssh,False,smartolt,32171098tx,OLT--ssh(39),olt
+9b07509f-2fa7-46bd-8617-dd1cbb6f4cc1,INFOTEL - OLT HW 5800 - PXC,INFOTEL(3c543b38-5d00-497c-aa7d-268bb90fbfa3),10.120.0.110,22,ssh,False,infotel,infoz0n31,OLT--ssh(39),olt
+987803a2-04b6-4d80-9e1f-3d6a34b78c5b,FOXNET - OLT HW X2,-,45.191.105.255,4022,ssh,False,ajustconsulting,655VA0$7wIXZ6Xw,OLT--ssh(39),olt
+526d914e-675d-45c1-bf2f-4065762a181e,FORTNET - OLT HW,-,168.194.15.78,2389,telnet,True,ajustconsulting,9XnExplZgf4D,OLT--telnet(40),olt
+e305ea14-3b54-47f1-9020-904dc9d67ad9,BVNET - OLT HW MA5600,-,201.76.98.98,2360,telnet,True,sgpsgp,sgp2021,OLT--telnet(40),olt
+d0ae9bc3-356f-4dd9-a9e0-7b9cad9c94a5,TC+FIBRA - OLT HW 02,-,164.163.20.78,23748,telnet,True,root,@kaet#$321,OLT--telnet(40),olt
+cc0addab-fb36-4469-896c-0bf1981035f1,ULTRANET - OLT HW X2 - PINDAI,-,192.141.106.6,23538,telnet,True,ajustconsulting,5IBD$73qrFVUg12,OLT--telnet(40),olt
+f4863bea-0ad1-4bfd-bb1e-0b637f8e6a6f,ULTRANET - OLT HW X7 - PINDAI,-,192.141.106.6,22206,telnet,True,sgpsgp,!@#.Sgp..1.sgp,OLT--telnet(40),olt
+465e1ecc-8b93-4d56-9955-0d7aa59fde4a,ULTRANET - OLT HW - MIRITIUA,-,192.141.106.6,22288,ssh,False,sgpacesso,!@#.Sgp..1.sgp,OLT--ssh(39),olt
+f5f8968e-3b02-478f-a4d9-41a0ea2a490b,ULTRANET - OLT HW - MAIOBAO,-,192.141.106.6,2305,telnet,True,ajustconsulting,3uPaXO#YylOM6,OLT--telnet(40),olt
+9d169e4c-d7d9-4b60-a3c5-90d5415d1a5c,UMTELECOM - OLT HW - CENTRO,UMFIBRA(42217973-6ee9-4f76-9814-0a6ba99cb405),10.40.39.19,22,ssh,False,sgp-radius,sgp-radius@@2022,OLT--ssh(39),olt
+86af3a7e-c201-4af7-9252-686907a61626,UMTELECOM - OLT HW - BARRO,UMFIBRA(42217973-6ee9-4f76-9814-0a6ba99cb405),10.40.39.16,22,ssh,False,sgp-radius,sgp-radius@@2022,OLT--ssh(39),olt
+db43e076-f2a6-4096-bef5-5591767576fe,UMTELECOM - OLT HW - BONGI,UMFIBRA(42217973-6ee9-4f76-9814-0a6ba99cb405),10.40.39.22,22,ssh,False,sgp-radius,sgp-radius@@2022,OLT--ssh(39),olt
+561a6690-6d2f-4c98-a059-c7144850fcec,UMTELECOM - OLT HW - CENTRO 2,UMFIBRA(42217973-6ee9-4f76-9814-0a6ba99cb405),10.40.39.11,22,ssh,False,sgp-radius,sgp-radius@@2022,OLT--ssh(39),olt
+22abf547-e77f-40f7-b061-c42d8be8cee0,UMTELECOM - OLT HW - CASA FORTE,UMFIBRA(42217973-6ee9-4f76-9814-0a6ba99cb405),10.40.39.14,22,ssh,False,sgp-radius,sgp-radius@@2022,OLT--ssh(39),olt
+ad2f0f87-1c0a-4613-9f84-b07ba002dcc7,UMTELECOM - OLT HW - JORDAO,UMFIBRA(42217973-6ee9-4f76-9814-0a6ba99cb405),10.40.39.20,22,ssh,False,sgp-radius,sgp-radius@@2022,OLT--ssh(39),olt
+58ebcde0-4cec-448e-8bf6-c5d1eed82249,UMTELECOM - OLT HW - VARZEA,UMFIBRA(42217973-6ee9-4f76-9814-0a6ba99cb405),10.40.39.15,22,ssh,False,sgp-radius,sgp-radius@@2022,OLT--ssh(39),olt
+456492e9-7bc1-4d72-88f1-d6f29b58cf47,UMTELECOM - OLT HW - OLINDA,UMFIBRA(42217973-6ee9-4f76-9814-0a6ba99cb405),10.40.39.13,22,ssh,False,sgp-radius,sgp-radius@@2022,OLT--ssh(39),olt
+2cfa98d4-e6e9-4816-add5-babe72961025,UMTELECOM - OLT HW - VASCO,UMFIBRA(42217973-6ee9-4f76-9814-0a6ba99cb405),10.40.39.21,22,ssh,False,sgp-radius,sgp-radius@@2022,OLT--ssh(39),olt
+c3d9f71f-80cb-4560-9d8d-04ba3922d85f,UMTELECOM - OLT HW - PINA,UMFIBRA(42217973-6ee9-4f76-9814-0a6ba99cb405),10.40.39.24,22,ssh,False,sgp-radius,sgp-radius@@2022,OLT--ssh(39),olt
+ddae3e02-87c0-4d5e-a911-1446e1475187,UMTELECOM - OLT HW - MALAWI,UMFIBRA(42217973-6ee9-4f76-9814-0a6ba99cb405),10.1.47.81,22,ssh,False,sgp-radius,sgp-radius@@2022,OLT--ssh(39),olt
+6cde1ad4-3448-4067-bc51-315e8ff98442,UMTELECOM - OLT HW - NANAI,UMFIBRA(42217973-6ee9-4f76-9814-0a6ba99cb405),10.40.39.17,22,ssh,False,sgp-radius,sgp-radius@@2022,OLT--ssh(39),olt
+5e0937bd-d62e-4498-8254-7de4fe088540,UMTELECOM - OLT HW - SEDE,UMFIBRA(42217973-6ee9-4f76-9814-0a6ba99cb405),10.40.39.10,22,ssh,False,sgp-radius,sgp-radius@@2022,OLT--ssh(39),olt
+1d287135-b988-4dc8-8624-6e0e03685281,GL SOLUCOES - OLT HW - HF,-,45.191.104.10,2323,telnet,True,sgphftel,hftel@sgp2021,OLT--telnet(40),olt
+e4303792-98bf-4b6e-866a-2c0dd670433d,ZOOM FIBRA - OLT HW - RIBEIRÃO,-,179.189.243.6,2388,telnet,True,ajustconsulting,123@ajust,OLT--telnet(40),olt
+8d28a90e-b2bc-475d-ab39-d878420be2aa,TECH SOLUCOES - OLT HW,-,179.63.12.32,23233,telnet,True,ajustconsulting,5TZ9gmg6Mlo9,OLT--telnet(40),olt
+78ebb657-b22a-4566-baa9-3f468932c4bb,UP CONNECT FIBRA - OLT HW - SAN MARTIN,UP CONNECT FIBRA(e9ef84ae-0aa2-4b20-9c02-171026968e95),172.19.50.2,23,telnet,True,ajustcon,@Ajust$mudar1,OLT--telnet(40),olt
+50932748-038c-4b07-bd57-a633e27a0b78,VIBE TELECOM - GATEWAY - ZABBIX SERVER,VIBE TELECOM(48f83ff4-913c-438a-9ad8-be29afcf10fa),187.17.137.172,22,ssh,False,ajust,@Ajust102030,Gateway(11),router
+0028b024-ed93-4895-a268-f4e86fd621c0,ELO TELECOM - GATEWAY - ZABBIX SERVER,ELO TELECOM(c51a0470-fcac-4fa0-8fcd-566aa56636c6),177.54.138.9,22,ssh,False,ajust,Consulting@2023!,Gateway(11),router
+bb6df636-90d6-413d-99d2-277273d66db9,VOO TELECOM - GATEWAY - ZABBIX SERVER,VOO TELECOM(0a1a8424-113c-4fcf-867d-6bff34bff561),187.62.77.14,22,ssh,False,root,!@01012009,Gateway(11),router
+84069943-9a6b-4567-9838-d99aab69de76,UP CONNECT FIBRA - GATEWAY - ZABBIX SERVER,UP CONNECT FIBRA(e9ef84ae-0aa2-4b20-9c02-171026968e95),179.48.12.231,22,ssh,False,zabbix,753War159@1513!,Gateway(11),router
+dbc17f60-8662-4370-b16f-04577c0bfb22,PLANALTONET - GATEWAY - ZABBIX SERVER,PLANALTONET(13d92c05-3f61-4534-a7e1-8f38436aa543),177.23.168.26,22,ssh,False,ajust,Ajust@2025,Gateway(11),router
+b21244e0-9af7-411c-a9b0-68edc8ba7c26,WELLFIBRA - GATEWAY - ZABBIX SERVER,WELLFIBRA*(a1a8ea60-e403-4938-af37-cfe1d4266a12),190.89.145.21,2222,ssh,False,root,CYDOWVZBQSSS,Gateway(11),router
+4ad24b06-b1b9-496f-891b-3c6ddf057ec1,UMFIBRA - GATEWAY - ZABBIX SERVER,UMFIBRA(42217973-6ee9-4f76-9814-0a6ba99cb405),177.36.7.109,2211,ssh,False,spot,vempraspot,Gateway(11),router
+cae696d6-2505-4783-b9fa-7d6ea9913688,ULTRANET - GATEWAY - ZABBIX SERVER,ULTRANET(88ab9cfe-afa6-46be-ad0e-e04107f02260),192.141.107.178,22,ssh,False,root,=pJ7R5301\:Z,Gateway(11),router
+ca6c738e-f05e-4984-8989-b808b3af5e0c,TC+ FIBRA - GATEWAY - ZABBIX SERVER,TC+ FIBRA(eaf5392a-668d-4ed5-9338-d00a0fe85cb4),164.163.21.202,26226,ssh,False,agility,TK8wL)fb]#Xp[j_4$9)olxGC,Gateway(11),router
+2c1d4599-c388-42be-8cdc-cfc2607ac757,SIN FIBRA - GATEWAY - ZABBIX SERVER,SIN FIBRA(a5f7f4be-4424-4da0-b179-b290156e646e),160.19.44.86,22,ssh,False,root,9Ev0S£#bZ2£l,Gateway(11),router
+0cf46a3f-dcc4-4b41-9961-aae12ec0e08f,PONTONET - GATEWAY - ZABBIX SERVER,PONTONET*(999367c4-1033-45af-a7a4-5264a1686b07),45.168.153.220,2272,ssh,False,root,"nx1oXjhA&iR<N:,Zaq]VSIwB",Gateway(11),router
+fc3efb08-402a-49c4-bc3f-6c38566a5712,PGI TELECOM - GATEWAY - ZABBIX SERVER,PGI TELECOM*(29f662b9-fabe-4749-a733-336c78813f86),177.125.8.237,3050,ssh,False,ajust,9ZUO4HHQ111K,Gateway(11),router
+ab69dfa7-4624-44c5-ab65-cfffd2da55f5,NAVEGANET - GATEWAY - ZABBIX SERVER,NAVEGANET(fa2db509-b284-4dec-bf39-28a187cec504),160.19.44.62,26584,ssh,False,naveganet,4;45k8@Jr'ay,Gateway(11),router
+283ce81a-55fd-470a-aae7-051532a093da,MOOD TELECOM - GATEWAY - ZABBIX SERVER,MOOD TELECOM(e20791d7-c179-4927-a97d-fcedee37770f),187.17.136.186,2250,ssh,False,mood,123@mood!@#,Gateway(11),router
+3727c54d-19de-41b6-b6da-7c526fce8efa,CELLNET - GATEWAY - ZABBIX SERVER,CELLNET(ad23ce68-2c2a-4c68-9121-3008acf9afc7),190.89.232.1,3022,ssh,False,ajust,n0YeI9XF4liS,Gateway(11),router
+03834322-ef91-449e-ba67-ff597083c6a8,BVNET - GATEWAY - ZABBIX SERVER,BVNET(ebeee47d-ff40-4a6a-ad4f-3eb3562ebdb9),201.76.98.98,22262,ssh,False,ajust,35RVb12yb*Xj,Gateway(11),router
+43d130f1-d96a-4368-b344-d2cd64e583e3,JRNET - GATEWAY - ZABBIX SERVER,JRNET*(31425bb1-0ea7-4aec-bc54-98d021bda6b4),168.194.15.174,3020,ssh,False,ajust,4rN4a[44L}=S,Gateway(11),router
+495e04dc-2977-4b10-9b68-a81c594c0890,MEGANET - GATEWAY - ZABBIX SERVER,MEGANET(ea64144f-858a-4b4d-a839-f43464886937),45.176.56.21,22567,ssh,False,ajust,?8769EEpsx8y,Gateway(11),router
+f0a8b3af-a422-4199-a553-cee0c806d89e,MCNET - GATEWAY - ZABBIX SERVER,MCNET*(173ef08e-dabd-4c05-a88a-b91ca3a102d5),45.164.10.128,2280,ssh,False,ajust,M44d7ea-m?q&,Gateway(11),router
+c9ccff30-cf95-4644-ac08-644f136c877d,KMTELECOM - GATEWAY - ZABBIX SERVER,KMTELECOM(cce6c1fa-8dde-4e52-905d-e6a6f1c21a0c),45.170.192.54,24324,ssh,False,kmtelecom,/wj6Z}T6J9d£5w3,Gateway(11),router
+122ae8b8-421b-4147-b92b-0fd247adcc65,JANET - GATEWAY - ZABBIX SERVER,JANET*(e299fb0d-bd12-49a0-93e4-1fa6f7ba7470),190.89.233.128,3012,ssh,False,ajust,"n69NqdT:(BE{.fcq:kg|VK,{",Gateway(11),router
+9c37650e-d2ce-4c71-9660-0b94b5cfd20f,I4 TELECOM - GATEWAY - ZABBIX SERVER,I4 TELECOM(12e94618-ab08-4bd2-98a1-c33d1a26e1f0),45.187.169.250,2983,ssh,False,i4telecom,Kf9_O5ON£9'.,Gateway(11),router
+94156ed7-c37e-438f-9664-590f360a8ec7,GL SOLUCOES - GATEWAY - ZABBIX SERVER,GL SOLUCOES(4365a6b4-7805-4f53-8620-aa3494cf37fc),45.191.104.14,22723,ssh,False,gl,13D@Q*6[L£h`,Gateway(11),router
+ce0702d0-3141-44b5-9c5e-dfb963f0b8c4,HOMENET - GATEWAY - ZABBIX SERVER,HOMENET*(14f47055-0f03-4167-8dde-2a39f696fdfd),179.49.144.5,3021,ssh,False,ajust,2t[61WJx4t^},Gateway(11),router
+c4579e24-04e9-42cb-96ba-df86cfeb7e19,GRUPO TELECOM - GATEWAY - ZABBIX SERVER,GRUPO TELECOM*(3aa375f0-b8f8-499d-a94b-2a7bd813ea2e),181.225.170.5,2232,ssh,False,ajust,N(@*}J4f37?=,Gateway(11),router
+4c3a30c2-0ec4-4904-adc7-11ca418883b1,G5 WILL - GATEWAY - ZABBIX SERVER,G5 WILL(08f35dd9-7e2f-43d0-a94b-f0e28eb4388d),201.71.4.19,26226,ssh,False,ajust,7^1cuc\Xb9Y9,Gateway(11),router
+f6a19cfc-257c-4489-93c0-43b8a6973c4e,G5 JABOATAO - GATEWAY - ZABBIX SERVER,G5 JABOATAO(2bdcc9a2-ea8e-409f-8ba6-d7c6b2b6d4f7),192.141.105.154,22789,ssh,False,ajust,j4duy>S$P|07,Gateway(11),router
+a5c42d34-c4b5-422b-8300-792b75d82b6b,ECO TELECOM - GATEWAY - ZABBIX SERVER,ECO TELECOM(786c5d87-9435-422a-99a0-9f54b8db7cff),45.71.170.115,22567,ssh,False,ajust,upP|U6%43Ai,Gateway(11),router
+80ba6cc8-ae2c-4f1a-b458-b321fd29e6d8,CYBERNET - GATEWAY - ZABBIX SERVER,CYBERNET(17e3eb3b-90c4-4d09-a991-c56725a2cd90),170.80.112.14,22567,ssh,False,ajust,"v-e9,/H4Q710",Gateway(11),router
+608919bd-a4d8-4b32-9c75-ecd4568d3112,CONECT FIBRA - GATEWAY - ZABBIX SERVER,CONECT FIBRA(10cff802-29f9-4221-bc90-92f588310018),45.5.88.154,22567,ssh,False,conect,/qUgL1?3(XE6,Gateway(11),router
+ddf831ac-8258-45c5-a6a5-eb917ad40c26,SOFIANET - GATEWAY - ZABBIX SERVER,SOFIANET(b5dfae2d-13da-4bc3-82e0-944170fd14c6),128.201.156.19,29908,ssh,False,ajust,sE5ExN#wfRbY1iae78}IRD{3,Gateway(11),router
+0d75cab3-96d5-41bc-b963-f82ec6bcc1ed,CNB TELECOM - GATEWAY - ZABBIX SERVER,CNB TELECOM*(bbecb26e-7b5c-4822-8e67-0154dbc64288),177.36.0.241,3034,ssh,False,ajust,v*H%JY98#m5!,Gateway(11),router
+419b34d5-9aad-4d96-855d-20e326f74632,PIX FIBRA - GATEWAY - ZABBIX SERVER,PIX FIBRA(2cceaf18-31a3-4e4f-87ad-9058af12b176),45.224.115.188,22573,ssh,False,root,753War159@1513!,Gateway(11),router
+8ca32793-9770-4260-9f6f-7eb7cefec559,GRUPO VESC - GATEWAY - ZABBIX SERVER,GRUPO VESC(f088cb75-3312-44c1-a776-7a31382dddc9),201.76.98.98,3022,ssh,False,root,k@%LLz(v0Q!+rAU$3!i8%d!B,Gateway(11),router
+6e15d290-d926-40ed-808f-68414b8cae04,NEWCONNECT - SW HW - CORE LOTE92 (POP DIOGENES),NEW CONNECT(29f4474f-0c20-4b58-bfc3-1ae5b902aabb),1.2.1.9,22,ssh,False,ericcastro,0&#mD5S9YAP\,Switch--ssh(35),switch
+46740ba1-ce0c-4e4e-b74a-14a0eafe6fa6,NEW CONNECT - ROUTER - HW NE8000 BORDA,NEW CONNECT(29f4474f-0c20-4b58-bfc3-1ae5b902aabb),128.201.78.245,22120,ssh,False,ericcastro,0&#mD5S9YAP\,Huawei(15),router
+f39447c8-9334-4048-9def-323463f29648,VOO TELECOM - ROUTER - HW NE8000 BORDA -  JABOATAO ( SUCUPIRA ),-,187.62.77.1,22,ssh,False,ajustconsulting,Mudar@123,Huawei(15),router
+0089848c-8a0f-4da4-9932-4b1ba1dd9d30,ELO TELECOM - ROUTER - HW NE40 SLZ ELO RT01,ELO TELECOM(c51a0470-fcac-4fa0-8fcd-566aa56636c6),192.168.110.120,22,ssh,False,ajust@elo,Consulting@2023!,Huawei(15),router
+b0a489f2-9a84-45fb-804e-40dabd9e37b9,MOND TELECOM - ROUTER - CISCO ASR1004 AUT/BORDA,-,45.164.181.1,22,ssh,False,RickFrazao,Redi7900*rjnet,Cisco(14),router
+3aae10ef-c123-404f-8195-f3d7268383b4,HOMENET - ROUTER - CISCO ASR1002 AUT,-,179.49.144.32,22,ssh,False,suporte,WowJiEPp,Cisco(14),router
+7bbf0e21-408a-4e85-a787-563e6a4d3bf8,ELO TELECOM - ROUTER - HW NE8000 SLZ ELO RT08 AUT,ELO TELECOM(c51a0470-fcac-4fa0-8fcd-566aa56636c6),192.168.110.100,22,ssh,False,ajustconsulting,33#$wd8_MJ1l,Huawei(15),router
+46720775-1e5c-407e-8406-63bf1329f3ae,PGI TELECOM - ROUTER - HW NE8000 AUT/BORDA,-,177.125.8.254,52605,ssh,False,ajustconsulting,@Ajust#$321,Huawei(15),router
+c95ba234-abdf-4e8d-a950-06e84142c75e,RIONET - ROUTER - HW NE40 AUT/BORDA,-,45.162.224.2,26853,ssh,False,ajustconsulting,@Ajust#$321,Huawei(15),router
+8cf02cad-30dd-425f-820c-5bfba54066d8,VIBE TELECOM - ROUTER - HW NE20 BORDA,-,187.17.137.184,26602,ssh,False,ajust,@#$ajust..,Huawei(15),router
+980e7f92-6311-4b61-8b7c-64500821967d,TC+FIBRA - ROUTER - HW NE20 AUT/BORDA,-,164.163.20.2,26593,ssh,False,ajustconsulting,@#$Ajust..321,Huawei(15),router
+d5c911ff-1c75-43c3-bb0b-8e7508998cf3,FLASHNET - ROUTER - HW NE8000 BORDA CDN,FLASHNET(2760dac8-09a1-4e72-bbb2-a9ca6608cd9b),192.168.3.25,53267,ssh,False,flashnet,@#$Keycode..265377,Huawei(15),router
+8d4f856d-fd93-44a5-8662-ef345bdfb926,RENOVENET - ROUTER - HW NE8000 BORDA,FLASHNET(2760dac8-09a1-4e72-bbb2-a9ca6608cd9b),192.168.3.17,53267,ssh,False,flashnet,@#Keycode..1,Huawei(15),router
+9e1fc0ff-1912-4474-9b6c-51c5197877f3,NAVEGANET - ROUTER - HW NE20 BORDA,FLASHNET(2760dac8-09a1-4e72-bbb2-a9ca6608cd9b),192.168.3.9,53267,ssh,False,flashnet,@#$Keycode..265377,Huawei(15),router
+2e401c39-e9d8-4525-8f8d-db1ae4919aa0,GOFIBRA - ROUTER - HW NE20 - PPPOE,GOFIBRA(9507129a-c0f3-41c4-8618-c5a0547a6f97),45.6.124.253,25923,ssh,False,ajustconsulting,Mudar@123,Huawei(15),router
+1af1d775-4659-4c3e-8a36-ed758bef3be9,PIX FIBRA - ROUTER - HW NE40 BORDA,-,200.215.224.1,22,ssh,False,ajust,4j0st@3819@#!,Huawei(15),router
+a0bf60a7-edd2-4df3-8b7a-d94fb10888b4,FLASHNET - ROUTER - HW NE8000 BORDA IX,FLASHNET(2760dac8-09a1-4e72-bbb2-a9ca6608cd9b),192.168.3.13,53267,ssh,False,flashnet,@#$Keycode..265377,Huawei(15),router
+e15527ed-7e6b-4cfa-8f84-cef2ee05b53e,INFOTEL - ROUTER - HW NE20 AUT,INFOTEL(3c543b38-5d00-497c-aa7d-268bb90fbfa3),170.150.139.2,26504,ssh,False,ajust,ajust@ITL2023,Huawei(15),router
+c5062d95-8e20-4542-bd13-9c070001566f,PLANALTONET - ROUTER - HW NE8000 BORDA,PLANALTONET(13d92c05-3f61-4534-a7e1-8f38436aa543),10.12.255.201,22,ssh,False,ajust,!UdWSBQC9y@8HUxrH9#l,Huawei(15),router
+46a6797b-8cc2-4392-85ee-da14a1f1f3c3,FLASHNET - ROUTER - HW NE8000 BORDA,FLASHNET(2760dac8-09a1-4e72-bbb2-a9ca6608cd9b),192.168.3.1,53267,ssh,False,flashnet,@#Keycode..1,Huawei(15),router
+0ca6c30d-f0bf-46d9-814d-386304f03106,WELL FIBRA - ROUTER - HW NE20 AUT/BORDA,-,190.89.145.2,26855,ssh,False,ajustconsulting,R(T96@4ssl8g,Huawei(15),router
+41ad15e8-af53-4778-b144-d890df40d3fc,VOICE CORP - ROUTER - HW NE8000 BORDA,-,190.89.34.1,27036,ssh,False,ajustconsulting,@Ajust321..,Huawei(15),router
+0944256d-d08d-4805-b9e1-a84e70d83c20,VIBE TELECOM - ROUTER - HW NE8000 AUT,-,168.194.14.144,53267,ssh,False,ajustconsulting,7SneI*b+[C!OreDg,Huawei(15),router
+d64ee2a5-9d2a-4a8e-9e96-d51c4aa454ac,UP CONNECT FIBRA - ROUTER - HW NE8000 AUT/BORDA,-,179.48.12.6,8000,ssh,False,ajustcon,1ie5%U4>:2Zl,Huawei(15),router
+e5d82667-074e-424a-b27d-a68f1d2093cc,UM FIBRA - ROUTER - HW NE8000 AUT/BORDA,-,45.4.119.1,22800,ssh,False,ajustconsulting,@#$Ajust..1,Huawei(15),router
+5aa977af-c650-4375-9993-4a7b304fb93f,SUCUPIRANET - ROUTER - HW NE8000 AUT/BORDA,-,45.184.5.1,22,ssh,False,tecxpro,Dc120Y:EQWKt,Huawei(15),router
+ee57ce33-3f41-4b22-ad97-fffbfc809644,SOFIANET - ROUTER - HW NE8000 AUT/BORDA,-,128.201.156.42,26356,ssh,False,ajustconsulting,@#$Ajust..@#$2025532,Huawei(15),router
+ac7d21f7-c1da-4947-86f5-72197a46e75c,SN TELECOM - ROUTER - HW NE20 AUT/BORDA,-,181.189.95.253,50331,ssh,False,ajustconsulting,3;a1H_gw^f~2|]u$eK,Huawei(15),router
+5ec17d65-0931-47ab-951c-95ff1a7ab6b3,SIN FIBRA - ROUTER - HW NE40 AUT/BORDA,-,160.19.44.18,39270,ssh,False,suporte,@Ajust#$321,Huawei(15),router
+434f9b95-95f4-4629-bd84-0447d733759b,MOOD TELECOM - ROUTER - HW NE20 AUT/BORDA,-,187.17.136.176,27059,ssh,False,ajustconsulting,@#$Mood..1,Huawei(15),router
+a38c0788-98d7-463e-845b-ade0bd8780fa,MGN FIBRA - ROUTER - HW NE8000 AUT/BORDA,-,45.235.104.2,26741,ssh,False,sgpmgn,SGP29001@radius#,Huawei(15),router
+9fd484bd-20ba-4b56-b127-90657e6fcf1f,MCNET - ROUTER - HW NE8000 AUT/BORDA,-,45.164.10.2,53261,ssh,False,ajustconsulting,MCNET@ZG9gU0,Huawei(15),router
+e419f4b1-dbd6-4e60-bc25-00b55d562d33,MAXIMANET - ROUTER - HW NE20 AUT/BORDA,-,45.164.8.5,26558,ssh,False,ajustconsulting,@Ajust#$321,Huawei(15),router
+80eb32bd-e558-4eb6-a583-d02a98c3b276,I4 TELECOM - ROUTER - HW NE8000 AUT/BORDA,-,45.187.168.3,53267,ssh,False,ajust@i4,"8*++vN\""vX""&",Huawei(15),router
+9f229696-6f9b-452f-8a9a-f1938ed91766,GRUPO VESC - ROUTER - HW NE20 AUT/BORDA,-,201.76.97.254,2299,ssh,False,vescnet,7dugYWdt,Huawei(15),router
+e37f69cf-83e5-47ff-a8f8-8b64910c6b8a,GRUPO TELECOM - ROUTER - HW NE20 AUT/BORDA,-,181.225.170.1,2203,ssh,False,ajustconsulting,1BHXqIYTu4SZ@,Huawei(15),router
+3593998a-5d33-46d1-b4d7-083b822c54d4,GL SOLUCOES - ROUTER - HW NE20 AUT/BORDA,-,45.191.104.50,26585,ssh,False,ajustconsulting,@Ajust#$321,Huawei(15),router
+8e1cc5b3-a88b-440d-9095-02e9e6145257,G5 WILL - ROUTER - HW NE8000 AUT/BORDA,-,201.71.4.254,27036,ssh,False,ajustconsulting,@#$Ajust123..,Huawei(15),router
+42bc3870-978e-45a1-a587-96b6f779a080,G5 JABOATAO - ROUTER - HW NE40 AUT/BORDA,-,192.141.105.2,26753,ssh,False,ajustconsulting,3;a1H_gw^f~2|]u$eK,Huawei(15),router
+f62bba8e-5a62-457a-b567-903063be93a2,G5 CABO - ROUTER - HW NE8000 AUT/BORDA,-,45.187.19.2,26944,ssh,False,ajustconsulting,@#$Ajust..1,Huawei(15),router
+af0367ab-ea79-4265-bf49-efbff73a4c34,FNET - ROUTER - HW NE40 AUT/BORDA,-,128.201.196.2,52689,ssh,False,ajust@fnet,"4tj(m9""$)Mkv7K""8",Huawei(15),router
+7058cb92-1fa0-4b73-8f4b-64dd3cbddfed,FIBERMAIS - ROUTER - HW NE40 AUT/BORDA,-,170.245.220.2,7622,ssh,False,suporte,Forte7611.,Huawei(15),router
+3e1f38f0-4771-41a9-bd38-f7cbfda473b7,CONECT FIBRA - ROUTER - HW NE8000 AUT/BORDA,-,45.5.88.2,42660,ssh,False,conect,@Cone#$321,Huawei(15),router
+8d09fef4-c851-4e47-8ed1-b70fe72ea847,MEGANET - ROUTER - HW NE8000 AUT/BORDA,-,45.176.56.2,26896,ssh,False,ajustconsulting,@#$Ajust..1,Huawei(15),router
+48da2652-e614-4869-a734-7567db2584bd,CYBERNET - ROUTER - HW NE8000 AUT/BORDA,-,170.80.112.3,50331,ssh,False,ajust,Mudar@123,Huawei(15),router
+14ef7ad9-3fd9-4e14-aef8-aa200b867f28,ECO TELECOM - ROUTER - HW NE8000 AUT/BORDA,-,45.71.170.2,26762,ssh,False,ajustconsulting,@#$Ajust..1,Huawei(15),router
+ec281afd-d230-4270-bc71-f2148ed4092b,INFORTEC - ROUTER - HW NE8000 M4 AUT,-,187.86.163.14,22022,ssh,False,ajustconsulting,7%aG4g1z%321,Huawei(15),router
+c954b71c-a221-4a18-80fb-e42cef08f7e3,KM TELECOM - ROUTER - HW NE8000 AUT/BORDA,-,45.170.192.2,26817,ssh,False,ajustconsulting,7Jtq1zR1aU;R,Huawei(15),router
+5875ef67-72c4-49e2-84ff-af411b2e995c,JANET - ROUTER - HW NE8000 AUT/BORDA,-,190.89.233.10,27039,ssh,False,ajustconsulting,Xp%lJ).6A0E8,Huawei(15),router
+2ac86b4a-5085-4cd0-b31d-064bd4dd5059,VOO TELECOM - ROUTER - HW NE8000 AUT - JABOATAO/BOMBA DO HEMETERIO,VOO TELECOM(0a1a8424-113c-4fcf-867d-6bff34bff561),10.72.13.254,22022,ssh,False,ajustconsulting,nR9Fg9088Ll=,Huawei(15),router
+e6c19cf2-5afd-4c52-9321-9187b352c551,G5 JABOATAO - MK RB 1009 - SERRARIA,-,192.141.105.26,8299,ssh,False,ajust,5IhMciy%ZdI:,Winbox(46),router
+a4c15dc9-70fe-4522-bf7b-4c9ed2dd15fd,PLANALTONET - SW BACKBONE - ALIANCA,PLANALTONET(13d92c05-3f61-4534-a7e1-8f38436aa543),10.200.90.1,22,ssh,False,ajust,!UdWSBQC9y@8HUxrH9#l,Switch--ssh(35),switch
+7bcd0fcb-4a9c-4e6c-93e3-c2ef3e0e72cb,MEGANET - SW TPLINK - SERRAMBI,MEGANET(ea64144f-858a-4b4d-a839-f43464886937),172.16.81.2,23,telnet,True,ajustconsulting,123ajust,Switch--telnet(47),switch
+bfefda86-bf8d-4064-97c9-e10725f63d9d,ALPHANET - MK RB 1036 - AUT,-,164.163.22.128,5895,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+67feaff2-1b8a-4fbf-b776-6f3e1ccc0486,ALPHANET - MK RB 1036 - BORDA,-,164.163.22.0,1505,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+db4506b2-7e1f-4c4d-a77e-e8a33a73f2d8,ALPHANET - MK SW CRS 317*,-,164.163.22.0,55002,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+ea5bcbad-77d0-4947-8ed4-a207716355a5,CNB TELECOM - OLT CIANET - QUIXABA,CNB TELECOM*(bbecb26e-7b5c-4822-8e67-0154dbc64288),172.27.40.2,22,ssh,False,admin,admin,OLT--ssh(39),olt
+436696fb-347a-4ab3-a68f-d4dd6d009f1d,CNB TELECOM - OLT VSOL - LAGOA CRUZ,CNB TELECOM*(bbecb26e-7b5c-4822-8e67-0154dbc64288),172.18.19.2,22,ssh,False,admin,A2net3!@,OLT--ssh(39),olt
+9095ede2-986d-42c1-bba0-b93d0eca3249,CNB TELECOM - OLT FIBERHOME - IGUARACI,CNB TELECOM*(bbecb26e-7b5c-4822-8e67-0154dbc64288),172.23.10.14,22,ssh,False,sgp,s@#gppp203!,OLT--ssh(39),olt
+ad198fc7-01a5-4bde-bf78-e415c94fd2f1,CNB TELECOM - OLT VSOL - ITA,CNB TELECOM*(bbecb26e-7b5c-4822-8e67-0154dbc64288),172.18.21.2,22,ssh,False,admin,Xpon@Olt9417#,OLT--ssh(39),olt
+925c4235-553c-4daa-8774-99879b93836c,PONTE DIGITAL - MK RB 1100 - AUT*,-,170.80.48.7,8299,ssh,False,ajust,3;a1H_gw^f~2[]JseK?,Winbox(46),router
+62a1160a-c384-4454-8509-cf3cb712d660,PLANALTONET - MK RB 1100 - GERENCIA*,-,10.12.255.254,8291,ssh,False,ajust,!UdWSBQC9y@8HUxrH9#l,Winbox(46),router
+37ab3083-47e2-444e-9254-f8bf38406917,MOND TELECOM - MK RB CCR 1036 - CGNAT,-,45.164.181.192,8293,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+5437917c-dfca-43f7-a108-771c4ae8a9c8,MOOD TELECOM - MK SW CRS 317 - CORE RECIFE8,-,187.17.136.130,5895,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+98c2397b-73e6-46c8-8149-863e779ca9cd,MOOD TELECOM - MK RB CCR 1009 - AUT RECIFE*,-,187.17.136.128,5895,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+6059d440-85d7-4399-80cf-752b42a3247d,MOOD TELECOM - MK RB CCR 1036 - CGNAT PB,-,187.17.136.128,5871,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+997de3b5-c6e7-4aaa-8d16-687fe4da46d8,PIX FIBRA - OLT HW - TOTO,PIX FIBRA(2cceaf18-31a3-4e4f-87ad-9058af12b176),172.31.255.10,22,ssh,False,ajust@emfibra,4j0st@3819@#!,OLT--ssh(39),olt
+10ff63df-a5a1-4776-b09b-35ccc824511c,PIX FIBRA - OLT HW - COLONIA,PIX FIBRA(2cceaf18-31a3-4e4f-87ad-9058af12b176),172.31.255.11,22,ssh,False,flashnet@emfibra,Flash@3819@#!,OLT--ssh(39),olt
+32a7b240-19b2-41c6-9ba9-7f3679d31379,PIX FIBRA - OLT HW - ARABAIANA-02,PIX FIBRA(2cceaf18-31a3-4e4f-87ad-9058af12b176),172.31.255.13,22,ssh,False,flashnet@emfibra,Flash@3819@#!,OLT--ssh(39),olt
+3f73fedf-9848-438d-9f97-a9a7b5ce2bfc,PIX FIBRA - OLT HW - ARABAIANA-01,PIX FIBRA(2cceaf18-31a3-4e4f-87ad-9058af12b176),172.31.255.12,22,ssh,False,flashnet@emfibra,Flash@3819@#!,OLT--ssh(39),olt
+63b1483a-c7e1-498a-84d7-25cc0fc45025,PIX FIBRA - OLT HW - COMPULINE-BOA VIAGEM,PIX FIBRA(2cceaf18-31a3-4e4f-87ad-9058af12b176),172.31.255.14,22,ssh,False,ajust@emfibra,4j0st@3819@#!,OLT--ssh(39),olt
+3052c379-c64e-448c-b897-52d1340d6bd6,PIX FIBRA - OLT HW - COMPULINE-ILHA,PIX FIBRA(2cceaf18-31a3-4e4f-87ad-9058af12b176),172.31.255.16,22,ssh,False,ajust@emfibra,4j0st@3819@#!,OLT--ssh(39),olt
+3289c824-45fd-42a0-b446-0e769304b644,PIX FIBRA - OLT HW - SURFIX,PIX FIBRA(2cceaf18-31a3-4e4f-87ad-9058af12b176),172.31.255.17,22,ssh,False,ajust@emfibra,4j0st@3819@#!,OLT--ssh(39),olt
+80ff1a6e-c8ed-4f4a-a5ea-119c57a25134,PIX FIBRA - OLT HW - DC,PIX FIBRA(2cceaf18-31a3-4e4f-87ad-9058af12b176),172.31.255.18,22,ssh,False,ajust@emfibra,4j0st@3819@#!,OLT--ssh(39),olt
+508a3a18-8928-449d-a92e-fd908db21947,PIX FIBRA - OLT HW - CACOTE,PIX FIBRA(2cceaf18-31a3-4e4f-87ad-9058af12b176),172.31.255.27,22,ssh,False,ajust@emfibra,4j0st@3819@#!,OLT--ssh(39),olt
+d2e0bf2d-65fd-4092-9b80-3fac0f6447d8,PIX FIBRA - OLT HW - AFOGADOS,PIX FIBRA(2cceaf18-31a3-4e4f-87ad-9058af12b176),172.31.255.28,22,ssh,False,ajust@emfibra,4j0st@3819@#!,OLT--ssh(39),olt
+10589515-0f6f-4728-850e-9b8f6c35dd55,PIX FIBRA - OLT HW - PAULISTA,PIX FIBRA(2cceaf18-31a3-4e4f-87ad-9058af12b176),172.16.0.8,22,ssh,False,ajust@emfibra,4j0st@3819@#!,OLT--ssh(39),olt
+2a028301-e204-478d-b976-65af6d54c332,PIX FIBRA - OLT HW - IGARASSU-SARAMANDAIA,PIX FIBRA(2cceaf18-31a3-4e4f-87ad-9058af12b176),172.16.0.10,22,ssh,False,ajust@emfibra,4j0st@3819@#!,OLT--ssh(39),olt
+8f23ff98-b9f9-4138-b10f-faa29e07af3b,PIX FIBRA - OLT HW - IGARASSU-CRUZ,PIX FIBRA(2cceaf18-31a3-4e4f-87ad-9058af12b176),172.16.0.13,22,ssh,False,ajust@emfibra,4j0st@3819@#!,OLT--ssh(39),olt
+26fa230d-4666-4dbc-8405-3b8c27aa97a6,PIX FIBRA - OLT HW - GODNET,PIX FIBRA(2cceaf18-31a3-4e4f-87ad-9058af12b176),172.19.53.78,22,ssh,False,sgpsgp,G0dN31@P4dR3!,OLT--ssh(39),olt
+c0953961-a44a-4a31-a679-9d1fffd52744,PIX FIBRA - OLT HW - IGARASSU-AGAMENON,PIX FIBRA(2cceaf18-31a3-4e4f-87ad-9058af12b176),172.16.0.21,22,ssh,False,ajust@emfibra,4j0st@3819@#!,OLT--ssh(39),olt
+0266c43b-3726-4cb1-aad5-0b131080062e,PIX FIBRA - OLT HW - OLINDA,PIX FIBRA(2cceaf18-31a3-4e4f-87ad-9058af12b176),172.16.0.14,22,ssh,False,ajust@emfibra,4j0st@3819@#!,OLT--ssh(39),olt
+a5d56346-90e1-41f0-a3f5-f28c1adf6eda,MEGANET - MK RB CCR 1036 - GERENCIA,-,45.176.56.240,5895,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+5af528a6-ee31-419e-aa52-1f1794c23411,MEGANET - MK RB 1100 - LAR DE ACOLHIMENTO,-,45.176.57.104,8291,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+61ac4a81-8678-4f96-ab67-15fb31f3c17c,MEGANET - MK RB CCR 2011 - SECRETARIA MOBI URBANA,-,45.176.57.250,5895,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+d32a5a5c-343f-4ea6-8088-60892e487b04,MEGANET - MK RB 2011 - IGREJA DA ARVORE,-,45.176.56.6,5895,ssh,False,ajust,"3""*9&xS<q.<]",Winbox(46),router
+31a63017-253c-4b20-af12-31c202f9a301,MCNET - MK RB CCR 2116 - CGNAT,-,45.164.10.128,5895,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+34d18808-08cd-4469-8dec-e8341063dc7d,MAXIMANET - MK RB CCR 1036 - CGNAT,-,45.164.8.10,5895,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+be611fa0-a5b5-4c6b-8817-249a23593387,MAS.NET - MK RB CCR 1009 - BORDA,-,170.79.170.0,7691,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+4ef3a895-e186-491b-b674-7a4017822130,MASNET - MK RB CCR 1009 - AUT PAULISTA,-,170.79.170.16,7691,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+011182af-b6b2-4358-a9b1-ad5ac2214e4c,LINS NET - MK RB - BORDA,-,192.144.96.33,8291,ssh,False,ajust,0E#:z6(14B7D:kxq4y/w,Winbox(46),router
+f20b6e89-ceb2-4076-b212-97e8e0c2862f,LINS NET - MK RB - AUT,-,192.144.96.34,8291,ssh,False,ajust,0E#:z6(14B7D:kxq4y/w,Winbox(46),router
+dc54f872-2d2e-417f-a199-8f7ea2ac15ed,KM TELECOM - MK RB CCR 1016 - GERENCIA,-,45.170.192.3,5895,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+30457e83-9a73-442c-9683-a1a86350a23b,JDI - MK RB CCR 1036 - AUT 02,-,172.20.0.6,8295,ssh,False,ajust,@#$ajust..,Winbox(46),router
+a7fdc9d4-0c8c-4cd8-8003-3da896602ceb,JDI - MK RB CCR 2116 - BORDA,-,186.211.176.238,8295,ssh,False,ajust,@#$ajust..,Winbox(46),router
+21533897-a1d6-4884-8581-6239dff4864d,JDI - MK RB CCR 1036 - AUT 01,-,186.211.176.238,5500,ssh,False,ajust,@#$ajust..,Winbox(46),router
+f6aaa553-c9c3-4845-b9eb-b53a6f597fb7,JANET - MK RB CCR 1036 - CGNAT,-,190.89.233.128,5895,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+9c65fb10-0008-4343-8ecf-8280ea32db74,MOOD TELECOM - MK RB CCR 1036 - AUT/BORDA ALPHALINK,-,170.79.169.168,5895,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+1ad3c9df-4826-49b8-8b53-9c9f2b5eb600,NEW CONNECT - SW HW - CABO,NEW CONNECT(29f4474f-0c20-4b58-bfc3-1ae5b902aabb),1.3.1.39,22,ssh,False,ericcastro,0&#mD5S9YAP\,Switch--ssh(35),switch
+9e70f7d9-5e34-477b-8cba-d813ee95a0b5,INFOTEL - SW HW - UR11,NEW CONNECT(29f4474f-0c20-4b58-bfc3-1ae5b902aabb),1.2.1.2,22,ssh,False,ericcastro,0&#mD5S9YAP\,Switch--ssh(35),switch
+599e3d6f-1706-45e6-9804-4f4d3d916a7c,NEW CONNECT - SW HW - PRAZERES,NEW CONNECT(29f4474f-0c20-4b58-bfc3-1ae5b902aabb),1.2.1.21,22,ssh,False,ericcastro,0&#mD5S9YAP\,Switch--ssh(35),switch
+43f102ad-7495-4278-abea-3fab1a66dac5,NEW CONNECT - SW HW - JABOATAO,NEW CONNECT(29f4474f-0c20-4b58-bfc3-1ae5b902aabb),1.2.1.29,22,ssh,False,ericcastro,0&#mD5S9YAP\,Switch--ssh(35),switch
+f374bbef-675e-481a-903a-f7e71dd72075,NEW CONNECT - SW HW 5720 - LOTE 92,NEW CONNECT(29f4474f-0c20-4b58-bfc3-1ae5b902aabb),1.2.1.9,22,ssh,False,ericcastro,0&#mD5S9YAP\,Switch--ssh(35),switch
+130b390a-5e5f-4aa9-8f06-59c55ac3ecd5,INFOTEL - MK RB 3011 - LOJA,-,170.150.137.14,8230,ssh,False,ajust,ajust@ITL2023,Winbox(46),router
+e4076879-1163-45e7-81bf-312b4acbd821,INFOTEL - MK RB 750 - SAO FRANCISCO DE IMPUEIRAS,-,192.168.91.102,8291,ssh,False,ajust,ajust@ITL2023,Winbox(46),router
+aef551ef-c20e-4ecc-8ad9-e76cb0e787b1,INFOTEL - MK RB 4011 - LEITAO,-,100.200.200.6,8230,ssh,False,ajust,"G""4N7;l0=0Vm",Winbox(46),router
+81d733c8-ec08-4ce9-847f-630c37a33082,INFOTEL - MK RB 3011 - MSJ,-,10.120.0.130,8230,ssh,False,admin,infoz0n3,Winbox(46),router
+3aad2652-6311-44c0-b22d-381ea8b7b9e0,INFOTEL - MK RB 750 - PONTE ALTA,-,170.150.136.6,8230,ssh,False,admin,infoz0n3,Winbox(46),router
+96790504-fefd-4552-aab1-6c5a64a23302,INFOTEL - MK RB 4011 - ITL PALMAS,-,170.150.137.235,8230,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+1d7984b0-55d0-4dda-9f8d-111f447c5ca9,INFOTEL - MK RB CCR 2004 - AUT LAGOA DO TOCANTINS,-,186.233.98.80,8787,ssh,False,ajust,"G""4N7;l0=0Vm",Winbox(46),router
+8e610ba4-2a9b-49df-8687-9ae9ba08a356,INFOTEL - MK RB CCR 2004 - AUT APARECIDA DE RIO NEGRO,-,186.233.98.48,8787,ssh,False,ajust,"G""4N7;l0=0Vm",Winbox(46),router
+8ae964f8-374c-43b3-9872-fb5453f5f53f,INFOTEL - MK RB CCR 1036 - AUT NOVO ACORDO,-,186.233.98.64,8787,ssh,False,ajust,"G""4N7;l0=0Vm",Winbox(46),router
+5dd94c9f-d6a6-4436-8bb9-52602086f671,INFOTEL - MK RB 3011 - POP CHICO,-,170.150.137.208,8230,ssh,False,ajust,"G""4N7;l0=0Vm",Winbox(46),router
+3d2aee59-cb3a-4bc0-bc9d-dff4a9f44916,INFOTEL - MK RB HEX - NOVA AGRI,-,170.150.139.4,8230,ssh,False,infotel,infoz0n3,Winbox(46),router
+4b86dd69-e6b6-47c3-a28c-80a88db96081,INFOTEL - MK RB 3011 - POP-TORRE-INOVATI,-,100.64.31.200,8230,ssh,False,ajust,"G""4N7;l0=0Vm",Winbox(46),router
+944661bb-4c04-433e-856a-8b7702504dd2,INFOTEL - MK SW CRS - SANTA TEREZA,-,10.120.0.62,8230,ssh,False,admin,infoz0n3,Winbox(46),router
+57d39d79-f139-44df-9263-ac3eeb29b31b,INFOTEL - MK RB 1036 - GERENCIA AP HOTSPOT,-,45.237.148.8,5859,ssh,False,ajust,6`|1Yn&obNvO,Winbox(46),router
+34dcbf3a-c04b-43cc-9679-5de237921e78,INFOTEL  - MK RB CCR 1009 - VPLS - ESCOLA BRASIL,-,10.10.10.138,8230,ssh,False,ajust,"G""4N7;l0=0Vm",Winbox(46),router
+a9b874a1-a420-49f8-a9fa-e49f83b77d81,INFOTEL - MK RB - SYNGENTA-FAZ.PALMEIRAS,-,172.16.80.14,8230,ssh,False,admin,infoz0n3,Winbox(46),router
+a90efe8c-6849-4c6f-8313-9bf37899bc59,INFOTEL - MK RB 750 - VECON CONSTRUTORA E INCORPORADORA LTDA,-,192.168.54.17,8230,ssh,False,admin,infoz0n3,Winbox(46),router
+22b96668-d840-4c43-8248-bbef83dd5668,INFOTEL - MK RB CCR 1009 - VPLS CANGAS,-,10.10.10.140,8230,ssh,False,ajust,"G""4N7;l0=0Vm",Winbox(46),router
+507e39af-291b-4c20-99c4-2b038a16b6c1,INFORTEC - MK X86 - SRV-DELL-R450 - GERENCIA,-,187.86.163.14,18291,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+a328de5c-7f53-402d-a742-d25c0a5b109a,INFORTEC - MK RB CCR 1009 - TIUMA,-,187.86.163.178,38501,ssh,False,ajust,ajust@20,Winbox(46),router
+818ffb09-98ae-49eb-8ab7-47f64d1fe662,I4 TELECOM - MK RB 750r2 - EMPRESARIAL TECX,-,45.187.170.90,8291,ssh,False,ajust,@#$ajust..,Winbox(46),router
+6f47956a-9166-4cf9-b3a9-88cdb55ce1b1,I4 TELECOM - MK RB 3011 - AUTO PECAS,-,45.187.169.156,8300,ssh,False,ajust,05042024,Winbox(46),router
+973e7cbd-4e7f-4014-9d47-08ac7ff4dfd6,I4 TELECOM - MK RB CCR 1009 - RONDOTUR,-,45.187.169.162,1440,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+99c7856a-e1ee-4f4d-994d-9844fc958cc4,I4 TELECOM - MK RB 3011 - GERENCIA,-,45.187.169.228,5895,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+7233b779-c1b7-4019-a398-ddaf904766e5,I4 TELECOM  - MK RB 2011 - ARQUIDIOCESE,-,45.187.170.100,8291,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+aa780aff-b0d6-487d-94b2-89a4ff0ba771,I4 TELECOM - MK RB 3011 - LRG TELECOMUNICACOES LTDA,-,45.187.170.15,7691,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+4bcbac79-8d84-4cb7-9cfa-d91d77013bf1,HOMENET - MK RB CCR 1009 - AUT UBAS,-,179.49.144.3,8292,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+f61778b1-2165-40a5-8af4-2beebeed44b5,HOMENET - MK RB 3011 - AUT BOTAFOGO,-,179.49.144.2,8291,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+7154797e-3c28-4e49-a3f8-a28e1acfd0bd,HOMENET - MK RB 750 - STA EDWIGES,-,179.49.144.4,8291,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+5a977f20-1e1e-4ea6-943a-7f28735668c9,HOMENET - MK SW CRS 317 - MLT,-,10.200.0.2,2291,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+7b0a541d-1677-42b8-a0a9-0b38855348b2,HOMENET - MK RB CCR 2116 - BORDA,-,179.49.144.5,8294,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+34590ce5-5361-4bf8-a167-0fb919a2ab96,GRUPO VESC - MK RB 1100 - GERENCIA,-,201.76.98.98,32734,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+eeed486e-d164-4f7e-b881-249545d57c92,GRUPO VESC - MK RB CCR 1036 - HOTSPOT,-,201.76.105.5,32734,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+7c3b242d-8933-4bdd-a93f-b25035911395,GRUPO VESC - MK RB CCR 1009 - DELL LOGISTICA,-,201.76.96.125,32734,ssh,False,admin,160873174,Winbox(46),router
+d71fc027-af39-41ba-9ed1-10dca354b374,GRUPO TELECOM - MK RB CCR 1036 - CGNAT,-,181.225.170.5,9584,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+c922e82b-c78d-454a-a9fb-9974a4787cc1,GRUPO TELECOM - MK RB CCR 1009 - BORDA INFONET,-,181.225.168.128,8299,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+e0b72c9a-c6a4-4943-a58d-62a360e952c0,GRUPO TELECOM - MK RB CCR 1036 - AUT INFONET,-,181.225.168.128,8298,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+87d2a380-5309-4a71-8be8-f3e48cb12006,GMAX SAO LOURENCO - MK RB CCR 2116 - CGNAT,-,164.163.22.0,5901,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+fea9cb50-847b-490a-91c9-4fa8572ca2f9,GMAX SAO LOURENCO - MK RB CCR 1036 - AUT,-,164.163.22.96,8293,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+02ffe3be-08d3-44f7-8a40-88d95a222926,GMAX SAO LOURENCO - MK RB 3011 - CLIENTE ELO SOLUCOES,-,164.163.22.49,5895,ssh,False,ajust,6~EumSBzmdIC,Winbox(46),router
+10a9d518-2932-43cd-9efe-e4e968f66f69,GL SOLUCOES - GERENCIA,-,45.191.104.10,8492,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+468df550-e96f-414b-941a-e8b55ebc4f2b,G5 WILL - MK RB CCR 1036 - CGNAT,-,190.89.145.24,8848,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+b5becacb-41a7-4eb0-9a66-630e046845ce,G5 PRAZERES - MK RB CCR 1009 - BORDA,-,192.141.105.32,5895,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+6870da9e-a79f-4aba-9bf9-82b8dae394ed,GR PRAZERES - MK RB CCR 2116 - AUT,-,192.141.105.32,20005,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+c3a91b68-c245-4bb5-99fa-366ebc7d690c,G5 PRAZERES - MK RB CCR 1009 - COMPORTA,-,192.141.105.80,8295,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+3d87674a-8fc1-4159-8dc6-05a70a1aeccc,G5 PIEDADE - MK RB 3011,-,192.141.105.40,8291,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+337de5a3-b94a-4f80-be5c-00171b17cc33,G5 PIEDADE - MK RB CCR 1036 - AUT,-,192.141.105.40,6548,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?ohdude83487,Winbox(46),router
+eead7167-b23c-4e51-bb57-2e8ec3f25b0e,G5 PIEDADE - MK RB CCR 1009 - BORDA,-,192.141.105.40,6542,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?ohdude83487,Winbox(46),router
+d25c835b-f4af-464b-a65c-7f5e8946e39e,G5 JABOATAO - MK RB 1009 - MORENO,-,192.141.105.26,8229,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+c6ad078e-f28f-4caf-ab04-243e3273c598,G5 JABOATAO - MK RB CCR 1009 - BONANCA,-,192.141.105.16,8024,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+42e10467-0ed3-47b4-add6-3c04c4f4ef4e,G5 JABOATAO - MK RB CCR 1009 - CGNAT,-,192.141.105.192,8291,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+5d4eec7d-1ca9-469b-818b-d0a0d5615961,G5 JABOATAO - MK RB 4011 - BORDA - MATRIZ DA LUZ,-,192.141.105.10,8291,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+7b012fb9-0ac3-45d8-af7c-0badaf784278,G5 JABOATAO - MK RB CCR 2004 - AUT - MARTRIZ DA LUZ,-,192.141.105.10,8540,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+99971cf1-1fdb-44e5-822d-575564b113a3,G5 JABOATAO - MK RADIO - BONANCA > COHAB 2,-,192.141.105.10,8285,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+d543eac5-9776-476c-bead-16a160fa2c6a,G5 JABOATAO - MK RADIO - COHAB 2 > BONANCA,-,192.141.105.10,8291,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+0d31067f-64f7-414d-931b-dc18a1c202f6,G5 JABOATAO - MK RB CCR 2004 - AREIAS,-,192.141.105.160,8291,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+b7192e03-0eaf-4b83-b6e0-272e299d6f4e,G5 JABOATAO - MK RB 2011 - POCINHO,-,192.141.105.29,8299,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+98c8bc4d-845f-4d0e-a3fd-ea1b1017e59b,G5 JABOATAO - MK RB CCR 1009 - XAREU,-,192.141.105.88,5895,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+72fcb016-52fc-471a-b43e-7fbd21a007fc,FLASHNET - SW CORE-ITAPSSUMA,FLASHNET(2760dac8-09a1-4e72-bbb2-a9ca6608cd9b),10.99.88.30,53276,ssh,False,flashnet,@#$keycode..,Switch--ssh(35),switch
+90ae1057-fccd-4db2-b027-8b710ca920b0,FLASHNET - SW ACESSO-REISNET,FLASHNET(2760dac8-09a1-4e72-bbb2-a9ca6608cd9b),192.168.4.43,53276,ssh,False,flashnet,@#$keycode..,Switch--ssh(35),switch
+d32b45dc-6145-4eb4-a6d8-1132fa191065,FLASHNET - SW ACESSO-MRNET,FLASHNET(2760dac8-09a1-4e72-bbb2-a9ca6608cd9b),192.168.4.59,53276,ssh,False,flashnet,@#$keycode..,Switch--ssh(35),switch
+9329c09d-27ac-49ce-9f07-89d8e59b9813,FLASHNET - SW ACESSO-ELETRICO EMP. IBTELECOM,FLASHNET(2760dac8-09a1-4e72-bbb2-a9ca6608cd9b),192.168.4.50,53276,ssh,False,flashnet,@#$keycode..,Switch--ssh(35),switch
+6876eb28-5214-4353-8788-16cb14ce90b7,FLASHNET - SW ACESSO-VILA TORRES GALVAO,FLASHNET(2760dac8-09a1-4e72-bbb2-a9ca6608cd9b),192.168.4.52,53276,ssh,False,flashnet,@#$keycode..,Switch--ssh(35),switch
+b992f456-2a8f-4af8-9e79-e3dd17a6e277,FLASHNET - SW ACESSO-LOCAL 01,FLASHNET(2760dac8-09a1-4e72-bbb2-a9ca6608cd9b),192.168.4.13,53276,ssh,False,flashnet,@#$keycode..,Switch--ssh(35),switch
+a04ca6bc-60c9-46f4-8bf0-273b1c1bdb75,FLASHNET - SW ACESSO-ARTHUR,FLASHNET(2760dac8-09a1-4e72-bbb2-a9ca6608cd9b),192.168.4.21,53276,ssh,False,flashnet,@#Keycode..1,Switch--ssh(35),switch
+9a1bf1d5-d7fc-4e0f-a3f2-a077a152f653,FLASHNET - SW ACESSO-AURORA,FLASHNET(2760dac8-09a1-4e72-bbb2-a9ca6608cd9b),192.168.4.16,53276,ssh,False,flashnet,@#Keycode..1,Switch--ssh(35),switch
+fbd0b009-895c-4c87-84a9-3096ee021e09,FLASHNET - SW ACESSO - JARDIM PAULISTA,FLASHNET(2760dac8-09a1-4e72-bbb2-a9ca6608cd9b),192.168.4.56,53276,ssh,False,flashnet,@#Keycode..1,Switch--ssh(35),switch
+6f9f7842-bce8-465d-857f-40779b8d1acc,PIX FIBRA - SW HW 5732 - POP CENTRO,PIX FIBRA(2cceaf18-31a3-4e4f-87ad-9058af12b176),172.16.0.42,22,ssh,False,ajust@emfibra,4j0st@3819@#!,Switch--ssh(35),switch
+c0705590-a510-4bbb-be0f-7c69f9a43a50,PIX FIBRA - SW HW 6720 - BOMBA DO HEMETERIO,PIX FIBRA(2cceaf18-31a3-4e4f-87ad-9058af12b176),172.16.0.41,22,ssh,False,ajust@emfibra,4j0st@3819@#!,Switch--ssh(35),switch
+abda8c8a-203d-4ab4-8abf-6e448ccaa31a,PIX FIBRA - SW HW 5732 - AFOGADOS,PIX FIBRA(2cceaf18-31a3-4e4f-87ad-9058af12b176),172.16.0.37,22,ssh,False,ajust@emfibra,4j0st@3819@#!,Switch--ssh(35),switch
+0abca9b9-74ff-4c3b-97cf-0edec8b7bdbd,PIX FIBRA - SW HW - GODNET,PIX FIBRA(2cceaf18-31a3-4e4f-87ad-9058af12b176),172.16.0.38,22,ssh,False,ajust@emfibra,4j0st@3819@#!,Switch--ssh(35),switch
+388c9708-50d2-4c9d-a860-c2795e5e051f,PIX FIBRA - SW HW 6730 - SURFIX,PIX FIBRA(2cceaf18-31a3-4e4f-87ad-9058af12b176),172.16.2.2,22,ssh,False,ajust@emfibra,4j0st@3819@#!,Switch--ssh(35),switch
+153dbe83-e7c9-4390-a88b-401844b4627c,PIX FIBRA - SW HW 5720 - VAIDNET,PIX FIBRA(2cceaf18-31a3-4e4f-87ad-9058af12b176),10.31.255.34,22,ssh,False,luciano,@Filhos#230107@,Switch--ssh(35),switch
+64417c32-cc90-4c15-8a2c-8ac826aed9d9,PIX FIBRA - SW HW 6720 - PEIXINHOS,PIX FIBRA(2cceaf18-31a3-4e4f-87ad-9058af12b176),172.16.0.1,22,ssh,False,ajust@emfibra,4j0st@3819@#!,Switch--ssh(35),switch
+cfb8fe9d-a53f-4034-bd7d-1f273ec39d18,PIX FIBRA - SW HW 6720 - CLICKNET,PIX FIBRA(2cceaf18-31a3-4e4f-87ad-9058af12b176),172.16.0.32,22,ssh,False,ajust@emfibra,4j0st@3819@#!,Switch--ssh(35),switch
+5705b61c-0d11-48da-bded-d4a9c99dfd90,PIX FIBRA - SW HW 6730 - PINA 01,PIX FIBRA(2cceaf18-31a3-4e4f-87ad-9058af12b176),172.16.0.30,22,ssh,False,ajust@emfibra,4j0st@3819@#!,Switch--ssh(35),switch
+c65dc0a3-7da5-4486-a981-798013c9c8ea,PIX FIBRA - SW HW 6730 - PINA 02,PIX FIBRA(2cceaf18-31a3-4e4f-87ad-9058af12b176),172.16.0.31,22,ssh,False,ajust@emfibra,4j0st@3819@#!,Switch--ssh(35),switch
+142c6e81-1096-4f8e-b42b-c2b300063505,PIX FIBRA - SW HW 5732 - MARTINS,PIX FIBRA(2cceaf18-31a3-4e4f-87ad-9058af12b176),172.16.0.26,22,ssh,False,ajust@emfibra,4j0st@3819@#!,Switch--ssh(35),switch
+c063a922-3e0b-401c-849a-c46338999b7d,PIX FIBRA - SW HW 5732 - SARAMANDAIA,PIX FIBRA(2cceaf18-31a3-4e4f-87ad-9058af12b176),172.16.0.12,22,ssh,False,ajust@emfibra,4j0st@3819@#!,Switch--ssh(35),switch
+d8f1b2d1-57bb-45a3-9056-71f43a6ade56,PIX FIBRA - SW HW 6730 - IGARASSU/CRUZ,PIX FIBRA(2cceaf18-31a3-4e4f-87ad-9058af12b176),172.16.0.9,22,ssh,False,ajust@emfibra,4j0st@3819@#!,Switch--ssh(35),switch
+d83091ae-61dd-4c53-9922-b51b2cda68c0,PIX FIBRA - SW HW 6730 - MANGUEIRA,PIX FIBRA(2cceaf18-31a3-4e4f-87ad-9058af12b176),172.16.0.7,22,ssh,False,ajust@emfibra,4j0st@3819@#!,Switch--ssh(35),switch
+7ce04d3c-f33f-4095-b217-a1df996ee234,PIX FIBRA - SW HW 6720 - CORDEIRO,PIX FIBRA(2cceaf18-31a3-4e4f-87ad-9058af12b176),172.16.0.6,22,ssh,False,ajust@emfibra,4j0st@3819@#!,Switch--ssh(35),switch
+c4ed0c5a-2123-4236-93b3-ca0dc42b8edd,PIX FIBRA - SW HW 6720 - PAULISTA,PIX FIBRA(2cceaf18-31a3-4e4f-87ad-9058af12b176),172.16.0.5,22,ssh,False,ajust@emfibra,4j0st@3819@#!,Switch--ssh(35),switch
+33ab9ee8-3171-46a9-951d-7c90232f13e3,PIX FIBRA -SW HW 6730 - OLINDA,PIX FIBRA(2cceaf18-31a3-4e4f-87ad-9058af12b176),172.16.0.0,22,ssh,False,ajust@emfibra,4j0st@3819@#!,Switch--ssh(35),switch
+3131b393-ce6d-431c-8b62-f7e39074813b,PIX FIBRA - SW HW 6720 - CDN,PIX FIBRA(2cceaf18-31a3-4e4f-87ad-9058af12b176),172.31.255.21,22,ssh,False,ajust@emfibra,4j0st@3819@#!,Switch--ssh(35),switch
+e6e3d4e7-a054-471e-bbfd-79d660f4f947,UP CONNECT FIBRA - SW HW S5700 - JORDAO,UP CONNECT FIBRA(e9ef84ae-0aa2-4b20-9c02-171026968e95),10.131.0.2,22,ssh,False,ajustcon,-4R6`.1f{HRZ,Switch--ssh(35),switch
+1b16a546-fee7-4aca-a4e7-62018f707bb8,RIONET - MK RB CCR 1009 -  AUT MERIDIONAL,-,45.162.225.114,5895,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+0cec9568-c5f5-4073-b216-dd89c72f5007,RIONET - MK RB CCR 1072 - AUT IPOJUCA,-,45.162.224.126,5895,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+c6de6049-0d14-4dac-ba32-921113899fa9,RIONET - MK RB CCR 1009 - AUT POLINÉSIA,-,45.162.225.202,5895,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+f89d36a9-9b5b-4d63-96a9-d5dbb7a5b2a7,RIONET - MK RB CCR 1009 - RONDOTUR,-,45.187.169.222,1440,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+1e8d95cf-fd66-43c3-a5be-7d24ce02526d,RIONET - MK RB CCR 1009 - AUT MURO ALTO BEACH RESORT*,-,179.124.141.150,8291,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+df4ff661-3cb7-4e47-b393-1b97d9dab848,RIONET - MK RB CCR 1009 - AUT BEACH CLASS ECOLIFE,-,45.162.225.178,5895,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+3ba69855-83bb-4ed8-91bf-904026f1e3b4,REALNET - MK RB CCR 2116 - AUT/BORDA,-,45.234.9.24,48291,ssh,False,ajustconsulting,L2^@A}2/sP4S,Winbox(46),router
+a490d07b-933d-471f-a177-31de0529d9ef,PIX FIBRA - MK RB CCR 1036 - GERENCIA,-,45.224.115.210,8272,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+f7c550bc-c71e-43ae-9b59-a15d1155748d,NEW CONNECT - MK RB CCR 1036 - CGNAT,-,128.201.76.12,8291,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+d58e4cda-e44b-4d80-9c58-97a4ea2e8417,NAVEGANET - MK RB CCR 1036 - CENTRAL,-,160.19.44.126,8291,ssh,False,admin,04610620,Winbox(46),router
+66266f02-e583-4d82-b13d-8a6106731225,MURILONET - MK RB CCR 2116 - AUT/BORDA,-,170.245.65.52,38291,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+4615e3f3-f1b5-4d92-bd85-f8e376373f3c,MUNDONET - MK RB CCR 2004 - BORDA,-,179.42.37.40,8291,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+b6a51730-e8d2-4654-a585-733ecf921719,MUNDONET - MK RB CCR 1009 - AUT,-,179.42.37.40,48291,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+ac30402d-6273-4da0-ae8e-7da2052ddefa,PONTONET -  MK RB CCR 1036 - AUT,-,45.168.153.220,9191,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+1f7fa3c4-4bcf-4b1d-9033-74acaa765fc6,PONTONET - MK RB 750 - UZINA,-,177.71.92.221,8291,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+f99e7941-2170-4058-bb03-685e79f3d91e,REALNET - MK RB 4011 - PARATIBE,-,177.46.32.48,8291,ssh,False,ajustconsulting,L2^@A}2/sP4S,Winbox(46),router
+e56de336-b97c-4773-b6d5-ef2e157b9b8e,RIONET - MK RB 4011 - MARUPIARA,-,45.162.225.194,8259,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+108df889-2d1e-4341-9115-1e46d55f5eda,RIONET - MK RB 4011 - AUT COND ECO CAIS,-,45.162.226.224,8291,ssh,False,ajust,39V^RqC_?Ezfx`5,Winbox(46),router
+f3018b8e-4903-4fdd-adfb-881ce0462b09,RIONET - MK RB 4011 - LOJAS AMERICANAS,-,45.162.227.215,5895,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+1318755f-6273-4fac-b606-0303b281d5b8,RIONET - MK SW CRS 326 - MARULHOS,-,45.162.225.166,1441,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+b3905694-cb04-4c2a-b165-4de43f6f506e,RIONET - MK RB 4011 - BAR DA PRAIA CUPÊ,-,45.162.227.28,5896,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+b9038dab-10ca-497c-9f83-3e59aea74af5,RIONET - MK RB 4011 - BAR DA PRAIA,-,45.162.227.24,5895,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+423be142-01e4-4c7c-9824-896a2de7e0d5,RIONET - MK RB 3011 - AUT LAGUNA,-,45.162.225.122,5895,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+35640f69-2662-43f5-ae95-912b2b2af673,SN TELECOM - MK RB 3011 - GERÊNCIA,-,181.189.92.6,8291,ssh,False,ajustconsulting,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+f843da35-d5a6-4ee8-a884-797d1aa52cbf,SOFIANET - MK RB 4011 - 1KNET,-,128.201.156.190,9998,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+7da9f7f9-be87-433c-ac49-61b9bce4e68b,VOO TELECOM - SW ARISTA - CORE JABOATAO L2,VOO TELECOM(0a1a8424-113c-4fcf-867d-6bff34bff561),10.72.13.41,22,ssh,False,admin,arista,Switch--ssh(35),switch
+1ab7f0b7-8033-4dce-a48f-c7ed3183027e,VOO TELECOM - SW HW 6730 - JABOATAO ( CORE MPLS ),VOO TELECOM(0a1a8424-113c-4fcf-867d-6bff34bff561),10.72.13.40,22022,ssh,False,ajustconsulting,@Vootelecom#$321,Switch--ssh(35),switch
+965fa449-8e67-4fa6-82c0-3662d14872eb,VOO TELECOM - SW HW 5720 - GUABIRABA,VOO TELECOM(0a1a8424-113c-4fcf-867d-6bff34bff561),10.72.13.201,22022,ssh,False,ajustconsulting,@Vootelecom#$321,Switch--ssh(35),switch
+f19701c5-1869-42db-b1ec-f36480322720,VOO TELECOM - SW HW 6730 - VARZEA ( CORE MPLS ),VOO TELECOM(0a1a8424-113c-4fcf-867d-6bff34bff561),10.72.13.55,22022,ssh,False,ajustconsulting,@Vootelecom#$321,Switch--ssh(35),switch
+65fe953e-5234-4b17-9c2b-db7d87b3a46d,VOO TELECOM - SW HW 6730 - PRAZERES ( CORE MPLS ),VOO TELECOM(0a1a8424-113c-4fcf-867d-6bff34bff561),10.72.13.45,22022,ssh,False,ajustconsulting,@Vootelecom#$321,Switch--ssh(35),switch
+9afae138-baaf-4156-92c4-6b9dea1e4168,VOO TELECOM - SW HW 6730 - MORENO ( CORE MPLS ),VOO TELECOM(0a1a8424-113c-4fcf-867d-6bff34bff561),10.72.13.4,22022,ssh,False,ajustconsulting,@Vootelecom#$321,Switch--ssh(35),switch
+796863aa-e691-45a5-a8d8-3b0eca53dbf0,VOICE CORP - MK SW CRS 326 - CRS NOVA,-,190.89.34.4,8999,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+b573bcde-011a-45ef-a5e1-cfa1664be03b,VOICE CORP - MK SW CRS 112 - SAO PAULO-SP,-,187.109.40.126,5895,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+aee60352-e835-4195-a59a-e45339925805,VOICE CORP - SW DM EDD - DATA CENTER OI,-,192.168.77.2,23,telnet,True,admin,admin,Switch--telnet(47),switch
+a1945488-7097-4a09-897c-501cadc8db97,VOICE CORP - SW DM EDD - DATA CENTER VOICE CORP ( CONEXAO COM A OI ),-,192.168.66.2,23,telnet,True,admin,admin,Switch--telnet(47),switch
+74ba38eb-3b49-47d4-8105-ff79a60ae580,VOICE CORP - SW DM EDD - BRASILIA-DF,-,177.87.50.90,23501,telnet,True,admin,admin,Switch--telnet(47),switch
+3cf9a05a-fa47-4885-b543-245403d9a371,VOICE CORP - SW DM EDD - CLARO,-,192.168.55.2,23,telnet,True,ajust,3;a1H_gw^f~2|]u$eK,Switch--telnet(47),switch
+13055d8c-d095-4433-9809-8085bce8e381,VOICE CORP - MK SW CRS 307 -  SERVIDORES,-,190.89.34.81,60082,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+9760e38f-95e0-4503-adb9-5abe8af069d0,UM FIBRA - SW HW 6730 - PPPOE-RECIFE-PE,-,172.16.255.12,22,ssh,False,ajustconsulting,ajust@1423,Switch--ssh(35),switch
+2a3da4f8-da4c-447b-8218-6dfea43a46c6,ULTRANET - SW HW 5720 - IGUAIBA,-,192.141.106.6,22208,ssh,False,ultranet,@Ultra#$321,Switch--ssh(35),switch
+62caf334-32bb-4225-a9e3-b4c4ee1ca862,ULTRANET - SW HW 5720 - RAPOSA,-,192.141.106.6,2265,ssh,False,ajust,@#ajust..,Switch--ssh(35),switch
+7f46cd13-876a-443c-8e72-d8a82e3acd0f,ULTRANET - SW HW 6730 - CORE - PINDAI,-,192.141.106.6,22852,ssh,False,ultranet,@#ultranet#$321,Switch--ssh(35),switch
+7cf3724e-54f5-4c64-8ca0-d73b6ee67468,ULTRANET - SW HW 5720 -  MAIOBAO,-,192.141.106.6,2264,ssh,False,ajust,ajust@maiobao,Switch--ssh(35),switch
+fc611e06-08c0-4f7a-9b46-04f917d39a0c,ULTRANET - SW HW 5720 - MIRITIUA,-,192.141.106.6,2211,ssh,False,ultranet,123@Mudar,Switch--ssh(35),switch
+eaafb0fa-18d1-4855-9788-be5975109160,TECH SOLUCOES -  MK RB 1036 -  AUT/BORDA,-,179.63.12.32,8291,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+eaca26be-7fb0-4f43-a686-7dae734825af,TC+ FIBRA - SW HW 6720 - CORE,TC+ FIBRA(eaf5392a-668d-4ed5-9338-d00a0fe85cb4),172.31.0.2,2295,ssh,False,arthur,@#$Ajust..321,Switch--ssh(35),switch
+058d4a64-7e94-4fce-88e8-ccb1685faff6,TC+FIBRA - SW HW 5700 - ITAMARACA,-,164.163.20.78,2296,ssh,False,ajustconsulting,@#$Ajust..321,Switch--ssh(35),switch
+fdddb939-a315-43e3-9fc6-23d1d898ae44,SUCUPIRANET - SW HW 5720,-,172.16.16.2,2222,ssh,False,tecxpro,Mudar@123,Switch--ssh(35),switch
+469c0708-32e5-4228-b59a-27814d664ce7,TC+FIBRA - MK RB CCR 2116 - CGNAT,-,164.163.20.18,5895,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+e7792002-98cb-43f3-b122-6bfbf4d96bda,SUCUPIRANET - MK RB CCR 1036 - AUT IPUTINGA,-,170.78.99.156,8291,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+38c4b34b-c5b1-47ba-a0fb-8a19f0aa55d5,SUCUPIRANET - MK RB CCR 1036 - CGNAT,-,45.184.5.2,8291,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+f384eae5-9bbd-433e-acb1-01672da1e527,STR NET - MK RB CCR 1016 - AUT,-,45.164.10.32,5895,ssh,False,ajust,8tq%fT oh435|%=#]W>k,Winbox(46),router
+26b2ef8d-491d-479d-885a-358b54ee337f,SOFIANET - MK RB CCR 1072 - CGNAT,-,128.201.156.38,5895,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+b33f5fa4-f26a-4dc0-aeb3-6d47c6b1b76e,SOFIANET - MK RB CCR 1009 - AUT JBNET,-,128.201.156.38,5895,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+a1fdf191-ab0b-4396-bd03-c6bf43f6dd49,NAVEGANET - SW HW 5720 - CAMARAGIBE,-,170.245.64.150,53726,ssh,False,ajust,@ajust#$321,Switch--ssh(35),switch
+0b0f2609-87a4-40be-b586-7fea9c9aa633,RIONET - SW HW 6730 - CORE IPOJUCA,-,45.162.225.190,22510,ssh,False,ajust,@ajust#$321,Switch--ssh(35),switch
+19770f78-575e-42e7-8ff7-ab3c8deec211,RIONET - MK SW CRS 326 -MARULHOS,-,45.162.225.166,1441,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+a70ec545-6bdc-4269-ba75-c66858911f29,POWERFLASH - MK RB 1009 - AUT,-,45.224.219.44,4050,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+d0d2be87-00e5-4eb8-8585-331d62ccce8d,FASTLINK - SW DM EDD 02 - CLIENTE PJ,-,10.254.254.3,23,telnet,True,admin,@#$ajust..,Switch--telnet(47),switch
+435564de-29f0-4528-a090-a50e4964fcaf,FASTLINK - SW DM EDD 01 - CLIENTE PJ,-,10.254.254.2,23,telnet,True,admin,@#$ajust..,Switch--telnet(47),switch
+98eb55ad-ee68-4ed5-8f65-701a0c254433,FASTLINK - MK RB 4011 - CLIENTE PJ,-,168.194.13.88,8291,ssh,False,ajust,"[J$A''Nnl8J/6DThAe7,",Winbox(46),router
+35846369-2b52-40e9-942e-378b462ae3c5,FASTLINK - MK RB 1009 - AUT,-,168.194.13.246,5895,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+7b0ca8e9-644b-4052-afa1-b4dd43336e65,PONTONET - MK SW CRS 317,-,45.168.153.220,5151,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+ae98abac-c04e-40d4-8761-f6ed4a50a0cb,PONTE DIGITAL - SW HW - COQUINHO,PONTE DIGITAL(42477ec3-a5c5-4c79-a070-a72872e00b5a),10.200.150.2,22250,ssh,False,ajust,5r0j1c\KmJ$/,Switch--ssh(35),switch
+3c2a63fa-9251-4006-99f8-df99a17bedc9,PONTE DIGITAL - SW HW - SOTAVE,PONTE DIGITAL(42477ec3-a5c5-4c79-a070-a72872e00b5a),10.200.150.1,22250,ssh,False,ajust,5r0j1c\KmJ$/,Switch--ssh(35),switch
+92f828b9-194a-4b71-a5d4-c661c1c45bf2,PONTE DIGITAL - SW HW - GAIBU,PONTE DIGITAL(42477ec3-a5c5-4c79-a070-a72872e00b5a),172.21.0.42,22,ssh,False,ajust,5r0j1c\KmJ$/,Switch--ssh(35),switch
+70d8ecea-423e-4460-9911-185bbb70c71e,PONTE DIGITAL - SW HW - CABO,PONTE DIGITAL(42477ec3-a5c5-4c79-a070-a72872e00b5a),10.120.248.125,22,ssh,False,ajust,5r0j1c\KmJ$/,Switch--ssh(35),switch
+242bf7b0-04b0-4c23-8900-eef100ee2ed8,PONTE DIGITAL - SW HW - CANDEIAS,PONTE DIGITAL(42477ec3-a5c5-4c79-a070-a72872e00b5a),10.200.150.3,22250,ssh,False,ajust,5r0j1c\KmJ$/,Switch--ssh(35),switch
+641deedb-db71-479c-aea5-42d9b584feef,MOND TELECOM - SW CISCO NEXUS,-,45.164.181.192,22522,ssh,False,admin,Redi7900,Switch--ssh(35),switch
+61e043da-cea7-4714-8e2f-1b8b5ad93d06,MAXIMANET - SW HW 5720 - ESCADA,-,45.164.8.24,45994,ssh,False,ajust,@#$ajust..,Switch--ssh(35),switch
+b7a53a17-5663-4625-a0a0-6d80221b2f62,PONTE DIGITAL - SW HW 6720 - CDN,PONTE DIGITAL(42477ec3-a5c5-4c79-a070-a72872e00b5a),10.200.150.0,22250,ssh,False,ajust,5r0j1c\KmJ$/,Switch--ssh(35),switch
+a6e5a87b-9787-4a29-8159-9ef7faa41be5,OGA FIBRA TELECOM - MK RB 1016 - AUT TORRE,-,179.51.151.48,7118,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+b00bc870-4974-487d-bce4-a5b4376544e9,OGA FIBRA TELECOM - MK RB 3011 - BORDA TORRE,-,179.51.151.48,7120,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+a5fb17eb-4c7d-4cbf-9907-ae264614dc5f,OGA FIBRA TELECOM - MK RB 1016 - NORTE SUL - PORTO DE GALINHAS,-,179.51.151.248,58951,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+cf548721-21fc-46be-a443-8a0e5791617a,OGA FIBRA TELECOM - MK RB 3011 - MARANGUAPE 02,-,177.36.8.160,18291,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+8c3bbf8f-0dba-48d5-9ead-e0176e1d44bd,OGA FIBRA TELECOM - MK RB 2004 - BORDA,-,177.36.8.160,7220,ssh,False,ajust,7FON\ywlzifw,Winbox(46),router
+0ed82ac0-2e7e-4eec-b737-111773750534,MOOD TELECOM - SW CISCO NEXUS - MANGABEIRA,MOOD TELECOM(e20791d7-c179-4927-a97d-fcedee37770f),192.168.50.2,22,ssh,False,ajust,@#$Ajust..,Switch--ssh(35),switch
+b7b4c19d-de63-43ce-a66a-cab1feafe7f6,MOOD TELECOM - SW CISCO NEXUS - FUNCIONARIOS,MOOD TELECOM(e20791d7-c179-4927-a97d-fcedee37770f),192.168.50.6,22,ssh,False,ajust,@#$Ajust..,Switch--ssh(35),switch
+adb02298-076f-4edf-ab70-dc9b618c7f45,MGN FIBRA - MK RB 750 - ESCRITORIO,-,45.235.104.210,8118,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+b23496ac-5e43-4406-88b8-d90d3f24130c,MGN FIBRA - MK RB GERENCIA,-,45.235.104.58,5895,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+f1d7d641-1fa7-4177-a065-ccf581f90142,MGN FIBRA - SW HW 6730 - CORE,-,45.235.104.58,48271,ssh,False,mgn,@mgntelecom#$321,Switch--ssh(35),switch
+93e82d8c-a7d4-4175-9adf-a79611019cc0,MEGANET - SW HW 6720 - TABAJARA,MEGANET(ea64144f-858a-4b4d-a839-f43464886937),10.99.10.1,22,ssh,False,admin,@f}6X59wi&6-,Switch--ssh(35),switch
+75eba2bf-d4cc-4b84-aa2b-30f1b75a2a6e,MEGANET - SW HW 5720 - PORTO DE GALINHAS,MEGANET(ea64144f-858a-4b4d-a839-f43464886937),172.16.80.2,22,ssh,False,ajust,3\=^*Ck761Z,Switch--ssh(35),switch
+ec48b5cb-e51b-4f05-a519-367dbe6d587c,MEGANET - SW HW S6730 - JARDIM ATLANTICO,MEGANET(ea64144f-858a-4b4d-a839-f43464886937),10.99.10.10,22,ssh,False,ajust,z)K2f2_s|0|T,Switch--ssh(35),switch
+ccb1104a-3f85-4f42-918d-bf6b30646723,ELO TELECOM - MK RB 2116 - SLZ-ELO-RT02 [ CORE ] - BGP/OSPF/AUt,-,177.54.143.1,8291,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+01e21bd4-5144-4511-b685-181598d12b0d,ELO TELECOM - A10,ELO TELECOM(c51a0470-fcac-4fa0-8fcd-566aa56636c6),172.30.0.30,22,ssh,False,ajust.elo,Consulting@2023!,A10(38),router
+54f080fa-7985-4836-9ffa-74a09856b1b7,MASNET - MK SW CRS - PAULISTA,-,170.79.170.0,8295,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+923455e8-7326-43a4-af7c-39ab0a7db6eb,UP CONNECT FIBRA - MK RB 750 - SUNO TELECOM*,-,179.48.12.36,5859,ssh,False,upconnect,7(jamCW1Qhd!,Winbox(46),router
+689cdf36-d096-4140-98c2-c84ae35bab5c,SOFIANET - MK RB 3011- COLEGIO ANITA,-,128.201.157.50,5895,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+95272779-6c8e-49dd-9560-9fa70b140518,INFOTEL - MK SW CRS 317 - APARECIDA DO RIO NEGRO,-,186.233.98.48,8291,ssh,False,ajust,"G""4N7;l0=0Vm",Winbox(46),router
+1b5d5bc5-169e-45fa-b08f-b6ab992307f4,INFOTEL - MK RB 2004 - PORTO - 3 OLTS DM,-,10.120.0.106,8230,ssh,False,ajust,"G""4N7;l0=0Vm",Winbox(46),router
+b01f54f7-2116-4529-8e3f-48285f33528b,INFOTEL - OLT ZTE - SANTA ROSA - STD,INFOTEL(3c543b38-5d00-497c-aa7d-268bb90fbfa3),10.120.0.90,22,ssh,False,conexaosgp,sgp@suporte.oltinfotel10,OLT--ssh(39),olt
+6672c3c1-a51b-4600-9e4d-24a8e957efc6,INFOTEL - OLT ZTE - SANTA ROSA,INFOTEL(3c543b38-5d00-497c-aa7d-268bb90fbfa3),10.120.0.90,23,telnet,True,conexaosgp,sgp@suporte.oltinfotel10,OLT--telnet(40),olt
+0b733f69-18dc-42ef-972c-d5bbae1afedc,INFOTEL - OLT ZTE - NOVA YPE,INFOTEL(3c543b38-5d00-497c-aa7d-268bb90fbfa3),10.120.0.126,23,telnet,True,infotel,infoz0n31,OLT--telnet(40),olt
+837dac14-11cc-4bbb-a310-16e2ea145d21,INFOTEL - OLT ZTE - LUZIMANGUES - LZMG,INFOTEL(3c543b38-5d00-497c-aa7d-268bb90fbfa3),10.120.0.50,23,telnet,True,ajust,123@ajust,OLT--telnet(40),olt
+a6d2b540-bbcf-449e-891c-dc08c0b4ae18,INFOTEL - OLT RAISECOM - ALIANCA DO TOCANTINS - ANZ,INFOTEL(3c543b38-5d00-497c-aa7d-268bb90fbfa3),172.16.121.16,37170,telnet,True,infotel,infoz0n31,OLT--telnet(40),olt
+c135ba61-e42b-4c79-b0c5-e82c329b0e13,INFOTEL - MK SW CRS 309 - ALIANCA,-,10.120.0.70,8230,ssh,False,ajust,ajust@mudar,Winbox(46),router
+05c2c27b-0739-4c7c-b144-161d45abf463,INFOTEL - MK SW CRS 309 - NOVO ACORDO,-,186.233.98.64,5899,ssh,False,ajust,"G""4N7;l0=0Vm",Winbox(46),router
+3edaa56a-2456-4287-a738-518e1b73b1a1,INFOTEL - MK SW CRS 309 - PARAISO,-,10.120.0.78,8230,ssh,False,ajust,ajust@ITL2023,Winbox(46),router
+8b9c76cd-0b21-49c3-8b27-adbf014e59b5,INFOTEL - MK SW CRS - NATIVIDADE,-,10.120.0.94,8230,ssh,False,ajust,ajust@ITL2023,Winbox(46),router
+f5e012cf-962c-43f3-bdbe-a19216a1a8a0,INFOTEL - MK SW CRS - SANTA ROSA,-,10.120.0.142,8230,ssh,False,ajust,ajust@ITL2023,Winbox(46),router
+6c3270f0-9fe5-43bc-8d5f-42e33b7c0040,INFOTEL - MK SW CRS - SILVANOPOLIS,-,10.120.0.66,8230,ssh,False,ajust,ajust@ITL2023,Winbox(46),router
+42e42657-fc71-497d-8098-c5faaeba8637,INFOTEL - MK SW CRS - NOVA YPE,-,10.120.0.86,8230,ssh,False,ajust,ajust@ITL2023,Winbox(46),router
+dc3408a4-ae8a-42ed-8117-6b29a5243b91,SUPERNET - MK RB 1036 - AUT/BORDA,-,45.224.112.81,9262,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+28621fef-c657-450c-96cb-21c76a3f05cb,INFOTEL - MK SW CRS - CHAPADA DE NATIVIDADE,-,10.120.0.58,8291,ssh,False,ajust,ajust@ITL2023,Winbox(46),router
+ae192f3c-4860-47fb-9cd0-c41e15fe9285,TC+FIBRA - MK RB 3011 - GERENCIA,-,164.163.20.78,5895,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+9902530c-4d09-4468-bf5e-f574bacc1fba,VIBE TELECOM - OLT ZTE - CAMPINA GRANDE,-,170.79.168.72,23935,telnet,True,acessosgp,"Ss6-t}g""]pg.",OLT--telnet(40),olt
+c593cec0-f1be-4802-85d2-15b8ebae4ffd,INFORTEC - MK SW CRS 317 - POP SLM,-,187.86.163.14: 38502,38502,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+f3bcb463-4453-43ac-913a-99e5edee1fb2,INFORTEC - SW HW 6720 - TIMBI,-,187.86.163.14,2222,ssh,False,ajustconsulting,0Bv=v1KX7qcc,Switch--ssh(35),switch
+c722d6c9-0753-4295-8f21-52013592eae5,I4 TELECOM - SW HW 5700 - RIO DOCE,I4 TELECOM(12e94618-ab08-4bd2-98a1-c33d1a26e1f0),192.168.220.2,5378,ssh,False,ajustconsulting,@#$Ajust..321,Switch--ssh(35),switch
+2f7b083f-0933-4b96-b80f-24c656ebc48e,I4 TELECOM - SW DM - PRESIDENTE KENNEDY,I4 TELECOM(12e94618-ab08-4bd2-98a1-c33d1a26e1f0),10.35.0.2,22,ssh,False,ajust,U7[9G.7vz{BL,Switch--ssh(35),switch
+416167c5-6778-4813-a0dc-688777c52310,I4 TELECOM - SW HW S6730 - CASA CAIADA,-,45.187.169.228,22354,ssh,False,ajust,13L7Wp}Q(65/,Switch--ssh(35),switch
+3dedfdd6-2c8f-48e7-b3f0-d4b7e7df05b6,I4 TELECOM - SW HW 6720 - PAU AMARELO,I4 TELECOM(12e94618-ab08-4bd2-98a1-c33d1a26e1f0),10.77.66.5,22,ssh,False,ajustconsulting,}3w}4K273E6V,Switch--ssh(35),switch
+78feec36-d0ff-441c-a53b-47b6ee8df388,UP CONNECT FIBRA - MK SW CRS 305 - CLIENTE JUNIORNET,-,b8fe0a315ebc.sn.mynetname.net:8299,8299,ssh,False,lucas,882060,Winbox(46),router
+82cd9d72-ee7c-43cd-ac2b-ae7253147ed9,UP CONNECT FIBRA - MK RB 4011 - CLIENTE JUNIORNET,-,b8fe0a315ebc.sn.mynetname.net,8291,ssh,False,junior,josejunior,Winbox(46),router
+07ffd7cb-6295-471d-b970-f5d876ac74e1,PGI TELECOM - SW HW  6730 - CORE,PGI TELECOM*(29f662b9-fabe-4749-a733-336c78813f86),10.99.10.1,5620,ssh,False,ajustconsulting,@#$ajust..,Switch--ssh(35),switch
+55ba5318-94e9-4e77-a9fe-4425ed6b57e4,PGI TELECOM - SW HW 6720 - CDV,PGI TELECOM*(29f662b9-fabe-4749-a733-336c78813f86),10.20.100.1,5620,ssh,False,ajust,@#$ajust..,Switch--ssh(35),switch
+5ed3106d-b0e4-4913-9268-c75ffa536cd8,MEGANET -  CCR 1036 Gerência,-,45.176.56.240,5895,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+80016115-3c1f-4674-8a57-b9b892f7216f,VIBE TELECOM - SW HW 5720 - POP JANGA,VIBE TELECOM(48f83ff4-913c-438a-9ad8-be29afcf10fa),172.31.255.70,22,ssh,False,ajust,@#$ajust..,Switch--ssh(35),switch
+9afa534c-547c-42ca-b481-dbd7cf13a6d9,VIBE TELECOM - SW HW 5720 - POP PAU AMARELO,VIBE TELECOM(48f83ff4-913c-438a-9ad8-be29afcf10fa),172.31.255.244,22,ssh,False,ajust,@#$ajust..,Switch--ssh(35),switch
+a3d55467-ea33-4e1b-af3d-b7d54f2608f6,VIBE TELECOM - SW HW 5720 - POP OLINDA,VIBE TELECOM(48f83ff4-913c-438a-9ad8-be29afcf10fa),172.31.255.251,22,ssh,False,ajust,@#$ajust..,Switch--ssh(35),switch
+52d1dd31-b436-4b1e-af9d-ec03bef9db1b,VIBE TELECOM - SW HW 6720 - CORE PAULISTA,VIBE TELECOM(48f83ff4-913c-438a-9ad8-be29afcf10fa),172.31.255.1,22,ssh,False,ajust,@#$ajust..,Switch--ssh(35),switch
+b92dff87-ee6e-4d44-9d0c-dcfbecd3a8a1,VIBE TELECOM - SW HW 5720 - POP RECIFE,VIBE TELECOM(48f83ff4-913c-438a-9ad8-be29afcf10fa),172.31.255.252,22,ssh,False,ajust,@#$ajust..,Switch--ssh(35),switch
+f96196c1-1ad2-419b-a5d6-a6c48270ba25,UMTELECOM - OLT FIBERHOME - SEDE,UMFIBRA(42217973-6ee9-4f76-9814-0a6ba99cb405),10.40.39.6,23,telnet,True,noc,nbc01fox,OLT--telnet(40),olt
+8fd147cc-fdae-4a4f-8fc2-ce09d41aec84,UMTELECOM - OLT FIBERHOME - ABREU E LIMA,UMFIBRA(42217973-6ee9-4f76-9814-0a6ba99cb405),10.40.39.3,23,telnet,True,GEPON,GEPON,OLT--telnet(40),olt
+e2a58d3e-63c1-457c-a7a4-28aa0e24140b,UMTELECOM - OLT FIBERHOME - CABO DE SANTO AGOSTINHO,UMFIBRA(42217973-6ee9-4f76-9814-0a6ba99cb405),10.40.39.4,23,telnet,True,GEPON,GEPON,OLT--telnet(40),olt
+da0626a7-78e1-472b-9635-f098fb5ccfbe,UMTELECOM - OLT FIBERHOME - CENTRO,UMFIBRA(42217973-6ee9-4f76-9814-0a6ba99cb405),10.40.39.5,23,telnet,True,noc,nbc01fox,OLT--telnet(40),olt
+c31a0d03-dd8d-4dc7-a9a1-145742afe590,UMTELECOM - OLT FIBERHOME - VARZEA,UMFIBRA(42217973-6ee9-4f76-9814-0a6ba99cb405),10.2.240.2,23,telnet,True,noc,nbc01fox,OLT--telnet(40),olt
+9609fa48-1d27-4c28-b990-c12e3f138dff,UMTELECOM - OLT FIBERHOME - PIEDADE,UMFIBRA(42217973-6ee9-4f76-9814-0a6ba99cb405),10.40.39.7,23,telnet,True,noc,nbc01fox,OLT--telnet(40),olt
+ac57db16-bf5d-4de7-8b6a-67f6ede4e294,ULTRANET - OLT FIBERHOME - RAPOSA,-,192.141.107.26,23,telnet,True,GEPON,GEPON,OLT--telnet(40),olt
+7c603cd9-f4ac-49a5-8f95-7571e70da95b,ULTRANET - OLT FIBERHOME - PINDAI,-,192.141.106.38,23,telnet,True,GEPON,GEPON,OLT--telnet(40),olt
+da249829-c665-477b-be9d-cee8ea8bca1f,ULTRANET - OLT PARKS 3 - IGUAIBA,-,192.141.106.6,2203,ssh,False,admin,parks,OLT--ssh(39),olt
+12bd45e8-4939-4708-907f-2fb3590fd59b,ULTRANET - OLT PARKS 2 - IGUAIBA,-,192.141.106.6,2202,ssh,False,admin,parks,OLT--ssh(39),olt
+57f814a5-0a34-4cf6-a041-78a8b086e72d,ULTRANET - OLT PARKS 1 - IGUAIBA,-,192.141.106.6,2201,ssh,False,admin,parks,OLT--ssh(39),olt
+2ea3ac7d-9a23-4b7c-88f9-665c7c91c867,ULTRAFIBRA - OLT INTELBRAS,-,45.186.54.32,45100,telnet,True,admin,admin,OLT--telnet(40),olt
+6e74f40d-ac8a-4ee9-ab0e-9bfeaa081106,SUCUPIRANET - OLT FIBERHOME,-,45.184.5.2,2323,telnet,True,GEPON,GEPON,OLT--telnet(40),olt
+563059ba-cbf0-4003-9f11-c69c3b86dffc,SOFIANET - OLT MAXPRINT,-,128.201.156.214,2023,telnet,True,admin,admin,OLT--telnet(40),olt
+63d59450-0c0d-409c-bff8-13a06b0be2b4,SOFIANET - OLT NOKIA - RIO DOCE,-,128.201.156.214,2253,ssh,False,isadmin,@OltNokia123@,OLT--ssh(39),olt
+b0ad05e3-c1f1-49f7-aa30-967ffa24ef27,REALNET - OLT INTELBRAS,-,45.234.9.16,50023,telnet,True,admin,dns@new,OLT--telnet(40),olt
+b9dd3cae-df40-47fa-9048-666d59216b00,GRUPO VESC - SW UBNT - JARDIM SAO PAULO,-,10.7.0.2,2275,ssh,False,ubnt,160873174*,Switch--ssh(35),switch
+3f819513-abae-47cb-ab35-2583259c2959,GRUPO TELECOM - SW HW 6730 - CORE,GRUPO TELECOM*(3aa375f0-b8f8-499d-a94b-2a7bd813ea2e),172.29.100.18,2203,ssh,False,ajust,2sBoJwlZaT4Z,Switch--ssh(35),switch
+135c4adf-1e00-4e89-b871-dacb203a9672,GRUPO TELECOM - MK SW CRS 309 - INFONET,-,181.225.168.128,8297,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+d1b5c78c-33da-412c-a757-697a32a94dd9,GL SOLUCOES - SW HW 6720 - HF,GL SOLUCOES(4365a6b4-7805-4f53-8620-aa3494cf37fc),10.77.66.4,2203,ssh,False,ajust,qKs0\8D2D5I:,Switch--ssh(35),switch
+f5f8c907-ecba-4d6a-ab47-3e8efb2a4417,GL SOLUCOES - SW HW 6720 - CORE,-,45.191.104.10,22585,ssh,False,glsolucoes,@glsolucoes#$321,Switch--ssh(35),switch
+356afa10-86d4-444b-8810-dc66f128c63b,GL SOLUCOES - SW HW 5735 - TABAJARA,-,45.191.104.10,2267,ssh,False,ajustconsulting,@#$ajust..1,Switch--ssh(35),switch
+fa8b4441-d11d-4868-98ef-aaa8fbf3d5cc,GL SOLUCOES - SW HW 5735 - SANTO AMARO,-,45.191.104.10,22237,ssh,False,ajust,123@ajust,Switch--ssh(35),switch
+e91add2e-5b20-4de7-9721-077443c4a525,GL SOLUCOES - SW HW 5735 - PASSARINHO,-,45.191.104.10,22235,ssh,False,ajust,@#$ajust..1,Switch--ssh(35),switch
+e2867135-3b89-4e3a-a438-b88833212323,G5 WILL - MK SW CRS 317,-,190.89.145.192,8291,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+b24c6091-2518-4eb9-94da-7d70cef2c5ee,G5 JABOATAO - SW HW 5720 - CORE,G5 JABOATAO(2bdcc9a2-ea8e-409f-8ba6-d7c6b2b6d4f7),172.16.66.2,22,ssh,False,ajustconsulting,3;a1H_gw^f~2|]u$eK,Switch--ssh(35),switch
+111ac37f-58d3-4a41-b0a1-dd0ec1b222ac,G5 JABOATAO.- SW DM - VISTA ALEGRE,G5 JABOATAO(2bdcc9a2-ea8e-409f-8ba6-d7c6b2b6d4f7),192.141.105.3,18865,telnet,True,admin,admin,Switch--telnet(47),switch
+0671b671-3c5b-4c45-8ebd-b2defcdfc54f,G5 JABOATAO - SW DM - ALPHAVILLE,-,192.141.105.3,18875,telnet,True,admin,admin,Switch--telnet(47),switch
+759d7fd5-11b2-4978-aa12-0d0427c741e0,G5 CABO - SW DM4370 4GT+4GX+4XS - MURIBECA,G5 CABO(c1e1ac80-9c5a-4c3a-8572-591af6479d63),172.220.0.5,22,ssh,False,ajust,123@Mudar,Switch--ssh(35),switch
+93a25eec-f133-4da4-b72c-afe1e1ddf0d5,G5 CABO - SW DM4370 4GT+4GX+4XS - CABO CORE,G5 CABO(c1e1ac80-9c5a-4c3a-8572-591af6479d63),172.220.0.4,22,ssh,False,ajust,123@Mudar,Switch--ssh(35),switch
+af1408bf-2c6d-490d-84bf-d41495c1a3dc,FIBERMAIS - MK SW CRS 317,-,170.245.223.90,8291,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+32184112-9bf5-4ea4-913a-8cb5ca793936,FIBERMAIS - SW CISCO - ALTO DO PASCOAL,-,170.245.223.90,2029,ssh,False,admin,Forte7611.,Switch--ssh(35),switch
+a3c47273-bc67-4905-935b-d3abeb62c9c5,FIBERMAIS - SW HW 6720 - MANGABEIRA,-,170.245.223.90,2290,ssh,False,ajust,@#$ajust..,Switch--ssh(35),switch
+c639f88e-1dd5-4bd2-9e42-9b123a74c8e3,FIBERMAIS - SW HW 6730 - CORE,-,170.245.223.90,2280,ssh,False,ajust,@#$ajust..1,Switch--ssh(35),switch
+a6568df2-a896-4065-bc76-1135c1029dd2,ECO TELECOM - SW HW 5720,ECO TELECOM(786c5d87-9435-422a-99a0-9f54b8db7cff),10.112.10.12,22,ssh,False,ajust,069q\JU9y`j|,Switch--ssh(35),switch
+5c036ee7-b590-4d87-829d-32497aeafc4f,CYBERNET - SW HW 6720 - CORE,CYBERNET(17e3eb3b-90c4-4d09-a991-c56725a2cd90),172.20.44.2,22,ssh,False,ajust,mudar@123,Switch--ssh(35),switch
+c5b97c1c-95b9-4f8a-a5e1-c2a749d631f7,CYBERNET - SW HW 5700 - ACUDE,CYBERNET(17e3eb3b-90c4-4d09-a991-c56725a2cd90),170.80.112.2,55022,ssh,False,cybernet,7UCDi2DeeO,Switch--ssh(35),switch
+45acc8d2-5ca7-4b2e-a52c-96d4c36d5f1e,CYBERNET - OLT FIBERHOME - ACUDE,CYBERNET(17e3eb3b-90c4-4d09-a991-c56725a2cd90),170.80.112.2,55023,telnet,True,SGP,AxhGZe9uzs,OLT--telnet(40),olt
+d9a605d8-3e8a-439e-843d-d2c3916bf846,CYBERNET - OLT FIBERHOME - CENTRAL,CYBERNET(17e3eb3b-90c4-4d09-a991-c56725a2cd90),170.80.112.2,4704,telnet,True,SGP,AxhGZe9uzs,OLT--telnet(40),olt
+0bf34a5f-3873-44be-807d-de66a48ceade,CONECT FIBRA - SW HW 5720 - ARTHUR/PARATIBE,CONECT FIBRA(10cff802-29f9-4221-bc90-92f588310018),172.22.10.2,22,ssh,False,conect,@conect#$321,Switch--ssh(35),switch
+8a5e1b0f-0379-481f-96d4-779164639229,CONECT FIBRA - SW HW ATN 910 - JARDIM PAULISTA,CONECT FIBRA(10cff802-29f9-4221-bc90-92f588310018),172.35.0.2,22,ssh,False,root,Vertrigo@2023#$,Switch--ssh(35),switch
+ac86dc7c-a62a-47c8-9108-978258ca5036,CONECT FIBRA - SW HW 5720 - CAETES 02,CONECT FIBRA(10cff802-29f9-4221-bc90-92f588310018),192.168.180.2,22,ssh,False,conect,@Conect#$321,Switch--ssh(35),switch
+fe36e6eb-fbf7-4930-9c15-6d517588dc7c,CONECT FIBRA - SW HW 6730 - CORE,CONECT FIBRA(10cff802-29f9-4221-bc90-92f588310018),172.30.0.2,22,ssh,False,ajust,Vertrigo@2023#$,Switch--ssh(35),switch
+37719be0-8fd5-47fb-b83b-9d86cf36b7d9,CONECT FIBRA - SW HW 5720 - YNOVE,CONECT FIBRA(10cff802-29f9-4221-bc90-92f588310018),172.35.2.2,22,ssh,False,conect,@conect#$321,Switch--ssh(35),switch
+fb93d131-3925-43c2-a02b-45237d15d49a,PLANALTONET - OLT FIBERHOME 01,PLANALTONET(13d92c05-3f61-4534-a7e1-8f38436aa543),10.12.1.1,23,telnet,True,GEPON,GEPON,OLT--telnet(40),olt
+64b97ff7-88ee-4581-ad7b-272ce9d56104,PLANALTONET - OLT FIBERHOME 02,PLANALTONET(13d92c05-3f61-4534-a7e1-8f38436aa543),10.12.1.2,23,telnet,True,GEPON,GEPON,OLT--telnet(40),olt
+0aaaac0e-342b-4acb-b621-b94243879f94,PLANALTONET - OLT FIBERHOME 03,PLANALTONET(13d92c05-3f61-4534-a7e1-8f38436aa543),10.12.1.3,23,telnet,True,GEPON,GEPON,OLT--telnet(40),olt
+9d31c012-8d0b-42d9-830a-0b70e645c80b,MUNDONET - OLT FIBERHOME - RECIFE,-,179.42.37.40,23231,telnet,True,GEPON,GEPON,OLT--telnet(40),olt
+5879a1f1-42a8-4a7d-8fe4-01addd11ad73,MOOD TELECOM - OLT ZTE - RECIFE,-,187.17.137.188,2300,telnet,True,SGP,sgp@sgp,OLT--telnet(40),olt
+f6b69d0d-934c-40db-89da-b1947c913e01,PLANALTONET - HILLSTONE,PLANALTONET(13d92c05-3f61-4534-a7e1-8f38436aa543),177.23.168.47,22,ssh,False,ajust,@J5uQaEs!PyU7J#.,Hillstone(37),router
+c942fe23-83a2-433f-826f-36b17c7eb50d,PLANALTONET - SW BACKBONE - PAUDALHO,PLANALTONET(13d92c05-3f61-4534-a7e1-8f38436aa543),10.200.70.1,22,ssh,False,ajust,!UdWSBQC9y@8HUxrH9#l,Switch--ssh(35),switch
+d5d3e9d8-e7a5-4fe9-aee3-18dc9fd4a764,PLANALTONET - SW BACKBONE - VARZEA,PLANALTONET(13d92c05-3f61-4534-a7e1-8f38436aa543),10.200.80.1,22,ssh,False,ajust,!UdWSBQC9y@8HUxrH9#l,Switch--ssh(35),switch
+dbd3fde2-0962-451a-b32d-cbe5600bf920,MAXIMANET - OLT DIGISTAR - PONTE DIGITAL,-,45.164.8.10,23254,telnet,True,admin,digital01,OLT--telnet(40),olt
+98503ad7-6acc-4047-bab4-4b58966fc483,PLANALTONET - SW CISCO 3064 DATACENTER,PLANALTONET(13d92c05-3f61-4534-a7e1-8f38436aa543),10.12.255.250,22,ssh,False,ajust,!UdWSBQC9y@8HUxrH9#l,Switch--ssh(35),switch
+aed0034c-a0af-4ef2-a1bf-708c1c48209e,PLANALTONET - SW POP 03 MARIAS,PLANALTONET(13d92c05-3f61-4534-a7e1-8f38436aa543),10.10.30.1,22,ssh,False,ajust,!UdWSBQC9y@8HUxrH9#l,Switch--ssh(35),switch
+1ac08632-bef5-4e30-a542-c9fcd9a9c8d6,PLANALTONET - SW POP FIBERHOME 02,PLANALTONET(13d92c05-3f61-4534-a7e1-8f38436aa543),10.10.20.1,22,ssh,False,ajust,!UdWSBQC9y@8HUxrH9#l,Switch--ssh(35),switch
+189e17b3-3460-485b-bde8-a2680b2a5d46,PLANALTONET - SW POP CAJA 03,PLANALTONET(13d92c05-3f61-4534-a7e1-8f38436aa543),10.10.10.1,22,ssh,False,ajust,!UdWSBQC9y@8HUxrH9#l,Switch--ssh(35),switch
+fdf2c1fa-515a-4b76-95d9-f35a231b10c4,PLANALTONET - SW BACKBONE - TIMBAUBA,PLANALTONET(13d92c05-3f61-4534-a7e1-8f38436aa543),10.200.60.1,22,ssh,False,ajust,!UdWSBQC9y@8HUxrH9#l,Switch--ssh(35),switch
+046256cc-6a84-4f95-b975-af2164aef627,PLANALTONET - SW BACKBONE - LIMOEIRO,PLANALTONET(13d92c05-3f61-4534-a7e1-8f38436aa543),10.200.50.1,22,ssh,False,ajust,!UdWSBQC9y@8HUxrH9#l,Switch--ssh(35),switch
+9f5b7340-26e4-4b96-88f4-8821fbe7d763,PLANALTONET - SW BACKBONE - NAZARE,PLANALTONET(13d92c05-3f61-4534-a7e1-8f38436aa543),10.200.40.1,22,ssh,False,ajust,!UdWSBQC9y@8HUxrH9#l,Switch--ssh(35),switch
+aea265e3-1879-4bd8-884a-7d724adefb28,PLANALTONET - SW BACKBONE - TRACUNHAEM,PLANALTONET(13d92c05-3f61-4534-a7e1-8f38436aa543),10.200.30.1,22,ssh,False,ajust,!UdWSBQC9y@8HUxrH9#l,Switch--ssh(35),switch
+95f7ad54-fc5b-4b76-963a-a51063fcdaf7,PLANALTONET - SW BACKBONE - LAGOA DO CARRO,PLANALTONET(13d92c05-3f61-4534-a7e1-8f38436aa543),10.200.20.1,22,ssh,False,ajust,!UdWSBQC9y@8HUxrH9#l,Switch--ssh(35),switch
+9e2c67a9-4049-4ef7-a7ba-74c735af564b,PLANALTONET - SW BACKBONE - CARPINA,PLANALTONET(13d92c05-3f61-4534-a7e1-8f38436aa543),10.200.10.1,22,ssh,False,ajust,!UdWSBQC9y@8HUxrH9#l,Switch--ssh(35),switch
+2f38248e-fb01-4a23-9b2c-a42ffc239ebe,G5 JABOATAO - OLT TPLINK - XAREU,-,192.141.105.88,50523,telnet,True,ajust,123@ajust,OLT--telnet(40),olt
+f359bd69-f0ec-4e3e-9b20-5e790f40822a,JRNET - OLT INTELBRAS,-,168.194.15.174,2333,telnet,True,admin,lucas1005,OLT--telnet(40),olt
+a85dde0b-84b5-4b8d-b71e-f02484b82185,UMFIBRA - MK RB 1036 - RB CGNAT*,-,177.36.4.157,8291,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+89bfd0be-837b-43f6-a8c8-11ca4780ccc0,UMFIBRA - MK RB 109 - RB FIREWALL PPPOE - RECIFE,-,177.36.7.202,8391,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+33809822-ead9-439d-8f7f-ac7ddcbc819c,UP CONNECT FIBRA - MK RB - MK BOMBA,-,179.48.12.46,8089,ssh,False,ajust,p(5ck{821Ev?,Winbox(46),router
+48cf2550-ebef-497e-aa16-67063b9fb8cb,UP CONNECT FIBRA - MK RB - AUT EVENTO*,-,45.187.168.20,5895,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+6108809a-f428-46f6-b6bf-994aeafa4804,VIBE TELECOM - MK RB 1016 -  RB GERENCIA,-,187.17.137.188,5895,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+bc52823e-b86b-4e35-96ad-f4f33677d799,VOICE CORP - MK RB 4011 -  4011 DF - Brasilia,-,177.87.50.90,8291,ssh,False,ajust,g8oZyn1h1tDy,Winbox(46),router
+4b0e941b-e90d-4aba-93cd-4e7b39d2294e,VOICE CORP - MK RB 4011 - 4011 PB,-,177.223.60.130,8282,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+f1324855-0cee-44b2-88dc-7a5a550f79ef,VOICE CORP - MK CRS 317 - SERVIDORES VOICECORP,-,190.89.34.81,60082,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+702d2248-f0d2-40e3-9b3a-caecb03b53d0,VOICE CORP - MK CRS 112 - CRS 112 - Fortaleza*,-,168.232.84.141,5895,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+6e32b1b1-c7d0-4f36-a951-07001f93696d,VOICE CORP - MK CCR 1036 - REDE LOCAL E GATEWAY DO ALIGERA,-,190.89.34.2,60082,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+a6addbd3-dcde-4739-8fab-58d3d0a2141c,VOOLPT NET - MK RB 2011 - AUT,-,45.176.56.64,5895,ssh,False,ajust,2;S3Yoh$2ZZ8,Winbox(46),router
+a4f5c830-ee1e-4286-8895-fe9b9e3f6386,VOO TELECOM - MK RB - CGNAT JABOATAO,-,187.62.77.16,8291,ssh,False,ajustconsulting,@Vootelecom#$321,Winbox(46),router
+8633e15a-3591-4cb2-8d9c-ab715eba4ac1,WELL FIBRA - MK RB 1072 - Gerência,-,190.89.145.21,5896,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+0d076953-78b3-4452-b8f6-d4d4be574012,WELL FIBRA - MK RB 2011 - EMPRESARIAL*,-,172.20.88.1,8291,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+fcbb580d-242f-4e2f-927d-57c2ef65d7c3,WORLD FIBRA - MK RB 4011,-,128.201.94.56,8291,ssh,False,ajust,"3,XIv@yUjKg3U0T*",Winbox(46),router
+690ddd5b-7a50-4b7b-8f3c-4540a227e4e7,ZOOM FIBRA - MK RB 2116 - BORDA RIBEIRÃO,-,45.176.241.212,8291,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+58bbae65-286f-4817-9eff-f6efee668fe7,ZOOM FIBRA - MK RB 1009 - AUT POP-IBIRATINGA,-,45.176.241.212,7692,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+17218892-ea19-4b25-865b-269ceb4c1182,HOMENET - OLT VSOL - UBAS,HOMENET*(14f47055-0f03-4167-8dde-2a39f696fdfd),10.15.10.102,23,telnet,True,adbthomaz,fred201210,OLT--telnet(40),olt
+d0bebb10-da04-4bd9-af62-805c57c13ff6,HOMENET - OLT ZTE - MORRO ALTO,HOMENET*(14f47055-0f03-4167-8dde-2a39f696fdfd),192.168.7.2,23,telnet,True,adbthomaz,fred201210,OLT--telnet(40),olt
+a16061e8-a858-4027-8039-0d88782447e7,HOMENET - OLT VSOL - BARREIROS,HOMENET*(14f47055-0f03-4167-8dde-2a39f696fdfd),192.168.8.200,22,ssh,False,admin,sTypeRghTERe,OLT--ssh(39),olt
+f313934c-9ebb-4bdc-adcf-00008b8c1af0,G5 CABO - MK RB 1036 - GCNAT,-,45.187.19.6,8291,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+70b3692b-10dc-4926-a789-4f7f3eb6f6dd,G5 BARRA DE JANGADA - MK RB 2116 - AUT,-,128.201.76.176,5895,ssh,False,ajust,3;a1H_gw^f~2|]u$eK!,Winbox(46),router
+ca04b659-8469-4691-88c6-bc9b71200bca,FOX NET - MK RB 1036 - BORDA,-,45.191.105.255,5895,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+ffa26cf9-2635-4bc7-a006-9fa3d3014bd3,FOX NET - MK RB 2116 - AUT,-,45.191.105.255,5896,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+567d0a60-bbef-41cc-b03f-6b99c28ee79f,FORTE NET - MK RB 1036 - AUT,-,168.194.15.78,8291,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+d9f45c72-99cc-4212-98cd-052e39371b77,FLASHNET - MK RB 2011 - COMERCIAL BEZERRA - CENTRO,-,170.79.169.91,5895,ssh,False,ajust,@#$ajust..,Winbox(46),router
+063258ad-3374-400f-a355-50faea4cae28,FLASHNET - MK RB 2011 - COMERCIAL BEZERRA - MARANGUAPE,-,170.79.169.92,5895,ssh,False,ajust,@#$ajust..,Winbox(46),router
+9e6887fd-09f2-40f6-80d1-436df30ad0a1,FLASHNET - MK RB 2011 - COMERCIAL BEZERRA - PE 15,-,170.79.169.90,5895,ssh,False,ajust,@#$ajust..,Winbox(46),router
+e9eb921f-90dc-4b20-94c7-05d16e8680b5,FLASHNET - MK RB 3011 - ESCOLA SOLEDADE,-,168.194.12.106,5895,ssh,False,flashnet,@#$keycode..,Winbox(46),router
+8d8695b2-89c4-4f3c-83bd-bca9fd6058d6,FLASHNET - MK RB 4011 - NOC,-,187.17.137.246,5895,ssh,False,ajust,@#$ajust..,Winbox(46),router
+1a178338-1ce9-4c06-a530-805df4454e62,FLASHNET - MK RB 1009 - GERENCIA,-,168.194.15.42,8709,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+4455307e-2d5a-4845-95cd-5e8b3d90d1c8,FIBERMAIS - MK RB 1009 - CGNAT,-,170.245.221.0,8291,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+2d711a41-bf20-4f77-b825-6428f94c1574,FIBERMAIS - MK RB 2011 - GERENCIA,-,170.245.223.90,8291,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+c244496b-98f8-4861-890c-fe10e52fed81,ECO TELECOM - MK RB 1036 - GERENCIA,-,45.71.170.6,6744,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+614fa209-62aa-4d99-b10c-1a56055ae29a,CYBERNET - MK RB 1036 - GERENCIA,-,170.80.112.2,8291,ssh,False,ajust,1dbHyiqZBrqh,Winbox(46),router
+90db1968-c42b-44b6-952a-ca73a2f9efc4,CONECT FIBRA - MK RB 1036 - GERENCIA,-,45.5.88.78,8291,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Winbox(46),router
+e7ba37b4-0b07-4dc0-9c2b-da1334e4bd02,AJUSTCONSULTING - MK RB 4011 - GERENCIA,-,168.194.15.72,5895,ssh,False,Ajust,"!(8, l$w$i*5ldl!zoZ7",Winbox(46),router
+6255a83b-8b41-442a-98dc-fd9036ce72c6,G5 PRAZERES - OLT VSOL,-,192.141.105.32,20007,ssh,False,suporte,@#$ajust..,OLT--ssh(39),olt
+1cbe33af-dff9-46e5-9425-8a721978352a,G5 JABOATAO - OLT VSOL - MURIBECA 2,G5 JABOATAO(2bdcc9a2-ea8e-409f-8ba6-d7c6b2b6d4f7),10.15.200.2,5023,telnet,True,ajust,123@mudar,OLT--telnet(40),olt
+9b20db43-e9af-4a10-a3c5-501bdf263459,G5 JABOATAO - OLT VSOL - MATRIZ DA LUZ,-,192.141.105.50,2323,telnet,True,admin,Xpon@Olt9417#,OLT--telnet(40),olt
+2c07a831-ffe5-4050-9ae3-47d1dcc47e35,G5 JABOATAO - OLT VSOL - BONANCA,-,192.141.105.16,8477,telnet,True,admin,5ROQlhL2,OLT--telnet(40),olt
+f3d81ab2-285e-47f2-9edc-b50671f5c9b6,G5 JABOATAO - OLT MAXPRINT - LOTE 56,-,192.141.105.3,2395,telnet,True,g5,123@mudar,OLT--telnet(40),olt
+49765bea-bba9-4188-bc73-c9ea55124a82,G5 JABOATAO - OLT VSOL EPON - MORENO,-,128.201.78.148,2059,telnet,True,ajust,"6,{gI,8r>NT3",OLT--telnet(40),olt
+883026ad-e7d0-46b1-8f0b-bc8be0adf1ff,INFOTEL - OLT EPON - LEITAO,INFOTEL(3c543b38-5d00-497c-aa7d-268bb90fbfa3),172.16.121.16,37120,telnet,True,admin,admin,OLT--telnet(40),olt
+8e12e5ae-3180-45f0-9466-e6fc8599c49c,FORTNET - OLT INTELBRAS,-,168.194.15.78,2223,telnet,True,admin,admin,OLT--telnet(40),olt
+f2e9852b-c55b-4f13-ab5b-e4776b03bf99,CELLNET - OLT INTELBRAS - 8820I,CELLNET(ad23ce68-2c2a-4c68-9121-3008acf9afc7),172.31.255.2,23,telnet,True,admin,@#$cellnet321,OLT--telnet(40),olt
+8ddf27b6-5624-4bad-a06a-6edacbc88ce0,G5 JABOATAO - OLT VSOL - VISTA ALEGRE,-,192.141.105.3,2373,telnet,True,admin,Xpon@Olt9417#,OLT--telnet(40),olt
+a5aed264-1748-4163-bbaf-aeb416fc49ac,FLASHNET - SW-ACESSO-ELETRICO_IBTELECOM,FLASHNET(2760dac8-09a1-4e72-bbb2-a9ca6608cd9b),192.168.4.51,53276,ssh,False,flashnet,@#$keycode..,Switch--ssh(35),switch
+02872f05-9f52-4c6e-a8f9-057dfeaed53b,FLASHNET - SW-ACESSO-ELETRICO,FLASHNET(2760dac8-09a1-4e72-bbb2-a9ca6608cd9b),192.168.4.11,53276,ssh,False,flashnet,@#$keycode..,Switch--ssh(35),switch
+25749189-1b1c-471e-96e5-b3443653fa95,FLASHNET - SW CORE-SAN MARTIN,FLASHNET(2760dac8-09a1-4e72-bbb2-a9ca6608cd9b),10.99.88.17,53276,ssh,False,flashnet,@#Keycode..1,Switch--ssh(35),switch
+2c9220dd-94f7-47ea-903c-24129e045dfe,FLASHNET - SW CORE-RIO-DOCE,FLASHNET(2760dac8-09a1-4e72-bbb2-a9ca6608cd9b),10.99.88.27,53276,ssh,False,flashnet,@#$keycode..,Switch--ssh(35),switch
+d1d5c5f5-5bf6-484c-8325-315b1af17ded,FLASHNET - SW CORE-PRAZERES,FLASHNET(2760dac8-09a1-4e72-bbb2-a9ca6608cd9b),10.99.88.32,53276,ssh,False,flashnet,@#Keycode..1,Switch--ssh(35),switch
+6df104ac-4867-41fe-a24b-d4838cc5a2f5,FLASHNET - SW CORE-P.KENNEDY,FLASHNET(2760dac8-09a1-4e72-bbb2-a9ca6608cd9b),10.99.88.3,53276,ssh,False,flashnet,@#Keycode..1,Switch--ssh(35),switch
+2f573e26-0a2d-4587-a683-98c19d4a90be,FLASHNET - SW CORE-PASSARINHO,FLASHNET(2760dac8-09a1-4e72-bbb2-a9ca6608cd9b),10.99.88.35,53276,ssh,False,flashnet,@#Keycode..1,Switch--ssh(35),switch
+1732a1d1-40ba-4c32-8f91-ec71d172466d,FLASHNET - SW CORE-OURO-PRETO,FLASHNET(2760dac8-09a1-4e72-bbb2-a9ca6608cd9b),10.99.88.19,53276,ssh,False,flashnet,@#Keycode..1,Switch--ssh(35),switch
+86ddca8a-333a-4f2b-807a-8c3013d35189,FLASHNET - SW CORE-NAVEGANET,FLASHNET(2760dac8-09a1-4e72-bbb2-a9ca6608cd9b),10.99.88.7,53276,ssh,False,flashnet,@#Keycode..1,Switch--ssh(35),switch
+9a408c7a-7eb1-4982-8b2c-e66aaeca4ffa,FLASHNET - SW CORE-MARIA-FARINHA,FLASHNET(2760dac8-09a1-4e72-bbb2-a9ca6608cd9b),10.99.88.21,53276,ssh,False,flashnet,@#Keycode..1,Switch--ssh(35),switch
+15c203a5-88e3-4d39-a295-7bbffaa103a4,FLASHNET - SW CORE-MARANGUAPE-02,FLASHNET(2760dac8-09a1-4e72-bbb2-a9ca6608cd9b),10.99.88.22,53276,ssh,False,flashnet,@#$keycode..,Switch--ssh(35),switch
+c904ab53-7ceb-43b0-9f80-037b1be93bd1,FLASHNET - SW CORE-MARANGUAPE-01,FLASHNET(2760dac8-09a1-4e72-bbb2-a9ca6608cd9b),10.99.88.26,53276,ssh,False,flashnet,@#Keycode..1,Switch--ssh(35),switch
+f5ddf4f1-c085-4b7d-a5f5-cb6af38ac442,FLASHNET - SW CORE-JABOATAO,FLASHNET(2760dac8-09a1-4e72-bbb2-a9ca6608cd9b),10.99.88.13,53276,ssh,False,flashnet,@#Keycode..1,Switch--ssh(35),switch
+eb3eb0e0-071b-4e58-88b3-c2f49aee0de0,FLASHNET - SW CORE-IPSEP-02,FLASHNET(2760dac8-09a1-4e72-bbb2-a9ca6608cd9b),10.99.88.42,53276,ssh,False,flashnet,@#Keycode..1,Switch--ssh(35),switch
+f2d36f62-9e80-4f2a-af15-36988386bf22,FLASHNET - SW CORE-IPSEP 01,FLASHNET(2760dac8-09a1-4e72-bbb2-a9ca6608cd9b),10.99.88.4,53276,ssh,False,flashnet,@#$keycode..,Switch--ssh(35),switch
+53652bbd-2b3e-40d1-9ea1-052df745192e,FLASHNET - SW CORE-IGARASSU,FLASHNET(2760dac8-09a1-4e72-bbb2-a9ca6608cd9b),10.99.88.12,53276,ssh,False,flashnet,@#$keycode..,Switch--ssh(35),switch
+5fa26d1d-753d-461d-9d88-d3b4bf0d6783,FLASHNET - SW CORE-GOIANIA,FLASHNET(2760dac8-09a1-4e72-bbb2-a9ca6608cd9b),10.99.88.31,53276,ssh,False,flashnet,@#$keycode..,Switch--ssh(35),switch
+d32d31ab-7bb0-42ad-b7aa-0fd47ed2bdd8,FLASHNET - SW CORE-FORTALEZA,FLASHNET(2760dac8-09a1-4e72-bbb2-a9ca6608cd9b),10.99.88.24,53276,ssh,False,flashnet,@#Keycode..1,Switch--ssh(35),switch
+14689271-3adf-4dd0-ab01-d198f2641f57,FLASHNET - SW CORE-FLASHNET-6750,FLASHNET(2760dac8-09a1-4e72-bbb2-a9ca6608cd9b),10.99.88.38,53276,ssh,False,flashnet,@#Keycode..1,Switch--ssh(35),switch
+11a2537e-02f2-4e31-84b6-49722d4dc8e5,FLASHNET - SW CORE-FLASHNET,FLASHNET(2760dac8-09a1-4e72-bbb2-a9ca6608cd9b),10.99.88.1,53276,ssh,False,flashnet,@#Keycode..1,Switch--ssh(35),switch
+e1f30394-1e6e-4154-8e05-e59741a58136,FLASHNET - SW CORE-CURADO,FLASHNET(2760dac8-09a1-4e72-bbb2-a9ca6608cd9b),10.99.88.11,53276,ssh,False,flashnet,@#$keycode..,Switch--ssh(35),switch
+9458cfe8-92aa-4a37-b6db-2c85038b9d64,FLASHNET - SW CORE-CRUZ DE REBOUCAS,FLASHNET(2760dac8-09a1-4e72-bbb2-a9ca6608cd9b),10.99.88.28,53276,ssh,False,flashnet,@#Keycode..1,Switch--ssh(35),switch
+09246263-7e9a-49c4-9163-f6f73287c083,FLASHNET - SW CORE-CARPINA,FLASHNET(2760dac8-09a1-4e72-bbb2-a9ca6608cd9b),10.99.88.23,53276,ssh,False,flashnet,@#Keycode..1,Switch--ssh(35),switch
+8fbe9851-7bba-4e8c-bc25-1f6dcf8e11b5,FLASHNET - SW CORE-CAMARAGIBE,FLASHNET(2760dac8-09a1-4e72-bbb2-a9ca6608cd9b),10.99.88.10,53276,ssh,False,flashnet,@#$keycode..,Switch--ssh(35),switch
+09ad6120-5963-4f6d-9e53-4d7498d4bf24,FLASHNET - SW CORE-CAETES,FLASHNET(2760dac8-09a1-4e72-bbb2-a9ca6608cd9b),10.99.88.18,53276,ssh,False,flashnet,@#$keycode..,Switch--ssh(35),switch
+7154cc56-64e1-48e8-bb1b-9f4d78936ed1,FLASHNET - SW CORE-CABO_S.A.,FLASHNET(2760dac8-09a1-4e72-bbb2-a9ca6608cd9b),10.99.88.41,53276,ssh,False,flashnet,@#Keycode..1,Switch--ssh(35),switch
+b9ec957d-96f6-4c1b-8904-e9eea9a1d4a8,FLASHNET - SW CORE-BR.DIGITAL 01,FLASHNET(2760dac8-09a1-4e72-bbb2-a9ca6608cd9b),10.99.88.15,53276,ssh,False,flashnet,@#Keycode..1,Switch--ssh(35),switch
+c138701f-69c1-4342-8cde-68d69e4902a6,FLASHNET - SW CORE-BOMBA_HEMETERIO,FLASHNET(2760dac8-09a1-4e72-bbb2-a9ca6608cd9b),10.99.88.37,53276,ssh,False,flashnet,@#Keycode..1,Switch--ssh(35),switch
+6349d16d-a31a-4d4b-a6f2-6072fee212f9,FLASHNET - SW CORE-BAIRRO-NOVO,FLASHNET(2760dac8-09a1-4e72-bbb2-a9ca6608cd9b),10.99.88.20,53276,ssh,False,flashnet,@#$keycode..,Switch--ssh(35),switch
+83b58d0a-9aae-47f0-94a1-0e2c417e66b7,FLASHNET - SW CORE-VASCO,FLASHNET(2760dac8-09a1-4e72-bbb2-a9ca6608cd9b),10.99.88.33,53276,ssh,False,flashnet,@#Keycode..1,Switch--ssh(35),switch
+fd23c755-4bf7-4606-b508-67f8b7d04a38,FLASHNET - SW CORE-VARZEA 02,FLASHNET(2760dac8-09a1-4e72-bbb2-a9ca6608cd9b),10.99.88.40,53276,ssh,False,flashnet,@#Keycode..1,Switch--ssh(35),switch
+ac1aadd8-ec00-4d9e-81fc-6a5d30ad1aa3,FLASHNET - SW CORE-VARZEA 01,FLASHNET(2760dac8-09a1-4e72-bbb2-a9ca6608cd9b),10.99.88.39,53276,ssh,False,flashnet,@#Keycode..1,Switch--ssh(35),switch
+b09a2631-ca2b-4c4e-991f-81a8f57dadbd,FLASHNET - SW CORE-TEJIPIO,FLASHNET(2760dac8-09a1-4e72-bbb2-a9ca6608cd9b),10.99.88.14,53276,ssh,False,flashnet,@#$keycode..,Switch--ssh(35),switch
+702eeec2-d683-4499-84e3-1c2a8ce9e495,FLASHNET - SW CORE-TABAJARA,FLASHNET(2760dac8-09a1-4e72-bbb2-a9ca6608cd9b),10.99.88.2,53276,ssh,False,flashnet,@#Keycode..1,Switch--ssh(35),switch
+4b5f6b0d-1a7d-444f-be26-d3304a365725,FLASHNET - SW CORE-SOCORRO,FLASHNET(2760dac8-09a1-4e72-bbb2-a9ca6608cd9b),10.99.88.29,53276,ssh,False,flashnet,@#$keycode..,Switch--ssh(35),switch
+45cc0d51-9942-4836-93c2-9b4ebfcf07d8,FLASHNET - SW CORE-S.LOURENCO,FLASHNET(2760dac8-09a1-4e72-bbb2-a9ca6608cd9b),10.99.88.9,53276,ssh,False,flashnet,@#Keycode..1,Switch--ssh(35),switch
+3e6f4d5b-6592-424a-b4c2-887a410e8ab1,FLASHNET - SW ACESSO-HULK,FLASHNET(2760dac8-09a1-4e72-bbb2-a9ca6608cd9b),192.168.4.58,53276,ssh,False,flashnet,@#$keycode..,Switch--ssh(35),switch
+0d785194-def6-4034-b035-2ca7341e8715,FLASHNET - SW CORE-AV.NORTE,FLASHNET(2760dac8-09a1-4e72-bbb2-a9ca6608cd9b),10.99.88.6,53276,ssh,False,flashnet,@#Keycode..1,Switch--ssh(35),switch
+6936ee12-9b0c-4f14-ad0b-6fb845ebd19c,FLASHNET - SW CORE-ARTHUR,FLASHNET(2760dac8-09a1-4e72-bbb2-a9ca6608cd9b),10.99.88.8,53276,ssh,False,flashnet,@#$keycode..,Switch--ssh(35),switch
+711a4561-e4bb-4916-9882-3f6e6fc29bfe,WELL FIBRA - A10,-,190.89.145.17,22,ssh,False,admin,187310Ja@,A10(38),router
+fef7dde3-929b-43b9-b8d1-89e71b3c444a,VIBE TELECOM - A10,-,177.74.164.1,22,ssh,False,flashnet,@#Keycode..1,A10(38),router
+5caf5778-bc3d-4c82-8da1-058ea9ec25b6,UP CONNECT FIBRA - HILLSTONE,-,179.48.12.2,22,ssh,False,ajust,vmS<*h063-£v,Hillstone(37),router
+0ac36c38-5d0e-4b55-9d09-97e71fb2baae,ULTRANET - HILLSTONE,-,192.141.106.30,2290,ssh,False,ultranet,!QAZ2wsx3edc,Hillstone(37),router
+4c4d0ddd-7e01-4e83-95b9-993c069ae6c5,SN TELECOM - A10,-,181.189.92.6,22,ssh,False,ajustconsulting,3;a1H_gw^f~2|]u$eK?,A10(38),router
+28b65758-408d-4eb4-aad7-9479283b4d12,SIN FIBRA - HILLSTONE,-,160.19.44.134,22,ssh,False,hillstone,@naveganet123,Hillstone(37),router
+63fe65b4-988d-4aa2-a19b-e24e0f31d343,MGN FIBRA - HILLSTONE,-,45.235.104.66,22,ssh,False,admin,123@mgn!@#,Hillstone(37),router
+de226570-efa9-4d11-992d-f3dd8ecf9130,MEGANET - HILLSTONE,-,45.176.56.174,22,ssh,False,hillstone,sR9aSPb507E9Z@,Hillstone(37),router
+06258255-3800-42c8-8303-ed1d8c048ecf,INFOTEL - HILLSTONE,INFOTEL(3c543b38-5d00-497c-aa7d-268bb90fbfa3),170.150.136.10,26504,ssh,False,ajustconsulting,@#$ajust..,Hillstone(37),router
+04286ebe-5cd6-4a7d-b556-6faf90f353ad,KM TELECOM - HILLSTONE,-,45.170.192.58,22,ssh,False,hillstone,@#$KMtelecom1,Hillstone(37),router
+eb81c29e-0f6e-4b00-ae7e-f5c475fd5577,INFORTEC - HILLSTONE,-,187.86.163.10,22,ssh,False,ajust,3;a1H_gw^f~2|]u$eK?,Hillstone(37),router
+45aea291-a3a8-4c85-87a9-46438c213b74,I4 TELECOM - HILLSTONE,-,45.187.168.12,22,ssh,False,hillstone,123@Mudar,Hillstone(37),router
+d097224f-3294-4b1b-8463-9d78c4b6f6b7,GL SOLUCOES - HILLSTONE,-,45.191.104.30,22,ssh,False,hillstone,@#$ajust..,Hillstone(37),router
+eb9ba3cf-74e7-4c18-8968-071f46d2d43a,ECO TELECOM - HILLSTONE,-,45.71.170.10,22,ssh,False,ajust,@#$Ajust..1!,Hillstone(37),router
+78299624-e33e-4476-a254-fbea814e1e6f,CYBERNET - HILLSTONE,-,170.80.112.106,22,ssh,False,ajust,sKu747+h4W`8,Hillstone(37),router
+cd3ec005-a0ca-4067-853d-04aea05f7031,GRUPO VESC - HILLSTONE,-,201.76.97.130,2299,ssh,False,ajustconsulting,~m8:]Zp5LN\5,Hillstone(37),router
+46b5c60d-de10-4404-b47a-a3047e6e21ff,CONECT FIBRA - HILLSTONE,-,45.5.88.38,22462,ssh,False,hillstone,4U$IvC5!aNBQ,Hillstone(37),router

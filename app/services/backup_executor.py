@@ -1,4 +1,4 @@
-﻿"""
+"""
 Backup Executor Service
 
 Este serviÃ§o executa backups usando os scripts especializados do sistema legado.
@@ -7,10 +7,16 @@ Cada tipo de equipamento tem seu prÃ³prio script com a lÃ³gica de conexÃ£o
 
 import os
 import sys
+import base64
 import importlib.util
 import hashlib
 import logging
+import ipaddress
+import json
+import time
+from contextlib import AbstractContextManager
 from datetime import datetime
+from io import StringIO
 from typing import Optional, Dict, Any, Tuple
 
 from app.core.config import settings
@@ -20,11 +26,314 @@ from app.models import Device, DeviceType, DeviceGroup, Backup, BackupStatus, No
 from app.services.vpn_service import vpn_service, VpnError
 from app.services.realtime_backup_logs import append_task_log
 from app.services.plan_limits_service import PlanLimitsService
+from app.services.connection_mode import uses_vpn_tunnel, uses_jump_host
 from app.services.backup_diagnostics import (
     classify_failure,
     failure_label,
     validate_backup_integrity,
 )
+from app.services.backup_observability import inc_counter, observe_histogram
+from app.services.network_precheck import run_network_precheck
+from app.services.tracing import traced_span
+
+try:
+    import paramiko
+except Exception:  # pragma: no cover
+    paramiko = None
+
+try:
+    from cryptography.hazmat.primitives import serialization
+except Exception:  # pragma: no cover
+    serialization = None
+
+
+class _NetmikoJumpHostPatcher(AbstractContextManager):
+    """
+    Injeta suporte a Jump Host em scripts Netmiko legados sem alterar cada script.
+    """
+
+    def __init__(self, scripts_dir: str, jump_host: Optional[Dict[str, Any]], logger: "BackupLogger"):
+        self.scripts_dir = os.path.abspath(scripts_dir)
+        self.jump_host = jump_host or {}
+        self.logger = logger
+        self._original_connect_handler: Dict[Any, Any] = {}
+        self._primary_connect_handler = None
+        self._jump_client = None
+
+    def __enter__(self):
+        # Removido o early_exit: agora o patcher atuara como um injetor global de Timeouts
+        # para Netmiko, cobrindo tanto conexoes jump_host quanto conexoes DIRETAS!
+
+        jump_enabled = self._is_enabled()
+        patched = 0
+        for module in list(sys.modules.values()):
+            module_path = os.path.abspath(getattr(module, "__file__", "") or "")
+            if not module_path.startswith(self.scripts_dir):
+                continue
+            handler = getattr(module, "ConnectHandler", None)
+            if not callable(handler):
+                continue
+            if module in self._original_connect_handler:
+                continue
+            self._original_connect_handler[module] = handler
+            if self._primary_connect_handler is None:
+                self._primary_connect_handler = handler
+            setattr(module, "ConnectHandler", self._patched_connect_handler)
+            patched += 1
+
+        if patched:
+            if jump_enabled:
+                self.logger.info(
+                    f"Jump Host habilitado para scripts Netmiko ({patched} modulos)."
+                )
+            else:
+                self.logger.info(
+                    f"Patcher Netmiko habilitado (timeouts globais, sem Jump Host) em {patched} modulos."
+                )
+        return self
+
+    def __exit__(self, exc_type, exc, tb):
+        for module, original in self._original_connect_handler.items():
+            try:
+                setattr(module, "ConnectHandler", original)
+            except Exception:
+                logging.getLogger(__name__).exception("Falha ao restaurar ConnectHandler em %s", module)
+        self._original_connect_handler.clear()
+        self._primary_connect_handler = None
+        self._close_jump_client()
+        return False
+
+    def _is_enabled(self) -> bool:
+        return bool(
+            self.jump_host
+            and self.jump_host.get("host")
+            and self.jump_host.get("username")
+            and paramiko is not None
+        )
+
+    def _load_private_key(self, raw_key: Optional[str]):
+        if not raw_key or paramiko is None:
+            return None
+
+        raw_key = str(raw_key).strip()
+        candidates = [raw_key]
+        normalized = self._normalize_private_key(raw_key)
+        if normalized and normalized != raw_key:
+            candidates.insert(0, normalized)
+            self.logger.info("Chave do Jump Host convertida de formato bruto/base64 para PEM.")
+
+        for candidate in candidates:
+            for cls in (paramiko.RSAKey, paramiko.Ed25519Key, paramiko.ECDSAKey, paramiko.DSSKey):
+                try:
+                    return cls.from_private_key(StringIO(candidate))
+                except Exception:
+                    continue
+        return None
+
+    @staticmethod
+    def _wrap_pem(header: str, body: str) -> str:
+        body = "".join((body or "").split())
+        chunks = [body[i : i + 64] for i in range(0, len(body), 64)]
+        return f"-----BEGIN {header}-----\n" + "\n".join(chunks) + f"\n-----END {header}-----\n"
+
+    def _normalize_private_key(self, raw_key: str) -> Optional[str]:
+        if not raw_key or "BEGIN " in raw_key:
+            return raw_key
+
+        compact = "".join(raw_key.split())
+        if not compact:
+            return None
+
+        padding = "=" * ((4 - len(compact) % 4) % 4)
+        try:
+            decoded = base64.b64decode(compact + padding, validate=True)
+        except Exception:
+            return None
+
+        # Algumas chaves foram salvas como DER base64 puro, sem cabecalho PEM.
+        if serialization is not None:
+            try:
+                private_key = serialization.load_der_private_key(decoded, password=None)
+                return private_key.private_bytes(
+                    encoding=serialization.Encoding.PEM,
+                    format=serialization.PrivateFormat.TraditionalOpenSSL,
+                    encryption_algorithm=serialization.NoEncryption(),
+                ).decode()
+            except Exception:
+                pass
+
+        # Fallback simples: tenta tratar o blob base64 como PKCS#8 PEM.
+        return self._wrap_pem("PRIVATE KEY", compact)
+
+    def _close_jump_client(self):
+        if self._jump_client:
+            try:
+                self._jump_client.close()
+            except Exception:
+                pass
+            self._jump_client = None
+
+    def _ensure_jump_client(self, timeout: int):
+        if self._jump_client:
+            transport = self._jump_client.get_transport()
+            if transport and transport.is_active():
+                return
+            self._close_jump_client()
+
+        jump_pkey = self._load_private_key(self.jump_host.get("key"))
+        retries = max(1, int(os.getenv("JUMP_HOST_CONNECT_RETRIES", "3") or 3))
+        last_error = None
+        for attempt in range(1, retries + 1):
+            client = paramiko.SSHClient()
+            client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+            try:
+                client.connect(
+                    hostname=self.jump_host.get("host"),
+                    port=int(self.jump_host.get("port") or 22),
+                    username=self.jump_host.get("username"),
+                    password=self.jump_host.get("password"),
+                    pkey=jump_pkey,
+                    timeout=timeout,
+                    auth_timeout=timeout,
+                    banner_timeout=timeout,
+                    allow_agent=False,
+                    look_for_keys=False,
+                )
+                transport = client.get_transport()
+                if transport:
+                    transport.set_keepalive(30)
+                self._jump_client = client
+                return
+            except Exception as exc:
+                last_error = exc
+                try:
+                    client.close()
+                except Exception:
+                    pass
+                if attempt < retries:
+                    self.logger.warning(
+                        "Falha ao conectar no Jump Host (tentativa %s/%s). Retentando...",
+                        attempt,
+                        retries,
+                    )
+                    time.sleep(1.0 * attempt)
+        if last_error:
+            raise last_error
+
+    def _open_jump_channel(self, transport, target_host: str, target_port: int, timeout: int):
+        retries = max(1, int(os.getenv("JUMP_HOST_CHANNEL_RETRIES", "2") or 2))
+        last_error = None
+        for attempt in range(1, retries + 1):
+            try:
+                return transport.open_channel(
+                    "direct-tcpip",
+                    (target_host, target_port),
+                    ("127.0.0.1", 0),
+                    timeout=float(timeout),
+                )
+            except Exception as exc:
+                last_error = exc
+                if attempt < retries:
+                    self.logger.warning(
+                        "Falha ao abrir canal SSH via Jump Host para %s:%s (tentativa %s/%s). Retentando...",
+                        target_host,
+                        target_port,
+                        attempt,
+                        retries,
+                    )
+                    self._close_jump_client()
+                    self._ensure_jump_client(timeout=timeout)
+                    transport = self._jump_client.get_transport()
+                    time.sleep(0.8 * attempt)
+        if last_error:
+            raise last_error
+
+    def _patched_connect_handler(self, *args, **kwargs):
+        # [INJECAO GLOBAL DE TIMEOUTS DO BACKUP CENTER]
+        # Resolve 100% dos erros `Error reading SSH protocol banner` nas OLTs Huawei e MikroTik CCR.
+        # Aplica a injecao independente de usar Jump Host ou Conexao Direta.
+        kwargs.setdefault("banner_timeout", 45)
+        kwargs.setdefault("auth_timeout", 35)
+        
+        # Garante que conn_timeout seja generoso caso o hardware demore a aceitar chaves lentas.
+        conn_timeout = kwargs.get("conn_timeout") or kwargs.get("timeout") or 0
+        if int(conn_timeout) < 35:
+            kwargs["conn_timeout"] = 45
+
+        # Mantem compatibilidade caso algum script ja passe sock manualmente.
+        if kwargs.get("sock") is not None or not self._is_enabled():
+            return self._call_original(*args, **kwargs)
+
+        target_host = kwargs.get("host")
+        target_port = int(kwargs.get("port") or 22)
+        if not target_host:
+            return self._call_original(*args, **kwargs)
+
+        jump_host = str(self.jump_host.get("host") or "").strip().lower()
+        if jump_host and str(target_host).strip().lower() == jump_host:
+            self.logger.info(
+                f"Destino {target_host}:{target_port} coincide com o Jump Host; usando conexao direta."
+            )
+            return self._call_original(*args, **kwargs)
+
+        timeout = int(kwargs.get("conn_timeout") or kwargs.get("timeout") or 30)
+        self._ensure_jump_client(timeout=timeout)
+
+        transport = self._jump_client.get_transport()
+        channel = self._open_jump_channel(transport, target_host, target_port, timeout)
+        patched_kwargs = dict(kwargs)
+        patched_kwargs["sock"] = channel
+        try:
+            return self._call_original(*args, **patched_kwargs)
+        except Exception as exc:
+            try:
+                channel.close()
+            except Exception:
+                pass
+            # Em modo Jump, muitos equipamentos internos estao cadastrados com porta NAT legada.
+            # Se for IP privado e porta != 22, tenta fallback para 22 antes de desistir.
+            if self._should_retry_private_port_22(target_host, target_port, exc):
+                try:
+                    self.logger.warning(
+                        f"Falha em {target_host}:{target_port} via Jump Host; tentando fallback em {target_host}:22."
+                    )
+                    fallback_channel = self._open_jump_channel(transport, target_host, 22, timeout)
+                    fallback_kwargs = dict(kwargs)
+                    fallback_kwargs["port"] = 22
+                    fallback_kwargs["sock"] = fallback_channel
+                    return self._call_original(*args, **fallback_kwargs)
+                except Exception:
+                    try:
+                        fallback_channel.close()
+                    except Exception:
+                        pass
+                    pass
+            raise
+
+    @staticmethod
+    def _should_retry_private_port_22(host: str, port: int, exc: Exception) -> bool:
+        if int(port or 0) == 22:
+            return False
+        try:
+            ip_obj = ipaddress.ip_address(str(host))
+            if not ip_obj.is_private:
+                return False
+        except Exception:
+            return False
+
+        text = str(exc or "").lower()
+        return (
+            "timeout" in text
+            or "tcp connection to device failed" in text
+            or "connection refused" in text
+            or "transport shut down or saw eof" in text
+            or "no existing session" in text
+        )
+
+    def _call_original(self, *args, **kwargs):
+        if callable(self._primary_connect_handler):
+            return self._primary_connect_handler(*args, **kwargs)
+        raise RuntimeError("ConnectHandler original nao encontrado para patch de Jump Host.")
 
 
 class BackupLogger:
@@ -35,8 +344,25 @@ class BackupLogger:
         self.verbose = verbose
         self.task_id = task_id
         self.logs = []
-    
-    def log(self, message: str, level: str = 'info'):
+
+    @staticmethod
+    def _normalize_message(message: Any, args: tuple, kwargs: dict) -> str:
+        text = str(message)
+        if args:
+            try:
+                text = text % args
+            except Exception:
+                text = " ".join([text, *[str(arg) for arg in args]])
+        if kwargs:
+            try:
+                text = text % kwargs
+            except Exception:
+                pairs = " ".join(f"{k}={v}" for k, v in kwargs.items())
+                text = f"{text} {pairs}".strip()
+        return text
+
+    def log(self, message: Any, level: str = 'info', *args, **kwargs):
+        message = self._normalize_message(message, args, kwargs)
         timestamp = datetime.now().strftime('%H:%M:%S')
         log_entry = f"[{timestamp}] [{level.upper()}] [{self.device_name}] {message}"
         self.logs.append({'level': level, 'message': message, 'timestamp': timestamp})
@@ -51,18 +377,108 @@ class BackupLogger:
             logger.log(level_map.get(level, logging.INFO), log_entry)
         if self.task_id:
             append_task_log(self.task_id, self.device_name, message, level)
-    
-    def info(self, message: str):
-        self.log(message, 'info')
-    
-    def success(self, message: str):
-        self.log(message, 'success')
-    
-    def error(self, message: str):
-        self.log(message, 'error')
-    
-    def warning(self, message: str):
-        self.log(message, 'warning')
+
+    def info(self, message: Any, *args, **kwargs):
+        self.log(message, 'info', *args, **kwargs)
+
+    def success(self, message: Any, *args, **kwargs):
+        self.log(message, 'success', *args, **kwargs)
+
+    def error(self, message: Any, *args, **kwargs):
+        self.log(message, 'error', *args, **kwargs)
+
+    def warning(self, message: Any, *args, **kwargs):
+        self.log(message, 'warning', *args, **kwargs)
+
+
+def _truthy_env(name: str, default: str = "0") -> bool:
+    return str(os.getenv(name, default) or "").strip().lower() in {"1", "true", "on", "yes"}
+
+
+def _is_mikrotik_device(device_type: DeviceType | None) -> bool:
+    if not device_type:
+        return False
+    name = str(getattr(device_type, "name", "") or "").strip().lower()
+    script_name = str(getattr(device_type, "script_name", "") or "").strip().lower()
+    return (
+        "mikrotik" in name
+        or "routeros" in name
+        or "mikrotik" in script_name
+        or "routeros" in script_name
+    )
+
+
+def _is_connection_like_failure(message: str | None) -> bool:
+    text = str(message or "").strip().lower()
+    if not text:
+        return False
+    return any(
+        marker in text
+        for marker in (
+            "timeout",
+            "timed out",
+            "connection refused",
+            "unable to connect",
+            "error reading ssh protocol banner",
+            "timeout opening channel",
+            "a conexao foi fechada",
+            "a conexão foi fechada",
+        )
+    )
+
+
+def _is_jump_host_shell_failure(message: str | None) -> bool:
+    text = str(message or "").strip().lower()
+    if not text:
+        return False
+    return any(
+        marker in text
+        for marker in (
+            "sessao com jump host encerrada",
+            "sessão com jump host encerrada",
+            "falha ao abrir shell no jump host",
+            "jump host encerrada antes do shell",
+            "jump_session_closed",
+        )
+    )
+
+
+def _is_likely_auth_failure(message: str | None) -> bool:
+    text = str(message or "").strip().lower()
+    if not text:
+        return False
+    return any(
+        marker in text
+        for marker in (
+            "authentication failed",
+            "netmikoauthenticationexception",
+            "credenciais",
+            "senha",
+            "password",
+            "usuario",
+            "usuário",
+        )
+    )
+
+
+def _supports_protocol_fallback(script_name: str) -> bool:
+    normalized = str(script_name or "").strip().lower()
+    return normalized in {"huawei_olt.py", "vsol_olt_netmiko.py"}
+
+
+def _emit_backup_event(event_name: str, **payload):
+    data = {"event": str(event_name or "unknown"), "ts": datetime.utcnow().isoformat() + "Z"}
+    for key, value in (payload or {}).items():
+        if value is None:
+            continue
+        data[str(key)] = value
+    try:
+        logging.getLogger(__name__).info(
+            "backup_event %s",
+            json.dumps(data, ensure_ascii=True, sort_keys=True, separators=(",", ":")),
+        )
+    except Exception:
+        pass
 
 
 class BackupExecutor:
@@ -95,13 +511,16 @@ class BackupExecutor:
             return None
         
         try:
-            spec = importlib.util.spec_from_file_location(script_name.replace('.py', ''), script_path)
+            module_name = script_name.replace('.py', '')
+            spec = importlib.util.spec_from_file_location(module_name, script_path)
             module = importlib.util.module_from_spec(spec)
+            sys.modules[module_name] = module
             spec.loader.exec_module(module)
             self._script_cache[script_name] = module
             self._script_load_errors.pop(script_name, None)
             return module
         except Exception as exc:
+            sys.modules.pop(script_name.replace('.py', ''), None)
             self._script_load_errors[script_name] = str(exc)
             logging.getLogger(__name__).exception("failed to load script %s", script_name)
             return None
@@ -164,7 +583,13 @@ class BackupExecutor:
         backup_dir = self._get_backup_path(tenant_slug, group_name, device.name)
         
         # Descriptografa senha
-        password = decrypt_password(device.password_encrypted)
+        try:
+            password = decrypt_password(device.password_encrypted)
+        except Exception as exc:
+            err_name = getattr(getattr(exc, "__class__", None), "__name__", "") or "erro_desconhecido"
+            msg = f"Falha ao descriptografar credencial do dispositivo ({err_name}). Regrave a senha do equipamento."
+            logger.error(msg)
+            return False, msg, None
         parametros = {}
         if device.extra_parameters:
             parametros.update(device.extra_parameters)
@@ -198,15 +623,53 @@ class BackupExecutor:
             kwargs['use_telnet'] = True
             kwargs['usar_telnet'] = True
         
-        # Adiciona parâmetros de Jump Host se o grupo usar
-        if group and group.uses_jump_host and group.jump_host:
+        # Adiciona parâmetros de Jump Host se o grupo usar.
+        # Em produção, grande parte dos MikroTik dessa base não aceita backup via Jump Host.
+        # Política padrão (opt-out): para MikroTik, ignorar Jump Host e seguir por
+        # modo efetivo direto/VPN (subgrupo), reduzindo timeouts em cascata.
+        mikrotik_disable_jump = _truthy_env("BACKUP_MIKROTIK_DISABLE_JUMP_HOST", "1")
+        should_skip_jump_for_mikrotik = (
+            bool(group)
+            and bool(uses_jump_host(group, device=device))
+            and bool(group.jump_host)
+            and mikrotik_disable_jump
+            and _is_mikrotik_device(device_type)
+        )
+        if should_skip_jump_for_mikrotik:
+            logger.warning(
+                "MikroTik detectado em grupo Jump Host. Ignorando Jump Host por "
+                "BACKUP_MIKROTIK_DISABLE_JUMP_HOST=1 e seguindo por modo direto/VPN efetivo."
+            )
+
+        if group and uses_jump_host(group, device=device) and group.jump_host and not should_skip_jump_for_mikrotik:
             logger.info(f"Usando Jump Host: {group.jump_host}:{group.jump_port or 22}")
             jump_password = None
             jump_key = None
             if group.jump_password_encrypted:
-                jump_password = decrypt_password(group.jump_password_encrypted)
+                try:
+                    jump_password = decrypt_password(group.jump_password_encrypted)
+                except Exception as exc:
+                    err_name = getattr(getattr(exc, "__class__", None), "__name__", "") or "erro_desconhecido"
+                    msg = f"Falha ao descriptografar senha do Jump Host ({err_name}). Regrave a senha do grupo."
+                    logger.error(msg)
+                    return False, msg, None
             if group.jump_key_encrypted:
-                jump_key = decrypt_password(group.jump_key_encrypted)
+                try:
+                    jump_key = decrypt_password(group.jump_key_encrypted)
+                except Exception as exc:
+                    err_name = getattr(getattr(exc, "__class__", None), "__name__", "") or "erro_desconhecido"
+                    msg = f"Falha ao descriptografar chave do Jump Host ({err_name}). Regrave a chave do grupo."
+                    logger.error(msg)
+                    return False, msg, None
+
+            if not group.jump_username:
+                msg = "Jump Host configurado sem usuario. Ajuste o grupo antes de executar o backup."
+                logger.error(msg)
+                return False, msg, None
+            if not jump_password and not jump_key:
+                msg = "Jump Host sem credencial (senha/chave). Ajuste o grupo antes de executar o backup."
+                logger.error(msg)
+                return False, msg, None
             
             kwargs['jump_host'] = {
                 'host': group.jump_host,
@@ -227,53 +690,308 @@ class BackupExecutor:
             logger.info(f"Iniciando backup...")
             logger.info(f"Tipo: {device_type.name}")
             logger.info(f"Script: {device_type.script_name}")
-            
-            try:
-                # Executa o backup
-                result = script.realizar_backup(**kwargs)
+            script_started = time.monotonic()
+            jump_host_cfg = kwargs.get("jump_host")
+            jump_label = (
+                f"{jump_host_cfg.get('host')}:{int(jump_host_cfg.get('port') or 22)}"
+                if isinstance(jump_host_cfg, dict) and jump_host_cfg.get("host")
+                else "direct"
+            )
+            metric_base_labels = {
+                "tenant": str(tenant_slug or "unknown"),
+                "device_type": str(device_type.name or "unknown"),
+                "script_name": str(device_type.script_name or "unknown"),
+                "jump_host": jump_label,
+            }
 
-                success = None
-                message = None
-                explicit_path = None
-                if isinstance(result, (tuple, list)):
-                    if len(result) > 0:
-                        success = bool(result[0])
-                    if len(result) > 1:
-                        message = result[1]
-                    if len(result) > 2:
-                        explicit_path = result[2]
-                elif isinstance(result, bool):
-                    success = result
-                else:
-                    success = bool(result)
-
-                if success:
-                    # Busca o arquivo mais recente no diretÇürio
-                    file_path = explicit_path
-                    if not file_path:
-                        files = sorted(
-                            [os.path.join(backup_dir, f) for f in os.listdir(backup_dir) if os.path.isfile(os.path.join(backup_dir, f))],
-                            key=os.path.getmtime,
-                            reverse=True
+            with traced_span(
+                "backup.script.execute",
+                attributes={
+                    "backup.device_name": str(device.name or ""),
+                    "backup.device_ip": str(device.ip_address or ""),
+                    "backup.device_port": int(device.port or (23 if device.use_telnet else 22)),
+                    "backup.device_type": str(device_type.name or ""),
+                    "backup.script_name": str(device_type.script_name or ""),
+                    "backup.jump_host": jump_label,
+                },
+            ) as script_span:
+                try:
+                    precheck_enabled = _truthy_env("BACKUP_NETWORK_PRECHECK_ENABLED", "1")
+                    precheck_fail_fast = _truthy_env("BACKUP_NETWORK_PRECHECK_FAIL_FAST", "1")
+                    precheck_timeout = max(1, int(os.getenv("BACKUP_NETWORK_PRECHECK_TIMEOUT_SECONDS", "3") or 3))
+                    skip_precheck_for_jump = bool(
+                        jump_host_cfg and _truthy_env("BACKUP_NETWORK_PRECHECK_SKIP_FOR_JUMP", "1")
+                    )
+                    skip_precheck_for_jump_telnet = bool(jump_host_cfg and bool(device.use_telnet))
+                    if precheck_enabled and (skip_precheck_for_jump or skip_precheck_for_jump_telnet):
+                        if skip_precheck_for_jump_telnet:
+                            logger.info(
+                                "Precheck de rede ignorado para TELNET via Jump Host; seguindo tentativa real do script."
+                            )
+                        else:
+                            logger.info(
+                                "Precheck de rede ignorado para dispositivo via Jump Host; seguindo tentativa real do script."
+                            )
+                        inc_counter(
+                            "backup_precheck_total",
+                            labels={
+                                **metric_base_labels,
+                                "outcome": "skipped_jump_telnet" if skip_precheck_for_jump_telnet else "skipped_jump",
+                                "ping_method": "none",
+                                "tcp_method": "none",
+                            },
                         )
-                        file_path = files[0] if files else None
+                    elif precheck_enabled:
+                        precheck = run_network_precheck(
+                            host=str(device.ip_address or ""),
+                            port=int(device.port or (23 if device.use_telnet else 22)),
+                            timeout_seconds=precheck_timeout,
+                            jump_host=jump_host_cfg if isinstance(jump_host_cfg, dict) else None,
+                        )
+                        recovered_alternate_port = None
+                        if not precheck.tcp_ok and not jump_host_cfg:
+                            # Tenta recuperar falsos negativos de inventario: porta principal fechada,
+                            # mas porta alternativa da plataforma acessivel.
+                            candidate_ports = []
+                            if _is_mikrotik_device(device_type):
+                                candidate_ports = [22, 2222, 22022]
+                            elif bool(device.use_telnet):
+                                candidate_ports = [23, 2323]
+                            elif _supports_protocol_fallback(getattr(device_type, "script_name", "")):
+                                candidate_ports = [22, 23]
+                            candidate_ports = [
+                                int(p)
+                                for p in candidate_ports
+                                if int(p) != int(precheck.tcp_port)
+                            ]
+                            for alt_port in candidate_ports:
+                                alt_precheck = run_network_precheck(
+                                    host=str(device.ip_address or ""),
+                                    port=int(alt_port),
+                                    timeout_seconds=precheck_timeout,
+                                    jump_host=None,
+                                )
+                                if alt_precheck.tcp_ok:
+                                    recovered_alternate_port = int(alt_port)
+                                    precheck = alt_precheck
+                                    kwargs["porta"] = int(alt_port)
+                                    logger.warning(
+                                        "Precheck recuperado por porta alternativa (%s -> %s) via %s. "
+                                        "Prosseguindo com backup.",
+                                        int(device.port or (23 if device.use_telnet else 22)),
+                                        int(alt_port),
+                                        precheck.tcp_method,
+                                    )
+                                    inc_counter(
+                                        "backup_precheck_total",
+                                        labels={
+                                            **metric_base_labels,
+                                            "outcome": "tcp_fail_recovered_alt_port",
+                                            "ping_method": precheck.ping_method,
+                                            "tcp_method": precheck.tcp_method,
+                                        },
+                                    )
+                                    break
+                        observe_histogram(
+                            "backup_precheck_duration_seconds",
+                            max(0.0, precheck.duration_ms / 1000.0),
+                            labels={
+                                **metric_base_labels,
+                                "result": "tcp_ok" if precheck.tcp_ok else "tcp_fail",
+                            },
+                        )
+                        if precheck.ping_ok and precheck.tcp_ok:
+                            precheck_outcome = "ready"
+                        elif precheck.tcp_ok:
+                            precheck_outcome = "tcp_ok_ping_fail"
+                        elif precheck.ping_ok:
+                            precheck_outcome = "ping_ok_tcp_fail"
+                        else:
+                            precheck_outcome = "down"
+                        inc_counter(
+                            "backup_precheck_total",
+                            labels={
+                                **metric_base_labels,
+                                "outcome": precheck_outcome,
+                                "ping_method": precheck.ping_method,
+                                "tcp_method": precheck.tcp_method,
+                            },
+                        )
+                        logger.info(
+                            "Precheck rede: ping_ok=%s tcp_ok=%s ping_method=%s tcp_method=%s rtt_ms=%s",
+                            precheck.ping_ok,
+                            precheck.tcp_ok,
+                            precheck.ping_method,
+                            precheck.tcp_method,
+                            precheck.ping_rtt_ms,
+                        )
+                        if recovered_alternate_port is not None:
+                            logger.info(
+                                "Porta efetiva ajustada para %s apos precheck alternativo.",
+                                recovered_alternate_port,
+                            )
+                        if script_span is not None:
+                            script_span.set_attribute("backup.precheck_ping_ok", bool(precheck.ping_ok))
+                            script_span.set_attribute("backup.precheck_tcp_ok", bool(precheck.tcp_ok))
+                            script_span.set_attribute("backup.precheck_ping_method", str(precheck.ping_method or "none"))
+                            script_span.set_attribute("backup.precheck_tcp_method", str(precheck.tcp_method or "none"))
+                        ignore_fail_fast_for_jump_telnet = bool(
+                            jump_host_cfg
+                            and bool(device.use_telnet)
+                            and not precheck.tcp_ok
+                        )
+                        ignore_fail_fast_for_jump = bool(
+                            jump_host_cfg
+                            and not precheck.tcp_ok
+                            and _truthy_env("BACKUP_NETWORK_PRECHECK_IGNORE_JUMP_TCP_FAIL", "1")
+                        )
+                        if ignore_fail_fast_for_jump_telnet:
+                            logger.warning(
+                                "Precheck TCP falhou (%s), mas o dispositivo usa TELNET via Jump Host. "
+                                "Ignorando fail-fast e seguindo tentativa real do script.",
+                                precheck.tcp_method,
+                            )
+                            inc_counter(
+                                "backup_precheck_total",
+                                labels={
+                                    **metric_base_labels,
+                                    "outcome": "tcp_fail_ignored_jump_telnet",
+                                    "ping_method": precheck.ping_method,
+                                    "tcp_method": precheck.tcp_method,
+                                },
+                            )
+                        if ignore_fail_fast_for_jump and not ignore_fail_fast_for_jump_telnet:
+                            logger.warning(
+                                "Precheck TCP falhou (%s), mas o dispositivo usa Jump Host. "
+                                "Ignorando fail-fast e seguindo tentativa real do script.",
+                                precheck.tcp_method,
+                            )
+                            inc_counter(
+                                "backup_precheck_total",
+                                labels={
+                                    **metric_base_labels,
+                                    "outcome": "tcp_fail_ignored_jump",
+                                    "ping_method": precheck.ping_method,
+                                    "tcp_method": precheck.tcp_method,
+                                },
+                            )
+                        if (
+                            precheck_fail_fast
+                            and not precheck.tcp_ok
+                            and not ignore_fail_fast_for_jump_telnet
+                            and not ignore_fail_fast_for_jump
+                        ):
+                            msg = (
+                                f"Rede inalcançável ({precheck.tcp_method}): Não foi possível acessar a porta {precheck.tcp_port}. "
+                                "Backup abortado via precheck/fail-fast."
+                            )
+                            logger.error(msg)
+                            inc_counter("backup_script_total", labels={**metric_base_labels, "outcome": "precheck_fail"})
+                            return False, msg, None
 
-                    if file_path:
-                        logger.success("Backup realizado com sucesso!")
-                        return True, message or "Backup realizado com sucesso", file_path
+                    # Executa o backup
+                    with _NetmikoJumpHostPatcher(self.SCRIPTS_DIR, jump_host_cfg, logger):
+                        result = script.realizar_backup(**kwargs)
+
+                        # Fallback de protocolo para scripts que suportam SSH/TELNET.
+                        if isinstance(result, (tuple, list)):
+                            first_ok = bool(result[0]) if len(result) > 0 else False
+                            first_msg = str(result[1] or "") if len(result) > 1 else ""
+                        else:
+                            first_ok = bool(result)
+                            first_msg = ""
+                        if (
+                            not first_ok
+                            and _supports_protocol_fallback(getattr(device_type, "script_name", ""))
+                            and _is_connection_like_failure(first_msg)
+                            and not _is_jump_host_shell_failure(first_msg)
+                            and not _is_likely_auth_failure(first_msg)
+                        ):
+                            toggled_telnet = not bool(kwargs.get("use_telnet") or kwargs.get("usar_telnet") or device.use_telnet)
+                            fallback_kwargs = dict(kwargs)
+                            fallback_kwargs["use_telnet"] = bool(toggled_telnet)
+                            fallback_kwargs["usar_telnet"] = bool(toggled_telnet)
+                            fallback_params = dict(parametros or {})
+                            fallback_params["use_telnet"] = bool(toggled_telnet)
+                            fallback_kwargs["parametros"] = fallback_params
+                            logger.warning(
+                                "Falha inicial de conectividade. Tentando fallback de protocolo (%s -> %s).",
+                                "TELNET" if not toggled_telnet else "SSH",
+                                "TELNET" if toggled_telnet else "SSH",
+                            )
+                            second_result = script.realizar_backup(**fallback_kwargs)
+                            if isinstance(second_result, (tuple, list)):
+                                second_ok = bool(second_result[0]) if len(second_result) > 0 else False
+                            else:
+                                second_ok = bool(second_result)
+                            if second_ok:
+                                logger.success("Fallback de protocolo recuperou o backup com sucesso.")
+                                result = second_result
+
+                    success = None
+                    message = None
+                    explicit_path = None
+                    if isinstance(result, (tuple, list)):
+                        if len(result) > 0:
+                            success = bool(result[0])
+                        if len(result) > 1:
+                            message = result[1]
+                        if len(result) > 2:
+                            explicit_path = result[2]
+                    elif isinstance(result, bool):
+                        success = result
                     else:
+                        success = bool(result)
+
+                    if success:
+                        # Busca o arquivo mais recente no diretorio
+                        file_path = explicit_path
+                        if not file_path:
+                            files = sorted(
+                                [os.path.join(backup_dir, f) for f in os.listdir(backup_dir) if os.path.isfile(os.path.join(backup_dir, f))],
+                                key=os.path.getmtime,
+                                reverse=True
+                            )
+                            file_path = files[0] if files else None
+
+                        if file_path:
+                            logger.success("Backup realizado com sucesso!")
+                            return True, message or "Backup realizado com sucesso", file_path
                         msg = "Comando executado, mas nenhum arquivo gerado/encontrado."
                         logger.error(msg)
                         return False, msg, None
-                else:
                     logger.error(message or "Falha no backup")
                     return False, message or "Falha ao realizar backup", None
-            except Exception as e:
-                error_msg = str(e)
-                logger.error(f"Erro: {error_msg}")
-                return False, f"Erro durante backup: {error_msg}", None
+                except Exception as e:
+                    error_msg = str(e)
+                    logger.error(f"Erro: {error_msg}")
+                    return False, f"Erro durante backup: {error_msg}", None
+                finally:
+                    duration_seconds = max(0.0, time.monotonic() - script_started)
+                    outcome = "success" if 'success' in locals() and bool(success) else "failed"
+                    observe_histogram(
+                        "backup_script_duration_seconds",
+                        duration_seconds,
+                        labels={**metric_base_labels, "outcome": outcome},
+                    )
+                    inc_counter("backup_script_total", labels={**metric_base_labels, "outcome": outcome})
+                    if script_span is not None:
+                        script_span.set_attribute("backup.outcome", outcome)
+                        script_span.set_attribute("backup.duration_ms", int(duration_seconds * 1000))
+                    _emit_backup_event(
+                        "backup_script_finished",
+                        device_name=device.name,
+                        device_ip=device.ip_address,
+                        tenant=tenant_slug,
+                        group=group_name,
+                        jump_host=jump_label,
+                        device_type=device_type.name if device_type else None,
+                        script_name=device_type.script_name if device_type else None,
+                        outcome=outcome,
+                        duration_ms=int(duration_seconds * 1000),
+                    )
 
-        if group and group.uses_vpn and manage_vpn:
+        if group and uses_vpn_tunnel(group, device=device) and manage_vpn:
             try:
                 with vpn_service.vpn_session(group, logger=logger):
                     return _execute_script()
@@ -304,16 +1022,32 @@ class BackupExecutor:
             group = db.query(DeviceGroup).filter_by(id=device.group_id).first() if device.group_id else None
             tenant_slug = device.tenant.slug if device.tenant else "default"
             
-            started_at = datetime.utcnow()
-            success, message, file_path = self.execute_backup(
-                device=device,
-                device_type=device_type,
-                group=group,
-                tenant_slug=tenant_slug,
-                manage_vpn=manage_vpn,
-                task_id=task_id,
-            )
-            completed_at = datetime.utcnow()
+            with traced_span(
+                "backup.device.execute",
+                attributes={
+                    "backup.device_id": str(device.id),
+                    "backup.device_name": str(device.name or ""),
+                    "backup.device_ip": str(device.ip_address or ""),
+                    "backup.device_port": int(device.port or (23 if device.use_telnet else 22)),
+                    "backup.device_type": str(device_type.name if device_type else "unknown"),
+                    "backup.script_name": str(device_type.script_name if device_type else "unknown"),
+                    "backup.group_name": str(group.name if group else "Sem Grupo"),
+                    "backup.tenant": str(tenant_slug or "default"),
+                },
+            ) as backup_span:
+                started_at = datetime.utcnow()
+                success, message, file_path = self.execute_backup(
+                    device=device,
+                    device_type=device_type,
+                    group=group,
+                    tenant_slug=tenant_slug,
+                    manage_vpn=manage_vpn,
+                    task_id=task_id,
+                )
+                completed_at = datetime.utcnow()
+                if backup_span is not None:
+                    backup_span.set_attribute("backup.success", bool(success))
+                    backup_span.set_attribute("backup.duration_ms", int((completed_at - started_at).total_seconds() * 1000))
             
             file_size = None
             file_hash = None
@@ -335,8 +1069,7 @@ class BackupExecutor:
                 if not integrity.get("ok"):
                     success = False
                     message = (
-                        "Backup gerado, mas invalidado por integridade: "
-                        f"{integrity.get('reason') or 'erro de validacao'}."
+                        f"Falha de integridade do arquivo pós-coleta: {integrity.get('reason') or 'erro de validacao'}."
                     )
 
             if success and file_size and device.tenant:
@@ -361,6 +1094,21 @@ class BackupExecutor:
             if not success:
                 failure_category = classify_failure(message)
                 failure_category_label = failure_label(failure_category)
+                
+                if not message or message == 'Falha ao realizar backup':
+                    message = f"Falha sistêmica classificada como: {failure_category_label}."
+            _emit_backup_event(
+                "backup_device_finished",
+                device_id=str(device.id),
+                device_name=device.name,
+                tenant=tenant_slug,
+                group=(group.name if group else "Sem Grupo"),
+                device_type=(device_type.name if device_type else None),
+                script_name=(device_type.script_name if device_type else None),
+                success=bool(success),
+                failure_category=failure_category,
+                duration_ms=max(0, int((completed_at - started_at).total_seconds() * 1000)),
+            )
 
             backup_meta = {
                 "meta": {

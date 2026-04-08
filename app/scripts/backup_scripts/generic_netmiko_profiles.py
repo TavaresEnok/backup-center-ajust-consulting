@@ -14,11 +14,39 @@ ERROR_MARKERS = (
     "unrecognized",
     "not supported",
 )
+NETWORK_ERROR_MARKERS = (
+    "timeout",
+    "timed out",
+    "no route to host",
+    "connection refused",
+    "tcp connection to device failed",
+    "no existing session",
+    "timeout opening channel",
+    "channelexception",
+    "eoferror",
+    "connection reset by peer",
+)
+AUTH_ERROR_MARKERS = (
+    "authentication failed",
+    "auth failed",
+    "permission denied",
+    "invalid password",
+    "login failed",
+)
 
 
 def _looks_invalid(output: str) -> bool:
     text = (output or "").lower()
     return any(marker in text for marker in ERROR_MARKERS)
+
+
+def _classify_connection_failure(detail: str) -> str:
+    lowered = (detail or "").lower()
+    if any(marker in lowered for marker in NETWORK_ERROR_MARKERS):
+        return "CONEXAO"
+    if any(marker in lowered for marker in AUTH_ERROR_MARKERS):
+        return "AUTENTICACAO"
+    return "AUTENTICACAO"
 
 
 def _with_telnet_fallback(candidates: List[str], use_telnet: bool) -> List[str]:
@@ -199,11 +227,15 @@ def run_profile_backup(
 
     if not selected_type:
         detail = "; ".join(connection_errors[:3]).strip()
-        msg = "A conexao foi fechada, recusada ou as credenciais estao incorretas."
+        category = _classify_connection_failure(detail)
+        if category == "CONEXAO":
+            msg = "Falha de conectividade com o dispositivo."
+        else:
+            msg = "A conexao foi fechada, recusada ou as credenciais estao incorretas."
         if detail:
             msg = f"{msg} Detalhes: {detail}"
         logger.emit(msg, "error")
-        return False, msg, None, "AUTENTICACAO"
+        return False, msg, None, category
 
     logger.emit(f"Teste de conexao bem-sucedido usando '{selected_type}'.", "success")
 

@@ -1,4 +1,5 @@
 import re
+import zipfile
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, Optional, Tuple
 
@@ -6,10 +7,13 @@ from typing import Any, Dict, Optional, Tuple
 FAILURE_LABELS = {
     "auth": "Autenticacao",
     "timeout": "Timeout",
+    "banner_timeout": "Banner SSH (sobrecarga/lentidao)",
+    "jump_session_closed": "Sessao Jump Host encerrada",
     "port_refused": "Porta recusada",
     "vpn": "VPN",
     "no_ping": "Sem ping",
     "connection": "Conectividade",
+    "circuit_breaker": "Jump Host bloqueado (Circuit Breaker)",
     "script": "Script",
     "unknown": "Outros",
 }
@@ -18,6 +22,7 @@ TRANSIENT_FAILURE_CATEGORIES = {
     "timeout",
     "connection",
     "vpn",
+    "jump_session_closed",
 }
 
 _ROUTEROS_TIMESTAMP_RE = re.compile(r"^\s*#\s+.+\s+by\s+RouterOS\s+.+$", re.IGNORECASE)
@@ -30,6 +35,16 @@ _VOLATILE_LINE_PATTERNS = [
     re.compile(r"^\s*!\s*time:\s*.*$", re.IGNORECASE),
     re.compile(r"^\s*!\s*generated.*$", re.IGNORECASE),
 ]
+_HARD_ERROR_TOKENS = (
+    "connection refused",
+    "unable to connect",
+    "authentication failed",
+    "invalid input",
+    "unknown command",
+    "syntax error",
+    "error:",
+    "traceback",
+)
 
 
 def classify_failure(message: str) -> str:
@@ -37,20 +52,54 @@ def classify_failure(message: str) -> str:
     if not text:
         return "unknown"
 
+    # Circuit breaker: bloqueio por saturacao de Jump Host.
+    if "circuit breaker" in text and ("aberto" in text or "ativado" in text or "bloqueado" in text):
+        return "circuit_breaker"
+
+    # Banner SSH: jump host sobrecarregado — NAO e transitorio (retry piora a saturacao).
+    # Deve ser verificado ANTES do 'timeout' generico para ter prioridade.
+    if "error reading ssh protocol banner" in text:
+        return "banner_timeout"
+
+    # Sessao de jump encerrada antes de abrir shell costuma ser intermitente de transporte
+    # (saturacao, race de canal, queda curta de bastion). Mantemos categoria dedicada
+    # para tratar retry sem poluir "connection" generico.
+    if any(
+        marker in text
+        for marker in (
+            "sessao com jump host encerrada",
+            "sessão com jump host encerrada",
+            "nao foi possivel abrir shell interativo no jump host",
+            "não foi possível abrir shell interativo no jump host",
+        )
+    ):
+        return "jump_session_closed"
+
+    # Prioriza falhas de conectividade/timeout antes de "credenciais" em mensagens genéricas.
+    if any(k in text for k in ["timed out", "timeout", "timeoutexception", "softtimelimitexceeded"]):
+        return "timeout"
+    if any(
+        k in text
+        for k in [
+            "rede inalcan",
+            "não foi possível acessar a porta",
+            "nao foi possivel acessar a porta",
+            "precheck/fail-fast",
+        ]
+    ):
+        return "connection"
+    if any(k in text for k in ["connection refused", "refused", "errno 111", "port closed"]):
+        return "port_refused"
+    if any(k in text for k in ["eof", "connection closed", "socket", "network", "host unreachable", "no route to host", "tcp connection", "ssh", "telnet"]):
+        return "connection"
     if any(k in text for k in ["sem resposta ao ping", "no ping", "icmp", "100% packet loss"]):
         return "no_ping"
     if any(k in text for k in ["auth", "autentic", "credencia", "senha", "password", "access denied", "permission denied", "login failed", "unauthorized", "invalid credentials"]):
         return "auth"
-    if any(k in text for k in ["timed out", "timeout", "timeoutexception", "softtimelimitexceeded"]):
-        return "timeout"
-    if any(k in text for k in ["connection refused", "refused", "errno 111", "port closed"]):
-        return "port_refused"
     if any(k in text for k in ["vpn", "nmcli", "l2tp", "ipsec", "ppp"]):
         return "vpn"
     if any(k in text for k in ["script", "traceback", "syntaxerror", "attributeerror", "typeerror", "keyerror", "modulenotfound", "importerror"]):
         return "script"
-    if any(k in text for k in ["eof", "connection closed", "socket", "network", "host unreachable", "no route to host", "tcp connection", "ssh", "telnet"]):
-        return "connection"
     return "unknown"
 
 
@@ -147,6 +196,28 @@ def validate_backup_integrity(file_path: Optional[str], device_type_name: str = 
         result["reason"] = "arquivo ausente"
         return result
 
+    lower_path = str(file_path).strip().lower()
+    if lower_path.endswith(".zip"):
+        try:
+            with zipfile.ZipFile(file_path, "r") as zf:
+                infos = [info for info in zf.infolist() if not info.is_dir()]
+                if not infos:
+                    result["reason"] = "zip sem arquivos de configuracao"
+                    return result
+                total_size = sum(int(i.file_size or 0) for i in infos)
+                result["size_bytes"] = total_size
+                result["line_count"] = len(infos)
+                if total_size < 128:
+                    result["reason"] = "zip muito pequeno (<128 bytes)"
+                    return result
+                result["ok"] = True
+                result["reason"] = "integridade validada (zip)"
+                result["markers_found"] = [f"zip_entries={len(infos)}"]
+                return result
+        except Exception as exc:
+            result["reason"] = f"zip invalido: {exc}"
+            return result
+
     try:
         with open(file_path, "r", encoding="utf-8", errors="replace") as f:
             content = f.read()
@@ -177,6 +248,12 @@ def validate_backup_integrity(file_path: Optional[str], device_type_name: str = 
         ("fiberhome", ["show running-config", "terminal length 0", "interface"]),
         ("switch", ["interface", "vlan", "hostname"]),
         ("cisco", ["version", "hostname", "interface"]),
+        ("datacom", ["show running-config", "interface", "vlan"]),
+        ("intelbras", ["show running-config", "interface"]),
+        ("parks", ["show running-config", "interface"]),
+        ("fortinet", ["config system", "set hostname", "config firewall"]),
+        ("juniper", ["set interfaces", "set system host-name", "set protocols"]),
+        ("a10", ["show running-config", "slb server", "slb virtual-server"]),
     ]
 
     expected = []
@@ -188,6 +265,18 @@ def validate_backup_integrity(file_path: Optional[str], device_type_name: str = 
         expected = marker_sets[2][1]
     elif "fiberhome" in token:
         expected = marker_sets[3][1]
+    elif "datacom" in token:
+        expected = marker_sets[6][1]
+    elif "intelbras" in token:
+        expected = marker_sets[7][1]
+    elif "parks" in token:
+        expected = marker_sets[8][1]
+    elif "fortinet" in token:
+        expected = marker_sets[9][1]
+    elif "juniper" in token:
+        expected = marker_sets[10][1]
+    elif "a10" in token:
+        expected = marker_sets[11][1]
     elif "switch" in token:
         expected = marker_sets[4][1]
     elif "cisco" in token:
@@ -201,7 +290,27 @@ def validate_backup_integrity(file_path: Optional[str], device_type_name: str = 
 
     result["markers_found"] = markers
     if expected and len(markers) == 0:
+        content_l = content.lower()
+        hard_errors = sum(1 for token in _HARD_ERROR_TOKENS if token in content_l)
+        # Heuristica para firmwares legados: arquivos grandes e com estrutura de config
+        # podem ser validos mesmo sem markers especificos do mapeamento.
+        plausible_config = (
+            size_bytes >= 512
+            and line_count >= 20
+            and any(k in content_l for k in ("interface", "vlan", "display", "startup", "running-config", "/ip", "/interface"))
+        )
+        if plausible_config and hard_errors <= 1:
+            result["ok"] = True
+            result["reason"] = "integridade validada por heuristica (firmware legado)"
+            result["markers_found"] = ["heuristic_legacy"]
+            return result
         result["reason"] = "conteudo sem marcadores esperados para o tipo de equipamento"
+        return result
+
+    # Device types sem markers mapeados — aceitar se passou critérios mínimos
+    if not expected:
+        result["ok"] = True
+        result["reason"] = "integridade validada (sem markers especificos para este tipo)"
         return result
 
     result["ok"] = True

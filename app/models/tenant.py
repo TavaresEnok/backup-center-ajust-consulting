@@ -38,4 +38,5 @@ class Tenant(Base, TimestampMixin):
     devices = relationship('Device', back_populates='tenant', cascade='all, delete-orphan')
     invoices = relationship('Invoice', back_populates='tenant', cascade='all, delete-orphan')
     device_groups = relationship('DeviceGroup', back_populates='tenant', cascade='all, delete-orphan')
+    device_subgroups = relationship('DeviceSubgroup', back_populates='tenant', cascade='all, delete-orphan')
     plan = relationship('Plan', back_populates='tenants')

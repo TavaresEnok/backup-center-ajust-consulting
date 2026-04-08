@@ -3,6 +3,8 @@
 {% block title %}Editar Grupo | {{ tenant.name }}{% endblock %}
 
 {% block content %}
+{% set role = session.get('user_role') %}
+{% set can_manage_admin = role in ['super_admin', 'tenant_owner', 'tenant_admin'] %}
 <style>
     .form-card {
         background: var(--card-bg);
@@ -204,6 +206,40 @@
         </a>
         <h1 class="text-3xl font-bold text-[var(--text-main)]">Editar Grupo</h1>
         <p class="text-[var(--text-muted)] text-sm mt-1">Atualize as informações do grupo "{{ group.name }}"</p>
+        <div class="mt-2">
+            <span class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium {% if group.is_active %}border border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800/40 dark:bg-emerald-900/20 dark:text-emerald-300{% else %}border border-slate-300 bg-slate-100 text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300{% endif %}">
+                Status: {{ 'Ativo' if group.is_active else 'Inativo' }}
+            </span>
+        </div>
+        <div class="mt-3 flex flex-wrap items-center gap-2">
+            <a href="{{ url_for('tenant_devices.list_devices', tenant_slug=tenant.slug, group_id=group.id) }}"
+                class="inline-flex items-center gap-1 rounded-lg border border-[var(--card-border)] px-3 py-1.5 text-xs font-medium text-[var(--text-main)] hover:bg-[var(--line-color)] transition">
+                Ver dispositivos do grupo
+            </a>
+            {% if can_manage_admin %}
+            <form id="form-run-connection-audit-edit-group"
+                action="{{ url_for('tenant_devices.run_connection_audit_all', tenant_slug=tenant.slug) }}"
+                method="POST" class="inline">
+                {% include 'partials/csrf.html' %}
+                <input type="hidden" name="group_id" value="{{ group.id }}">
+                <button type="button" data-run-backup-live data-form-id="form-run-connection-audit-edit-group"
+                    class="inline-flex items-center gap-1 rounded-lg border border-blue-300 bg-blue-50 px-3 py-1.5 text-xs font-medium text-blue-700 transition-colors hover:bg-blue-100 dark:border-blue-700 dark:bg-blue-500/10 dark:text-blue-300 dark:hover:bg-blue-500/20">
+                    Testar conexao deste grupo
+                </button>
+            </form>
+            {% if group.uses_vpn %}
+            <form id="form-test-vpn-edit-group"
+                action="{{ url_for('tenant_groups.test_group_vpn', tenant_slug=tenant.slug, group_id=group.id) }}"
+                method="POST" class="inline">
+                {% include 'partials/csrf.html' %}
+                <button type="button" data-run-backup-live data-form-id="form-test-vpn-edit-group"
+                    class="inline-flex items-center gap-1 rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-1.5 text-xs font-medium text-emerald-700 transition-colors hover:bg-emerald-100 dark:border-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300 dark:hover:bg-emerald-500/20">
+                    Testar VPN deste grupo
+                </button>
+            </form>
+            {% endif %}
+            {% endif %}
+        </div>
     </div>
 
     <div class="form-card">
@@ -405,6 +441,20 @@
         <p class="text-[var(--text-muted)] text-sm mb-4">
             Ao excluir este grupo, os dispositivos associados não serão excluídos, apenas desvinculados.
         </p>
+        <form action="{{ url_for('tenant_groups.toggle_group_active', tenant_slug=tenant.slug, group_id=group.id) }}"
+            method="POST"
+            onsubmit="return confirm('{% if group.is_active %}Desativar{% else %}Reativar{% endif %} o grupo {{ group.name }}?')"
+            class="mb-4">
+            {% include 'partials/csrf.html' %}
+            <input type="hidden" name="return_to" value="edit">
+            <input type="hidden" name="action" value="{{ 'deactivate' if group.is_active else 'activate' }}">
+            <button type="submit" class="btn-secondary">
+                <span class="flex items-center gap-2">
+                    <i data-lucide="{{ 'pause-circle' if group.is_active else 'play-circle' }}" class="w-4 h-4"></i>
+                    {{ 'Desativar grupo' if group.is_active else 'Reativar grupo' }}
+                </span>
+            </button>
+        </form>
         <form action="{{ url_for('tenant_groups.delete_group', tenant_slug=tenant.slug, group_id=group.id) }}"
             method="POST" onsubmit="return confirm('Tem certeza que deseja excluir o grupo {{ group.name }}?')">
             {% include 'partials/csrf.html' %}
@@ -418,6 +468,7 @@
     </div>
 </div>
 
+{% include 'partials/backup_live_modal.html' %}
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         lucide.createIcons();

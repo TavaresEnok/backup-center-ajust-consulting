@@ -1,21 +1,31 @@
+import base64
+import ipaddress
 import socket
 import time
 from dataclasses import dataclass
+from io import StringIO
 from typing import Optional, List, Tuple
 
 import paramiko
 import pexpect
+import requests
 
 from app.core.security import decrypt_password
 from app.models.device import Device
 from app.models.device_group import DeviceGroup
 from app.services.backup_executor import BackupLogger
+from app.services.connection_mode import uses_jump_host, uses_vpn_tunnel
 from app.services.vpn_service import VpnError, vpn_service
 
 try:
     from netmiko import ConnectHandler
 except Exception:  # pragma: no cover
     ConnectHandler = None
+
+try:
+    from cryptography.hazmat.primitives import serialization
+except Exception:  # pragma: no cover
+    serialization = None
 
 
 @dataclass
@@ -24,12 +34,197 @@ class ConnectionTestResult:
     message: str
     protocol: str
     elapsed_ms: int
+    tcp_ok: bool = False
 
 
 class ConnectionTestService:
     DEFAULT_TIMEOUT = 8
 
-    def _test_tcp_port(self, host: str, port: int, timeout: int) -> None:
+    def _script_name(self, device: Device) -> str:
+        return str(getattr(getattr(device, "type", None), "script_name", "") or "").strip().lower()
+
+    def _recommended_timeout(self, device: Device, group: Optional[DeviceGroup] = None) -> int:
+        script_name = self._script_name(device)
+
+        if script_name == "huawei_ne_router_netmiko.py":
+            base = 60
+        elif script_name == "Zabbix_backup.py".lower():
+            base = 35
+        elif script_name == "mikrotik_ros_netmiko.py":
+            base = 25
+        elif script_name == "grafana_backup.py":
+            base = 20
+        elif "switch_huawei" in script_name:
+            base = 15
+        else:
+            base = self.DEFAULT_TIMEOUT
+
+        if group and uses_jump_host(group, device=device):
+            base = max(base, 15)
+        if device.use_telnet:
+            base = max(base, 12)
+        return int(base)
+
+    def _test_grafana_api(self, device: Device, timeout: int) -> Tuple[bool, str]:
+        params = dict(getattr(device, "extra_parameters", None) or {})
+        grafana_url = str(params.get("grafana_url") or "").strip().rstrip("/")
+        api_key = str(params.get("api_key") or "").strip()
+        if not grafana_url or not api_key:
+            return False, "Parametros do Grafana ausentes (grafana_url/api_key)."
+
+        headers = {
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+        }
+        response = requests.get(f"{grafana_url}/api/org", headers=headers, timeout=max(timeout, 20))
+        response.raise_for_status()
+        org_name = ""
+        try:
+            org_name = str((response.json() or {}).get("name") or "").strip()
+        except Exception:
+            org_name = ""
+        if org_name:
+            return True, f"Conexao validada com sucesso (Grafana API: {org_name})."
+        return True, "Conexao validada com sucesso (Grafana API)."
+
+    @staticmethod
+    def _wrap_pem(header: str, body: str) -> str:
+        body = "".join((body or "").split())
+        chunks = [body[i : i + 64] for i in range(0, len(body), 64)]
+        return f"-----BEGIN {header}-----\n" + "\n".join(chunks) + f"\n-----END {header}-----\n"
+
+    def _normalize_private_key(self, raw_key: Optional[str]) -> Optional[str]:
+        if not raw_key:
+            return None
+
+        raw_key = str(raw_key).strip()
+        if "BEGIN " in raw_key:
+            return raw_key
+
+        compact = "".join(raw_key.split())
+        if not compact:
+            return None
+
+        padding = "=" * ((4 - len(compact) % 4) % 4)
+        try:
+            decoded = base64.b64decode(compact + padding, validate=True)
+        except Exception:
+            return raw_key
+
+        if serialization is not None:
+            try:
+                private_key = serialization.load_der_private_key(decoded, password=None)
+                return private_key.private_bytes(
+                    encoding=serialization.Encoding.PEM,
+                    format=serialization.PrivateFormat.TraditionalOpenSSL,
+                    encryption_algorithm=serialization.NoEncryption(),
+                ).decode()
+            except Exception:
+                pass
+
+        return self._wrap_pem("PRIVATE KEY", compact)
+
+    def _load_private_key(self, raw_key: Optional[str]):
+        normalized = self._normalize_private_key(raw_key)
+        if not normalized:
+            return None
+        for cls in (paramiko.RSAKey, paramiko.Ed25519Key, paramiko.ECDSAKey, paramiko.DSSKey):
+            try:
+                return cls.from_private_key(StringIO(normalized))
+            except Exception:
+                continue
+        return None
+
+    def _build_jump_host_config(self, group: Optional[DeviceGroup], device: Optional[Device] = None) -> Optional[dict]:
+        if not group or not uses_jump_host(group, device=device) or not getattr(group, "jump_host", None):
+            return None
+        if not getattr(group, "jump_username", None):
+            return None
+
+        jump_password = None
+        jump_key = None
+        if getattr(group, "jump_password_encrypted", None):
+            jump_password = decrypt_password(group.jump_password_encrypted)
+        if getattr(group, "jump_key_encrypted", None):
+            jump_key = decrypt_password(group.jump_key_encrypted)
+        if not jump_password and not jump_key:
+            return None
+
+        return {
+            "host": group.jump_host,
+            "port": int(group.jump_port or 22),
+            "username": group.jump_username,
+            "password": jump_password,
+            "key": jump_key,
+        }
+
+    def _should_bypass_jump_host(self, device: Device, jump_host: Optional[dict]) -> bool:
+        if not jump_host:
+            return False
+        target_host = str(getattr(device, "ip_address", "") or "").strip().lower()
+        jump_host_name = str(jump_host.get("host") or "").strip().lower()
+        return bool(target_host and jump_host_name and target_host == jump_host_name)
+
+    def _is_private_target(self, host: str) -> bool:
+        try:
+            return ipaddress.ip_address(host).is_private
+        except Exception:
+            return False
+
+    def _open_jump_client(self, jump_host: dict, timeout: int) -> paramiko.SSHClient:
+        jump_pkey = self._load_private_key(jump_host.get("key"))
+        client = paramiko.SSHClient()
+        client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        client.connect(
+            hostname=jump_host["host"],
+            port=int(jump_host.get("port") or 22),
+            username=jump_host.get("username"),
+            password=jump_host.get("password"),
+            pkey=jump_pkey,
+            timeout=timeout,
+            auth_timeout=timeout,
+            banner_timeout=timeout,
+            allow_agent=False,
+            look_for_keys=False,
+        )
+        return client
+
+    def _open_jump_channel(self, jump_client: paramiko.SSHClient, host: str, port: int, timeout: int):
+        transport = jump_client.get_transport()
+        if not transport or not transport.is_active():
+            raise RuntimeError("Transporte SSH do Jump Host indisponivel.")
+
+        try:
+            return transport.open_channel(
+                "direct-tcpip",
+                (host, int(port)),
+                ("127.0.0.1", 0),
+                timeout=float(timeout),
+            )
+        except Exception:
+            if self._is_private_target(host) and int(port) != 22:
+                return transport.open_channel(
+                    "direct-tcpip",
+                    (host, 22),
+                    ("127.0.0.1", 0),
+                    timeout=float(timeout),
+                )
+            raise
+
+    def _test_tcp_port(self, host: str, port: int, timeout: int, jump_host: Optional[dict] = None) -> None:
+        if jump_host:
+            jump_client = self._open_jump_client(jump_host, timeout)
+            channel = None
+            try:
+                channel = self._open_jump_channel(jump_client, host, port, timeout)
+            finally:
+                try:
+                    if channel is not None:
+                        channel.close()
+                finally:
+                    jump_client.close()
+            return
+
         sock = socket.create_connection((host, port), timeout=timeout)
         sock.close()
 
@@ -82,40 +277,87 @@ class ConnectionTestService:
 
         return candidates
 
-    def _test_netmiko(self, device: Device, password: str, timeout: int) -> Tuple[bool, str]:
+    def _test_netmiko(
+        self,
+        device: Device,
+        password: str,
+        timeout: int,
+        jump_host: Optional[dict] = None,
+    ) -> Tuple[bool, str]:
         if ConnectHandler is None:
             return False, "Netmiko indisponivel no ambiente."
 
         last_error = None
         candidates = self._candidate_device_types(device)
-        for driver in candidates:
-            try:
-                with ConnectHandler(
-                    device_type=driver,
-                    host=device.ip_address,
-                    port=int(device.port or (23 if device.use_telnet else 22)),
-                    username=device.username,
-                    password=password,
-                    conn_timeout=max(timeout, 8),
-                    banner_timeout=max(timeout, 8),
-                    auth_timeout=max(timeout, 8),
-                    fast_cli=False,
-                ):
-                    return True, driver
-            except Exception as exc:
-                last_error = exc
+        jump_client = None
+        try:
+            if jump_host:
+                jump_client = self._open_jump_client(jump_host, max(timeout, 8))
+
+            for driver in candidates:
+                channel = None
+                try:
+                    kwargs = {
+                        "device_type": driver,
+                        "host": device.ip_address,
+                        "port": int(device.port or (23 if device.use_telnet else 22)),
+                        "username": device.username,
+                        "password": password,
+                        "conn_timeout": max(timeout, 8),
+                        "banner_timeout": max(timeout, 8),
+                        "auth_timeout": max(timeout, 8),
+                        "fast_cli": False,
+                    }
+                    if jump_client:
+                        channel = self._open_jump_channel(
+                            jump_client,
+                            device.ip_address,
+                            int(device.port or (23 if device.use_telnet else 22)),
+                            max(timeout, 8),
+                        )
+                        kwargs["sock"] = channel
+                    with ConnectHandler(**kwargs):
+                        return True, driver
+                except Exception as exc:
+                    last_error = exc
+                finally:
+                    try:
+                        if channel is not None:
+                            channel.close()
+                    except Exception:
+                        pass
+        finally:
+            if jump_client:
+                jump_client.close()
 
         return False, str(last_error) if last_error else "Falha de autenticacao via Netmiko."
 
-    def _test_ssh(self, device: Device, password: str, timeout: int) -> None:
+    def _test_ssh(
+        self,
+        device: Device,
+        password: str,
+        timeout: int,
+        jump_host: Optional[dict] = None,
+    ) -> None:
         client = paramiko.SSHClient()
         client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        jump_client = None
+        channel = None
         try:
+            if jump_host:
+                jump_client = self._open_jump_client(jump_host, timeout)
+                channel = self._open_jump_channel(
+                    jump_client,
+                    device.ip_address,
+                    int(device.port or 22),
+                    timeout,
+                )
             client.connect(
                 hostname=device.ip_address,
                 port=device.port or 22,
                 username=device.username,
                 password=password,
+                sock=channel,
                 timeout=timeout,
                 banner_timeout=timeout,
                 auth_timeout=timeout,
@@ -124,6 +366,12 @@ class ConnectionTestService:
             )
         finally:
             client.close()
+            try:
+                if channel is not None:
+                    channel.close()
+            finally:
+                if jump_client is not None:
+                    jump_client.close()
 
     def _test_telnet(self, device: Device, password: str, timeout: int) -> None:
         command = f"telnet {device.ip_address} {device.port or 23}"
@@ -165,16 +413,35 @@ class ConnectionTestService:
         manage_vpn: bool = True,
         timeout: Optional[int] = None,
     ) -> ConnectionTestResult:
-        timeout = int(timeout or self.DEFAULT_TIMEOUT)
+        timeout = int(timeout or self._recommended_timeout(device, group))
         logger = BackupLogger(device.name, verbose=False)
         password = decrypt_password(device.password_encrypted)
-        protocol = "telnet" if device.use_telnet else "ssh"
+        script_name = self._script_name(device)
+        protocol = "http" if script_name == "grafana_backup.py" else ("telnet" if device.use_telnet else "ssh")
         started = time.monotonic()
+        tcp_ok = False
+        jump_host = self._build_jump_host_config(group, device=device)
+        if self._should_bypass_jump_host(device, jump_host):
+            jump_host = None
 
         def _run():
-            self._test_tcp_port(device.ip_address, int(device.port or (23 if device.use_telnet else 22)), timeout)
+            nonlocal tcp_ok
+            if script_name == "grafana_backup.py":
+                ok, msg = self._test_grafana_api(device, timeout)
+                tcp_ok = ok
+                if ok:
+                    return msg
+                raise RuntimeError(msg)
 
-            ok, netmiko_info = self._test_netmiko(device, password, timeout)
+            self._test_tcp_port(
+                device.ip_address,
+                int(device.port or (23 if device.use_telnet else 22)),
+                timeout,
+                jump_host=jump_host,
+            )
+            tcp_ok = True
+
+            ok, netmiko_info = self._test_netmiko(device, password, timeout, jump_host=jump_host)
             if ok:
                 return f"Conexao validada com sucesso (netmiko: {netmiko_info})."
 
@@ -183,7 +450,7 @@ class ConnectionTestService:
                 if device.use_telnet:
                     self._test_telnet(device, password, timeout)
                 else:
-                    self._test_ssh(device, password, timeout)
+                    self._test_ssh(device, password, timeout, jump_host=jump_host)
                 return "Conexao validada com sucesso (fallback)."
             except Exception as exc:
                 fallback_error = str(exc)
@@ -193,7 +460,7 @@ class ConnectionTestService:
             )
 
         try:
-            if group and group.uses_vpn and manage_vpn:
+            if group and uses_vpn_tunnel(group, device=device) and manage_vpn:
                 with vpn_service.vpn_session(group, logger=logger):
                     msg = _run()
             else:
@@ -205,6 +472,7 @@ class ConnectionTestService:
                 message=msg,
                 protocol=protocol,
                 elapsed_ms=elapsed,
+                tcp_ok=tcp_ok,
             )
         except VpnError as exc:
             elapsed = int((time.monotonic() - started) * 1000)
@@ -213,6 +481,7 @@ class ConnectionTestService:
                 message=f"Falha ao preparar VPN: {exc}",
                 protocol=protocol,
                 elapsed_ms=elapsed,
+                tcp_ok=tcp_ok,
             )
         except Exception as exc:
             elapsed = int((time.monotonic() - started) * 1000)
@@ -221,6 +490,7 @@ class ConnectionTestService:
                 message=str(exc) or "Falha de conexao.",
                 protocol=protocol,
                 elapsed_ms=elapsed,
+                tcp_ok=tcp_ok,
             )
 
 

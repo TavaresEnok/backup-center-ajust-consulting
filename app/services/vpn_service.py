@@ -16,6 +16,11 @@ class VpnError(RuntimeError):
 class VpnService:
     LOCK_FILE = os.getenv("VPN_LOCK_FILE", "/app/storage/vpn_global.lock")
     SETTLE_SECONDS = int(os.getenv("VPN_SETTLE_SECONDS", "8"))
+    LOCK_TIMEOUT_SECONDS = max(60, int(os.getenv("VPN_GLOBAL_LOCK_TIMEOUT_SECONDS", "3600") or 3600))
+    NMCLI_BACKEND_RECHECK_SECONDS = max(10, int(os.getenv("VPN_NMCLI_BACKEND_RECHECK_SECONDS", "60") or 60))
+
+    _nmcli_unavailable_until = 0.0
+    _nmcli_unavailable_reason = ""
 
     def _log(self, logger, level: str, message: str):
         if logger and hasattr(logger, level):
@@ -39,9 +44,45 @@ class VpnService:
         key = str(group_id).replace("-", "")[:12]
         return f"group_vpn_{key}"
 
+    def _group_has_vpn_credentials(self, group) -> bool:
+        if not group:
+            return False
+        vpn_server = str(getattr(group, "vpn_server", "") or "").strip()
+        vpn_username = str(getattr(group, "vpn_username", "") or "").strip()
+        return bool(vpn_server and vpn_username and getattr(group, "vpn_password_encrypted", None))
+
     def _ensure_nmcli(self):
         if shutil.which("nmcli") is None:
             raise VpnError("nmcli não encontrado. VPN por L2TP/IPsec indisponível neste worker.")
+        now = time.time()
+        if now < float(self._nmcli_unavailable_until or 0.0):
+            reason = self._nmcli_unavailable_reason or "backend do NetworkManager indisponível."
+            raise VpnError(reason)
+        try:
+            result = self._run_nmcli(
+                ["--terse", "--fields", "RUNNING", "general", "status"],
+                timeout=10,
+                check=False,
+            )
+            output = ((result.stdout or "") + " " + (result.stderr or "")).strip().lower()
+            if result.returncode != 0 or "running" not in output:
+                details = output or f"code={result.returncode}"
+                reason = (
+                    "NetworkManager indisponível neste worker para VPN L2TP/IPsec "
+                    f"(nmcli general status: {details})."
+                )
+                self._nmcli_unavailable_reason = reason
+                self._nmcli_unavailable_until = now + float(self.NMCLI_BACKEND_RECHECK_SECONDS)
+                raise VpnError(reason)
+            self._nmcli_unavailable_until = 0.0
+            self._nmcli_unavailable_reason = ""
+        except VpnError:
+            raise
+        except Exception as exc:
+            reason = f"Falha ao validar backend de VPN no worker: {exc}"
+            self._nmcli_unavailable_reason = reason
+            self._nmcli_unavailable_until = now + float(self.NMCLI_BACKEND_RECHECK_SECONDS)
+            raise VpnError(reason)
 
     def _cleanup_active_vpns(self, keep_connection_name: str, logger=None):
         result = self._run_nmcli(["--terse", "--fields", "NAME,TYPE,STATE", "con", "show", "--active"], check=False)
@@ -100,7 +141,9 @@ class VpnService:
 
     def connect_group_vpn(self, group, logger=None):
         self._ensure_nmcli()
-        if not group or not group.uses_vpn:
+        if not group:
+            return None
+        if not bool(getattr(group, "uses_vpn", False)) and not self._group_has_vpn_credentials(group):
             return None
 
         vpn_server = (group.vpn_server or "").strip()
@@ -158,7 +201,9 @@ class VpnService:
         return conn_name
 
     def disconnect_group_vpn(self, group, logger=None):
-        if not group or not group.uses_vpn:
+        if not group:
+            return
+        if not bool(getattr(group, "uses_vpn", False)) and not self._group_has_vpn_credentials(group):
             return
         conn_name = self._connection_name(group.id)
         self._log(logger, "info", f"Desconectando VPN do grupo '{group.name}' ({conn_name})...")
@@ -170,7 +215,8 @@ class VpnService:
             self._log(logger, "info", f"Aguardando estabilização de VPN ({self.SETTLE_SECONDS}s)...")
             time.sleep(self.SETTLE_SECONDS)
 
-    def acquire_lock(self, timeout_seconds: int = 900):
+    def acquire_lock(self, timeout_seconds: int | None = None):
+        timeout_seconds = max(60, int(timeout_seconds or self.LOCK_TIMEOUT_SECONDS))
         os.makedirs(os.path.dirname(self.LOCK_FILE), exist_ok=True)
         lock_handle = open(self.LOCK_FILE, "w", encoding="utf-8")
         start = time.time()
@@ -196,7 +242,7 @@ class VpnService:
             lock_handle.close()
 
     @contextmanager
-    def vpn_session(self, group, logger=None, timeout_seconds: int = 900):
+    def vpn_session(self, group, logger=None, timeout_seconds: int | None = None):
         lock_handle = None
         try:
             lock_handle = self.acquire_lock(timeout_seconds=timeout_seconds)

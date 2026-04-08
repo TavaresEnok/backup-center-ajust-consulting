@@ -1,9 +1,9 @@
-﻿from flask import Blueprint, render_template, redirect, url_for, request, flash, session, abort
+from flask import Blueprint, render_template, redirect, url_for, request, flash, session, abort
 from app.web.auth.decorators import login_required, tenant_admin_required
 from app.core.database import SessionLocal
 from app.models.tenant import Tenant
 from app.models.user import User, UserRole
-from app.core.security import get_password_hash
+from app.core.security import get_password_hash, validate_password_strength
 from app.services.plan_limits_service import PlanLimitsService
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload
@@ -42,7 +42,7 @@ def list_users(tenant_slug):
 
     users_all = db.query(User).filter(User.tenant_id == tenant.id).all()
     
-    # EstatÃ­sticas
+    # Estatísticas
     stats = {
         'total': len(users_all),
         'admins': sum(1 for u in users_all if u.role in [UserRole.TENANT_OWNER, UserRole.TENANT_ADMIN]),
@@ -77,36 +77,53 @@ def add_user(tenant_slug):
             limit_check = PlanLimitsService.check_can_add_user(db, tenant)
             if not limit_check.allowed:
                 flash(limit_check.reason, 'error')
+                db.close()
                 return redirect(url_for('tenant_users.list_users', tenant_slug=tenant_slug))
 
             email = request.form.get('email')
+            password = request.form.get('password')
+            password_error = validate_password_strength(password)
+            if password_error:
+                flash(password_error, 'error')
+                db.close()
+                return redirect(url_for('tenant_users.add_user', tenant_slug=tenant_slug))
             
-            # Verifica se email jÃ¡ existe
+            # Verifica se email já existe
             existing = db.query(User).filter_by(email=email).first()
             if existing:
-                flash('Este email jÃ¡ estÃ¡ em uso.', 'error')
+                flash('Este e-mail já está em uso.', 'error')
+                db.close()
                 return redirect(url_for('tenant_users.add_user', tenant_slug=tenant_slug))
             
             role_str = request.form.get('role', 'TENANT_TECHNICIAN')
+            if role_str not in UserRole.__members__:
+                flash('Perfil de acesso inválido.', 'error')
+                db.close()
+                return redirect(url_for('tenant_users.add_user', tenant_slug=tenant_slug))
             role = UserRole[role_str]
             
             user = User(
                 tenant_id=tenant.id,
                 email=email,
                 full_name=request.form.get('full_name'),
-                password_hash=get_password_hash(request.form.get('password')),
+                password_hash=get_password_hash(password),
                 role=role,
-                is_active=True
+                is_active=True,
+                must_change_password=True,
+                password_changed_at=None,
             )
             db.add(user)
             db.commit()
-            flash('UsuÃ¡rio criado com sucesso!', 'success')
+            flash('Usuário criado com sucesso!', 'success')
+            db.close()
             return redirect(url_for('tenant_users.list_users', tenant_slug=tenant_slug))
         except Exception as e:
-            flash(f'Erro ao criar usuÃ¡rio: {str(e)}', 'error')
+            flash(f'Erro ao criar usuário: {str(e)}', 'error')
             db.rollback()
-        finally:
             db.close()
+            return redirect(url_for('tenant_users.add_user', tenant_slug=tenant_slug))
+        finally:
+            pass
     
     db.close()
     return render_template(
@@ -144,6 +161,7 @@ def edit_user(tenant_slug, user_id):
                 limit_check = PlanLimitsService.check_can_add_user(db, tenant)
                 if not limit_check.allowed:
                     flash(limit_check.reason, 'error')
+                    db.close()
                     return render_template(
                         'tenant/users/edit.html',
                         tenant=tenant,
@@ -157,18 +175,42 @@ def edit_user(tenant_slug, user_id):
             
             role_str = request.form.get('role')
             if role_str:
+                if role_str not in UserRole.__members__:
+                    flash('Perfil de acesso inválido.', 'error')
+                    db.close()
+                    return redirect(url_for('tenant_users.edit_user', tenant_slug=tenant_slug, user_id=user_id))
                 user.role = UserRole[role_str]
             
             password = request.form.get('password')
             if password:
+                password_error = validate_password_strength(password)
+                if password_error:
+                    flash(password_error, 'error')
+                    db.close()
+                    return render_template(
+                        'tenant/users/edit.html',
+                        tenant=tenant,
+                        user=user,
+                        UserRole=UserRole
+                    )
                 user.password_hash = get_password_hash(password)
+                user.must_change_password = True
+                user.password_changed_at = None
             
             db.commit()
-            flash('UsuÃ¡rio atualizado com sucesso!', 'success')
+            flash('Usuário atualizado com sucesso!', 'success')
+            db.close()
             return redirect(url_for('tenant_users.list_users', tenant_slug=tenant_slug))
+        except IntegrityError:
+            db.rollback()
+            flash('Este e-mail já está em uso por outro usuário.', 'error')
+            db.close()
+            return redirect(url_for('tenant_users.edit_user', tenant_slug=tenant_slug, user_id=user_id))
         except Exception as e:
             flash(f'Erro ao atualizar: {str(e)}', 'error')
             db.rollback()
+            db.close()
+            return redirect(url_for('tenant_users.edit_user', tenant_slug=tenant_slug, user_id=user_id))
     
     db.close()
     return render_template(
@@ -191,31 +233,30 @@ def delete_user(tenant_slug, user_id):
     try:
         user_uuid = uuid.UUID(user_id)
     except ValueError:
-        flash('ID de usuÃ¡rio invÃ¡lido', 'error')
+        flash('ID de usuário inválido', 'error')
         return redirect(url_for('tenant_users.list_users', tenant_slug=tenant_slug))
     
     user = db.query(User).filter_by(id=user_uuid).first()
     if not user or str(user.tenant_id) != str(tenant.id):
-        flash('UsuÃ¡rio nÃ£o encontrado', 'error')
+        flash('Usuário não encontrado', 'error')
         db.close()
         return redirect(url_for('tenant_users.list_users', tenant_slug=tenant_slug))
 
     current_user_id = session.get('user_id')
     if current_user_id and str(user.id) == str(current_user_id):
-        flash('NÃ£o Ã© permitido remover o usuÃ¡rio logado.', 'error')
+        flash('Não é permitido remover o usuário logado.', 'error')
         db.close()
         return redirect(url_for('tenant_users.list_users', tenant_slug=tenant_slug))
 
     try:
         db.delete(user)
         db.commit()
-        flash('UsuÃ¡rio removido com sucesso!', 'success')
+        flash('Usuário removido com sucesso!', 'success')
     except IntegrityError:
         db.rollback()
         user.is_active = False
         db.commit()
-        flash('UsuÃ¡rio possui histÃ³rico vinculado. Foi desativado em vez de removido.', 'warning')
+        flash('Usuário possui histórico vinculado. Foi desativado em vez de removido.', 'warning')
     
     db.close()
     return redirect(url_for('tenant_users.list_users', tenant_slug=tenant_slug))
-

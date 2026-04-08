@@ -226,6 +226,7 @@ def list_schedules(tenant_slug):
         "total_active_devices": len(active_devices),
         "with_schedule": with_schedule,
         "without_schedule": without_schedule,
+        "queue_disabled": 0,
         "default_daily_time": default_daily_time,
     }
 
@@ -254,6 +255,7 @@ def list_schedules(tenant_slug):
         .order_by(Device.name.asc())
     )
     missing_auto_total = missing_auto_query.count()
+    schedule_overview["queue_disabled"] = missing_auto_total
     missing_auto_total_pages = (missing_auto_total + missing_per_page - 1) // missing_per_page if missing_auto_total > 0 else 1
     if missing_page > missing_auto_total_pages:
         missing_page = missing_auto_total_pages
@@ -339,6 +341,49 @@ def apply_daily_schedule(tenant_slug):
         flash(f'Agendamento diario {time_str} aplicado para {affected} dispositivos sem rotina ativa.', 'success')
     else:
         flash(f'Agendamento diario {time_str} aplicado para {affected} dispositivos ativos.', 'success')
+    return redirect(_resolve_return_url(tenant_slug, return_to))
+
+
+@bp.route('/enable-backup-queue', methods=['POST'])
+@login_required
+@tenant_admin_required
+def enable_backup_queue_all(tenant_slug):
+    db, tenant = get_db_and_tenant(tenant_slug)
+    if not tenant:
+        db.close()
+        return "Tenant not found", 404
+
+    return_to = (request.form.get('return_to') or '').strip()
+
+    devices = db.query(Device).filter(
+        Device.tenant_id == tenant.id,
+        Device.is_active == True,
+        Device.backup_scheduled == False,
+    ).all()
+
+    if not devices:
+        db.close()
+        flash('Todos os dispositivos ativos ja estao com a fila de backup habilitada.', 'info')
+        return redirect(_resolve_return_url(tenant_slug, return_to))
+
+    affected = 0
+    for device in devices:
+        device.backup_scheduled = True
+        affected += 1
+
+    user_id = session.get('user_id')
+    ActivityService.log_action(
+        db,
+        tenant.id,
+        user_id,
+        "BULK_BACKUP_QUEUE_ENABLE",
+        f"Fila de backup habilitada para {affected} dispositivos ativos.",
+        request.remote_addr,
+    )
+
+    db.commit()
+    db.close()
+    flash(f'Fila de backup habilitada para {affected} dispositivos ativos.', 'success')
     return redirect(_resolve_return_url(tenant_slug, return_to))
 
 

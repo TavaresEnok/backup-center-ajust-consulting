@@ -4,7 +4,7 @@ import time
 
 import pexpect
 
-from script_helpers import BackupLogger, prepare_backup_path
+from script_helpers import BackupLogger, prepare_backup_path, open_pexpect_session, close_pexpect_session
 
 PROMPT_ANY_LINE = r"(?m)^(?:<[^>\r\n]+>|\S+[>#\]])\s*$"
 PAGER_RE = r"--More--|---- More ----|\[More\]|<--- More --->|Press any key|\s+More\s*\( Press 'Q' to break \)"
@@ -26,7 +26,6 @@ def _ssh_command(ip: str, usuario: str, porta: int) -> str:
         "-o UserKnownHostsFile=/dev/null "
         "-o ConnectTimeout=25 "
         "-o HostKeyAlgorithms=+ssh-rsa,ssh-dss "
-        "-o PubkeyAcceptedAlgorithms=+ssh-rsa,ssh-dss "
         "-o KexAlgorithms=+diffie-hellman-group1-sha1,diffie-hellman-group14-sha1 "
         "-o Ciphers=+aes128-cbc,3des-cbc "
         f"{usuario}@{ip} -p {int(porta)}"
@@ -161,6 +160,7 @@ def realizar_backup(
     use_telnet = bool(parametros.get("use_telnet") or kwargs.get("use_telnet") or kwargs.get("usar_telnet"))
     enable_password = parametros.get("enable_password")
     secrets = [enable_password, password, usuario]
+    jump_host = kwargs.get("jump_host") or parametros.get("jump_host") or None
 
     command = f"telnet {ip} {int(porta)}" if use_telnet else _ssh_command(ip, usuario, porta)
     backup_path = prepare_backup_path(backup_base_path, nome_provedor, nome_tipo_equip, nome_dispositivo, "cfg")
@@ -168,7 +168,14 @@ def realizar_backup(
     child = None
     try:
         logger.emit(f"Etapa 1/3: Conectando {'TELNET' if use_telnet else 'SSH'}...")
-        child = pexpect.spawn(command, timeout=35, encoding="utf-8", codec_errors="ignore")
+        child = open_pexpect_session(
+            command,
+            jump_host=jump_host,
+            timeout=35,
+            encoding="utf-8",
+            codec_errors="ignore",
+            logger=logger,
+        )
 
         if not _login(child, usuario, password, timeout=28):
             msg = "A conexao foi fechada ou as credenciais estao incorretas."
@@ -233,5 +240,4 @@ def realizar_backup(
         logger.emit(msg, "error")
         return (False, msg, None, "SCRIPT")
     finally:
-        if child and child.isalive():
-            child.close(force=True)
+        close_pexpect_session(child)

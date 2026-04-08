@@ -32,6 +32,8 @@ class User(Base, TimestampMixin):
     email_verified = Column(Boolean, default=False)
     totp_secret = Column(String(32), nullable=True)  # 2FA
     last_login = Column(DateTime, nullable=True)
+    must_change_password = Column(Boolean, default=False, nullable=False)
+    password_changed_at = Column(DateTime, nullable=True)
     
     # Relationships
     tenant = relationship('Tenant', back_populates='users')

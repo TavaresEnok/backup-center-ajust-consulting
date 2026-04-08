@@ -305,10 +305,23 @@
                         action="{{ url_for('tenant_groups.run_backup_all', tenant_slug=tenant.slug, group_id=g.group.id) }}"
                         method="POST" class="inline">
                         {% include 'partials/csrf.html' %}
+                        <input type="hidden" name="include_unscheduled" value="1">
                         <button type="submit"
                             onclick="return confirm('Executar backup de {{ g.device_count }} dispositivos deste grupo?')"
                             class="action-btn success" title="Backup de Todos">
                             <i data-lucide="play" class="w-4 h-4"></i>
+                        </button>
+                    </form>
+                    {% endif %}
+                    {% if g.group.uses_vpn %}
+                    <form
+                        id="form-test-vpn-group-{{ g.group.id }}"
+                        action="{{ url_for('tenant_groups.test_group_vpn', tenant_slug=tenant.slug, group_id=g.group.id) }}"
+                        method="POST" class="inline">
+                        {% include 'partials/csrf.html' %}
+                        <button type="button" data-run-backup-live data-form-id="form-test-vpn-group-{{ g.group.id }}"
+                            class="action-btn" title="Testar VPN">
+                            <i data-lucide="shield-check" class="w-4 h-4"></i>
                         </button>
                     </form>
                     {% endif %}

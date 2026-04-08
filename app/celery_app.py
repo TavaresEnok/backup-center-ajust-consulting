@@ -9,14 +9,17 @@ Para iniciar o beat scheduler (tarefas periÃ³dicas):
 """
 
 from celery import Celery
+from celery.signals import worker_process_init, worker_process_shutdown
 from celery.schedules import crontab
 from kombu import Queue
 import os
 from app.core.logging_config import setup_logging
 from app.services.billing_policy_service import BillingPolicyService
+from app.services.device_subgroup_service import DeviceSubgroupService
 
 setup_logging()
 BillingPolicyService.ensure_schema()
+DeviceSubgroupService.ensure_schema()
 
 # ConfiguraÃ§Ã£o do broker (Redis)
 REDIS_URL = os.environ.get('REDIS_URL', 'redis://localhost:6379/0')
@@ -26,9 +29,11 @@ APP_TIMEZONE = os.environ.get('APP_TIMEZONE', 'America/Recife')
 # Alguns backups (especialmente grupos VPN) podem ultrapassar 5 minutos.
 _task_time_limit_env = str(os.environ.get('CELERY_TASK_TIME_LIMIT', '')).strip()
 _task_soft_time_limit_env = str(os.environ.get('CELERY_TASK_SOFT_TIME_LIMIT', '')).strip()
+_result_expires_env = str(os.environ.get('CELERY_RESULT_EXPIRES_SECONDS', '86400')).strip()
 
 TASK_TIME_LIMIT = int(_task_time_limit_env) if _task_time_limit_env.isdigit() else None
 TASK_SOFT_TIME_LIMIT = int(_task_soft_time_limit_env) if _task_soft_time_limit_env.isdigit() else None
+RESULT_EXPIRES = int(_result_expires_env) if _result_expires_env.isdigit() else 86400
 
 # Cria instÃ¢ncia do Celery
 celery_app = Celery(
@@ -49,7 +54,7 @@ celery_app.conf.update(
     task_time_limit=TASK_TIME_LIMIT,
     task_soft_time_limit=TASK_SOFT_TIME_LIMIT,
     worker_prefetch_multiplier=1,
-    result_expires=3600,  # Resultados expiram em 1 hora
+    result_expires=RESULT_EXPIRES,
     task_default_queue='celery',
     task_queues=(
         Queue('celery'),
@@ -59,6 +64,28 @@ celery_app.conf.update(
         'app.tasks.backups.run_vpn_group_backups_task': {'queue': 'vpn_queue'},
     },
 )
+
+
+@worker_process_init.connect
+def _dispose_db_pool_on_fork(**_kwargs):
+    """
+    Evita reuso de conexoes herdadas no prefork do Celery.
+    Isso reduz erros intermitentes de libpq/SQLAlchemy sob carga.
+    """
+    try:
+        from app.core.database import engine
+        engine.dispose(close=False)
+    except Exception:
+        pass
+
+
+@worker_process_shutdown.connect
+def _dispose_db_pool_on_worker_shutdown(**_kwargs):
+    try:
+        from app.core.database import engine
+        engine.dispose()
+    except Exception:
+        pass
 
 # Tarefas periÃ³dicas (Celery Beat)
 celery_app.conf.beat_schedule = {

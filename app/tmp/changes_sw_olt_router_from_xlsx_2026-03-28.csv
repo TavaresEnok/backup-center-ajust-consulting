@@ -1,0 +1,45 @@
+device_id,name,group,type,match_reason,from_ip,to_ip,from_port,to_port,from_user,to_user,from_telnet,to_telnet,payload_kind
+136e5c3c-497b-4f43-b177-3805eb7dad74,SW-BKB-TIMBAUBA,PlanaltoNet,Switch Huawei,ip+kind,10.200.60.1,10.200.60.1,23,22,ajust,ajust,True,False,switch
+35bd7004-9337-46d4-9923-7be2c7b7fc05,SW-BKB-ALIANCA,PlanaltoNet,Switch Huawei,ip+kind,10.200.90.1,10.200.90.1,23,22,ajust,ajust,True,False,switch
+c2bf9a88-8a5f-434a-9830-393020ffbf56,SW-BKB-PAUDALHO,PlanaltoNet,Switch Huawei,ip+kind,10.200.70.1,10.200.70.1,23,22,ajust,ajust,True,False,switch
+0b27d642-8805-4397-afbf-db266ae9d436,OLT-MANGUEIRINHA-HUAWEI,Ponte Digital,OLT Huawei,ip+kind,170.80.49.76,170.80.49.76,22,23,root,ajustconsulting,False,True,olt
+d9b8360a-5334-4479-b087-7a8cd537fe8d,SW-POP-CAJA03,PlanaltoNet,Switch Huawei,ip+kind,10.10.10.1,10.10.10.1,23,22,ajust,ajust,True,False,switch
+b704c10a-7cb9-46ce-ae75-14e71a66a3ff,SW-BKB-NAZARE,PlanaltoNet,Switch Huawei,ip+kind,10.200.40.1,10.200.40.1,23,22,ajust,ajust,True,False,switch
+e50e2b4e-7602-41c4-8e9d-4793a5f3fba6,SW-BKB-VARZEA,PlanaltoNet,Switch Huawei,ip+kind,10.200.80.1,10.200.80.1,23,22,ajust,ajust,True,False,switch
+781131f7-5f15-4c74-bcdd-a36f4d373352,OLT EPON VSOL,UltraFibra,OLT VSOL,ip+kind,45.186.54.32,45.186.54.32,23,45100,admin,admin,True,True,olt
+b9cd2157-f18d-45f8-a0e4-188eeb7bb6c6,SW-POP-3MARIAS,PlanaltoNet,Switch Huawei,ip+kind,10.10.30.1,10.10.30.1,23,22,ajust,ajust,True,False,switch
+b2540db7-d509-4c6a-83a8-558500a56567,SW-3064-DATACENTER,PlanaltoNet,Switch Cisco,ip+kind,10.12.255.250,10.12.255.250,23,22,ajust,ajust,True,False,switch
+b6fada04-dbab-4b93-85fd-1264826933a8,OLT-HUAWEI-GAIBU,Ponte Digital,OLT Huawei,ip+kind,170.80.49.78,170.80.49.78,22,23,equipeti,equipeti,False,True,olt
+025a6105-e995-4401-9999-8b5ff0f29aec,HUAWEI-WELLFIBRA 01,Well Fibra,OLT Huawei,ip+kind,190.89.145.21,190.89.145.21,23331,23332,sgpsgp,root,True,True,olt
+1d01a914-f3ce-4c70-9930-f9bedfebb8b8,UP CONNECT FIBRA - OLT HW - SAN MARTIN,UP Connect Fibra,OLT Huawei,name_unique,172.19.50.2,172.19.50.2,23,23,sgpacesso,ajustcon,True,True,olt
+375cf3a6-2467-43c6-825f-8e1da084da9f,OLT Huawei-Flashnet,Grupo FlashNet ( IBTelecom ),OLT Huawei,ip+kind,170.79.170.154,170.79.170.154,23051,23088,sgpacesso,sgpacesso,True,True,olt
+3627fa26-902c-466c-8856-b8505b1d0a6b,OLT-OLD_RioNet_Rio Doce,I4 Telecom,OLT Huawei,ip+kind,45.187.170.54,45.187.170.54,23,23088,sgpsgp,ajustconsulting,True,True,olt
+5cef2faf-ef09-400f-b107-a237635a07ec,SW-BKB-LAGOA-DO-CARRO,PlanaltoNet,Switch Huawei,ip+kind,10.200.20.1,10.200.20.1,23,22,ajust,ajust,True,False,switch
+c46283ef-418b-4f2a-94ba-fdaba811e559,PIX FIBRA - SW HW 5732 - IBURA DE BAIXO,Pix Fibra,Switch Huawei,ip+kind,10.31.255.34,10.31.255.34,22,22,ajust@emfibra,luciano,False,False,switch
+98930937-bb34-4a02-bffa-38ebf0bcbae1,OLT HUAWEI - CENTRO,Um Fibra,OLT Huawei,ip+kind,10.40.39.11,10.40.39.11,23,22,root,sgp-radius,True,False,olt
+0963a4e7-a40d-4c86-947b-9a8c19f9d4ca,OLT-VSOL-PASSARINHO-TELNET,GL Soluções,OLT VSOL,ip+kind,45.191.104.10,45.191.104.10,8313,2323,ajust,sgphftel,True,True,olt
+6d76c736-ef1d-439f-bfd3-7d2c8c82cfda,PE-POP-ABREU,Navega Net,OLT Huawei,ip+kind,160.19.44.162,160.19.44.162,23,23088,root,ajustconsulting,True,True,olt
+9990ca58-5844-4a49-b3db-be995472e0b2,SW-POP-FIBERHOME02,PlanaltoNet,Switch Huawei,ip+kind,10.200.60.1,10.200.60.1,23,22,ajust,ajust,True,False,switch
+87f73baa-2347-4ade-9c02-8a6124d6af04,OLT HUAWEI X17 CAETES 1,Conect Fibra,OLT Huawei,ip+kind,45.5.88.50,45.5.88.50,23,23088,sgpolt,sgpolt,True,True,olt
+0e48e43f-6081-45e1-82d1-1bdabeb07084,SW-BKB-CARPINA,PlanaltoNet,Switch Huawei,ip+kind,10.200.10.1,10.200.10.1,23,22,ajust,ajust,True,False,switch
+b2040d39-65b7-4d53-a2bf-d17fcff2eef5,OLT Huawei POP Maranguape - Fox UP,Meganet,OLT Huawei,ip+kind,45.176.57.90,45.176.57.90,23,23088,foxfox,foxfox,True,True,olt
+0c653998-af03-4cfb-999f-fc55d76404b5,OLT-OLD_i4Telecom_Ouro Preto,I4 Telecom,OLT Huawei,ip+kind,45.187.168.30,45.187.168.30,23519,23088,sgpsgp,sgpsgp,True,True,olt
+07ada5d5-5747-4241-a1cd-1d5b16520428,OLT-VSOL-POP-NOVA-OLINDA,GL Soluções,OLT VSOL,ip+kind,45.191.104.10,45.191.104.10,8323,2323,ajust,sgphftel,False,True,olt
+1a007de8-b839-40a1-be28-8ed5d6a74410,OLT-OLD_RioNet_Casa Caiada,I4 Telecom,OLT Huawei,ip+kind,45.187.170.10,45.187.170.10,23,23088,sgpsgp,ajustconsulting,True,True,olt
+e10d6216-d6d5-4149-8576-ba91caead79f,OLT-HUAWEI-SEBASTIÃO AMARAL,SofiaNet,OLT Huawei,ip+kind,128.201.156.218,128.201.156.218,23,23088,sgpolt,ajustconsulting,True,True,olt
+09dc146c-792f-45ad-bfc0-4afa0ad6bd5c,OLT Huawei-Aurora,Grupo FlashNet ( IBTelecom ),OLT Huawei,ip+kind,170.79.170.150,170.79.170.150,23777,23088,sgpsgp,ajustconsulting,True,True,olt
+f0d4272f-4231-4517-bebe-e02be8a756e9,OLT-VSOL-AURORA-16P,InsNet,OLT VSOL,ip+kind,45.160.221.253,45.160.221.253,2334,2235,SGP,ajustconsulting,False,False,olt
+f8059742-fb79-4231-8630-ad0f4fcaf8e0,OLT HUAWEI X7,Real Net,OLT Huawei,ip+kind,45.234.9.16,45.234.9.16,50022,50023,root,admin,False,True,olt
+ae1242e2-6751-4011-83b3-385a80bd9c97,OLT-OLD_i4Telecom_Peixinhos,I4 Telecom,OLT Huawei,ip+kind,45.187.168.46,45.187.168.46,23051,23088,sgpsgp,ajustconsulting,True,True,olt
+b3bc3b0f-f58d-4f25-a76f-8c3042c2b67b,OLT HUAWEI - CASA FORTE,Um Fibra,OLT Huawei,ip+kind,10.40.39.14,10.40.39.14,23,22,spotpf,sgp-radius,True,False,olt
+234dbe0b-f706-4300-82d8-f866620df174,SWITCH - HUAWEI 6730,TC+ Fibra (Agility),Switch Huawei,ip+kind,164.163.20.78,164.163.20.78,2295,2296,arthur,ajustconsulting,False,False,switch
+2e7a2039-1791-4569-aa0f-87472c8e7706,ACESSO OLT VSOL TABAJARA,GL Soluções,OLT VSOL,ip+kind,45.191.104.10,45.191.104.10,8223,2323,ajust,sgphftel,True,True,olt
+5de4907a-53bc-4dc1-9d6f-9407e9f6a1d3,SW-BKB-LIMOEIRO,PlanaltoNet,Switch Huawei,ip+kind,10.200.50.1,10.200.50.1,23,22,ajust,ajust,True,False,switch
+2c7d6481-3bf4-4299-bcc1-8332085e481e,PE-POP-CAETES,Navega Net,OLT Huawei,ip+kind,160.19.44.26,160.19.44.26,23032,23088,sgpsgp,ajustconsulting,True,True,olt
+e4d1b324-b623-43e7-bc95-6332ec76dbec,SW-BKB-LAGOA-DO-CARRO,PlanaltoNet,Switch Huawei,ip+kind,10.200.20.1,10.200.20.1,23,22,ajust,ajust,True,False,switch
+090dad35-e475-44fd-b0a8-70296f77dc0c,OLT VSOL CLEONTE NET,GL Soluções,OLT VSOL,ip+kind,45.191.104.10,45.191.104.10,2395,2323,gl,sgphftel,True,True,olt
+834c7f44-d39f-468a-b02a-87e5e3302ce8,SW-BKB-TRACUNHAEM,PlanaltoNet,Switch Huawei,ip+kind,10.200.30.1,10.200.30.1,23,22,ajust,ajust,True,False,switch
+dfc98892-8632-4534-998e-a2312d8b6abc,SWITCH HUAWEI 5700 MURO ALTO,Rio Net,Switch Huawei,ip+kind,45.162.224.126,45.162.224.126,22743,22022,ajust,rionet,False,False,switch
+51e3bae0-0574-4d03-a87a-7cd43c928ee4,OLT-GLSOLUCOES,GL Soluções,OLT Huawei,ip+kind,45.191.104.54,45.191.104.54,23,23088,glsolucoes,glsolucoes,True,True,olt
+976d0e41-6b43-4b85-9c8c-a9c44b756a0f,OLT Huawei-Vila-Torres-Galvão,Grupo FlashNet ( IBTelecom ),OLT Huawei,ip+kind,170.79.168.134,170.79.168.134,23051,23088,sgpacesso,sgpacesso,True,True,olt
+c5ef209d-3aa1-44ff-ac64-9b6e707c4fe4,OLT Huawei-Beira-mar,Grupo FlashNet ( IBTelecom ),OLT Huawei,ip+kind,170.79.170.138,170.79.170.138,23,23088,sgpacesso,ajustconsulting,True,True,olt

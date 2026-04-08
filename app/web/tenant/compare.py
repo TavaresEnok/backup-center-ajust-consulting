@@ -1,4 +1,4 @@
-﻿from flask import Blueprint, render_template, request, redirect, url_for, flash, session, abort
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session, abort
 from app.web.auth.decorators import login_required
 from app.core.database import SessionLocal
 from app.models.tenant import Tenant
@@ -187,7 +187,7 @@ def select_device(tenant_slug):
 @bp.route('/<device_id>', methods=['GET', 'POST'])
 @login_required
 def compare_backups(tenant_slug, device_id):
-    """Tela de comparaÃ§Ã£o de backups de um dispositivo especÃ­fico."""
+    """Tela de comparação de backups de um dispositivo específico."""
     if session.get('user_role') != UserRole.SUPER_ADMIN.value and session.get('tenant_slug') != tenant_slug:
         abort(403)
     db = SessionLocal()
@@ -200,7 +200,7 @@ def compare_backups(tenant_slug, device_id):
     
     if not device:
         db.close()
-        flash('Dispositivo nÃ£o encontrado.', 'error')
+        flash('Dispositivo não encontrado.', 'error')
         return redirect(url_for('tenant_compare.select_device', tenant_slug=tenant_slug))
 
     total_backups_count = db.query(func.count(Backup.id)).filter(Backup.device_id == device.id).scalar() or 0

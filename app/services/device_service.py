@@ -66,6 +66,7 @@ class DeviceService:
         db: Session,
         tenant_id: uuid.UUID,
         group_id: uuid.UUID = None,
+        subgroup_filter=None,
         search_query: str = None,
         connection_filter: str = None,
         auto_filter: str = None,
@@ -80,11 +81,18 @@ class DeviceService:
         """Return paginated devices for a tenant with basic aggregates."""
         query = db.query(Device).options(
             joinedload(Device.type),
-            joinedload(Device.group)
+            joinedload(Device.group),
+            joinedload(Device.subgroup),
         ).filter(Device.tenant_id == tenant_id, Device.is_active.isnot(False))
         
         if group_id:
             query = query.filter(Device.group_id == group_id)
+
+        if subgroup_filter is not None:
+            if isinstance(subgroup_filter, str) and subgroup_filter.lower() in {"none", "__none__"}:
+                query = query.filter(Device.subgroup_id.is_(None))
+            elif isinstance(subgroup_filter, uuid.UUID):
+                query = query.filter(Device.subgroup_id == subgroup_filter)
             
         if search_query:
             search_query = f"%{search_query}%"
@@ -188,7 +196,8 @@ class DeviceService:
     def get_device(db: Session, device_id: uuid.UUID) -> Optional[Device]:
         return db.query(Device).options(
             joinedload(Device.type),
-            joinedload(Device.group)
+            joinedload(Device.group),
+            joinedload(Device.subgroup),
         ).filter(Device.id == device_id).first()
 
     @staticmethod
@@ -202,7 +211,8 @@ class DeviceService:
     def get_devices_scheduled_for_backup(db: Session, tenant_id: uuid.UUID = None) -> List[Device]:
         query = db.query(Device).options(
             joinedload(Device.type),
-            joinedload(Device.group)
+            joinedload(Device.group),
+            joinedload(Device.subgroup),
         ).filter(Device.backup_scheduled == True, Device.is_active.isnot(False))
         
         if tenant_id:

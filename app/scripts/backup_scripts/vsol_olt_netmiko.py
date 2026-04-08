@@ -1,7 +1,43 @@
 from typing import Tuple
 import re
 import pexpect
-from script_helpers import BackupLogger, prepare_backup_path
+from script_helpers import BackupLogger, prepare_backup_path, open_pexpect_session, close_pexpect_session
+
+CONNECTION_MARKERS = (
+    "timeout",
+    "timed out",
+    "connection refused",
+    "unable to connect",
+    "no route to host",
+    "network is unreachable",
+    "error reading ssh protocol banner",
+    "timeout opening channel",
+    "sessao com jump host encerrada",
+    "sessão com jump host encerrada",
+    "jump host",
+    "jump_session_closed",
+)
+
+AUTH_MARKERS = (
+    "authentication failed",
+    "netmikoauthenticationexception",
+    "senha",
+    "password",
+    "credenciais",
+    "usuario",
+    "usuário",
+)
+
+
+def _failure_category_from_reason(reason: str | None) -> str:
+    text = str(reason or "").strip().lower()
+    if not text:
+        return "SCRIPT"
+    if any(marker in text for marker in CONNECTION_MARKERS):
+        return "CONEXAO"
+    if any(marker in text for marker in AUTH_MARKERS):
+        return "AUTENTICACAO"
+    return "SCRIPT"
 
 
 def _ssh_command(ip: str, usuario: str, porta: int) -> str:
@@ -11,7 +47,6 @@ def _ssh_command(ip: str, usuario: str, porta: int) -> str:
         "-o UserKnownHostsFile=/dev/null "
         "-o ConnectTimeout=20 "
         "-o HostKeyAlgorithms=+ssh-rsa,ssh-dss "
-        "-o PubkeyAcceptedAlgorithms=+ssh-rsa,ssh-dss "
         "-o KexAlgorithms=+diffie-hellman-group1-sha1,diffie-hellman-group14-sha1 "
         "-o Ciphers=+aes128-cbc,3des-cbc "
         f"{usuario}@{ip} -p {porta}"
@@ -106,46 +141,63 @@ def realizar_backup(
         return (False, msg, None, "CONFIGURACAO")
 
     use_telnet = bool(parametros.get("use_telnet") or kwargs.get("use_telnet") or kwargs.get("usar_telnet"))
+    jump_host = kwargs.get("jump_host") or parametros.get("jump_host") or None
     prompt_regex = r"\S+[>#]\s*$|<[^>]+>"
 
     child_test = None
     try:
         logger.emit(f"Etapa 1/4: Testando conexão {'TELNET' if use_telnet else 'SSH'}...")
-        if use_telnet:
-            child_test = pexpect.spawn(f"telnet {ip} {porta}", timeout=25, encoding="utf-8", codec_errors="ignore")
-        else:
-            child_test = pexpect.spawn(_ssh_command(ip, usuario, porta), timeout=25, encoding="utf-8", codec_errors="ignore")
+        command = f"telnet {ip} {porta}" if use_telnet else _ssh_command(ip, usuario, porta)
+        child_test = open_pexpect_session(
+            command,
+            jump_host=jump_host,
+            timeout=25,
+            encoding="utf-8",
+            codec_errors="ignore",
+            logger=logger,
+        )
 
         prompt = _open_and_login(child_test, usuario, password, timeout=25)
         if re.search(r">\s*$", prompt or ""):
             _enter_enable(child_test, prompt_regex, enable_password, timeout=20)
         logger.emit("Teste de conexão e 'enable' bem-sucedido.", "success")
     except Exception as exc:
+        category = _failure_category_from_reason(str(exc))
         raw_tail = ""
         try:
             raw_tail = (child_test.before or "")[-200:].replace("\n", " ").replace("\r", " ")
         except Exception:
             raw_tail = ""
-        msg = (
-            "A conexão foi fechada, recusada ou as credenciais estão incorretas. "
-            f"Detalhe: {type(exc).__name__}: {str(exc)[:220]}"
-        )
+        if category == "CONEXAO":
+            msg = (
+                "Falha de conectividade com o dispositivo. "
+                f"Detalhe: {type(exc).__name__}: {str(exc)[:220]}"
+            )
+        else:
+            msg = (
+                "A conexão foi fechada, recusada ou as credenciais estão incorretas. "
+                f"Detalhe: {type(exc).__name__}: {str(exc)[:220]}"
+            )
         if raw_tail:
             msg = f"{msg} | resposta={raw_tail}"
         logger.emit(msg, "error")
-        return (False, msg, None, "AUTENTICACAO")
+        return (False, msg, None, category)
     finally:
-        if child_test and child_test.isalive():
-            child_test.close(force=True)
+        close_pexpect_session(child_test)
 
     caminho_local = prepare_backup_path(backup_base_path, nome_provedor, nome_tipo_equip, nome_dispositivo, "cfg")
     child = None
     try:
         logger.emit("Etapa 2/4: Reconectando para realizar o backup...")
-        if use_telnet:
-            child = pexpect.spawn(f"telnet {ip} {porta}", timeout=45, encoding="utf-8", codec_errors="ignore")
-        else:
-            child = pexpect.spawn(_ssh_command(ip, usuario, porta), timeout=45, encoding="utf-8", codec_errors="ignore")
+        command = f"telnet {ip} {porta}" if use_telnet else _ssh_command(ip, usuario, porta)
+        child = open_pexpect_session(
+            command,
+            jump_host=jump_host,
+            timeout=45,
+            encoding="utf-8",
+            codec_errors="ignore",
+            logger=logger,
+        )
 
         prompt = _open_and_login(child, usuario, password, timeout=30)
         if re.search(r">\s*$", prompt or ""):
@@ -167,9 +219,12 @@ def realizar_backup(
         logger.emit(msg, "success")
         return (True, msg, caminho_local)
     except Exception as exc:
-        error_msg = f"Falha inesperada durante o backup: {exc}"
+        category = _failure_category_from_reason(str(exc))
+        if category == "CONEXAO":
+            error_msg = f"Falha de conectividade com o dispositivo. Detalhe: {exc}"
+        else:
+            error_msg = f"Falha inesperada durante o backup: {exc}"
         logger.emit(error_msg, "error")
-        return (False, error_msg, None, "SCRIPT")
+        return (False, error_msg, None, category)
     finally:
-        if child and child.isalive():
-            child.close(force=True)
+        close_pexpect_session(child)

@@ -15,6 +15,7 @@ class Device(Base, TimestampMixin):
     
     # Group (optional - for organization by provider/location)
     group_id = Column(UUID(as_uuid=True), ForeignKey('device_groups.id'), nullable=True)
+    subgroup_id = Column(UUID(as_uuid=True), ForeignKey('device_subgroups.id'), nullable=True)
     
     # Device Type (links to global DeviceType)
     device_type_id = Column(UUID(as_uuid=True), ForeignKey('device_types.id'), nullable=True)
@@ -54,6 +55,7 @@ class Device(Base, TimestampMixin):
     # Relationships
     tenant = relationship('Tenant', back_populates='devices')
     group = relationship('DeviceGroup', back_populates='devices')
+    subgroup = relationship('DeviceSubgroup', back_populates='devices')
     type = relationship('DeviceType', back_populates='devices')
     backups = relationship('Backup', back_populates='device', cascade='all, delete-orphan')
     schedules = relationship('Schedule', back_populates='device', cascade='all, delete-orphan')
@@ -62,6 +64,7 @@ class Device(Base, TimestampMixin):
     __table_args__ = (
         Index('idx_device_tenant', 'tenant_id'),
         Index('idx_device_group', 'group_id'),
+        Index('idx_device_subgroup', 'subgroup_id'),
         Index('idx_device_ip', 'ip_address'),
         Index('idx_device_type', 'device_type_id'),
     )

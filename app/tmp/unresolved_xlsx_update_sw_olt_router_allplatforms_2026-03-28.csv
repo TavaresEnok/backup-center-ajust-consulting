@@ -1,0 +1,218 @@
+device_id,name,group,type,ip_address,port,username,name_matches,ip_kind_matches
+0e2cc98c-116a-48e0-9cb4-1ee62f9d5f07,SW-HUAWEI-CENTRAL-CONECT-NOVO,Conect Fibra,Switch Huawei,45.5.88.78,22459,ajust,0,0
+c14b14f7-1941-48f6-8ad5-156a42541ff6,AUTENTICADOR -  1009 - UPATININGA,LL Telecom - Cliente Cancelado,MikroTik RouterOS,189.84.114.244,15424,ajust,0,0
+ff9e98e7-ebc4-4240-94a2-c60e8675c0fa,PE 02 POP PAU AMARELO,I4 Telecom,MikroTik RouterOS,45.187.169.228,15422,ajust,0,2
+41672f58-6032-4f87-8bc0-faf4f8c37a9c,CCR1072-GERENCIA-WELLNET,Well Fibra,MikroTik RouterOS,190.89.145.21,22022,ajust,0,2
+f58cbd95-2907-4fcf-865b-f190de9e78e5,ROUTER - BORDA MIKROTIK 1016 (antigo bgp) ROSARINHO,Future Telecom - Cliente Cancelado,MikroTik RouterOS,45.168.142.132,15422,ajust,0,0
+4e7aa812-41de-45c2-b901-e246d6f0cefa,SWITCH  HUAWEI  5732 CORE IPOJUCA,Rio Net,Switch Huawei,45.162.226.74,22359,ajust,0,0
+c43e2fd2-be91-4cb2-b0e3-5eb44bf69f88,OLT-DATACOM-DM4615-PINDORAMA,Infotel,OLT ZTE,170.150.136.56,26101,ajust,0,0
+fe387e82-131b-4869-af45-f4dfe16bcf75,BORDA_MUNDO-NET_RECIFE,Mundo Net,MikroTik RouterOS,179.42.37.40,15422,ajust,0,2
+5016b151-7a07-4683-b4dd-cffeb1648712,BORDA SITIO NUNES,CNB Telecom,MikroTik RouterOS,177.36.0.240,40022,ajust,0,0
+28084e71-7ee9-4f2e-9464-5894665b8941,SWITCH  HUWAEI 10GB GGC,Martins Telecom - Cliente Cancelado,Switch Huawei,45.176.142.106,60529,ajustconsulting,0,0
+f8ae9167-ca89-4e3c-bcf3-92de5898b4b2,Autenticador LinsNet,Lins Net,MikroTik RouterOS,170.79.170.104,15422,ajust,0,0
+10824938-50a1-4320-9622-2eaa28b2f994,OLT V Solution GPON Porto de Galinha,Meganet,OLT VSOL,45.176.56.240,40423,sgpsgp,0,4
+f9bb946b-f6a2-44c6-a6ba-2b882a3dcb4c,RB4011 Enotel ( SEM ACESSO AO EQUIPAMENTO ),Rio Net,MikroTik RouterOS,187.87.134.121,8123,surfix,0,0
+e243eec8-1bc7-4c8a-bc14-31c622a35b5e,OLT-ZTE-CAUEIRAS,LL Telecom - Cliente Cancelado,OLT ZTE,45.232.190.160,9095,sgpsgp,0,0
+e9ea6a1e-dc9a-4700-b0a1-e2284ab2fe10,AUTENTICADOR -  1016 - ALIANCA,LL Telecom - Cliente Cancelado,MikroTik RouterOS,45.232.190.160,15423,ajust,0,0
+d3f26842-6cc7-47ff-8d8a-437889dfef97,Concentrador POP Pau Amarelo,I4 Telecom,MikroTik RouterOS,45.187.170.1,7622,ajust,0,0
+e6c01e27-5b06-4ac7-8ce3-38ee59be21dc,CCR 1036 Gerência - vpn,Meganet,MikroTik (Download Backups) - VPN,45.176.56.240,2281,backup-user,0,2
+66db69ce-cbcc-44f9-a34c-a2bc520258af,RB PABX REDE SMARTLINK,Future Telecom - Cliente Cancelado,MikroTik RouterOS,45.168.143.5,15422,ajust,0,0
+3f5f14f6-49f9-443f-9747-67ff90925cf8,MK RB 3011 - HARAS_CAPIM_DOURADO,INET,MikroTik RouterOS,177.71.83.128,15422,ajust,0,0
+86e225fe-e3bc-482f-b6dc-84f3ab6168e2,CCR 1016 - FELIPE-NET,INET,MikroTik RouterOS,177.71.83.165,15422,ajust,0,0
+604880e9-605e-4852-a5e7-e8753296028b,RB 3011,G5 - Piedade,MikroTik RouterOS,192.141.105.40,15422,ajust,0,3
+59d6631a-346d-4e8a-92c0-f5977e55c9bc,PROLINK-CONCENTRADOR-AURORA,Future Telecom - Cliente Cancelado,MikroTik RouterOS,45.168.142.129,22,ajust,0,0
+39b52f1a-f2c7-4bea-a26e-a40ac0f3d7a8,RB 4011 GERENCIA,Martins Telecom - Cliente Cancelado,MikroTik RouterOS,45.176.142.106,15422,ajust,0,0
+faf3f89b-0077-4815-b095-64444f921ac8,CCR2004 - MATRIZ DA LUZ,G5 - Jaboatão,MikroTik RouterOS,192.141.105.10,2222,ajust,0,4
+d37d95b8-8981-450f-8e66-827224cdcf50,OLT CONECTA,G5 - Will,OLT Huawei,201.71.4.46,22,ajustconsul,0,0
+5856d82c-c339-44d6-a7df-feac685fe0bb,RB Gerência - VESCNET,Grupo Vesc,MikroTik RouterOS,201.76.98.98,15422,ajust,0,3
+888c4346-5f07-46bf-8e83-4aacb6478961,CGNAT,Grupo Telecom,MikroTik RouterOS,181.225.170.5,15422,ajust,0,2
+50aff9e0-993e-4d67-bcf8-b8fd5bc482c0,OLT DATACOM CAMARAGIBE,Martins Telecom - Cliente Cancelado,OLT Datacom,45.176.142.106,23030,ajustconsulting,0,0
+cf659762-a5e6-426f-87a3-1d2938c95560,Switch Huawei S5720 Porto de Galinhas,Meganet,Switch Huawei,45.176.56.240,10443,ajust,0,0
+c3427a0f-6adb-4bbd-b950-d5f040737650,CCR 1036 CGNAT,JaNet,MikroTik RouterOS,190.89.233.128,15422,ajust,0,2
+aa3537c8-8d3d-471c-9e65-251451aea6a7,Switch TPLink- BVNET,BVNet,Switch TP-LINK,192.168.230.2,22,ajust,0,0
+fd029589-09b8-43bf-80a4-bd43341889c8,RB3011 - Gerencia,I4 Telecom,MikroTik RouterOS,45.187.169.228,15422,ajust,0,2
+99b74805-e924-48d5-aa25-27b7f89e137a,Autenticador Inocoop,Cavalcanti Net,MikroTik RouterOS,170.84.85.232,2229,ajust,0,0
+31b61a68-8106-4c73-8d54-bebfe16ae1cf,OLT HUAWEI - JANGA,Vibe,OLT Huawei,187.17.137.188,23749,acessosgp,0,16
+87fe391b-a24a-4283-88c5-8fd13fcf1b51,CGNAT- Core - PONTE DIGITAL,Ponte Digital,MikroTik RouterOS,170.80.48.1,15422,ajust,0,2
+136e7ced-963f-4a65-8c27-bd9ad2caed6d,CRS-317 Switch 01 - Paulista,Mais.Net,MikroTik RouterOS,170.79.170.0,15455,ajust,0,2
+45e2951a-dddc-468a-8080-10452ac32530,Mikrotik	 Autenticador,DuNet,MikroTik RouterOS,45.224.219.44,15422,ajust,0,2
+e0abb4df-a25b-4aa3-a832-ed41a8435945,OLT INTELBRAS EPON 4840E,CellNet,OLT Intelbras,190.89.232.34,23,admin,0,0
+3668591d-d546-4c76-a8c8-f17984048df6,Autenticador Line Connect,Line Conect,Router Huawei,164.163.230.1,26504,ajustconsulting,0,0
+2502bb1d-8eb6-43c9-9f7d-87577edba1b2,Rb 1100 Escritrio Gerencia Goiana,PGI Telecom,MikroTik RouterOS,177.125.8.237,2223,ajust,0,2
+138ae6b6-c23c-4194-b081-fba06817554a,RB1009 - MORENO,G5 - Jaboatão,MikroTik RouterOS,192.141.105.26,2222,ajust,0,2
+567d7ad5-b99a-4323-a981-00597a3d726f,OLT - VSOL IGARASSU,TC+ Fibra (Agility),OLT VSOL,164.163.20.78,8032,ajust,0,2
+51b5ad1b-3af9-4c2c-9b17-caf2c82f456b,SWCORE-INFORNET,Grupo Telecom,MikroTik RouterOS,181.225.168.128,1533,ajust,0,3
+feda3639-1d01-486a-8b00-b4e2ffca032c,RB BORDA,G5 - Piedade,MikroTik RouterOS,192.141.105.40,15422,ajust,0,3
+eceef928-1cbc-4466-bc0e-3d2722d18bbc,QualyNet FastLink CCR1009,QualyNet,MikroTik RouterOS,168.194.12.160,2215,ajust,0,0
+4409f28f-ba97-468f-a524-587845097c52,Borda LinsNet,Lins Net,MikroTik RouterOS,170.79.170.104,22,ajust,0,0
+44957844-e764-4202-8f01-9cfe175b3c24,OLT DATACOM POP- ENG MEIO,Martins Telecom - Cliente Cancelado,OLT Datacom,45.176.140.6,50021,admin,0,0
+6ac6b6ed-5a59-472e-bc2c-b8aaeaeb2b6c,Huawei - OLT,PowerFibra,OLT Huawei,187.17.137.188,23722,sgpolt,0,16
+4bcea5de-5b3c-4853-822c-1720f8cde5f9,CCR1072 - CGNAT,SofiaNet,MikroTik RouterOS,128.201.156.38,8181,ajust,0,2
+cf24abfc-2b1a-431e-98a1-70ceb3bf74e8,AUTENTICADOR-TORRE-OGA_FIBRA_TELECOM,Oga Fibra Telecom,MikroTik RouterOS,179.51.151.48,15422,ajust,0,2
+a9fe637c-935e-4737-9181-56bdc4b4e27a,OLT HUAWEI - MARANGUAPE II,Vibe,OLT Huawei,187.17.137.188,23755,sgpolt,0,16
+3283b088-3cf9-4aaf-971b-b14efbc2e63b,Borda - PAULISTA,Mais.Net,MikroTik RouterOS,170.79.170.0,15422,ajust,0,2
+202a33e7-c398-4b59-bebc-ecd0e0483980,CCR-1036-PONTO_NET,Ponto Net,MikroTik RouterOS,45.168.153.220,1022,ajust,0,3
+1a4da953-5ca5-4b3d-8417-dbda380e65d6,CRS317,Infortec,MikroTik RouterOS,187.86.163.14,22622,ajust,0,4
+d7f1296a-66d0-4936-bc05-c5ecb6192df1,RB-MUNDONET-CORTES,Mundo Net,MikroTik RouterOS,179.42.37.40,15423,ajust,0,2
+3a813810-2b27-4d66-9ad9-55084dbb8228,OLT Parks,Oga Fibra Telecom,Olt Parks,179.51.151.48,7188,admin,0,0
+fe1eee67-48fe-48de-8eb8-fce4f2725167,RB BORDA JANGA,AF Telecom,MikroTik RouterOS,179.51.150.14,15422,ajust,0,2
+0809b913-a3de-4cbf-8d67-3ecdeb3ed97c,VSOL-EPON CABO,G5 - Cabo,OLT VSOL,45.187.19.24,8676,tiago,0,0
+7a89f0a7-0949-44d6-8030-e081128e65f5,CONCENTRADOR MULTINET CURADO 1036,MULTNET,MikroTik RouterOS,200.81.55.129,13563,backup,0,4
+1b363a80-cb35-4a09-ac6c-e5a6bb7312dd,CGNAT MCNET,MCNet,MikroTik RouterOS,45.164.10.128,15422,ajust,0,2
+686de333-5f80-4f84-9bd6-90e6e0d654c1,OLT ZTE TAQUIRI C610,Infotel,OLT ZTE,164.163.230.8,2222,zte,0,0
+d744e936-21de-4cc2-a09d-bfece3eb838f,BNG-REALNET-NM,Real Net,MikroTik RouterOS,170.81.76.175,2222,ajustconsulting,0,0
+996ae133-e0a3-4ea7-b1fc-e7038698788c,CCR 1036 Gerência,Meganet,MikroTik RouterOS,45.176.56.240,2281,backup-user,0,2
+33aadd1a-b826-4bff-887e-6bf1b13dee3d,OLT HUAWEI - ARTHUR / PARATIBE,Vibe,OLT Huawei,187.17.137.188,23744,acessosgp,0,16
+ba3366e4-c368-4976-9b61-a1d7ce037cd1,BORDA-INFONET,Grupo Telecom,MikroTik RouterOS,181.225.168.128,15422,ajust,0,3
+672ba87e-6039-4f7c-9ea0-271d9d068840,*SW-CRS MIRUEIRA,AF Telecom,MikroTik RouterOS,179.51.150.12,8409,ajust,0,4
+17363b3d-ec13-4de8-ae3c-d3828d13e0a0,OLT EPON C-DATA EPON TIUMA,Infortec,OLT CDATA,187.86.163.178,12327,admin,0,0
+c1c3e09b-241f-4bbc-81c4-e98eba491c03,CE 01 UPNET,RCR Telecom,MikroTik RouterOS,45.186.54.64,2250,ajust,0,0
+624a1984-d50a-4fe8-87f3-460fd0553186,MikroTik RB 760 (ISP Game),Pix Fibra,MikroTik RouterOS,10.31.255.226,22,ajust@emfibra,0,0
+29008762-0b10-4b38-8333-26fe5dd25d8d,CCR 1016 CENTRAL NAVEGANET,Navega Net,MikroTik RouterOS,160.19.44.103,15422,ajust,0,0
+e0eca697-85dc-4d98-9cc3-6d70e0bf1013,BORDA,CNB Telecom,MikroTik RouterOS,177.36.0.240,15422,ajust,0,0
+434591dd-6ec1-49ac-bd9f-edcfb9a5a56f,OLT- FIBERHOME-PE-22,SofiaNet,OLT FiberHome,128.201.156.102,2330,GEPON,0,0
+0c3db19a-d01b-42a9-bb5b-f1edebba4382,Autenticador Campina Grade,Vibe,MikroTik RouterOS,170.79.168.72,15422,ajust,0,0
+290ee1b9-0871-4d64-be21-6e07a725feb5,OLT - HUAWEI - MA5600,Ponto Net,OLT Huawei,45.168.153.220,2200,root,0,0
+c044e71e-01af-4afe-8a3f-db4d6dcef9cd,CGNAT CellNet,CellNet,MikroTik RouterOS,190.89.232.192,2279,ajust,0,0
+6167cfc7-999a-4cf8-bb27-2b395f92808b,Autenticador PowerFlash - Catende,PowerFlash,MikroTik RouterOS,45.224.219.44,15422,ajust,0,2
+d1f499f7-8172-4582-b741-585ef7f2c285,CCR 1036 AUT ULTRAFIBRA,UltraFibra,MikroTik RouterOS,45.186.54.32,9922,ajust,0,0
+c36e3181-d289-4edd-b36c-56cd18012b5c,SW-CORE-DATACENTER,PlanaltoNet,Switch Huawei,10.12.255.202,23,ajust,0,0
+5897d7f9-5a72-4741-89b2-83d0c09cdba8,CCR1009 - JBNET,SofiaNet,MikroTik RouterOS,128.201.156.54,2222,ajust,0,0
+24add76d-2aa6-4545-b7e2-2239b4768af0,OLT HUAWEI - MURO ALTO,Um Fibra,OLT Huawei,179.124.141.44,23088,sgp-radius,0,0
+8370a94b-3da3-4ec0-93e0-7637b4f813b8,CCR1036 - CGNAT,AF Telecom,MikroTik RouterOS,179.51.150.12,22221,ajust,0,4
+732a3305-c35c-4653-ade6-0d576c21b035,CGNAT BOMBA,Voo Telecom,MikroTik RouterOS,187.62.76.2,22,ajustconsulting,0,0
+9217e694-434f-4ef0-8762-cbc4f0d67459,PROLINK-AUTENTICADOR-ROSARINHO,Future Telecom - Cliente Cancelado,MikroTik RouterOS,45.168.142.137,15422,ajust,0,0
+af87cefd-7ef4-4458-9ba1-b00ca83527f2,BORDA-CGNAT-CCR2004-1G-12S+2XS,LL Telecom - Cliente Cancelado,MikroTik RouterOS,45.232.190.160,15422,ajust,0,0
+3cadd3d4-1777-4812-b9cf-1a05cf70d021,AUTENTICADOR FOX NET CCR 2116,Fox Net,MikroTik RouterOS,45.191.105.255,15422,ajust,0,2
+801aac47-1194-4f53-a22b-56eca426159a,RB hEX Cliente Sara,PGI Telecom,MikroTik RouterOS,177.125.9.2,15422,ajust,0,0
+0439df69-2d60-4b1c-8dca-39e9af3cc1b6,OLT- FIBERHOME-JAGUARANA,SofiaNet,OLT FiberHome,128.201.156.114,2357,GEPON,0,0
+8c05838a-59e3-4c91-be59-0f38ebd84eb1,BORDA-TORRE-OGA_FIBRA_TELECOM,Oga Fibra Telecom,MikroTik RouterOS,179.51.151.48,7822,ajust,0,2
+eeda3fe0-7ad8-4f57-8812-7ae9fb17416c,Borda NE8000 RenoveNet,FlashNet,Router Huawei,170.79.171.254,53267,flashnet,0,0
+892c53eb-bbeb-4d82-8c61-9d083d00ee33,Autenticador Aurora CCR1036,InsNet,MikroTik RouterOS,45.160.221.253,15423,ajustconsulting,0,0
+4b228285-517d-4050-b02b-62835b313fdd,BORDA FOX NET CCR 1036,Fox Net,MikroTik RouterOS,45.191.105.255,15422,ajust,0,2
+a2ac55df-3af3-47f9-8711-620d80bc9041,OLT Datacom,Cyber Net,OLT Datacom,170.80.112.2,4707,cybernet,0,4
+018f8243-4f24-416c-b7ec-d7ca41204245,OLT-VGL-HUAWEI,Navega Net,OLT Huawei,160.19.44.58,23,root,0,0
+13f9cdd0-735d-4ffc-aa9b-7ff98950705c,HUAWEI-MEGANET,MegaLink Telecom - Cliente Cancelado,OLT Huawei,45.160.220.22,23888,sgpolt,0,0
+4a42a7e6-3802-42db-ae90-04cf84b6bbac,Borda NE8000 FlashNet,FlashNet,Router Huawei,168.194.12.1,53267,flashnet,0,0
+161a5d45-c3b5-41cb-8fd9-b052cff56f65,OLT ZTE - PAU AMARELO,Vibe,OLT ZTE,187.17.137.188,2321,acessosgp,0,16
+902172f0-3640-4fc5-9e67-54f3a80e6e4d,RB3011 SERRAMBI,Meganet,MikroTik RouterOS,45.176.57.105,22997,ajustconsulting,0,0
+bb848184-c03d-45b9-bc69-dbf7a5a98a63,CCR1036 - SOLANIA,SofiaNet,MikroTik RouterOS,177.36.8.64,15422,ajust,0,0
+765d6fd8-7fdb-4d72-9124-596502f1f8b0,CRS MK - JARDIM ATLANTICO 02,AF Telecom,MikroTik RouterOS,179.51.150.12,23038,ajust,0,4
+18430214-fb1b-446a-b9b8-70380c5eca10,SWUTCH 5720 ### JARDIM-PAULISTA,Conect Fibra,Switch Huawei,45.5.88.78,22463,root,0,0
+2dbdcc89-4480-4c31-82d8-0e938fb7a30f,Huawei Ocaporan,Rio Net,Switch Huawei,45.162.226.74,22360,rionet,0,0
+609e6570-4d7e-4d36-bd9c-4be04b327fa1,OLT-PC,Ponte Digital,OLT Huawei,170.80.48.7,22010,ajustconsulting,0,0
+b9ec3ed1-01e4-4d51-9cf9-8bbe55e497ec,OLT INTERNLINK - DM4615,Martins Telecom - Cliente Cancelado,OLT Datacom,45.176.140.6,23180,ajust,0,0
+6399e3d2-9c6f-441d-a96f-a484c9b78d60,NECO-NET - BORDA,Neco Fibra - Cliente Cancelado,MikroTik RouterOS,45.176.56.106,15422,ajust,0,0
+81878e7a-17ce-41c5-937f-f4dd8c085b44,BRAS-INFONET,Grupo Telecom,MikroTik RouterOS,181.225.168.128,15422,ajust,0,3
+fcc15586-9c34-40c8-b8a3-8670257dec33,CR02-ALPHA-02,Alphaville,MikroTik RouterOS,200.143.98.224,15422,ajust,0,0
+edc3a9eb-1522-4577-9354-8056a37740e7,CRS 317 - SERVIDORES VOICECORP,Voice Corp,MikroTik RouterOS,190.89.34.81,15422,ajust,0,2
+ecd20044-341b-43ed-a080-17153bdb5d30,CCR 2004 BORDA ULTRAFIBRA,UltraFibra,MikroTik RouterOS,45.186.54.32,2278,ajust,0,0
+c3d2be42-ee9a-4cfd-8f02-7b2eea71d7b4,OLT - HUAWEI - MA5800,Mond Telecom,OLT Huawei,45.4.62.39,22022,root,0,0
+b4571386-54bf-45cf-8ab7-65edd91d713e,OLT INTELBRAS,JRNet,OLT Intelbras,172.16.125.11,2323,admin,0,0
+24d5f5ac-2cbc-41b9-8146-7ae48ae0077a,Switch Datacom Core Presidente Kennedy / Peixinhos,I4 Telecom,Switch Datacom,45.187.169.228,22220,ajust,0,2
+87d527b8-6cbc-47c9-b50c-f3411ee02afc,MIKROTIK-PC-DELL-R450-X86,Infortec,MikroTik RouterOS,187.86.163.14,15422,ajust,0,4
+26655de2-6481-42ce-9a1f-79733d6d18d2,CCR 2116 Autenticador / Borda,SuperNet,MikroTik RouterOS,177.184.230.96,15422,ajust,0,0
+0ded7783-d607-4475-9b45-65c1f7ac5146,Servidor Glauber (Gerencia BVNET),BVNet,MikroTik RouterOS,201.76.98.98,15422,backupautomatico,0,3
+be19cb49-40ae-4575-866b-cdb8b9b8805a,Switch 6720 HF,GL Soluções,Switch Huawei,45.189.162.15,2203,ajust,0,0
+2bd990fc-8a91-4bb1-a0c0-835b7168eda6,CR01-ALPHA-02,Alphaville,MikroTik RouterOS,200.143.98.224,2224,ajust,0,0
+eb7d9b5f-fda7-404d-9da8-b7b6baad4208,MK CCR 1072 - AUT/BORDA,DinhoNet,MikroTik RouterOS,131.108.155.144,22022,ajust,0,0
+9b9ff0ff-5af7-494f-9a8d-2905db81a007,CCR SERRARIA,G5 - Jaboatão,MikroTik RouterOS,192.141.105.130,23032,ajust,0,0
+56af5f79-21ff-4db1-92ad-65fbcc16b4cd,OLT-HUAWEI-GOFIBRA,Gofibra,OLT Huawei,45.6.124.201,9991,root,0,0
+05ebdd69-8f96-4876-a2ce-d3eb11d9c0f7,BORDA-MEGALINK,MegaLink Telecom - Cliente Cancelado,MikroTik RouterOS,45.160.220.1,15421,ajust,0,0
+37b76cc2-a0e3-40a1-b8ee-0cbaa1dee07a,SWITCH DATACOM DM4270 SEBASTIÃO AMARAL,SofiaNet,Switch Datacom,128.201.156.214,2227,admin,0,0
+aa34464b-8f21-4463-bb49-11945c33aa00,Rb 4011 Gramame,Real Net,MikroTik RouterOS,170.81.76.175,2222,ajustconsulting,0,0
+36527978-25d6-42ad-bbf3-392732be6be5,MK CRS 317 -  Switch Core Curado MultiNet,MULTNET,MikroTik RouterOS,200.81.55.129,2278,ajust,0,4
+098a9d62-7620-4133-9066-893138e0d7f8,SW21 DATACOM BORDA,Martins Telecom - Cliente Cancelado,Switch Datacom,45.176.142.106,60521,admin,0,0
+4ad0601a-2741-4c31-8797-1ac8541c4c7a,Borda NE8000 Martins Telecom,Martins Telecom - Cliente Cancelado,Router Huawei,45.176.140.7,44986,ajustconsulting,0,0
+4c006efe-a979-4f69-b9db-e7ecf27d3ede,OLT HUAWEI,Mais.Net,OLT Huawei,170.79.179.0,2233,sgpsgp,0,0
+1ea57f72-0194-43bb-b83c-413aa41cb753,CRS 326-24S+2Q+ Marulhos,Rio Net,MikroTik RouterOS,45.162.225.166,15422,ajust,0,2
+a7d7ceac-9b83-47bf-9ce5-b6888d4762da,RB 3011 - MULTNET-CAVAELEIRO,MULTNET,MikroTik RouterOS,200.81.55.129,15422,ajust,0,4
+20b631f8-540a-41bd-afe7-f4279261f4f6,NECO-NET - CONCENTRADOR01,Neco Fibra - Cliente Cancelado,MikroTik RouterOS,45.176.56.106,2299,ajust,0,0
+f2c122e8-b51f-4916-a09b-23d29cd4f821,OLT HUAWEI MA5600 - CAVALCANTI OLINDA,Cavalcanti Net,OLT Huawei,45.232.190.24,2222,sgpsgp,0,0
+7060933a-1f85-41e1-b29d-f858e69d107b,AUTENTICADOR,G5 - Piedade,MikroTik RouterOS,192.141.105.40,15422,backup,0,3
+12abb7e1-d9da-497a-bbfb-e415f58a7cf8,OLT INTELBRAS G8,CellNet,OLT Intelbras,190.89.232.6,5506,ajust,0,0
+c2c53c25-87d6-4c57-84b0-99155f33f007,RB3011 - GERENCIA,SofiaNet,MikroTik RouterOS,128.201.156.214,22022,ajust,0,0
+803e0918-3c78-4d40-afae-f2342b397564,01 - OLT HUAWEI MA 5603T,MGN Fibra,OLT Huawei,45.235.104.50,23330,sgpsgp,0,0
+722e603e-f986-4927-abd3-024a2d6008f7,OLT EPON ESCOLA BRASIL,Infotel,OLT Datacom,170.150.136.56,26106,ajust,0,0
+a15e1f7b-5e9e-4812-8655-89d4e88472ce,CCR1009 - A2FIBRA,SofiaNet,MikroTik RouterOS,128.201.157.88,15422,ajust,0,0
+828475e9-8cf8-464c-a258-fa701cc37b41,CCR 2116 CGNAT GMAX,Gmax São Lourenço,MikroTik RouterOS,164.163.22.0,15522,ajust,0,3
+10256092-14d7-4bab-9608-d52359ae2a12,SW24-DATACOM-POP-ALDO,Martins Telecom - Cliente Cancelado,Switch Datacom,45.176.142.106,60524,admin,0,0
+01dca8d2-ddfe-4bbe-b5c1-16c9e7f9b49c,OLT-VSOL-CLUBE-VITA,Grupo Vesc,OLT VSOL,201.76.98.98,2393,sgpacesso,0,4
+a69c158d-fba7-48c5-8f5d-e28c4e31989a,CCR2004-16G-2S+ AUTENTICADOR NAT E VPN,Gmax Itamaracá - Cliente Cancelado,MikroTik RouterOS,164.163.21.216,15422,ajust,0,0
+23cb184f-603a-4f5a-a46e-aef210b64342,SW23-DATACOM- POP-TORROES,Martins Telecom - Cliente Cancelado,Switch Datacom,45.176.142.106,60523,admin,0,0
+6a9dd5eb-b36a-45dc-a9ca-066c14462212,RB-POP-Timbi-Novo,Infortec,MikroTik RouterOS,187.86.163.14,15422,ajust,0,4
+7a68fa08-9edc-480a-9cf5-ca2a0ce6a4f7,OLT HUAWEI,PowerNet,OLT Huawei,187.17.137.188,22051,sgpacesso,0,16
+da965a99-63d7-4b7e-bd47-7531dcc7cd39,SW26-DATACOM-POP-MAZINHO,Martins Telecom - Cliente Cancelado,Switch Datacom,45.176.142.106,60526,admin,0,0
+4615b2c8-ad86-47b9-9678-33b94b0aaa5a,OLT-MEGAMIDIA,Ponte Digital,OLT Huawei,170.80.48.7,22011,ajustconsulting,0,0
+5c5995aa-b3a6-4bb6-bed1-a1cc63fdb1c9,OLT DATACOM POP- CENTRAL,Martins Telecom - Cliente Cancelado,OLT Datacom,45.176.140.6,50024,admin,0,0
+de0e10e6-6725-4097-b2c2-5217af275b3a,OLT Furukawa 3008,InsNet,OLT Furukawa,172.16.117.10,2323,admin,0,0
+65f0810e-82b2-4f33-a04d-0bc3d2ca9647,Switch Huawei S6730 Core Mangueira,UP Connect Fibra,Switch Huawei,186.208.7.53,22,connect,0,0
+d7636a20-ee26-4db5-930e-1a404a85c61d,OLT DATACOM POP- SITIO PALMEIRAS,Martins Telecom - Cliente Cancelado,OLT Datacom,45.176.140.6,50023,admin,0,0
+af175a93-f9ef-4b9a-a761-e81d20afd143,OLT - Huawei-MA5800-X7,Navega Net,OLT Huawei,160.19.44.94,22,sgpolt,0,0
+3085d0c4-fb01-48bc-97dc-c485632f8958,OLT HUAWEI-NOVA,UltraNet,OLT Huawei,192.141.107.190,23535,ajustconsulting,0,0
+0b2d1a5b-0f53-495e-9e93-0e48b56101fb,OLT DATACOM-POP TORROES,Martins Telecom - Cliente Cancelado,OLT Datacom,45.176.140.6,50022,admin,0,0
+06400123-a841-42ca-b594-399c213a4672,OLT HUAWEI - MARIA FARINHA,OndaNet,OLT Huawei,187.17.137.188,23051,sgpsgp,0,16
+7e24790d-4369-46f6-8362-66b219942d98,R06-DUDE-e-GERENCIA,SN Telecom,MikroTik RouterOS,181.189.92.6,15422,ajustconsulting,0,4
+b0d47795-697c-4a56-b0ff-5437f4218bc8,Borda Zoom Fibra,Zoom Fibra,MikroTik RouterOS,45.176.241.212,15622,ajust,0,2
+1528f4f1-3b4f-46bd-bc75-c1fac1aa1236,OLT-COQUINHO,Ponte Digital,OLT Huawei,170.80.48.7,22012,ajustconsulting,0,0
+b2473b94-6c73-41a8-90d2-b066716e0f0e,Switch Huawei S6720 Tabajara,Meganet,Switch Huawei,45.176.56.240,8005,admin,0,0
+12c5fe0e-d8b8-444a-a96a-15b42486a3f2,OLT HUAWEI X2 CAETES 2,Conect Fibra,OLT Huawei,45.5.88.78,23884,sgpacesso,0,3
+0a702aa4-d6f1-4e8a-aaa9-10b71d86e3c2,OLT C-DATA EPON JPII,Infortec,OLT CDATA,187.86.163.14,18082,admin,0,0
+31798a40-9f59-4e27-97a7-8410037c4b58,SW22-DATACOM- ATD-PROV - DM4270,Martins Telecom - Cliente Cancelado,Switch Datacom,45.176.142.106,60522,admin,0,0
+ba3ca248-8306-4ae8-bb4a-223116424938,Borda,InsNet,MikroTik RouterOS,170.245.65.33,15422,ajust,0,0
+a707dc67-7c8c-4f36-8bfc-aad610921e0c,AUTENTICADOR MX 204 JUNIPER,Pix Fibra,Router Juniper,172.31.255.2,22,ajust,0,0
+8c692a94-8154-42f0-bf82-7deddf1190ce,RB GERENCIA,FiberMais,MikroTik RouterOS,170.245.223.90,15422,ajust,0,2
+1b63fd3b-8e1e-4dcc-8e91-d03c3452b69f,OLT EPON MAXPRINT BOTAFOGO,TC+ Fibra (Agility),OLT VSOL,164.163.20.78,2212,ajust,0,2
+06f6db12-817c-412a-8f2c-50f7b150c3e0,HUAWEI-WELLFIBRA 02,Well Fibra,OLT Huawei,190.89.145.14,23,root,0,0
+2a39a135-66b8-4077-bfe3-5ccfb6f476f7,OLT VSOL,Cyber Net,OLT VSOL,170.80.112.2,47423,sgpacesso,0,4
+d0ea4e30-cee6-42d9-a4a4-94fc12f53106,BORDA CCR2116 FANET,G5 - Prazeres,MikroTik RouterOS,192.141.105.32,15422,ajust,0,2
+3293e236-12f7-4128-922d-29cf5a472c21,AUTENTICADOR CCR2116 FANET,G5 - Prazeres,MikroTik RouterOS,192.141.105.32,15423,ajust,0,2
+d6ba6086-c43c-475a-8ad7-61ac68845179,CCR 1036 BORDA ALPHANET,AlphaNet,MikroTik RouterOS,164.163.22.0,2279,ajust,0,3
+d50de754-765f-4207-9123-6225bbca0cb6,BORDA MULTINET CURADO CCR 1009,MULTNET,MikroTik RouterOS,45.235.0.42,22,ajust,0,0
+cfd81488-1e33-4972-8eab-70efecdee7d3,CCR 2116 BORDA,HomeNet,MikroTik RouterOS,179.49.144.5,15422,ajust,0,2
+12a6871e-d73e-41a7-9b91-a4dd9c0b48e0,TP-Link,Pix Fibra,Switch TP-LINK,10.31.254.2,22,admin,0,0
+5377938b-a4dd-4f71-9e71-b84eb387f7aa,CISCO NEXUS,Mond Telecom,Switch Cisco,187.111.86.195,22522,admin,0,0
+36b4a3bf-b45b-4c47-a116-b1152c5131ca,CRS317,AlphaNet,MikroTik RouterOS,164.163.22.0,55022,ajust,0,3
+65af9239-872a-4fab-9840-0671700e142c,*SW CORE RIO DOCE CRS 317,AF Telecom,MikroTik RouterOS,179.51.150.14,23045,ajust,0,2
+3c1c71ba-fb41-4b58-9e02-32d31bd11f43,OLT VSOL GPON  SANTA TEREZA DO TOCANTINS,Infotel,OLT VSOL,170.150.136.56,26092,ajust,0,0
+33eda323-185e-4e3b-bc0e-c4e28deab3ff,OLT - VSOL GPON 8 PONS,Gmax Itamaracá - Cliente Cancelado,OLT VSOL,164.163.21.216,5023,admin,0,0
+1c37221e-feb0-4bb8-8465-a9d0a69ccb6d,Switch Huawei S5700 Jordão,UP Connect Fibra,Switch Huawei,179.48.12.10,22323,ajustcon,0,0
+45f36974-26b8-4fce-8427-b09eef3a3e53,CGNAT,Mood,MikroTik RouterOS,187.17.136.128,15422,ajust,0,2
+340c5a25-ff0d-492b-b01c-17757d1c3936,OLT HUAWEI MA5800,Infotel,OLT Datacom,170.150.136.56,26097,ajust,0,0
+ab995fb7-b9f4-4508-93b2-d16bdbc111e4,SW-OMADA,PlanaltoNet,Switch TP-LINK,10.12.255.245,8043,ajust,0,0
+e89ca074-a18b-44ff-a41a-6a546cbfa67a,Autenticador,JRNet,MikroTik RouterOS,168.194.15.174,15422,ajust,0,2
+4e3a846c-5b10-46d2-bf1c-d0250379e7a0,Switch Huawei 5700 Rio Doce,I4 Telecom,Switch Huawei,45.187.169.228,22355,ajustconsulting,0,2
+a601536b-a91d-46ab-a9c9-168b3de256e5,OLT HUAWEI,G5 - Jaboatão,OLT Huawei,192.141.105.3,17865,root,0,2
+dcefef35-4603-4a00-a291-afcd00981c10,OLT GPON MAXPRINT ITAPISSUMA,TC+ Fibra (Agility),OLT VSOL,164.163.20.78,2310,ajust,0,2
+3fa2f683-66db-4d60-970d-4fc2f1237688,CGNAT PRAZERES,G5 - Will,MikroTik RouterOS,201.71.4.8,15422,ajust,0,0
+9262ac26-a1b2-43a3-9458-577c8463127d,SW25-DATACOM-POP-INTERLINK,Martins Telecom - Cliente Cancelado,Switch Datacom,45.176.142.106,60525,admin,0,0
+a5a807dc-9f50-480d-a04d-83acd2905534,OLT HUAWEI X7 POP MAIOBAO,UltraNet,OLT Huawei,192.141.106.6,2205,ajustconsulting,0,7
+d4a68857-e523-4769-b11c-bb7d1764a2ca,CRS 317 MLT,HomeNet,MikroTik RouterOS,179.49.144.5,15420,ajust,0,2
+7211e945-f81f-44c6-a3e0-546d7953aa23,OLT ZTE C300 MORRO ALTO,HomeNet,OLT ZTE,179.49.144.5,8079,ajustconsulting,0,0
+60a5cc6f-6e3f-43a8-b375-f9e13e2bc24f,CCR 1009 Marulhos,Rio Net,MikroTik RouterOS,45.162.225.166,15421,ajust,0,2
+417681ca-f7b4-4530-ba7a-38c8227fea3e,Concentrador  Zoom,Zoom Fibra,MikroTik RouterOS,45.176.241.212,15422,ajust,0,2
+4716feb7-0623-4b1e-9d3e-2c93e493e9b4,OLT HUAWEI MA5800 Central - Infonet,Grupo Telecom,OLT Huawei,172.16.116.14,2331,sgpinfornet,0,0
+953463cf-946f-4968-9476-d71d1d421438,Switch Paratibe,Conect Fibra,Switch Huawei,45.5.88.78,22461,conect,0,0
+9573ca5a-f4bd-4a16-bf45-8575b43090a5,Switch Huawei S6730 Jardim Atlântico,Meganet,Switch Huawei,45.176.56.240,22315,ajust,0,0
+68131729-b0e5-4828-bdb9-e5a3ae2d157f,CRS-PONTO_NET,Ponto Net,MikroTik RouterOS,45.168.153.220,2288,ajust,0,3
+6d648fe3-95d0-4693-a07d-de7acbc362f3,SWITCH - HUAWEI - 5720,CNB Telecom,Switch Huawei,170.79.169.254,22585,ajust,0,0
+1496c465-7ac6-4992-92e0-df31aeab109c,CCR 1036 - CGNAT,Mond Telecom,MikroTik RouterOS,168.196.40.104,15422,ajust,0,0
+b34d45bb-a45f-477c-a6d1-74a3f78e6e84,CRS SW JARDIM ATLÂNTICO 01,AF Telecom,MikroTik RouterOS,179.51.150.12,22221,ajust,0,4
+d0f62a4a-8d7c-4879-99c7-b343cc44a7a3,SW28-DATACOM- IX - DM4270,Martins Telecom - Cliente Cancelado,Switch Datacom,45.176.142.106,60528,admin,0,0
+b8c2d19e-566e-478d-95c1-c665fffcd598,OLT HUAWEI - RIO DOCE,Vibe,OLT Huawei,187.17.137.188,22744,acessosgp,0,16
+5ec87351-003c-44a6-9e72-d0d508de9e3c,OLT-HUAWEI ALPHAVILLE,Alphaville,OLT Huawei,179.124.139.160,27533,root,0,0
+7959985b-b4b6-469c-a3f1-ee3f331c5824,OLT GPON VSOL ITAMARACA,TC+ Fibra (Agility),OLT VSOL,164.163.20.78,23088,ajust,0,2
+7dcd2ba3-ba2d-4f1e-8692-4ec8ecda6270,OLT POP Santo Amaro/Aurora,Future Telecom - Cliente Cancelado,OLT Huawei,45.168.142.129,23888,root,0,0
+8abe8966-a21d-4da2-8452-fecaa0c00697,OLT-VSOL-JARDIM-SAO-PAULO,Grupo Vesc,OLT VSOL,201.76.98.98,2398,sgpacesso,0,4
+9276fee2-9e7f-4352-a125-5b0671af807f,OLT EPON VSOL LAGOA DO ROMAO,Infotel,OLT VSOL,170.150.136.56,26105,admin,0,0
+d3cf3706-b65a-414b-9d47-1f7ea019894d,OLT-FIBERHOME-2-JANGA / OLINDA,SofiaNet,OLT FiberHome,128.201.156.214,23,GEPON,0,4
+d2c08258-e60d-4df6-bda7-716e543713dc,OLT-VSOL-NOVA,SuperNet,OLT VSOL,201.76.98.98,2360,sgpsgp,0,4
+d79a9491-cb55-4704-b161-367ce14f831f,OLT VSOL GPON 8 PONs GMAX,Gmax São Lourenço,OLT VSOL,164.163.22.0,45222,ajustconsulting,0,0
+e94e7678-846e-4c4d-850c-25f75c7a55c3,OLT ZTE - IGARASSU,Vibe,OLT ZTE,187.17.137.188,2231,acessosgp,0,16
+ef4da6ea-b033-4bd9-8395-cd80684b5a02,OLT HUAWEI 5800X2 SLM,Infortec,OLT Huawei,187.86.163.100,23004,ajustconsulting,0,3
+f261ce96-49c4-4dd5-b6bd-e9fac60b01ae,OLT-INTELBRAS,AlphaNet,OLT Intelbras,181.191.162.6,2239,admin,0,0
+f56ef524-8e97-4164-b963-e2e7a53ee59c,OLT ZTE - NOBRE,Vibe,OLT ZTE,187.17.137.188,23733,acessosgp,0,16
+99482681-e5bf-451a-b2d6-a3fc65f3babe,Autenticador NE8000 Martins Telecom,Martins Telecom - Cliente Cancelado,Router Huawei,45.176.142.173,44986,ajustconsulting,0,0
+343f893d-5256-4df0-b270-eb66b87b631a,OLT-VSOL-RIVIERA,Grupo Vesc,OLT VSOL,201.76.98.98,2383,oltriviera,0,4
+74fc787e-b560-4f36-a183-173595ba11cb,Switch Huawei S5700 Cavaleiro,Eco Telecom,Switch Huawei,45.71.170.6,8051,ajust,0,0
+8d84346a-c5eb-4c60-936a-93476966c539,OLT-VGL-HUAWEI-NOVA,Navega Net,OLT Huawei,170.245.64.146,23888,sgpacesso,0,0

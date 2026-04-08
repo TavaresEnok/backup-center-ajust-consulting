@@ -12,7 +12,11 @@
 {% set arg_due = current_due_filter or '' %}
 {% set arg_sort = current_sort or 'name_asc' %}
 {% set arg_compare = '1' if compare_mode else '' %}
-{% set has_any_filter = arg_q or current_group or arg_connection or arg_auto or arg_result or arg_history or arg_audit or arg_due %}
+{% set arg_subgroup = current_subgroup_filter or '' %}
+{% set is_subgroup_selected = arg_subgroup and arg_subgroup != 'none' %}
+{% set has_any_filter = arg_q or current_group or arg_connection or arg_auto or arg_result or arg_history or arg_audit or arg_due or arg_subgroup %}
+{% set role = session.get('user_role') %}
+{% set can_manage_admin = role in ['super_admin', 'tenant_owner', 'tenant_admin'] %}
 <style>
     .device-table {
         width: 100%;
@@ -160,6 +164,38 @@
                     Limpar filtros
                 </a>
                 {% endif %}
+                {% if current_group %}
+                <a href="{{ url_for('tenant_groups.list_groups', tenant_slug=tenant.slug) }}"
+                    class="px-3 py-2 rounded-lg border border-[var(--card-border)] text-[var(--text-muted)] hover:text-[var(--text-main)] transition text-sm">
+                    Voltar para grupos
+                </a>
+                {% endif %}
+                {% if current_group and can_manage_admin %}
+                <form id="form-run-connection-audit-current-group-header"
+                    action="{{ url_for('tenant_devices.run_connection_audit_all', tenant_slug=tenant.slug) }}"
+                    method="POST" class="inline">
+                    {% include 'partials/csrf.html' %}
+                    <input type="hidden" name="group_id" value="{{ current_group.id }}">
+                    <button type="button" data-run-backup-live data-form-id="form-run-connection-audit-current-group-header"
+                        class="px-3 py-2 rounded-lg border border-blue-300 bg-blue-50 text-blue-700 hover:bg-blue-100 transition text-sm dark:border-blue-700 dark:bg-blue-500/10 dark:text-blue-300 dark:hover:bg-blue-500/20">
+                        Testar conexão deste grupo
+                    </button>
+                </form>
+                {% endif %}
+                {% if current_group %}
+                <button type="button" id="openSubgroupModal"
+                    class="px-3 py-2 rounded-lg border border-indigo-500/40 bg-indigo-500/10 text-indigo-300 hover:bg-indigo-500/20 transition text-sm flex items-center gap-2">
+                    <i data-lucide="folder-tree" class="w-4 h-4"></i>
+                    <span>Criar Subgrupo</span>
+                </button>
+                {% if is_subgroup_selected %}
+                <button type="button" id="openEditSubgroupModal"
+                    class="px-3 py-2 rounded-lg border border-amber-500/40 bg-amber-500/10 text-amber-300 hover:bg-amber-500/20 transition text-sm flex items-center gap-2">
+                    <i data-lucide="settings-2" class="w-4 h-4"></i>
+                    <span>Editar Subgrupo</span>
+                </button>
+                {% endif %}
+                {% endif %}
                 <a href="{{ url_for('tenant_devices.add_device', tenant_slug=tenant.slug) }}"
                     class="btn-premium flex items-center gap-2">
                     <i data-lucide="plus" class="w-4 h-4"></i>
@@ -178,6 +214,9 @@
             <form action="" method="GET" class="grid grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-8">
                 {% if compare_mode %}
                 <input type="hidden" name="compare" value="1">
+                {% endif %}
+                {% if arg_subgroup %}
+                <input type="hidden" name="subgroup" value="{{ arg_subgroup }}">
                 {% endif %}
                 <input type="text" name="q" value="{{ arg_q }}"
                     placeholder="Buscar por nome ou IP..."
@@ -265,10 +304,59 @@
         </div>
     </div>
 
+    {% if current_group %}
+    <div class="premium-card p-4 mb-4">
+        <div class="mb-3 flex items-center gap-2">
+            <i data-lucide="folder-open" class="w-4 h-4 text-indigo-400"></i>
+            <h2 class="text-sm font-semibold text-[var(--text-main)]">Organização Interna (Subgrupos)</h2>
+        </div>
+        <div class="flex flex-wrap gap-2">
+            <a href="{{ url_for('tenant_devices.list_devices', tenant_slug=tenant.slug, q=arg_q, group_id=current_group.id, connection=arg_connection, auto=arg_auto, result=arg_result, history=arg_history, audit=arg_audit, due=arg_due, sort=arg_sort, per_page=per_page, compare=arg_compare) }}"
+                class="inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-xs font-semibold transition {% if not arg_subgroup %}bg-gray-900 text-white border-gray-900 shadow-sm{% else %}bg-white border-gray-200 text-gray-700 hover:border-gray-300 hover:bg-gray-50{% endif %}">
+                <i data-lucide="layers-3" class="w-3.5 h-3.5 {% if not arg_subgroup %}text-gray-200{% else %}text-gray-500{% endif %}"></i>
+                Todos
+                <span class="rounded-full px-2 py-0.5 text-[10px] {% if not arg_subgroup %}bg-gray-700 text-white{% else %}bg-gray-100 text-gray-700{% endif %}">
+                    {{ subgroup_total_count }}
+                </span>
+            </a>
+
+            {% for row in group_subgroups %}
+            {% if row and row.subgroup %}
+            {% set is_active_subgroup = arg_subgroup == (row.subgroup.id|string) %}
+            <a href="{{ url_for('tenant_devices.list_devices', tenant_slug=tenant.slug, q=arg_q, group_id=current_group.id, subgroup=row.subgroup.id, connection=arg_connection, auto=arg_auto, result=arg_result, history=arg_history, audit=arg_audit, due=arg_due, sort=arg_sort, per_page=per_page, compare=arg_compare) }}"
+                data-subgroup-chip="1"
+                data-active="{{ '1' if is_active_subgroup else '0' }}"
+                data-subgroup-id="{{ row.subgroup.id }}"
+                data-subgroup-name="{{ row.subgroup.name }}"
+                data-subgroup-connection="{{ row.subgroup.connection_type or 'direct' }}"
+                class="inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-xs font-semibold transition {% if is_active_subgroup %}bg-indigo-600 text-white border-indigo-600 shadow-sm{% else %}bg-white border-gray-200 text-gray-700 hover:border-indigo-200 hover:bg-indigo-50{% endif %}">
+                <i data-lucide="folder-tree" class="w-3.5 h-3.5 {% if is_active_subgroup %}text-indigo-100{% else %}text-indigo-400{% endif %}"></i>
+                {{ row.subgroup.name }}
+                <span class="rounded-full px-2 py-0.5 text-[10px] {% if is_active_subgroup %}bg-indigo-500 text-white{% else %}bg-gray-100 text-gray-700{% endif %}">
+                    {{ row.device_count }}
+                </span>
+            </a>
+            {% endif %}
+            {% endfor %}
+
+            <a href="{{ url_for('tenant_devices.list_devices', tenant_slug=tenant.slug, q=arg_q, group_id=current_group.id, subgroup='none', connection=arg_connection, auto=arg_auto, result=arg_result, history=arg_history, audit=arg_audit, due=arg_due, sort=arg_sort, per_page=per_page, compare=arg_compare) }}"
+                class="inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-xs font-semibold transition {% if arg_subgroup == 'none' %}bg-gray-700 text-white border-gray-700 shadow-sm{% else %}bg-white border-gray-200 text-gray-700 hover:border-gray-300 hover:bg-gray-50{% endif %}">
+                <i data-lucide="folder-minus" class="w-3.5 h-3.5 {% if arg_subgroup == 'none' %}text-gray-100{% else %}text-gray-500{% endif %}"></i>
+                Sem subgrupo
+                <span class="rounded-full px-2 py-0.5 text-[10px] {% if arg_subgroup == 'none' %}bg-gray-600 text-white{% else %}bg-gray-100 text-gray-700{% endif %}">
+                    {{ subgroup_none_count }}
+                </span>
+            </a>
+        </div>
+    </div>
+    {% endif %}
+
     <!-- Bulk Actions -->
     <form id="bulkForm" action="{{ url_for('tenant_devices.run_backup_selected', tenant_slug=tenant.slug) }}"
         method="POST">
         {% include 'partials/csrf.html' %}
+        {% if current_group %}<input type="hidden" name="group_id" value="{{ current_group.id }}">{% endif %}
+        {% if arg_subgroup %}<input type="hidden" name="subgroup" value="{{ arg_subgroup }}">{% endif %}
 
         <div class="premium-card p-6 mb-4 flex items-center justify-between">
             <div class="flex items-center gap-3">
@@ -278,13 +366,14 @@
                     class="px-2 py-1 rounded bg-blue-500/15 text-blue-400 text-xs font-semibold">0 selecionados</span>
             </div>
             <div class="flex gap-2">
-                <button type="submit"
+                <button type="button" id="bulkSubmitTrigger" data-run-backup-live data-form-id="bulkForm"
                     class="px-4 py-2 rounded-lg bg-emerald-500/20 text-emerald-400 text-sm font-semibold hover:bg-emerald-500/30 transition">
                     <i data-lucide="play" class="w-4 h-4 inline-block mr-1"></i> Backup Selecionados
                 </button>
-                <button type="button" onclick="document.getElementById('form-backup-all').submit()"
+                <button type="button" data-run-backup-live data-form-id="form-backup-all"
                     class="px-4 py-2 rounded-lg bg-blue-500/20 text-blue-400 text-sm font-semibold hover:bg-blue-500/30 transition">
-                    <i data-lucide="layers" class="w-4 h-4 inline-block mr-1"></i> Backup Todos ({{ stats.scheduled }})
+                    <i data-lucide="layers" class="w-4 h-4 inline-block mr-1"></i>
+                    Backup Todos ({{ stats.total if current_group else stats.scheduled }})
                 </button>
             </div>
         </div>
@@ -330,12 +419,20 @@
                         <tr class="{% if row_state == 'critical' %}bg-red-500/5{% elif row_state == 'attention' %}bg-amber-500/5{% endif %}">
                             <td>
                                 <input type="checkbox" name="device_ids" value="{{ device.id }}"
+                                    form="bulkForm"
+                                    data-device-type-id="{{ device.device_type_id or '' }}"
                                     class="w-4 h-4 rounded row-checkbox">
                             </td>
                             <td>
                                 <div class="font-semibold text-[var(--text-main)]">{{ device.name }}</div>
                                 {% if device.group %}
                                 <div class="text-xs text-[var(--text-muted)]">{{ device.group.name }}</div>
+                                {% endif %}
+                                {% if device.subgroup and device.subgroup.is_active %}
+                                {% set subgroup_mode = (device.subgroup.connection_type or '') %}
+                                <div class="mt-1 inline-flex items-center rounded-full bg-indigo-500/15 px-2 py-0.5 text-[11px] font-semibold text-indigo-300">
+                                    Subgrupo {{ device.subgroup.name }} · {{ 'VPN' if subgroup_mode == 'vpn' else ('Jump Host' if subgroup_mode in ['jump', 'jump_host'] else 'Direto') }}
+                                </div>
                                 {% endif %}
                             </td>
                             <td>
@@ -382,12 +479,12 @@
                             </td>
                             <td style="text-align: right;">
                                 <div class="flex justify-end gap-2">
-                                    <a href="{{ url_for('tenant_devices.view_device', tenant_slug=tenant.slug, device_id=device.id) }}"
+                                    <a href="{{ url_for('tenant_devices.view_device', tenant_slug=tenant.slug, device_id=device.id, group_id=current_group.id if current_group else None) }}"
                                         class="p-2 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-[var(--text-muted)] hover:text-white transition"
                                         title="Ver">
                                         <i data-lucide="eye" class="w-4 h-4"></i>
                                     </a>
-                                    <a href="{{ url_for('tenant_devices.edit_device', tenant_slug=tenant.slug, device_id=device.id) }}"
+                                    <a href="{{ url_for('tenant_devices.edit_device', tenant_slug=tenant.slug, device_id=device.id, group_id=current_group.id if current_group else None) }}"
                                         class="p-2 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-[var(--text-muted)] hover:text-white transition"
                                         title="Editar">
                                         <i data-lucide="settings" class="w-4 h-4"></i>
@@ -407,9 +504,6 @@
                                 </div>
                             </td>
                         </tr>
-                        <form id="form-backup-{{ device.id }}"
-                            action="{{ url_for('tenant_devices.run_backup', tenant_slug=tenant.slug, device_id=device.id) }}"
-                            method="POST" class="hidden">{% include 'partials/csrf.html' %}</form>
                         {% endfor %}
                         {% else %}
                         <tr>
@@ -436,7 +530,7 @@
             <div>Mostrando {{ start_idx }}-{{ end_idx }} de {{ stats.total }}</div>
             <div class="flex gap-2">
                 {% if page > 1 %}
-                <a href="{{ url_for('tenant_devices.list_devices', tenant_slug=tenant.slug, page=page-1, q=arg_q, group_id=current_group.id if current_group else None, connection=arg_connection, auto=arg_auto, result=arg_result, history=arg_history, audit=arg_audit, due=arg_due, sort=arg_sort, per_page=per_page, compare=arg_compare) }}"
+                <a href="{{ url_for('tenant_devices.list_devices', tenant_slug=tenant.slug, page=page-1, q=arg_q, group_id=current_group.id if current_group else None, subgroup=arg_subgroup or None, connection=arg_connection, auto=arg_auto, result=arg_result, history=arg_history, audit=arg_audit, due=arg_due, sort=arg_sort, per_page=per_page, compare=arg_compare) }}"
                     class="px-3 py-1 rounded bg-[var(--card-bg)] hover:bg-slate-100 dark:hover:bg-slate-700 transition">Anterior</a>
                 {% endif %}
 
@@ -444,13 +538,13 @@
                 {% if p == page %}
                 <span class="px-3 py-1 rounded bg-blue-600 text-[var(--text-main)]">{{ p }}</span>
                 {% else %}
-                <a href="{{ url_for('tenant_devices.list_devices', tenant_slug=tenant.slug, page=p, q=arg_q, group_id=current_group.id if current_group else None, connection=arg_connection, auto=arg_auto, result=arg_result, history=arg_history, audit=arg_audit, due=arg_due, sort=arg_sort, per_page=per_page, compare=arg_compare) }}"
+                <a href="{{ url_for('tenant_devices.list_devices', tenant_slug=tenant.slug, page=p, q=arg_q, group_id=current_group.id if current_group else None, subgroup=arg_subgroup or None, connection=arg_connection, auto=arg_auto, result=arg_result, history=arg_history, audit=arg_audit, due=arg_due, sort=arg_sort, per_page=per_page, compare=arg_compare) }}"
                     class="px-3 py-1 rounded bg-[var(--card-bg)] hover:bg-slate-100 dark:hover:bg-slate-700 transition">{{ p }}</a>
                 {% endif %}
                 {% endfor %}
 
                 {% if page < total_pages %} <a
-                    href="{{ url_for('tenant_devices.list_devices', tenant_slug=tenant.slug, page=page+1, q=arg_q, group_id=current_group.id if current_group else None, connection=arg_connection, auto=arg_auto, result=arg_result, history=arg_history, audit=arg_audit, due=arg_due, sort=arg_sort, per_page=per_page, compare=arg_compare) }}"
+                    href="{{ url_for('tenant_devices.list_devices', tenant_slug=tenant.slug, page=page+1, q=arg_q, group_id=current_group.id if current_group else None, subgroup=arg_subgroup or None, connection=arg_connection, auto=arg_auto, result=arg_result, history=arg_history, audit=arg_audit, due=arg_due, sort=arg_sort, per_page=per_page, compare=arg_compare) }}"
                     class="px-3 py-1 rounded bg-[var(--card-bg)] hover:bg-slate-100 dark:hover:bg-slate-700 transition">Próximo</a>
                     {% endif %}
             </div>
@@ -458,16 +552,168 @@
         {% endif %}
     </form>
 
+    {% for device in devices %}
+    <form id="form-backup-{{ device.id }}"
+        action="{{ url_for('tenant_devices.run_backup', tenant_slug=tenant.slug, device_id=device.id) }}"
+        method="POST" class="hidden">
+        {% include 'partials/csrf.html' %}
+        {% if current_group %}<input type="hidden" name="group_id" value="{{ current_group.id }}">{% endif %}
+    </form>
+    {% endfor %}
+
     <!-- Hidden Form for 'Backup All' -->
     <form id="form-backup-all" action="{{ url_for('tenant_devices.run_backup_all', tenant_slug=tenant.slug) }}"
         method="POST" class="hidden"
-        onsubmit="return confirm('Executar backup para todos os dispositivos agendados neste filtro?')">
+        onsubmit="return confirm('Executar backup para todos os dispositivos deste filtro?')">
         {% include 'partials/csrf.html' %}
-        <input type="hidden" name="only_ready" value="1">
+        <input type="hidden" name="include_unvalidated" value="1">
+        {% if current_group %}
+        <input type="hidden" name="include_unscheduled" value="1">
+        {% endif %}
         {% if current_group %}
         <input type="hidden" name="group_id" value="{{ current_group.id }}">
         {% endif %}
+        {% if arg_subgroup %}
+        <input type="hidden" name="subgroup" value="{{ arg_subgroup }}">
+        {% endif %}
     </form>
+
+    <form id="form-subgroup-connection"
+        action="{{ url_for('tenant_devices.bulk_subgroup_connection', tenant_slug=tenant.slug) }}"
+        method="POST" class="hidden">
+        {% include 'partials/csrf.html' %}
+        {% if current_group %}
+        <input type="hidden" name="group_id" value="{{ current_group.id }}">
+        {% endif %}
+        <input type="hidden" id="subgroupActionInput" name="subgroup_action" value="create">
+        <input type="hidden" id="subgroupIdInput" name="subgroup_id" value="">
+        <input type="hidden" id="subgroupConnectionTypeInput" name="subgroup_connection_type" value="vpn">
+        <input type="hidden" id="subgroupNameInputHidden" name="subgroup_name" value="">
+        {% if arg_subgroup %}
+        <input type="hidden" name="subgroup" value="{{ arg_subgroup }}">
+        {% endif %}
+    </form>
+
+    {% if current_group %}
+    <div id="subgroupModal" aria-hidden="true"
+        onclick="if(event.target===this){this.classList.add('hidden');this.classList.remove('flex');this.setAttribute('aria-hidden','true');}"
+        class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+        <div class="w-full max-w-4xl h-[90vh] max-h-[90vh] overflow-hidden rounded-2xl bg-white shadow-2xl flex flex-col">
+            <div class="px-6 py-4 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
+                <div>
+                    <h3 id="subgroupModalTitle" class="text-lg font-bold text-gray-900 flex items-center gap-2">
+                        <i data-lucide="folder-tree" class="w-5 h-5 text-indigo-600"></i>
+                        Criar Novo Subgrupo
+                    </h3>
+                    <p id="subgroupModalSubtitle" class="text-xs text-gray-500 mt-1">Grupo principal: {{ current_group.name }}</p>
+                </div>
+                <button type="button" id="closeSubgroupModal"
+                    onclick="(function(){var m=document.getElementById('subgroupModal');if(m){m.classList.add('hidden');m.classList.remove('flex');m.setAttribute('aria-hidden','true');}})()"
+                    class="rounded-full p-1 text-gray-400 hover:bg-gray-200 hover:text-gray-700 transition">
+                    <i data-lucide="x-circle" class="w-6 h-6"></i>
+                </button>
+            </div>
+
+            <div class="p-6 space-y-6 overflow-hidden flex-1 min-h-0">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 border-b border-gray-100 pb-6">
+                    <div class="space-y-2">
+                        <label class="block text-sm font-semibold text-gray-700">Nome do Subgrupo</label>
+                        <input id="subgroupNameInput"
+                            type="text"
+                            maxlength="150"
+                            placeholder="Ex: OLT Remotas, Jump Secundário, VPN Legado"
+                            class="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-shadow" />
+                    </div>
+                    <div class="space-y-2">
+                        <label class="block text-sm font-semibold text-gray-700">Modo de Conexão</label>
+                        <select id="subgroupConnectionModeInput"
+                            class="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm bg-white text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none">
+                            <option value="vpn">VPN</option>
+                            <option value="jump_host">Jump Host</option>
+                            <option value="direct">Direto</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="space-y-3 min-h-0">
+                    <div class="flex justify-between items-end">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700">Dispositivos a Mover</label>
+                            <p class="text-xs text-gray-500 mt-1">Selecione os dispositivos do grupo principal para este subgrupo.</p>
+                        </div>
+                        <span id="subgroupSelectedCountPill"
+                            class="text-xs font-bold bg-indigo-100 text-indigo-700 px-2 py-1 rounded">
+                            0 selecionados
+                        </span>
+                    </div>
+                    <p class="text-xs text-gray-500">
+                        {{ group_devices_for_subgroup|length }} dispositivo(s) disponível(is) neste grupo.
+                    </p>
+
+                    <div class="border border-gray-200 rounded-lg overflow-hidden flex flex-col min-h-0">
+                        <div class="bg-gray-50 p-2 border-b border-gray-200 flex items-center gap-2">
+                            <div class="relative flex-1">
+                                <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"></i>
+                                <input id="subgroupDeviceSearch"
+                                    type="text"
+                                    placeholder="Filtrar dispositivos na lista..."
+                                    class="w-full pl-9 pr-3 py-1.5 text-sm border border-gray-300 rounded bg-white text-gray-900 focus:outline-none focus:border-indigo-500" />
+                            </div>
+                            <label class="inline-flex items-center gap-2 text-xs text-gray-600 whitespace-nowrap">
+                                <input type="checkbox" id="subgroupSelectAllVisible" class="rounded border-gray-300">
+                                Selecionar visíveis
+                            </label>
+                        </div>
+                        <div class="overflow-y-auto bg-white p-1 min-h-0" style="max-height: calc(90vh - 420px);">
+                            {% for d in group_devices_for_subgroup %}
+                            <label class="subgroup-device-row flex items-start gap-3 p-2 hover:bg-indigo-50/50 rounded cursor-pointer transition-colors"
+                                data-name="{{ (d.name or '')|lower }}"
+                                data-ip="{{ (d.ip_address or '')|lower }}"
+                                data-current-subgroup-id="{{ d.subgroup_id if d.subgroup_id else '' }}">
+                                <input type="checkbox" class="subgroup-device-checkbox mt-0.5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" value="{{ d.id }}">
+                                <span class="flex-1 min-w-0">
+                                    <span class="block text-sm font-medium text-gray-900 truncate">{{ d.name }}</span>
+                                    <span class="block text-xs text-gray-500 truncate">
+                                        {{ d.ip_address }}:{{ d.port }}
+                                        {% if d.type %} · {{ d.type.name }}{% endif %}
+                                        {% if d.subgroup and d.subgroup.is_active %} · Atual: {{ d.subgroup.name }}{% endif %}
+                                    </span>
+                                </span>
+                            </label>
+                            {% else %}
+                            <div class="px-3 py-3 text-xs text-gray-500">Nenhum dispositivo no grupo.</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="px-6 py-4 border-t border-gray-200 bg-gray-50 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <button type="button" id="deleteSubgroupBtn"
+                        class="hidden px-4 py-2.5 text-sm font-medium bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 rounded-lg transition">
+                        <span class="inline-flex items-center gap-2">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            Excluir Subgrupo
+                        </span>
+                    </button>
+                    <button type="button" id="cancelSubgroupModalFooter"
+                        class="px-4 py-2.5 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-200 rounded-lg transition">
+                        Cancelar
+                    </button>
+                </div>
+                <button type="button" id="createSubgroupAndAssign"
+                    class="px-6 py-2.5 rounded-lg text-sm font-medium bg-indigo-600 hover:bg-indigo-700 text-white transition-all shadow-sm disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed">
+                    <span id="createSubgroupAndAssignLabel" class="inline-flex items-center gap-2">
+                        <i data-lucide="folder-tree" class="w-4 h-4"></i>
+                        Salvar e Mover Selecionados
+                    </span>
+                </button>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
 </div>
 
 {% include 'partials/backup_live_modal.html' %}
@@ -475,6 +721,7 @@
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         lucide.createIcons();
+        const currentGroupName = {{ (current_group.name if current_group else '')|tojson }};
 
         // Select All Logic
         const selectAll = document.getElementById('selectAll');
@@ -484,7 +731,32 @@
         const bulkActionLabel = document.getElementById('bulkActionLabel');
         const bulkActionRun = document.getElementById('bulkActionRun');
         const bulkActionClear = document.getElementById('bulkActionClear');
+        const openSubgroupModal = document.getElementById('openSubgroupModal');
+        const openEditSubgroupModal = document.getElementById('openEditSubgroupModal');
+        const closeSubgroupModal = document.getElementById('closeSubgroupModal');
+        const subgroupModal = document.getElementById('subgroupModal');
+        const subgroupModalTitle = document.getElementById('subgroupModalTitle');
+        const subgroupModalSubtitle = document.getElementById('subgroupModalSubtitle');
+        const subgroupConnectionModeInput = document.getElementById('subgroupConnectionModeInput');
+        const subgroupNameInput = document.getElementById('subgroupNameInput');
+        const subgroupDeviceSearch = document.getElementById('subgroupDeviceSearch');
+        const subgroupSelectAllVisible = document.getElementById('subgroupSelectAllVisible');
+        const subgroupSelectedCountPill = document.getElementById('subgroupSelectedCountPill');
+        const subgroupDeviceRows = document.querySelectorAll('.subgroup-device-row');
+        const subgroupDeviceCheckboxes = document.querySelectorAll('.subgroup-device-checkbox');
+        const createSubgroupAndAssign = document.getElementById('createSubgroupAndAssign');
+        const deleteSubgroupBtn = document.getElementById('deleteSubgroupBtn');
+        const cancelSubgroupModalFooter = document.getElementById('cancelSubgroupModalFooter');
         const bulkForm = document.getElementById('bulkForm');
+        const bulkSubmitTrigger = document.getElementById('bulkSubmitTrigger');
+        const subgroupForm = document.getElementById('form-subgroup-connection');
+        const subgroupActionInput = document.getElementById('subgroupActionInput');
+        const subgroupIdInput = document.getElementById('subgroupIdInput');
+        const subgroupConnectionTypeInput = document.getElementById('subgroupConnectionTypeInput');
+        const subgroupNameInputHidden = document.getElementById('subgroupNameInputHidden');
+        const createSubgroupAndAssignLabel = document.getElementById('createSubgroupAndAssignLabel');
+        const activeSubgroupChip = document.querySelector('[data-subgroup-chip="1"][data-active="1"]');
+        let subgroupModalMode = 'create';
 
         function refreshSelectedCount() {
             const checked = [...rowChecks].filter(cb => cb.checked).length;
@@ -510,11 +782,229 @@
         rowChecks.forEach(cb => cb.addEventListener('change', refreshSelectedCount));
         refreshSelectedCount();
 
+        function collectModalSelectedIds() {
+            return [...subgroupDeviceCheckboxes]
+                .filter((cb) => cb.checked)
+                .map((cb) => cb.value);
+        }
+
+        function refreshSubgroupModalState() {
+            const selected = collectModalSelectedIds();
+            const selectedCount = selected.length;
+            const subgroupNameValue = (subgroupNameInput && subgroupNameInput.value ? subgroupNameInput.value.trim() : '');
+            const canSave = subgroupModalMode === 'edit'
+                ? subgroupNameValue.length >= 3
+                : (selectedCount > 0 && subgroupNameValue.length >= 3);
+            if (subgroupSelectedCountPill) {
+                subgroupSelectedCountPill.textContent = `${selectedCount} selecionados`;
+            }
+            if (createSubgroupAndAssign) {
+                createSubgroupAndAssign.disabled = !canSave;
+            }
+        }
+
+        function applyModalSearch() {
+            const term = String((subgroupDeviceSearch && subgroupDeviceSearch.value) || '').toLowerCase().trim();
+            let visibleCount = 0;
+            subgroupDeviceRows.forEach((row) => {
+                const name = String(row.dataset.name || '');
+                const ip = String(row.dataset.ip || '');
+                const visible = !term || name.includes(term) || ip.includes(term);
+                row.classList.toggle('hidden', !visible);
+                if (visible) visibleCount += 1;
+            });
+            if (subgroupSelectAllVisible && visibleCount === 0) {
+                subgroupSelectAllVisible.checked = false;
+            }
+        }
+
+        function submitSubgroupForm() {
+            if (!subgroupForm || !subgroupActionInput || !subgroupConnectionTypeInput) return;
+
+            const selected = collectModalSelectedIds();
+            const action = subgroupModalMode === 'edit' ? 'update_existing' : 'create';
+            if (action === 'create' && !selected.length) {
+                alert('Selecione ao menos um dispositivo no modal.');
+                return;
+            }
+            if (action === 'update_existing' && (!subgroupIdInput || !subgroupIdInput.value)) {
+                alert('Subgrupo alvo não identificado para edição.');
+                return;
+            }
+
+            subgroupActionInput.value = action;
+            subgroupConnectionTypeInput.value = (subgroupConnectionModeInput && subgroupConnectionModeInput.value)
+                ? subgroupConnectionModeInput.value
+                : 'vpn';
+            if (subgroupNameInputHidden) subgroupNameInputHidden.value = (subgroupNameInput && subgroupNameInput.value ? subgroupNameInput.value.trim() : '');
+            if (subgroupIdInput && action === 'update_existing' && activeSubgroupChip) {
+                subgroupIdInput.value = activeSubgroupChip.dataset.subgroupId || '';
+            }
+
+            if (!subgroupNameInputHidden.value) {
+                alert('Informe o nome do subgrupo.');
+                return;
+            }
+
+            subgroupForm.querySelectorAll('input[name="device_ids"]').forEach((node) => node.remove());
+            selected.forEach((id) => {
+                const hidden = document.createElement('input');
+                hidden.type = 'hidden';
+                hidden.name = 'device_ids';
+                hidden.value = id;
+                subgroupForm.appendChild(hidden);
+            });
+            subgroupForm.submit();
+        }
+
+        function submitDeleteSubgroup() {
+            if (!subgroupForm || !subgroupActionInput || !subgroupIdInput || !activeSubgroupChip) return;
+            const targetSubgroupId = String(activeSubgroupChip.dataset.subgroupId || '');
+            const targetSubgroupName = String(activeSubgroupChip.dataset.subgroupName || 'Subgrupo');
+            if (!targetSubgroupId) {
+                alert('Subgrupo alvo não identificado para exclusão.');
+                return;
+            }
+            if (!confirm(`Excluir o subgrupo "${targetSubgroupName}"?\nOs dispositivos serão desvinculados desse subgrupo.`)) {
+                return;
+            }
+            subgroupActionInput.value = 'delete_existing';
+            subgroupIdInput.value = targetSubgroupId;
+            if (subgroupNameInputHidden) {
+                subgroupNameInputHidden.value = targetSubgroupName;
+            }
+            subgroupForm.querySelectorAll('input[name="device_ids"]').forEach((node) => node.remove());
+            subgroupForm.submit();
+        }
+
+        function closeSubgroupModalFn() {
+            if (!subgroupModal) return;
+            subgroupModal.classList.add('hidden');
+            subgroupModal.classList.remove('flex');
+            subgroupModal.setAttribute('aria-hidden', 'true');
+        }
+
+        function openSubgroupModalFn() {
+            if (!subgroupModal) return;
+            subgroupModal.classList.remove('hidden');
+            subgroupModal.classList.add('flex');
+            subgroupModal.setAttribute('aria-hidden', 'false');
+        }
+
+        function setupCreateMode() {
+            subgroupModalMode = 'create';
+            const selectedFromTable = new Set(
+                [...rowChecks].filter((cb) => cb.checked).map((cb) => cb.value)
+            );
+            subgroupDeviceCheckboxes.forEach((cb) => {
+                cb.checked = selectedFromTable.has(cb.value);
+            });
+            if (subgroupNameInput) subgroupNameInput.value = '';
+            if (subgroupConnectionModeInput) subgroupConnectionModeInput.value = 'vpn';
+            if (subgroupActionInput) subgroupActionInput.value = 'create';
+            if (subgroupIdInput) subgroupIdInput.value = '';
+            if (deleteSubgroupBtn) deleteSubgroupBtn.classList.add('hidden');
+            if (subgroupModalTitle) subgroupModalTitle.innerHTML = '<i data-lucide="folder-tree" class="w-5 h-5 text-indigo-600"></i> Criar Novo Subgrupo';
+            if (subgroupModalSubtitle) subgroupModalSubtitle.textContent = `Grupo principal: ${currentGroupName}`;
+            if (createSubgroupAndAssignLabel) {
+                createSubgroupAndAssignLabel.innerHTML = '<i data-lucide="folder-tree" class="w-4 h-4"></i> Salvar e Mover Selecionados';
+            }
+            if (subgroupDeviceSearch) subgroupDeviceSearch.value = '';
+            if (subgroupSelectAllVisible) subgroupSelectAllVisible.checked = false;
+            applyModalSearch();
+            refreshSubgroupModalState();
+            lucide.createIcons();
+            openSubgroupModalFn();
+        }
+
+        function setupEditMode() {
+            if (!activeSubgroupChip) {
+                alert('Nenhum subgrupo ativo selecionado para edição.');
+                return;
+            }
+            subgroupModalMode = 'edit';
+            const targetSubgroupId = String(activeSubgroupChip.dataset.subgroupId || '');
+            const targetSubgroupName = String(activeSubgroupChip.dataset.subgroupName || '');
+            const targetSubgroupConn = String(activeSubgroupChip.dataset.subgroupConnection || 'direct');
+            subgroupDeviceCheckboxes.forEach((cb) => {
+                const row = cb.closest('.subgroup-device-row');
+                const currentSubgroupId = String((row && row.dataset.currentSubgroupId) || '');
+                cb.checked = currentSubgroupId === targetSubgroupId;
+            });
+            if (subgroupNameInput) subgroupNameInput.value = targetSubgroupName;
+            if (subgroupConnectionModeInput) subgroupConnectionModeInput.value = targetSubgroupConn || 'direct';
+            if (subgroupActionInput) subgroupActionInput.value = 'update_existing';
+            if (subgroupIdInput) subgroupIdInput.value = targetSubgroupId;
+            if (deleteSubgroupBtn) deleteSubgroupBtn.classList.remove('hidden');
+            if (subgroupModalTitle) subgroupModalTitle.innerHTML = '<i data-lucide="settings-2" class="w-5 h-5 text-amber-600"></i> Editar Subgrupo';
+            if (subgroupModalSubtitle) subgroupModalSubtitle.textContent = `Editando: ${targetSubgroupName}`;
+            if (createSubgroupAndAssignLabel) {
+                createSubgroupAndAssignLabel.innerHTML = '<i data-lucide="save" class="w-4 h-4"></i> Salvar Alterações do Subgrupo';
+            }
+            if (subgroupDeviceSearch) subgroupDeviceSearch.value = '';
+            if (subgroupSelectAllVisible) subgroupSelectAllVisible.checked = false;
+            applyModalSearch();
+            refreshSubgroupModalState();
+            lucide.createIcons();
+            openSubgroupModalFn();
+        }
+
+        if (openSubgroupModal && subgroupModal) {
+            openSubgroupModal.addEventListener('click', setupCreateMode);
+        }
+        if (openEditSubgroupModal && subgroupModal) {
+            openEditSubgroupModal.addEventListener('click', setupEditMode);
+        }
+        if (closeSubgroupModal && subgroupModal) {
+            closeSubgroupModal.addEventListener('click', () => {
+                closeSubgroupModalFn();
+            });
+        }
+        if (cancelSubgroupModalFooter && subgroupModal) {
+            cancelSubgroupModalFooter.addEventListener('click', () => {
+                closeSubgroupModalFn();
+            });
+        }
+        if (subgroupModal) {
+            subgroupModal.addEventListener('click', (event) => {
+                if (event.target === subgroupModal) {
+                    closeSubgroupModalFn();
+                }
+            });
+        }
+
+        if (subgroupDeviceSearch) {
+            subgroupDeviceSearch.addEventListener('input', applyModalSearch);
+            applyModalSearch();
+        }
+        if (subgroupSelectAllVisible) {
+            subgroupSelectAllVisible.addEventListener('change', (event) => {
+                const checked = Boolean(event.target.checked);
+                subgroupDeviceRows.forEach((row) => {
+                    if (row.classList.contains('hidden')) return;
+                    const cb = row.querySelector('.subgroup-device-checkbox');
+                    if (cb) cb.checked = checked;
+                });
+                refreshSubgroupModalState();
+            });
+        }
+        subgroupDeviceCheckboxes.forEach((cb) => cb.addEventListener('change', refreshSubgroupModalState));
+        if (subgroupNameInput) {
+            subgroupNameInput.addEventListener('input', refreshSubgroupModalState);
+        }
+        if (createSubgroupAndAssign) {
+            createSubgroupAndAssign.addEventListener('click', submitSubgroupForm);
+        }
+        if (deleteSubgroupBtn) {
+            deleteSubgroupBtn.addEventListener('click', submitDeleteSubgroup);
+        }
+        refreshSubgroupModalState();
+
         if (bulkActionRun) {
             bulkActionRun.addEventListener('click', () => {
                 const checked = [...rowChecks].filter(cb => cb.checked).length;
-                if (checked <= 0 || !bulkForm) return;
-                bulkForm.submit();
+                if (checked <= 0 || !bulkSubmitTrigger) return;
+                bulkSubmitTrigger.click();
             });
         }
         if (bulkActionClear) {

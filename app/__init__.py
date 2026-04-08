@@ -9,6 +9,7 @@ import logging
 from app.core.database import SessionLocal
 from app.models.notification import Notification
 from app.models.tenant import Tenant
+from app.models.user import User
 import uuid
 import secrets
 from sqlalchemy import text
@@ -32,10 +33,18 @@ def create_flask_app():
     from app.services.tenant_access_service import TenantAccessService
     from app.services.billing_policy_service import BillingPolicyService
     from app.services.plan_limits_service import PlanLimitsService
+    from app.services.auth_service import AuthService
+    from app.services.device_subgroup_service import DeviceSubgroupService
     PlatformSettingsService.ensure_schema()
     TenantAccessService.apply_builtin_overrides()
     BillingPolicyService.ensure_schema()
     PlanLimitsService.ensure_schema()
+    DeviceSubgroupService.ensure_schema()
+    _schema_db = SessionLocal()
+    try:
+        AuthService.ensure_schema(_schema_db)
+    finally:
+        _schema_db.close()
 
     def _generate_csrf_token():
         token = session.get("_csrf_token")
@@ -87,6 +96,30 @@ def create_flask_app():
         current_tenant_slug = (request.view_args or {}).get("tenant_slug")
         if current_tenant_slug:
             session["superadmin_return_tenant_slug"] = current_tenant_slug
+
+    @app.before_request
+    def _guard_force_password_change():
+        if request.path.startswith('/static/') or request.path.startswith('/healthz'):
+            return
+        if request.path.startswith('/auth/logout') or request.path.startswith('/auth/forgot-password') or request.path.startswith('/auth/reset-password/'):
+            return
+        if request.path.startswith('/auth/force-password-change'):
+            return
+        user_id = session.get('user_id')
+        if not user_id:
+            return
+        db = SessionLocal()
+        try:
+            try:
+                user_uuid = uuid.UUID(str(user_id))
+            except Exception:
+                session.clear()
+                return redirect(url_for('auth.login'))
+            user = db.query(User).filter(User.id == user_uuid, User.is_active.is_(True)).first()
+            if user and getattr(user, 'must_change_password', False):
+                return redirect(url_for('auth.force_password_change'))
+        finally:
+            db.close()
 
     @app.before_request
     def _guard_inactive_tenant_access():
@@ -298,6 +331,20 @@ def create_flask_app():
                 "redis": redis_ok,
             }
         }), status_code
+
+    @app.get("/internal/metrics/backups")
+    def backup_metrics():
+        from app.services.backup_observability import (
+            metrics_token_is_valid,
+            render_prometheus_metrics,
+        )
+
+        auth_header = request.headers.get("Authorization")
+        if not metrics_token_is_valid(auth_header):
+            return "forbidden\n", 403
+
+        payload = render_prometheus_metrics()
+        return payload, 200, {"Content-Type": "text/plain; version=0.0.4; charset=utf-8"}
     
     # Register Blueprints
     from app.web.superadmin.dashboard import bp as superadmin_dashboard_bp

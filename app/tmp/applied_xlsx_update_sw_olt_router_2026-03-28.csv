@@ -1,0 +1,498 @@
+device_id,name,group,type,match_reason,from_ip,to_ip,from_port,to_port,from_user,to_user,from_telnet,to_telnet,payload_kind
+025a551e-b0cf-477c-853c-1bb173428d0b,PIX FIBRA - OLT HW - SURFIX,Pix Fibra,OLT Huawei,name_unique,172.31.255.17,172.31.255.17,22,22,ajust@emfibra,ajust@emfibra,False,False,olt
+c6c22e0e-d4af-4d48-b756-6a7eee4e00f6,INSNET - OLT HW - ABREU,InsNet,OLT Huawei,name_unique,45.160.221.252,45.160.221.252,45098,45098,ajustconsulting,ajustconsulting,True,True,olt
+0bbce5f5-417d-451c-ace7-9540afdc659d,INFOTEL - SW HW S6730 - APITO,Infotel,Switch Huawei,name_unique,10.10.10.121,10.10.10.121,26504,26504,ajustconsulting,ajustconsulting,False,False,switch
+467c3449-a6d8-49b3-8906-f9558b7ad8f6,I4 TELECOM - SW DM - PRESIDENTE KENNEDY,I4 Telecom,Switch Datacom,name_unique,10.35.0.2,10.35.0.2,22,22,ajust,ajust,False,False,switch
+c28390f4-e103-44bf-8148-5d01c091e450,ULTRANET - OLT PARKS 2 - IGUAIBA,UltraNet,Olt Parks,name_unique,192.141.106.6,192.141.106.6,2202,2202,admin,admin,False,False,olt
+de0e305b-3481-401a-a6c6-caede5501d20,PIX FIBRA - OLT HW - ARABAIANA-02,Pix Fibra,OLT Huawei,name_unique,172.31.255.13,172.31.255.13,22,22,flashnet@emfibra,flashnet@emfibra,False,False,olt
+c6a1bcc3-6042-4b56-af74-585cec73ae3b,MEGANET - OLT HW - JARDIM ATLANTICO,Meganet,OLT Huawei,name_unique,45.176.56.240,45.176.56.240,23432,23432,ajustconsulting,ajustconsulting,True,True,olt
+09a5e5e2-4b8d-4264-a04b-4638737cd6ae,TC+ FIBRA - SW HW 6720 - CORE,TC+ Fibra (Agility),Switch Huawei,name_unique,172.31.0.2,172.31.0.2,2295,2295,arthur,arthur,False,False,switch
+136e5c3c-497b-4f43-b177-3805eb7dad74,SW-BKB-TIMBAUBA,PlanaltoNet,Switch Huawei,ip+kind,10.200.60.1,10.200.60.1,23,22,ajust,ajust,True,False,switch
+6d2fd042-06cc-43ee-9670-7be36658489c,MEGANET - OLT HW - MONTE,Meganet,OLT Huawei,name_unique,45.176.56.240,45.176.56.240,23434,23434,root,root,True,True,olt
+17dfdd8d-26ce-48fd-bfe5-a3729bc82090,PIX FIBRA - SW HW 6720 - PAULISTA,Pix Fibra,Switch Huawei,name_unique,172.16.0.5,172.16.0.5,22,22,ajust@emfibra,ajust@emfibra,False,False,switch
+0ab2d474-34e3-44f9-9e1f-d15f052bfc6b,FLASHNET - SW CORE-CURADO,FlashNet,Switch Huawei,name_unique,10.99.88.11,10.99.88.11,53276,53276,flashnet,flashnet,False,False,switch
+0974366a-e1c3-4d95-8a6a-6810422630e4,MURILONET - OLT HW,Murilo Net,OLT Huawei,name_unique,170.245.66.102,170.245.66.102,3323,3323,smartoltusr,smartoltusr,True,True,olt
+35bd7004-9337-46d4-9923-7be2c7b7fc05,SW-BKB-ALIANCA,PlanaltoNet,Switch Huawei,ip+kind,10.200.90.1,10.200.90.1,23,22,ajust,ajust,True,False,switch
+0b39a4e0-a3ed-4f0e-bd21-a06d4f5b9e51,CONECT FIBRA - SW HW 5720 - CAETES 02,Conect Fibra,Switch Huawei,name_unique,192.168.180.2,192.168.180.2,22,22,conect,conect,False,False,switch
+0dc93070-d7f6-4227-bcd1-a62a0ffaf906,MGN FIBRA - SW HW 6730 - CORE,MGN Fibra,Switch Huawei,name_unique,45.235.104.58,45.235.104.58,48271,48271,mgn,mgn,False,False,switch
+49ef2a83-3272-44b4-b955-cb32bddccf87,INFOTEL - OLT ZTE - NOVA CAPITAL,Infotel,OLT ZTE,name_unique,10.120.0.98,10.120.0.98,23,23,Infoz0n31,Infoz0n31,True,True,olt
+11d496f7-ad9f-478e-8125-f2ab53b5f4a7,HOMENET - OLT VSOL - BARREIROS,HomeNet,OLT VSOL,name_unique,192.168.8.200,192.168.8.200,22,22,admin,admin,False,False,olt
+d8bb3d6f-14c3-4c9d-a7f2-fa5cf7b21153,I4 TELECOM - OLT HW - PEIXINHOS,I4 Telecom,OLT Huawei,name_unique,45.187.168.46,45.187.168.46,23088,23088,ajustconsulting,ajustconsulting,True,True,olt
+12c574e9-1992-4937-ac7e-72bd2a2f6c6c,FLASHNET - SW CORE-SAN MARTIN,FlashNet,Switch Huawei,name_unique,10.99.88.17,10.99.88.17,53276,53276,flashnet,flashnet,False,False,switch
+e9c1ff2d-a13f-4847-8644-3563a2fc6ce2,FOXNET - OLT HW X2,Fox Net,OLT Huawei,name_unique,45.191.105.255,45.191.105.255,4022,4022,ajustconsulting,ajustconsulting,False,False,olt
+15e62444-a794-49ed-904d-76dbc48d4d21,VIBE TELECOM - OLT HW - RIO DOCE,Vibe,OLT Huawei,name_unique,187.17.137.188,187.17.137.188,34744,34744,sgpsgp,sgpsgp,False,False,olt
+d0c46b83-592e-44a7-b186-9daca2789ce3,MOOD TELECOM - OLT HUAWEI - SAN MARTIN,Mood,OLT Huawei,name_unique,45.234.100.210,45.234.100.210,23523,23523,ajustconsulting,ajustconsulting,True,True,olt
+f002ae83-7936-4170-a78a-071b1e4793dc,CELLNET - OLT INTELBRAS - 8820I,CellNet,OLT Intelbras,name_unique,172.31.255.2,172.31.255.2,23,23,admin,admin,True,True,olt
+f058dcfb-1986-49e5-8ef0-9f2b898560f8,ECO TELECOM - SW HW 5720,Eco Telecom,Switch Huawei,name_unique,10.112.10.12,10.112.10.12,22,22,ajust,ajust,False,False,switch
+fc83dac7-a971-4d04-a6f2-aeb2af82b54e,G5 JABOATAO.- SW DM - VISTA ALEGRE,G5 - Jaboatão,Switch Datacom,name_unique,192.141.105.3,192.141.105.3,18865,18865,admin,admin,True,True,switch
+e09eee8a-4f17-4e25-887d-304ad9f7b3ac,PIX FIBRA - SW HW 6730 - SURFIX,Pix Fibra,Switch Huawei,name_unique,172.16.2.2,172.16.2.2,22,22,ajust@emfibra,ajust@emfibra,False,False,switch
+8a97ddb1-796e-4677-bd2b-a7a85bccb221,NEWCONNECT - SW HW - UR11,New Connect,Switch Huawei,name_unique,1.2.1.2,1.2.1.2,22,22,ericcastro,ericcastro,False,False,switch
+19921e01-dd29-41c8-a69f-27488ea13fe2,AF TELECOM - OLT VSOL GPON - BEIRA MAR,AF Telecom,OLT VSOL,name_unique,179.51.151.0,179.51.151.0,4323,4323,ajust,ajust,True,True,olt
+4ffcb7c1-cef2-49c8-b502-bca390b91755,MAXIMANET - OLT HW - CABO,Maxima Net,OLT Huawei,name_unique,45.164.8.10,45.164.8.10,2223,2223,sgpsgp,sgpsgp,False,False,olt
+e04ab92b-6b59-41c0-b905-4c513106aac0,NAVEGANET - OLT HW - COLINAS,Navega Net,OLT Huawei,name_unique,190.89.144.44,190.89.144.44,2225,2225,sgpsgp,sgpsgp,True,True,olt
+288eb9b8-4a79-4377-8ee9-d13dd54e313e,PONTE DIGITAL - SW HW 6720 - CDN,Ponte Digital,Switch Huawei,name_unique,10.200.150.0,10.200.150.0,22250,22250,ajust,ajust,False,False,switch
+2b0f37bf-8b67-4fc1-bbf0-bfe28e47537a,SOFIANET - SW HW - JARDIM PAULISTA,SofiaNet,Switch Huawei,name_unique,192.168.120.2,192.168.120.2,22,22,sofianet,sofianet,False,False,switch
+2bd24f41-de03-41c4-af43-2e933cf94cd6,SOFIANET - OLT NOKIA - RIO DOCE,SofiaNet,OLT Nokia,name_unique,128.201.156.214,128.201.156.214,2253,2253,isadmin,isadmin,False,False,olt
+31144134-1db0-4c63-b09a-84ecf6fe803d,VIBE TELECOM - SW HW 5720 - POP JANGA,Vibe,Switch Huawei,name_unique,172.31.255.70,172.31.255.70,22,22,ajust,ajust,False,False,switch
+b5da733e-eab0-4798-bfad-b2da4c84e20d,PIX FIBRA - OLT HW - ARABAIANA-01,Pix Fibra,OLT Huawei,name_unique,172.31.255.12,172.31.255.12,22,22,flashnet@emfibra,flashnet@emfibra,False,False,olt
+c2bf9a88-8a5f-434a-9830-393020ffbf56,SW-BKB-PAUDALHO,PlanaltoNet,Switch Huawei,ip+kind,10.200.70.1,10.200.70.1,23,22,ajust,ajust,True,False,switch
+3569b9ef-7eb3-4d2c-aed6-d1d00f57d271,FLASHNET - SW CORE-CRUZ DE REBOUCAS,FlashNet,Switch Huawei,name_unique,10.99.88.28,10.99.88.28,53276,53276,flashnet,flashnet,False,False,switch
+0b27d642-8805-4397-afbf-db266ae9d436,OLT-MANGUEIRINHA-HUAWEI,Ponte Digital,OLT Huawei,ip+kind,170.80.49.76,170.80.49.76,22,23,root,ajustconsulting,False,True,olt
+a8bf6fad-03cc-47b3-933b-4eb8fc118ae1,TC+FIBRA - OLT HW 02,TC+ Fibra (Agility),OLT Huawei,name_unique,164.163.20.78,164.163.20.78,23748,23748,root,root,True,True,olt
+30c5843b-458a-4309-8909-4dcb7002bb3b,PIX FIBRA - SW HW 6720 - BARRA-DE-JANGADA,Pix Fibra,Switch Huawei,name_unique,172.16.0.101,172.16.0.101,22,22,ajust@emfibra,ajust@emfibra,False,False,switch
+3ba81cdf-a9ad-48cc-ad59-1acd1f4efeee,MEGANET - SW HW 6720 - TABAJARA,Meganet,Switch Huawei,name_unique,10.99.10.1,10.99.10.1,22,22,admin,admin,False,False,switch
+d9b8360a-5334-4479-b087-7a8cd537fe8d,SW-POP-CAJA03,PlanaltoNet,Switch Huawei,ip+kind,10.10.10.1,10.10.10.1,23,22,ajust,ajust,True,False,switch
+d9d9ec99-cc1b-479e-9662-05288015d55a,FLASHNET - SW CORE-MARANGUAPE-01,FlashNet,Switch Huawei,name_unique,10.99.88.26,10.99.88.26,53276,53276,flashnet,flashnet,False,False,switch
+103a8dc4-f48e-4ed8-a1f6-f3125c3a7bce,KMTELECOM - OLT HW,KM Telecom,OLT Huawei,name_unique,45.170.192.3,45.170.192.3,2250,2250,sgpolt,sgpolt,False,False,olt
+ca902fce-1f45-4736-9f6e-cc90bcb37032,MEGANET - SW HW S6730 - JARDIM ATLANTICO,Meganet,Switch Huawei,name_unique,10.99.10.10,10.99.10.10,22,22,ajust,ajust,False,False,switch
+425c91ff-6b76-4dd1-8d68-94ba812cfad7,VOO TELECOM - SW HW 6730 - MORENO ( CORE MPLS ),Voo Telecom,Switch Huawei,name_unique,10.72.13.4,10.72.13.4,22022,22022,ajustconsulting,ajustconsulting,False,False,switch
+f672321e-d407-4be2-92c9-9c1d6585c405,I4 TELECOM - OLT HW - CASA CAIADA SIDERAL,I4 Telecom,OLT Huawei,name_unique,45.187.169.228,45.187.169.228,2322,2322,sgpsgp,sgpsgp,True,True,olt
+3cf106f4-1313-44b4-840a-9350f6e59657,VIBE TELECOM - SW HW 6720 - CORE PAULISTA,Vibe,Switch Huawei,name_unique,172.31.255.1,172.31.255.1,22,22,ajust,ajust,False,False,switch
+49f168ac-e034-44a7-8823-7ff7e8afe7a0,MGN FIBRA - OLT HW X17,MGN Fibra,OLT Huawei,name_unique,45.235.104.62,45.235.104.62,22,22,root,root,False,False,olt
+52f0098a-2926-49ab-8f8e-9ab1312e794b,PIX FIBRA - SW HW 6730 - COMPULINE-BVIAGEM,Pix Fibra,Switch Huawei,name_unique,172.16.0.33,172.16.0.33,22,22,ajust@emfibra,ajust@emfibra,False,False,switch
+4d644040-2a5d-4949-867c-27e4524280dc,I4 TELECOM - OLT DM - PAU AMARELO,I4 Telecom,OLT Datacom,name_unique,45.187.169.228,45.187.169.228,22777,22777,admin,admin,False,False,olt
+b9c9d138-f772-44ba-b4a4-5c8e67213127,ULTRANET - OLT PARKS 1 - IGUAIBA,UltraNet,Olt Parks,name_unique,192.141.106.6,192.141.106.6,2201,2201,admin,admin,False,False,olt
+b704c10a-7cb9-46ce-ae75-14e71a66a3ff,SW-BKB-NAZARE,PlanaltoNet,Switch Huawei,ip+kind,10.200.40.1,10.200.40.1,23,22,ajust,ajust,True,False,switch
+311ad8e6-4817-40c0-88ab-546bd2e233fa,INFOTEL - SW HW - UR11,New Connect,Switch Huawei,name_unique,1.2.1.2,1.2.1.2,22,22,ericcastro,ericcastro,False,False,switch
+511387c2-5b4c-4fc8-94e2-6b78306f8baa,MOOD TELECOM - SW CISCO NEXUS - MANGABEIRA,Mood,Switch Cisco,name_unique,192.168.50.2,192.168.50.2,22,22,ajust,ajust,False,False,switch
+e50e2b4e-7602-41c4-8e9d-4793a5f3fba6,SW-BKB-VARZEA,PlanaltoNet,Switch Huawei,ip+kind,10.200.80.1,10.200.80.1,23,22,ajust,ajust,True,False,switch
+e16e3ff3-9e8e-4c93-be2d-d6ab34bad5c0,JRNET - OLT INTELBRAS,JRNet,OLT Intelbras,name_unique,168.194.15.174,168.194.15.174,2333,2333,admin,admin,True,True,olt
+14a4cf6e-7e1c-4a5e-bc6e-711a42951178,INFORTEC - OLT HW - TIMBI,Infortec,OLT Huawei,name_unique,187.86.163.100,187.86.163.100,22002,22002,ajustconsulting,ajustconsulting,False,False,olt
+5404deda-208c-4eff-9f4d-3ab065c90a92,UMTELECOM - OLT HW - CENTRO 2,Um Fibra,OLT Huawei,name_unique,10.40.39.11,10.40.39.11,22,22,sgp-radius,sgp-radius,False,False,olt
+1df8630f-07a8-445c-ba25-eb3cdfaca7d2,GL SOLUCOES - SW HW 5735 - TABAJARA,GL Soluções,Switch Huawei,name_unique,45.191.104.10,45.191.104.10,2267,2267,ajustconsulting,ajustconsulting,False,False,switch
+42672f4b-e4f1-4301-86b5-da59c2ef5321,PIX FIBRA - OLT ZTE - OLT UP CONNECT,Pix Fibra,OLT ZTE,name_unique,172.19.53.74,172.19.53.74,22,22,zte,zte,False,False,olt
+59e2cad3-4403-4c1f-9ddb-bc4cf6354ef6,LINECONECT - OLT HW X15,Line Conect,OLT Huawei,name_unique,170.150.139.249,170.150.139.249,2862,2862,sgpsgp,sgpsgp,True,True,olt
+2692abf4-26ca-4386-96e8-c2b24683f6a7,UMTELECOM - OLT FIBERHOME - ABREU E LIMA,Um Fibra,OLT FiberHome,name_unique,10.40.39.3,10.40.39.3,23,23,GEPON,GEPON,True,True,olt
+54e27996-65f5-4d16-ac9b-aa7dba22b76e,PLANALTONET - OLT HW 02,PlanaltoNet,OLT Huawei,name_unique,10.12.1.5,10.12.1.5,23,23,ajustc,ajustc,True,True,olt
+e17f016b-5163-4c2b-9538-0d9e8db96fca,TECH SOLUCOES - OLT HW,Tech Soluções,OLT Huawei,name_unique,179.63.12.32,179.63.12.32,23233,23233,ajustconsulting,ajustconsulting,True,True,olt
+1389573e-2e2b-4f0e-8e72-221fc426eda6,UMTELECOM - OLT HW - BARRO,Um Fibra,OLT Huawei,name_unique,10.40.39.16,10.40.39.16,22,22,sgp-radius,sgp-radius,False,False,olt
+e2193cd3-f468-4c93-bee4-9a73953607d8,INFOTEL - OLT ZTE - NOVA YPE,Infotel,OLT ZTE,name_unique,10.120.0.126,10.120.0.126,23,23,infotel,infotel,True,True,olt
+2978c7c8-f4a5-4dd5-8791-eea63b54fb29,CYBERNET - OLT DM - BAIRRO NOVO (DESATIVADA),Cyber Net,OLT Datacom,name_unique,10.32.50.2,10.32.50.2,23023,23023,cybernet,cybernet,True,True,olt
+3a16ec07-d63b-4857-a127-23cecdad1854,INFOTEL - OLT DM - IPUEIRAS - IPUI,Infotel,OLT Datacom,name_unique,10.120.0.6,10.120.0.6,22088,22088,sgpconexaoolt,sgpconexaoolt,False,False,olt
+362832d7-ca69-4ae0-bb58-7ec70ba8d32c,INFOTEL - OLT ZTE - LUZIMANGUES - LZMG,Infotel,OLT ZTE,name_unique,10.120.0.50,10.120.0.50,23,23,ajust,ajust,True,True,olt
+3972cd3e-35ba-4b42-a994-e340a556d765,FLASHNET - SW ACESSO-ELETRICO EMP. IBTELECOM,FlashNet,Switch Huawei,name_unique,192.168.4.50,192.168.4.50,53276,53276,flashnet,flashnet,False,False,switch
+3c899bce-fd73-44f6-9e26-0b8c1b966c09,FLASHNET - SW ACESSO-MRNET,FlashNet,Switch Huawei,name_unique,192.168.4.59,192.168.4.59,53276,53276,flashnet,flashnet,False,False,switch
+5bd117c8-1bb4-43ad-8065-e874f10ba6b0,SOFIANET - SW HW - OLINDA,SofiaNet,Switch Huawei,name_unique,192.168.251.2,192.168.251.2,22,22,sofianet,sofianet,False,False,switch
+3edf8f1d-d7d5-4dc0-ba5d-17dd2a8b8b9f,PIX FIBRA - OLT HW - GODNET,Pix Fibra,OLT Huawei,name_unique,172.19.53.78,172.19.53.78,22,22,sgpsgp,sgpsgp,False,False,olt
+1cfb451e-bd9f-4fda-936a-baadf048bcc7,FLASHNET - SW ACESSO-ARTHUR,FlashNet,Switch Huawei,name_unique,192.168.4.21,192.168.4.21,53276,53276,flashnet,flashnet,False,False,switch
+5c0587d9-2248-472a-a22f-a128c8806b8c,MAXIMANET - OLT HW - ESCADA,Maxima Net,OLT Huawei,name_unique,45.164.8.10,45.164.8.10,23564,23564,sgpsgp,sgpsgp,True,True,olt
+64ebf04f-91c2-4463-b412-4492a2a33092,PIX FIBRA - OLT HW - IGARASSU-SARAMANDAIA,Pix Fibra,OLT Huawei,name_unique,172.16.0.10,172.16.0.10,22,22,ajust@emfibra,ajust@emfibra,False,False,olt
+5c097eb1-4b4d-4747-9b14-6b217c961958,FLASHNET - SW CORE-BOMBA_HEMETERIO,FlashNet,Switch Huawei,name_unique,10.99.88.37,10.99.88.37,53276,53276,flashnet,flashnet,False,False,switch
+11da5e33-dd50-48df-b3a5-b6a57e961219,UM FIBRA - SW HW 6730 - PPPOE-RECIFE-PE,Um Fibra,Switch Huawei,name_unique,172.16.255.12,172.16.255.12,22,22,ajustconsulting,ajustconsulting,False,False,switch
+470c6f24-92ce-40a4-9c7f-03cd3e206db1,G5 PRAZERES - OLT VSOL,G5 - Prazeres,OLT VSOL,name_unique,192.141.105.32,192.141.105.32,20007,20007,suporte,suporte,False,False,olt
+54effda6-f49f-44eb-a683-741513b9054b,FLASHNET - SW CORE-PRAZERES,FlashNet,Switch Huawei,name_unique,10.99.88.32,10.99.88.32,53276,53276,flashnet,flashnet,False,False,switch
+52eeaf22-94e5-4e18-b3b3-fcab69de7b78,PIX FIBRA - SW HW 6720 - POP VARZEA,Pix Fibra,Switch Huawei,name_unique,172.16.0.4,172.16.0.4,22,22,ajust@emfibra,ajust@emfibra,False,False,switch
+38b9fb37-26fa-4a78-9f7c-428fb11049e2,ULTRANET - OLT PARKS 3 - IGUAIBA,UltraNet,Olt Parks,name_unique,192.141.106.6,192.141.106.6,2203,2203,admin,admin,False,False,olt
+540714d3-42bc-4799-8a1f-a06bfe6416d5,PIX FIBRA - OLT HW - COMPULINE-ILHA,Pix Fibra,OLT Huawei,name_unique,172.31.255.16,172.31.255.16,22,22,ajust@emfibra,ajust@emfibra,False,False,olt
+0baf088c-3ee4-467f-ae8f-eb6625317d45,INFOTEL - SW DM 4380 - SANTA ROSA,Infotel,Switch Datacom,name_unique,10.10.10.128,10.10.10.128,22,22,ajust,ajust,False,False,switch
+2c2edb37-20f5-43cc-82c6-859a4f5ae350,PONTE DIGITAL - OLT HW - PC,Ponte Digital,OLT Huawei,name_unique,10.12.104.2,10.12.104.2,22,22,ajustconsulting,ajustconsulting,False,False,olt
+7b2633a4-3831-4fdb-908c-172dbd264bc0,FLASHNET - SW CORE-BR.DIGITAL 01,FlashNet,Switch Huawei,name_unique,10.99.88.15,10.99.88.15,53276,53276,flashnet,flashnet,False,False,switch
+781131f7-5f15-4c74-bcdd-a36f4d373352,OLT EPON VSOL,UltraFibra,OLT VSOL,ip+kind,45.186.54.32,45.186.54.32,23,45100,admin,admin,True,True,olt
+34cb1157-e285-4932-a4b2-8930d21aee84,NEW CONNECT - SW HW - JABOATAO,New Connect,Switch Huawei,name_unique,1.2.1.29,1.2.1.29,22,22,ericcastro,ericcastro,False,False,switch
+5d8bed31-c048-4ba8-9561-522ee3d0689e,INFOTEL - OLT ZTE - SANTA ROSA - STD,Infotel,OLT ZTE,name_unique,10.120.0.90,10.120.0.90,22,22,conexaosgp,conexaosgp,False,False,olt
+1de38902-c22b-4add-a809-b74e5c714aaa,UP CONNECT FIBRA - OLT HW - BOMBA,UP Connect Fibra,OLT Huawei,name_unique,10.200.0.26,10.200.0.26,22,22,ajustcon,ajustcon,False,False,olt
+60c47de0-6227-4eaa-82f6-6bd0bb8a0384,PIX FIBRA - SW DM 4270 - IBURA DE CIMA,Pix Fibra,Switch Datacom,name_unique,172.31.255.35,172.31.255.35,22,22,ajust,ajust,False,False,switch
+5f5abe47-8017-4396-8ff8-54bd0c3c5ae4,UP CONNECT FIBRA - SW HW S6730 - MANGUEIRA,UP Connect Fibra,Switch Huawei,name_unique,172.16.144.1,172.16.144.1,22,22,connect,connect,False,False,switch
+4245cea0-cdb1-43d4-a0d5-ff0b682c7568,PIX FIBRA - OLT HW - DC,Pix Fibra,OLT Huawei,name_unique,172.31.255.18,172.31.255.18,22,22,ajust@emfibra,ajust@emfibra,False,False,olt
+60165dfb-8c89-44f4-a9f7-0327a88f6309,PONTE DIGITAL - SW HW - CANDEIAS,Ponte Digital,Switch Huawei,name_unique,10.200.150.3,10.200.150.3,22250,22250,ajust,ajust,False,False,switch
+60db7f2d-7d58-4b9a-be2d-e3938490ddaa,FLASHNET - SW CORE-VASCO,FlashNet,Switch Huawei,name_unique,10.99.88.33,10.99.88.33,53276,53276,flashnet,flashnet,False,False,switch
+e4116463-a0ec-49c5-a3f7-40cc5ef5371f,SINFIBRA - OLT HW - SAN MARTIN,SIN Fibra,OLT Huawei,name_unique,160.19.44.22,160.19.44.22,23055,23055,ajustconsulting,ajustconsulting,True,True,olt
+61df9e6d-c630-4cd4-a1bd-8f9446cd68ae,PIX FIBRA - OLT HW - MANGUEIRA UP CONNECT,Pix Fibra,OLT Huawei,name_unique,172.19.53.62,172.19.53.62,23,23,ajust@emfibra,ajust@emfibra,True,True,olt
+6531dc02-6f31-4784-8f4f-c4581efa3001,FLASHNET - SW CORE-TEJIPIO,FlashNet,Switch Huawei,name_unique,10.99.88.14,10.99.88.14,53276,53276,flashnet,flashnet,False,False,switch
+52fc24a5-aa2e-4404-96e6-9d972b7c3b19,CYBERNET - OLT FIBERHOME - CENTRAL,Cyber Net,OLT FiberHome,name_unique,170.80.112.2,170.80.112.2,4704,4704,SGP,SGP,True,True,olt
+2f8d7a47-051f-4883-8f88-df117aa1b9f6,GRUPO FLASH - SW HW 5732 - JAGUARANA,Grupo FlashNet ( IBTelecom ),Switch Huawei,name_unique,10.77.77.14,10.77.77.14,22,22,ajustconsulting,ajustconsulting,False,False,switch
+716d3236-57ae-4d9f-9bf8-9a9cb96dbe58,MOND TELECOM - OLT HW - CDU HWNET,Mond Telecom,OLT Huawei,name_unique,45.164.181.192,45.164.181.192,2211,2211,jairopessoa,jairopessoa,True,True,olt
+71730293-5937-41c9-acae-97102fb28b1d,INFOTEL - SW HW S5720 - PXC,Infotel,Switch Huawei,name_unique,10.150.137.8,10.150.137.8,26504,26504,ajust,ajust,False,False,switch
+68ad3950-6193-43e7-99a4-a7b8b4413299,UMTELECOM - OLT HW - OLINDA,Um Fibra,OLT Huawei,name_unique,10.40.39.13,10.40.39.13,22,22,sgp-radius,sgp-radius,False,False,olt
+6d44703f-eae3-42dd-a49f-dec4b9e5c4f2,FORTNET - OLT INTELBRAS,Forte Net,OLT Intelbras,name_unique,168.194.15.78,168.194.15.78,2223,2223,admin,admin,True,True,olt
+e4e6520f-3565-4127-bfff-ffa3e5b72756,VIBE TELECOM - OLT ZTE - PAU AMARELO,Vibe,OLT ZTE,name_unique,187.17.137.188,187.17.137.188,3321,3321,acessosgp,acessosgp,True,True,olt
+6f977f2c-2a22-441f-99be-12c304074d90,RIONET - SW HW 5720 - OCAPORAN*,Rio Net,Switch Huawei,name_unique,45.162.224.126,45.162.224.126,22022,22022,rionet,rionet,False,False,switch
+b9cd2157-f18d-45f8-a0e4-188eeb7bb6c6,SW-POP-3MARIAS,PlanaltoNet,Switch Huawei,ip+kind,10.10.30.1,10.10.30.1,23,22,ajust,ajust,True,False,switch
+4b95f8fc-175c-44d5-b8d7-c2ae6206d22d,FASTLINK - SW DM EDD 02 - CLIENTE PJ,QualyNet,Switch Datacom,name_unique,10.254.254.3,10.254.254.3,23,23,admin,admin,True,True,switch
+e6739725-6be6-4e6c-8f74-6216c1cef14b,CNB TELECOM - OLT VSOL - ITA,CNB Telecom,OLT VSOL,name_unique,172.18.21.2,172.18.21.2,22,22,admin,admin,False,False,olt
+708b33ad-694f-41e7-96ea-73ad15ba98a2,GRUPO FLASH - OLT HW - JAGUARANA,Grupo FlashNet ( IBTelecom ),OLT Huawei,name_unique,170.79.170.134,170.79.170.134,23051,23051,sgpacesso,sgpacesso,True,True,olt
+1fb950a8-b6aa-43a2-98dd-da859f948bff,DINHONET - OLT HW,DinhoNet,OLT Huawei,name_unique,131.108.155.144,131.108.155.144,12323,12323,ajustconsulting,ajustconsulting,True,True,olt
+216eac96-7999-4311-98a4-d36d6a1b02b2,PLANALTONET - OLT FIBERHOME 02,PlanaltoNet,OLT FiberHome,name_unique,10.12.1.2,10.12.1.2,23,23,GEPON,GEPON,True,True,olt
+7c58527c-0fca-43e4-8555-81046e1ba55e,UMTELECOM - OLT HW - VASCO,Um Fibra,OLT Huawei,name_unique,10.40.39.21,10.40.39.21,22,22,sgp-radius,sgp-radius,False,False,olt
+710ffb82-d514-44a8-a3f3-58656eef12f9,CONECT FIBRA - OLT HW 5800 X2 -CAETES 02,Conect Fibra,OLT Huawei,name_unique,45.5.88.78,45.5.88.78,22883,22883,ajustconsulting,ajustconsulting,False,False,olt
+37314701-46d4-42c8-8435-f4cb1fa6061e,G5 CABO - SW DM4370 4GT+4GX+4XS - CABO CORE,G5 - Cabo,Switch Datacom,name_unique,172.220.0.4,172.220.0.4,22,22,ajust,ajust,False,False,switch
+821b54c2-eba5-4726-90d0-83109f0a7b98,PIX FIBRA - SW DM 4270 - POP TOTO,Pix Fibra,Switch Datacom,name_unique,172.31.255.34,172.31.255.34,22,22,ajust,ajust,False,False,switch
+716b5d87-a38f-4a33-8c18-12a66dc862a1,FLASHNET - SW ACESSO-HULK,FlashNet,Switch Huawei,name_unique,192.168.4.58,192.168.4.58,53276,53276,flashnet,flashnet,False,False,switch
+b2540db7-d509-4c6a-83a8-558500a56567,SW-3064-DATACENTER,PlanaltoNet,Switch Cisco,ip+kind,10.12.255.250,10.12.255.250,23,22,ajust,ajust,True,False,switch
+52617ab2-370b-4e9c-8c44-f2b1be6ebd4b,PLANALTONET - OLT FIBERHOME 03,PlanaltoNet,OLT FiberHome,name_unique,10.12.1.3,10.12.1.3,23,23,GEPON,GEPON,True,True,olt
+71c7473a-14bf-49c4-ae4a-958069ae03bc,MULTNET - OLT HUAWEI - CURADO,MULTNET,OLT Huawei,name_unique,45.235.0.42,45.235.0.42,8655,8655,ajustconsulting,ajustconsulting,False,False,olt
+72ae3d07-f9cd-4dce-aafa-870505167606,MAXIMANET - SW HW 5720 - ESCADA,Maxima Net,Switch Huawei,name_unique,45.164.8.24,45.164.8.24,45994,45994,ajust,ajust,False,False,switch
+b6fada04-dbab-4b93-85fd-1264826933a8,OLT-HUAWEI-GAIBU,Ponte Digital,OLT Huawei,ip+kind,170.80.49.78,170.80.49.78,22,23,equipeti,equipeti,False,True,olt
+7358c52a-103b-4f65-b48c-e97d8e2f4f64,G5 JABOATAO - OLT VSOL - MURIBECA 2,G5 - Jaboatão,OLT VSOL,name_unique,10.15.200.2,10.15.200.2,5023,5023,ajust,ajust,True,True,olt
+84174f74-8f03-4421-81fa-f1b7cf1b1565,ULTRANET - SW HW 5720 -  MAIOBAO,UltraNet,Switch Huawei,name_unique,192.141.106.6,192.141.106.6,2264,2264,ajust,ajust,False,False,switch
+73f17bc3-5f25-49d0-9549-4aa6baa93e95,UMTELECOM - OLT FIBERHOME - CENTRO,Um Fibra,OLT FiberHome,name_unique,10.40.39.5,10.40.39.5,23,23,noc,noc,True,True,olt
+7388a76f-c708-4182-886c-e39c5c3669cf,FORTNET - OLT HW,Forte Net,OLT Huawei,name_unique,168.194.15.78,168.194.15.78,2389,2389,ajustconsulting,ajustconsulting,True,True,olt
+025a6105-e995-4401-9999-8b5ff0f29aec,HUAWEI-WELLFIBRA 01,Well Fibra,OLT Huawei,ip+kind,190.89.145.21,190.89.145.21,23331,23332,sgpsgp,root,True,True,olt
+01d1dedb-1ce1-4940-84e8-1e8f64be2a7b,FLASHNET - SW CORE-NAVEGANET,FlashNet,Switch Huawei,name_unique,10.99.88.7,10.99.88.7,53276,53276,flashnet,flashnet,False,False,switch
+8c237d0a-0a32-4942-880a-052ca9c5bdd5,VOICE CORP - SW DM EDD - CLARO,Voice Corp,Switch Datacom,name_unique,192.168.55.2,192.168.55.2,23,23,ajust,ajust,True,True,switch
+cc68f22a-a25c-4afd-b8af-562c70075911,GRUPO TELECOM - SW HW 6730 - CORE,Grupo Telecom,Switch Huawei,name_unique,172.29.100.18,172.29.100.18,2203,2203,ajust,ajust,False,False,switch
+19a25c7a-4607-49ad-b809-3e80eb270e96,INFOTEL - OLT HW - SANTA ROSA - STD,Infotel,OLT Huawei,name_unique,172.16.121.16,172.16.121.16,3813,3813,smartolt,smartolt,False,False,olt
+8df9b6c7-352f-4a9a-bfe1-418f6b41cc4b,BVNET - SW HUAWEI - CORE BVNET,BVNet,Switch Huawei,name_unique,10.255.254.2,10.255.254.2,22,22,ajustconsulting,ajustconsulting,False,False,switch
+755dcf2f-ee54-4826-9721-230643634e98,SOFIANET - SW HW - JAGUARANA,SofiaNet,Switch Huawei,name_unique,10.11.22.2,10.11.22.2,22,22,sofianet,sofianet,False,False,switch
+76a40994-9321-4128-b0ae-dadd246d2f07,CAVALCANTINET - OLT HW MA5600 - OLINDA,Cavalcanti Net,OLT Huawei,name_unique,45.179.131.240,45.179.131.240,2222,2222,sgpsgp,sgpsgp,False,False,olt
+070b64da-ca2c-47c1-bb68-06994b1b2bfd,ULTRANET - SW HW 5720 - IGUAIBA,UltraNet,Switch Huawei,name_unique,192.141.106.6,192.141.106.6,22208,22208,ultranet,ultranet,False,False,switch
+935c2ee9-eba2-4b2a-90f4-95adbcd5852b,CNB TELECOM - OLT FIBERHOME - IGUARACI,CNB Telecom,OLT FiberHome,name_unique,172.23.10.14,172.23.10.14,22,22,sgp,sgp,False,False,olt
+76acbe1b-533d-48be-b0e3-45e63c97f8c9,FLASHNET - SW CORE-BR.DIGITAL-02,FlashNet,Switch Huawei,name_unique,10.99.88.43,10.99.88.43,53276,53276,flashnet,flashnet,False,False,switch
+9579c789-7d64-4b58-aa49-5e3a93c5719a,PONTE DIGITAL - SW HW - CABO,Ponte Digital,Switch Huawei,name_unique,10.120.248.125,10.120.248.125,22,22,ajust,ajust,False,False,switch
+95d8249f-4f31-4112-bf38-5c08cd46b924,MEGANET - SW HW 5720 - PORTO DE GALINHAS,Meganet,Switch Huawei,name_unique,172.16.80.2,172.16.80.2,22,22,ajust,ajust,False,False,switch
+e6828d8e-602e-4ba7-8f96-8cb6cc874125,TC+FIBRA - OLT HW 01,TC+ Fibra (Agility),OLT Huawei,name_unique,164.163.20.78,164.163.20.78,35999,35999,ajustconsulting,ajustconsulting,True,True,olt
+1d01a914-f3ce-4c70-9930-f9bedfebb8b8,UP CONNECT FIBRA - OLT HW - SAN MARTIN,UP Connect Fibra,OLT Huawei,name_unique,172.19.50.2,172.19.50.2,23,23,sgpacesso,ajustcon,True,True,olt
+970ab823-d359-41d9-bcc3-920f0b6951dd,GRUPO FLASH - SW HW 5732 - MARANGUAPE,Grupo FlashNet ( IBTelecom ),Switch Huawei,name_unique,10.77.77.13,10.77.77.13,22,22,ajustconsulting,ajustconsulting,False,False,switch
+0a961b1c-a1f4-495f-b1a5-000d4e9d1d84,FLASHNET - SW CORE-MARANGUAPE-02,FlashNet,Switch Huawei,name_unique,10.99.88.22,10.99.88.22,53276,53276,flashnet,flashnet,False,False,switch
+731fb4ce-7486-4412-8afb-424495e9b054,PONTE DIGITAL - SW HW - CORE 6730,Ponte Digital,Switch Huawei,name_unique,10.200.150.4,10.200.150.4,22250,22250,ajust,ajust,False,False,switch
+1f50c29e-a4e7-488c-85d1-397793ebbed5,CONECT FIBRA - SW HW 5720 - ARTHUR/PARATIBE,Conect Fibra,Switch Huawei,name_unique,172.22.10.2,172.22.10.2,22,22,conect,conect,False,False,switch
+9e1e72df-f5b5-4b34-9907-dd0159784ed4,INFOTEL - SW DM 4380 - NATIVIDADE,Infotel,Switch Datacom,name_unique,10.10.10.130,10.10.10.130,22,22,ajust,ajust,False,False,switch
+982e4199-7335-4911-971f-5b2b259e30b3,PGI TELECOM - OLT HW - ATAPUZ,PGI Telecom,OLT Huawei,name_unique,10.20.4.249,10.20.4.249,22,22,root,root,False,False,olt
+375cf3a6-2467-43c6-825f-8e1da084da9f,OLT Huawei-Flashnet,Grupo FlashNet ( IBTelecom ),OLT Huawei,ip+kind,170.79.170.154,170.79.170.154,23051,23088,sgpacesso,sgpacesso,True,True,olt
+e72ad150-ad50-4fbe-8637-ead3e8090356,CELLNET - OLT INTELBRAS - G8,CellNet,OLT Intelbras,name_unique,190.89.232.2,190.89.232.2,3023,3023,ajust,ajust,True,True,olt
+a40cd3a0-b9e1-4ffe-b6ae-1ac216a85ed6,INFOTEL - SW DM 4380 - ALIANCA,Infotel,Switch Datacom,name_unique,10.10.10.134,10.10.10.134,22,22,ajust,ajust,False,False,switch
+c592fcbb-ea55-493a-8536-e3b2b85a7393,PIX FIBRA - SW HW 6720 - CLICKNET,Pix Fibra,Switch Huawei,name_unique,172.16.0.32,172.16.0.32,22,22,ajust@emfibra,ajust@emfibra,False,False,switch
+b07c4085-5e0a-46a9-8b85-daa6a412f0d2,SOFIANET - OLT HW - PE 22,SofiaNet,OLT Huawei,name_unique,128.201.156.214,128.201.156.214,23033,23033,ajustconsulting,ajustconsulting,True,True,olt
+a6e3d824-209e-4ebc-ae62-da0aedd0a031,UP CONNECT FIBRA - SW HW S5700 - JORDAO,UP Connect Fibra,Switch Huawei,name_unique,10.131.0.2,10.131.0.2,22,22,ajustcon,ajustcon,False,False,switch
+518b393f-ba73-4952-9b9b-5ccb52c4014a,ULTRANET - OLT FIBERHOME - RAPOSA,UltraNet,OLT FiberHome,name_unique,192.141.107.26,192.141.107.26,23,23,GEPON,GEPON,True,True,olt
+8aae5e46-8c5d-4cdc-b26d-0a6612ab947f,GRUPO FLASH PB - OLT HW - RIO TINTO,Grupo FlashNet PB,OLT Huawei,name_unique,177.221.47.5,177.221.47.5,23233,23233,root,root,True,True,olt
+3627fa26-902c-466c-8856-b8505b1d0a6b,OLT-OLD_RioNet_Rio Doce,I4 Telecom,OLT Huawei,ip+kind,45.187.170.54,45.187.170.54,23,23088,sgpsgp,ajustconsulting,True,True,olt
+a9e4b1ec-dff9-4a71-bb6d-daedd8f76cae,G5 JABOATAO - OLT VSOL - MATRIZ DA LUZ,G5 - Jaboatão,OLT VSOL,name_unique,192.141.105.50,192.141.105.50,2323,2323,admin,admin,True,True,olt
+43ce412d-d4e8-4c2c-953e-d227cdf0de7c,PIX FIBRA - SW HW 6720 - CORDEIRO,Pix Fibra,Switch Huawei,name_unique,172.16.0.6,172.16.0.6,22,22,ajust@emfibra,ajust@emfibra,False,False,switch
+5cef2faf-ef09-400f-b107-a237635a07ec,SW-BKB-LAGOA-DO-CARRO,PlanaltoNet,Switch Huawei,ip+kind,10.200.20.1,10.200.20.1,23,22,ajust,ajust,True,False,switch
+15812443-f0c6-439a-85f1-96cff028c937,MAXIMANET - SW HW 6720 - CORE CABO,Maxima Net,Switch Huawei,name_unique,45.164.8.24,45.164.8.24,22653,22653,ajustconsulting,ajustconsulting,False,False,switch
+788e175c-a47d-4fe0-881b-0a3bee81dae4,ULTRANET - SW HW 6730 - CORE - PINDAI,UltraNet,Switch Huawei,name_unique,192.141.106.6,192.141.106.6,22852,22852,ultranet,ultranet,False,False,switch
+ac7b28b6-2fc1-4d2e-a13a-6c4e8abb2f1f,FLASHNET - SW CORE-FLASHNET-6750,FlashNet,Switch Huawei,name_unique,10.99.88.38,10.99.88.38,53276,53276,flashnet,flashnet,False,False,switch
+772102fe-69c1-4dd5-935a-a9516107f40d,FLASHNET - SW CORE-JABOATAO,FlashNet,Switch Huawei,name_unique,10.99.88.13,10.99.88.13,53276,53276,flashnet,flashnet,False,False,switch
+ad271b6c-6ff5-45a0-9cff-cef349acfb00,PONTE DIGITAL - SW HW - GAIBU,Ponte Digital,Switch Huawei,name_unique,172.21.0.42,172.21.0.42,22,22,ajust,ajust,False,False,switch
+319e947d-2da6-439f-b7de-3acc5b628f95,UMTELECOM - OLT HW - BONGI,Um Fibra,OLT Huawei,name_unique,10.40.39.22,10.40.39.22,22,22,sgp-radius,sgp-radius,False,False,olt
+1984d653-2717-4b81-aad9-6ec53385d08b,FLASHNET - SW CORE-IPSEP 01,FlashNet,Switch Huawei,name_unique,10.99.88.4,10.99.88.4,53276,53276,flashnet,flashnet,False,False,switch
+1a49eaed-9118-413f-a703-2b6762c911e6,TC+FIBRA - SW HW 5700 - ITAMARACA,TC+ Fibra (Agility),Switch Huawei,name_unique,164.163.20.78,164.163.20.78,2296,2296,ajustconsulting,ajustconsulting,False,False,switch
+b298e4b0-fa03-438f-b89d-e05cf360373a,G5 CABO - SW DM4370 4GT+4GX+4XS - MURIBECA,G5 - Cabo,Switch Datacom,name_unique,172.220.0.5,172.220.0.5,22,22,ajust,ajust,False,False,switch
+b29ac17c-5c7f-428b-bcc4-4eb386d512fb,INFOTEL - SW HW S6730 - PMJ FLORENCA,Infotel,Switch Huawei,name_unique,10.10.10.123,10.10.10.123,26504,26504,ajust,ajust,False,False,switch
+b4a1db97-e000-4ff3-bd96-aafa99f07d8c,CONECT FIBRA - SW HW 6730 - CORE,Conect Fibra,Switch Huawei,name_unique,172.30.0.2,172.30.0.2,22,22,ajust,ajust,False,False,switch
+b753adb8-ff91-431a-b46e-3f5acf99b9bd,MOND TELECOM - OLT HW - DATACENTER HWNET,Mond Telecom,OLT Huawei,name_unique,45.164.181.192,45.164.181.192,2210,2210,sgpacesso,sgpacesso,False,False,olt
+b762c480-0b8a-40c3-b240-7b8a32a0678f,PIX FIBRA - SW HW 6730 - MANGUEIRA,Pix Fibra,Switch Huawei,name_unique,172.16.0.7,172.16.0.7,22,22,ajust@emfibra,ajust@emfibra,False,False,switch
+827bb2ba-f3f9-4515-9c7a-53cd8194d011,G5 JABOATAO - SW HW 5720 - CORE,G5 - Jaboatão,Switch Huawei,name_unique,172.16.66.2,172.16.66.2,22,22,ajustconsulting,ajustconsulting,False,False,switch
+b8325ee5-8ba9-4c59-8b17-ad31bbf392bc,INFOTEL - SW DM 4380 - ALMAS,Infotel,Switch Datacom,name_unique,10.10.10.131,10.10.10.131,22,22,ajust,ajust,False,False,switch
+789e1023-4231-4442-8091-3c52fde54e42,FLASHNET - SW ACESSO-AURORA,FlashNet,Switch Huawei,name_unique,192.168.4.16,192.168.4.16,53276,53276,flashnet,flashnet,False,False,switch
+7a4a7481-a352-4a00-8c92-8fc4525d933f,VIBE TELECOM - OLT ZTE - IGARASSU,Vibe,OLT ZTE,name_unique,187.17.137.188,187.17.137.188,3331,3331,acessosgp,acessosgp,False,False,olt
+bd546a29-c18d-4a5d-8349-9dc71b6bd662,MOND TELECOM - SW CISCO NEXUS,Mond Telecom,Switch Cisco,name_unique,45.164.181.192,45.164.181.192,22522,22522,admin,admin,False,False,switch
+bbab4eca-bbd7-4df5-b343-afabc3f9e676,NEW CONNECT - SW HW - CABO,New Connect,Switch Huawei,name_unique,1.3.1.39,1.3.1.39,22,22,ericcastro,ericcastro,False,False,switch
+7c97d575-490e-4d1d-9c5a-e893ed3a09c4,MUNDONET - OLT FIBERHOME - RECIFE,Mundo Net,OLT FiberHome,name_unique,179.42.37.40,179.42.37.40,23231,23231,GEPON,GEPON,True,True,olt
+306d5d9f-4f7b-4b5d-96e5-4e6f0ce462be,VOO TELECOM - SW HW 6730 - VARZEA ( CORE MPLS ),Voo Telecom,Switch Huawei,name_unique,10.72.13.55,10.72.13.55,22022,22022,ajustconsulting,ajustconsulting,False,False,switch
+c46283ef-418b-4f2a-94ba-fdaba811e559,PIX FIBRA - SW HW 5732 - IBURA DE BAIXO,Pix Fibra,Switch Huawei,ip+kind,10.31.255.34,10.31.255.34,22,22,ajust@emfibra,luciano,False,False,switch
+8d4c9ecf-022f-4c15-8ca4-8330421d692a,CONECT FIBRA - SW HW ATN 910 - JARDIM PAULISTA,Conect Fibra,Switch Huawei,name_unique,172.35.0.2,172.35.0.2,22,22,root,root,False,False,switch
+8161c6d7-7f60-4932-a6d4-03571d4e11db,PLANALTONET - OLT HW - PAUDALHO,PlanaltoNet,OLT Huawei,name_unique,10.12.1.10,10.12.1.10,23,23,ajustc,ajustc,True,True,olt
+821680b1-602b-477f-93d1-e6cc40a3198c,PLANALTONET - OLT HW 05,PlanaltoNet,OLT Huawei,name_unique,10.12.1.8,10.12.1.8,23,23,ajustc,ajustc,True,True,olt
+c3f8f008-479a-42ef-b8ec-e7d277f2e400,INFOTEL - OLT DM - BREJINHO - BNZ,Infotel,OLT Datacom,name_unique,10.10.10.126,10.10.10.126,22088,22088,sgpconexaoolt,sgpconexaoolt,False,False,olt
+49ab319e-cfe1-4fdd-aca9-c0e2d5bc4653,VOO TELECOM - SW HW 5720 - GUABIRABA,Voo Telecom,Switch Huawei,name_unique,10.72.13.201,10.72.13.201,22022,22022,ajustconsulting,ajustconsulting,False,False,switch
+8204ae66-b33b-4e22-ad36-040040d7e7cd,NAVEGANET - OLT HW - OTIZEIRO,Navega Net,OLT Huawei,name_unique,190.89.144.44,190.89.144.44,2224,2224,sgpsgp,sgpsgp,True,True,olt
+ac448c25-f17c-481d-aed7-516791680d5f,VOICE CORP - SW DM EDD - DATA CENTER VOICE CORP ( CONEXAO COM A OI ),Voice Corp,Switch Datacom,name_unique,192.168.66.2,192.168.66.2,23,23,admin,admin,True,True,switch
+98930937-bb34-4a02-bffa-38ebf0bcbae1,OLT HUAWEI - CENTRO,Um Fibra,OLT Huawei,ip+kind,10.40.39.11,10.40.39.11,23,22,root,sgp-radius,True,False,olt
+441bfb60-5a77-4fd7-a320-9a01c57fe521,INFOTEL - OLT EPON - LEITAO,Infotel,OLT VSOL,name_unique,172.16.121.16,172.16.121.16,37120,37120,admin,admin,True,True,olt
+cd933cde-4905-4570-a424-4ab3b64d9f34,PIX FIBRA - OLT HW - HWNET MADALENA,Pix Fibra,OLT Huawei,name_unique,172.16.29.130,172.16.29.130,22,22,ajust@emfibra,ajust@emfibra,False,False,olt
+0963a4e7-a40d-4c86-947b-9a8c19f9d4ca,OLT-VSOL-PASSARINHO-TELNET,GL Soluções,OLT VSOL,ip+kind,45.191.104.10,45.191.104.10,8313,2323,ajust,sgphftel,True,True,olt
+5852bca7-a4d7-4b85-a0e0-82beb83c49ce,I4 TELECOM - SW HW 5700 - RIO DOCE,I4 Telecom,Switch Huawei,name_unique,192.168.220.2,192.168.220.2,5378,5378,ajustconsulting,ajustconsulting,False,False,switch
+8572b466-990e-4a8a-a487-ef3d364aacd0,PIX FIBRA - OLT HW - TOTO,Pix Fibra,OLT Huawei,name_unique,172.31.255.10,172.31.255.10,22,22,ajust@emfibra,ajust@emfibra,False,False,olt
+84492b3e-a8cc-448b-83ca-0153c8be442c,FLASHNET - SW CORE-FLASHNET,FlashNet,Switch Huawei,name_unique,10.99.88.1,10.99.88.1,53276,53276,flashnet,flashnet,False,False,switch
+86ccf6d7-a1dd-4be5-bc38-a2970bc085d4,FLASHNET - SW CORE-CDN,FlashNet,Switch Huawei,name_unique,10.99.88.25,10.99.88.25,53276,53276,ajust,ajust,False,False,switch
+c0597181-c78c-45fc-8956-77854cfa121c,PIX FIBRA - SW HW 6730 - CORE EFIBRA BARRA,Pix Fibra,Switch Huawei,name_unique,172.16.0.35,172.16.0.35,22,22,ajust@emfibra,ajust@emfibra,False,False,switch
+6d76c736-ef1d-439f-bfd3-7d2c8c82cfda,PE-POP-ABREU,Navega Net,OLT Huawei,ip+kind,160.19.44.162,160.19.44.162,23,23088,root,ajustconsulting,True,True,olt
+6731d28e-0cdf-4e4b-900d-81f83b7969b7,CYBERNET - SW HW 5700 - ACUDE,Cyber Net,Switch Huawei,name_unique,170.80.112.2,170.80.112.2,55022,55022,cybernet,cybernet,False,False,switch
+d89b72ab-b758-4ba2-a244-b75bfa477c0e,PIX FIBRA - SW HW 5732 - POP CENTRO,Pix Fibra,Switch Huawei,name_unique,172.16.0.42,172.16.0.42,22,22,ajust@emfibra,ajust@emfibra,False,False,switch
+762d19aa-8545-405e-8714-655dc5aa075f,INFOTEL - OLT DM - PORTO NACIONAL / SIM 02,Infotel,OLT Datacom,name_unique,172.16.121.16,172.16.121.16,3811,3811,infortel,infortel,False,False,olt
+870a4f9c-2fe3-4ded-aa4a-2e50a45efdf1,MAXIMANET - OLT HW - GAIBU,Maxima Net,OLT Huawei,name_unique,172.16.134.12,172.16.134.12,2211,2211,sgpsgp,sgpsgp,False,False,olt
+86d9eed6-82f5-4788-aa57-7d33e178037c,G5 JABOATAO - OLT VSOL - VISTA ALEGRE,G5 - Jaboatão,OLT VSOL,name_unique,192.141.105.3,192.141.105.3,2373,2373,admin,admin,True,True,olt
+8ae80fcc-e114-46f9-a4cf-662ab5c101de,G5 JABOATAO - OLT MAXPRINT - LOTE 56,G5 - Jaboatão,OLT Maxprint,name_unique,192.141.105.3,192.141.105.3,2395,2395,g5,g5,True,True,olt
+713b09c1-ebe7-4b94-a2b4-c1f3b810edd4,PIX FIBRA - OLT HW - OLINDA,Pix Fibra,OLT Huawei,name_unique,172.16.0.14,172.16.0.14,22,22,ajust@emfibra,ajust@emfibra,False,False,olt
+7d243b42-1ae0-4f48-ac91-495f8a40951c,GRUPO FLASH PB - OLT HW - JACARAU,Grupo FlashNet PB,OLT Huawei,name_unique,177.221.47.15,177.221.47.15,23051,23051,sgpsgp1,sgpsgp1,True,True,olt
+9990ca58-5844-4a49-b3db-be995472e0b2,SW-POP-FIBERHOME02,PlanaltoNet,Switch Huawei,ip+kind,10.200.60.1,10.200.60.1,23,22,ajust,ajust,True,False,switch
+b118e14b-1427-482a-abb4-7405813321ea,PIX FIBRA - SW HW 5720 - JORDAO,Pix Fibra,Switch Huawei,name_unique,172.16.2.50,172.16.2.50,22,22,ajust,ajust,False,False,switch
+45aa2b3d-524d-4411-800f-286e281b8aee,PIX FIBRA - SW HW 6720 - BOMBA DO HEMETERIO,Pix Fibra,Switch Huawei,name_unique,172.16.0.41,172.16.0.41,22,22,ajust@emfibra,ajust@emfibra,False,False,switch
+87f73baa-2347-4ade-9c02-8a6124d6af04,OLT HUAWEI X17 CAETES 1,Conect Fibra,OLT Huawei,ip+kind,45.5.88.50,45.5.88.50,23,23088,sgpolt,sgpolt,True,True,olt
+8b0f0c45-7e5e-4bd2-a975-48900f689f50,GRUPO FLASH - OLT HW - MARANGUAPE 1,Grupo FlashNet ( IBTelecom ),OLT Huawei,name_unique,170.79.169.206,170.79.169.206,23088,23088,sgpsgp,sgpsgp,True,True,olt
+c3e2c5d5-8182-4c75-8f64-4f287b900b8d,GL SOLUCOES - SW HW 5735 - PASSARINHO,GL Soluções,Switch Huawei,name_unique,45.191.104.10,45.191.104.10,22235,22235,ajust,ajust,False,False,switch
+8e0f403d-83d4-4e7f-a453-49c117acff60,G5 JABOATAO - OLT VSOL EPON - MORENO,G5 - Jaboatão,OLT VSOL,name_unique,128.201.78.148,128.201.78.148,2059,2059,ajust,ajust,True,True,olt
+8c7fa841-e187-4eb6-a251-32550ea79375,ULTRANET - SW HW 5720 - RAPOSA,UltraNet,Switch Huawei,name_unique,192.141.106.6,192.141.106.6,2265,2265,ajust,ajust,False,False,switch
+8e8b0f62-936d-440c-b42f-80881af1fbdc,I4 TELECOM - OLT HW - RIO DOCE,I4 Telecom,OLT Huawei,name_unique,45.187.170.54,45.187.170.54,23088,23088,ajustconsulting,ajustconsulting,True,True,olt
+91b780c6-2dba-4443-a548-b1001cece250,ULTRANET - OLT HW - MIRITIUA,UltraNet,OLT Huawei,name_unique,192.141.106.6,192.141.106.6,22288,22288,sgpacesso,sgpacesso,False,False,olt
+0e48e43f-6081-45e1-82d1-1bdabeb07084,SW-BKB-CARPINA,PlanaltoNet,Switch Huawei,ip+kind,10.200.10.1,10.200.10.1,23,22,ajust,ajust,True,False,switch
+629f1456-d68d-4fae-8475-efa3065844da,ULTRANET - OLT HW X7 - PINDAI,UltraNet,OLT Huawei,name_unique,192.141.106.6,192.141.106.6,22206,22206,sgpsgp,sgpsgp,True,True,olt
+de6fdde8-d6d5-4d41-a31d-265493258be8,PONTE DIGITAL - SW HW - SOTAVE,Ponte Digital,Switch Huawei,name_unique,10.200.150.1,10.200.150.1,22250,22250,ajust,ajust,False,False,switch
+defafd66-ff4f-42e9-9110-d235e1af70ae,INFOTEL - SW DM 4380 - LAGOA TO,Infotel,Switch Datacom,name_unique,10.10.10.136,10.10.10.136,22,22,infotel,infotel,False,False,switch
+7f8f17bd-e5f6-435d-b1ee-f094383a589b,PIX FIBRA - OLT HW - COMPULINE-BOA VIAGEM,Pix Fibra,OLT Huawei,name_unique,172.31.255.14,172.31.255.14,22,22,ajust@emfibra,ajust@emfibra,False,False,olt
+40fb49c2-7467-48ea-afb8-12977753e562,FLASHNET - SW CORE-OURO-PRETO,FlashNet,Switch Huawei,name_unique,10.99.88.19,10.99.88.19,53276,53276,flashnet,flashnet,False,False,switch
+93fe1a32-1dca-4034-8c20-09f21abaf98c,CNB TELECOM - OLT FIBERHOME - FLORES,CNB Telecom,OLT FiberHome,name_unique,172.19.19.2,172.19.19.2,22,22,sgp,sgp,False,False,olt
+94b0ad92-d941-4943-843c-e1a09cd41e69,INFOTEL - OLT ZTE - SANTA ROSA,Infotel,OLT ZTE,name_unique,10.120.0.90,10.120.0.90,23,23,conexaosgp,conexaosgp,True,True,olt
+caccd60b-2ef1-4eb1-b475-e310d82cd1e5,UMTELECOM - OLT FIBERHOME - CABO DE SANTO AGOSTINHO,Um Fibra,OLT FiberHome,name_unique,10.40.39.4,10.40.39.4,23,23,GEPON,GEPON,True,True,olt
+94ec3ca4-0397-4f7c-bfd0-406923b4ce2f,FIBERMAIS - SW HW 6730 - CORE,FiberMais,Switch Huawei,name_unique,170.245.223.90,170.245.223.90,2280,2280,ajust,ajust,False,False,switch
+45ba4ca5-57ee-48ff-a48c-5b3f49e5bf93,MOOD TELECOM - OLT ZTE - RECIFE,Mood,OLT ZTE,name_unique,187.17.137.188,187.17.137.188,2300,2300,SGP,SGP,True,True,olt
+b7bbd852-b6ff-4632-a787-5dcc1a738514,PIX FIBRA - SW HW 6730 - COMPULINE,Pix Fibra,Switch Huawei,name_unique,172.16.0.2,172.16.0.2,22,22,ajust@emfibra,ajust@emfibra,False,False,switch
+954fdbc9-cfe8-4327-a58f-a3fc2ef9f048,QUALYNET - OLT HW,QualyNet,OLT Huawei,name_unique,170.79.169.254,170.79.169.254,2823,2823,ajustconsulting,ajustconsulting,True,True,olt
+d12b2b1f-7298-46cb-8092-36c55e0042a4,SUCUPIRANET - SW HW 5720,Sucupira Net,Switch Huawei,name_unique,172.16.16.2,172.16.16.2,2222,2222,tecxpro,tecxpro,False,False,switch
+b2040d39-65b7-4d53-a2bf-d17fcff2eef5,OLT Huawei POP Maranguape - Fox UP,Meganet,OLT Huawei,ip+kind,45.176.57.90,45.176.57.90,23,23088,foxfox,foxfox,True,True,olt
+c85b7245-ed39-44eb-816c-d404a6fe1f4d,PIX FIBRA - SW DM EDD 2104G2,Pix Fibra,Switch Datacom,name_unique,10.31.254.90,10.31.254.90,23,23,admin,admin,True,True,switch
+967fe176-ea8a-4c15-87b2-4b981ee0a210,FLASHNET - SW CORE-CAETES,FlashNet,Switch Huawei,name_unique,10.99.88.18,10.99.88.18,53276,53276,flashnet,flashnet,False,False,switch
+96da9bf1-7b23-4f6f-8288-d95c6a349d50,INFOTEL - OLT DM - MONTE DO CARMO - MTC,Infotel,OLT Datacom,name_unique,10.120.0.38,10.120.0.38,22088,22088,sgpconexaoolt,sgpconexaoolt,False,False,olt
+96ac3387-e7da-4eb9-9a96-38ff9dbf7dfc,I4 TELECOM - OLT HW - CASA CAIADA RIONET,I4 Telecom,OLT Huawei,name_unique,45.187.170.10,45.187.170.10,23088,23088,ajustconsulting,ajustconsulting,True,True,olt
+978379f7-a5e3-426d-8198-f1c32c47ba3b,PIX FIBRA - OLT HW - AFOGADOS,Pix Fibra,OLT Huawei,name_unique,172.31.255.28,172.31.255.28,22,22,ajust@emfibra,ajust@emfibra,False,False,olt
+0c653998-af03-4cfb-999f-fc55d76404b5,OLT-OLD_i4Telecom_Ouro Preto,I4 Telecom,OLT Huawei,ip+kind,45.187.168.30,45.187.168.30,23519,23088,sgpsgp,sgpsgp,True,True,olt
+0db191b0-08c7-4062-b3a3-e782787f1f1f,AF TELECOM - SW HW S6730 - CORE OLINDA,AF Telecom,Switch Huawei,name_unique,179.51.150.12,179.51.150.12,20006,20006,ajustconsulting,ajustconsulting,False,False,switch
+07ada5d5-5747-4241-a1cd-1d5b16520428,OLT-VSOL-POP-NOVA-OLINDA,GL Soluções,OLT VSOL,ip+kind,45.191.104.10,45.191.104.10,8323,2323,ajust,sgphftel,False,True,olt
+5941b0a9-d63b-4a52-9c3d-5b07c81b8e8b,PIX FIBRA - SW HW 6720 - CDN,Pix Fibra,Switch Huawei,name_unique,172.31.255.21,172.31.255.21,22,22,ajust@emfibra,ajust@emfibra,False,False,switch
+83ccae75-b41d-43cd-897c-23a9926251c3,MOOD TELECOM - OLT HW - MANGUABEIRA PB,Mood,OLT Huawei,name_unique,187.17.136.128,187.17.136.128,22011,22011,sgpsgp,sgpsgp,False,False,olt
+72e18496-774e-4b85-8926-e0ea1fc1f4af,GRUPO FLASH - OLT HW - AURORA,Grupo FlashNet ( IBTelecom ),OLT Huawei,name_unique,170.79.170.150,170.79.170.150,23088,23088,ajustconsulting,ajustconsulting,True,True,olt
+997a7a8b-a290-48d5-a250-f6f9f2a497b5,PGI TELECOM - OLT HW - PONTA DE PEDRAS,PGI Telecom,OLT Huawei,name_unique,10.15.10.102,10.15.10.102,23,23,root,root,True,True,olt
+b1e3bc78-4308-47e5-9b48-5b001a963e12,PIX FIBRA - SW HW 6730 - IGARASSU/CRUZ,Pix Fibra,Switch Huawei,name_unique,172.16.0.9,172.16.0.9,22,22,ajust@emfibra,ajust@emfibra,False,False,switch
+58764996-3358-4ff1-96a6-3b4a90ae51f0,MOOD TELECOM - OLT HW - JANGA,Mood,OLT Huawei,name_unique,187.17.137.188,187.17.137.188,23748,23748,grupovibe,grupovibe,True,True,olt
+674e6a28-ccba-4281-8dfe-3f14ef97d170,FLASHNET - SW CORE-CAMARAGIBE,FlashNet,Switch Huawei,name_unique,10.99.88.10,10.99.88.10,53276,53276,flashnet,flashnet,False,False,switch
+16a25ac8-4581-43e2-a145-1545536a95d6,NAVEGANET - OLT HW - GASNET,Navega Net,OLT Huawei,name_unique,172.17.50.2,172.17.50.2,23,23,sgpsgp,sgpsgp,True,True,olt
+408da546-153e-48f4-b3e5-84b1d8d92390,VOICE CORP - SW DM EDD - BRASILIA-DF,Voice Corp,Switch Datacom,name_unique,177.87.50.90,177.87.50.90,23501,23501,admin,admin,True,True,switch
+e41ae438-9983-470a-98fd-2cd7e580239a,INFOTEL - SW DM 4380 - LUZIMANGUES,Infotel,Switch Datacom,name_unique,10.10.10.122,10.10.10.122,26504,26504,ajust,ajust,False,False,switch
+e1dadd3d-bd82-4780-b581-87f7ba0a6bde,PIX FIBRA - SW HW 6730 - PINA 02,Pix Fibra,Switch Huawei,name_unique,172.16.0.31,172.16.0.31,22,22,ajust@emfibra,ajust@emfibra,False,False,switch
+1a007de8-b839-40a1-be28-8ed5d6a74410,OLT-OLD_RioNet_Casa Caiada,I4 Telecom,OLT Huawei,ip+kind,45.187.170.10,45.187.170.10,23,23088,sgpsgp,ajustconsulting,True,True,olt
+9eab5dfa-fa6c-48db-b646-138a14f4eb3f,INET - OLT FH - CAIC,INET,OLT FiberHome,name_unique,177.71.83.255,177.71.83.255,22533,22533,GEPON,GEPON,True,True,olt
+1657fea2-82ef-4765-8c15-c46734cd1d0e,PIX FIBRA -SW HW 6730 - OLINDA,Pix Fibra,Switch Huawei,name_unique,172.16.0.0,172.16.0.0,22,22,ajust@emfibra,ajust@emfibra,False,False,switch
+9f2f8a79-73b9-494a-9258-877d49ae5481,UMTELECOM - OLT HW - JORDAO,Um Fibra,OLT Huawei,name_unique,10.40.39.20,10.40.39.20,22,22,sgp-radius,sgp-radius,False,False,olt
+e10d6216-d6d5-4149-8576-ba91caead79f,OLT-HUAWEI-SEBASTIÃO AMARAL,SofiaNet,OLT Huawei,ip+kind,128.201.156.218,128.201.156.218,23,23088,sgpolt,ajustconsulting,True,True,olt
+135e9306-3687-4c31-a444-6db97477be51,VOO TELECOM - SW HW 6730 - JABOATAO ( CORE MPLS ),Voo Telecom,Switch Huawei,name_unique,10.72.13.40,10.72.13.40,22022,22022,ajustconsulting,ajustconsulting,False,False,switch
+a630c8ab-88c9-4a49-a806-cbb158dfa3cd,UMTELECOM - OLT FIBERHOME - VARZEA,Um Fibra,OLT FiberHome,name_unique,10.2.240.2,10.2.240.2,23,23,noc,noc,True,True,olt
+09dc146c-792f-45ad-bfc0-4afa0ad6bd5c,OLT Huawei-Aurora,Grupo FlashNet ( IBTelecom ),OLT Huawei,ip+kind,170.79.170.150,170.79.170.150,23777,23088,sgpsgp,ajustconsulting,True,True,olt
+a5a769d5-dc47-4d23-b8e0-47de5b03914b,GRUPO FLASH - SW HW 6730 - NOBRE,Grupo FlashNet ( IBTelecom ),Switch Huawei,name_unique,10.77.77.1,10.77.77.1,22,22,ajustconsulting,ajustconsulting,False,False,switch
+a8160fed-3ca4-4472-b7cd-341f4df4d24d,AF TELECOM - OLT VSOL EPON - RIODOCE,AF Telecom,OLT VSOL,name_unique,179.51.150.14,179.51.150.14,2040,2040,ajust,ajust,True,True,olt
+a03899e9-1c93-46f3-9804-0d1f80e72faf,FLASHNET - SW CORE-P.KENNEDY,FlashNet,Switch Huawei,name_unique,10.99.88.3,10.99.88.3,53276,53276,flashnet,flashnet,False,False,switch
+f0d4272f-4231-4517-bebe-e02be8a756e9,OLT-VSOL-AURORA-16P,InsNet,OLT VSOL,ip+kind,45.160.221.253,45.160.221.253,2334,2235,SGP,ajustconsulting,False,False,olt
+a8aa412e-a039-48a1-aecf-cba65ddbe3fc,UMTELECOM - OLT FIBERHOME - SEDE,Um Fibra,OLT FiberHome,name_unique,10.40.39.6,10.40.39.6,23,23,noc,noc,True,True,olt
+d506807c-f4a0-47df-a42c-9190a096507e,FASTLINK - SW DM EDD 01 - CLIENTE PJ,QualyNet,Switch Datacom,name_unique,10.254.254.2,10.254.254.2,23,23,admin,admin,True,True,switch
+a9a8fc2f-13ef-476f-b5c8-1f01265fb4a9,UMTELECOM - OLT HW - VARZEA,Um Fibra,OLT Huawei,name_unique,10.40.39.15,10.40.39.15,22,22,sgp-radius,sgp-radius,False,False,olt
+76aa663e-7729-48d8-abcf-a073936460c6,FLASHNET - SW CORE-IGARASSU,FlashNet,Switch Huawei,name_unique,10.99.88.12,10.99.88.12,53276,53276,flashnet,flashnet,False,False,switch
+abd92271-40a4-4fe6-bc05-ea7ca765d03e,CYBERNET - OLT HW - BAIRRO NOVO,Cyber Net,OLT Huawei,name_unique,170.80.112.2,170.80.112.2,4747,4747,ajustconsulting,ajustconsulting,True,True,olt
+ab84fecd-3757-4be3-8d71-f32cbfa6bd25,ULTRANET - ROUTER - HW NE8000-M4,UltraNet,Router Huawei,name_unique,45.189.160.33,45.189.160.33,2241,2241,ajustconsulting,ajustconsulting,False,False,router
+2696a4c9-527a-4975-a30a-7f62abb31761,MEGANET - OLT HW - AGUA FRIA,Meganet,OLT Huawei,name_unique,45.176.56.240,45.176.56.240,23435,23435,root,root,True,True,olt
+f8059742-fb79-4231-8630-ad0f4fcaf8e0,OLT HUAWEI X7,Real Net,OLT Huawei,ip+kind,45.234.9.16,45.234.9.16,50022,50023,root,admin,False,True,olt
+ecfba98e-f0bf-4cdb-91c7-ca0718bfe729,FLASHNET - SW CORE-CABO_S.A.,FlashNet,Switch Huawei,name_unique,10.99.88.41,10.99.88.41,53276,53276,flashnet,flashnet,False,False,switch
+ebf94425-29ad-4e9e-9d98-abd859bf3d5e,CONECT FIBRA - OLT HW MA5800 X2 - JARDIM PAULISTA,Conect Fibra,OLT Huawei,name_unique,45.5.88.78,45.5.88.78,22893,22893,sgpolt,sgpolt,False,False,olt
+ae1242e2-6751-4011-83b3-385a80bd9c97,OLT-OLD_i4Telecom_Peixinhos,I4 Telecom,OLT Huawei,ip+kind,45.187.168.46,45.187.168.46,23051,23088,sgpsgp,ajustconsulting,True,True,olt
+9cf24a7e-ef78-43ce-ae30-82cfb44ae18d,MEGANET - SW TPLINK - SERRAMBI,Meganet,Switch TP-LINK,name_unique,172.16.81.2,172.16.81.2,23,23,ajustconsulting,ajustconsulting,True,True,switch
+7606a763-17b8-48cc-8e0e-680cd8e466f5,G5 JABOATAO - OLT TPLINK - XAREU,G5 - Jaboatão,OLT TP-LINK,name_unique,192.141.105.88,192.141.105.88,50523,50523,ajust,ajust,True,True,olt
+07020909-500d-4069-80f3-2e835f2e881a,ULTRANET - OLT FIBERHOME - PINDAI,UltraNet,OLT FiberHome,name_unique,192.141.106.38,192.141.106.38,23,23,GEPON,GEPON,True,True,olt
+af6c8027-077b-47b5-ac69-e148b4471dc4,UMTELECOM - OLT HW - SEDE,Um Fibra,OLT Huawei,name_unique,10.40.39.10,10.40.39.10,22,22,sgp-radius,sgp-radius,False,False,olt
+222d1ec5-034e-43dd-b823-b199925aaf9d,I4 TELECOM - SW HW 6720 - PAU AMARELO,I4 Telecom,Switch Huawei,name_unique,10.77.66.5,10.77.66.5,22,22,ajustconsulting,ajustconsulting,False,False,switch
+ec12644e-b6c5-43aa-817a-bec5a7214ac0,VIBE TELECOM - OLT HW - ARTHUR/PARATIBE,Vibe,OLT Huawei,name_unique,187.17.137.188,187.17.137.188,33744,33744,speednet,speednet,True,True,olt
+9c3b31de-f936-4608-a038-926761a5e3f9,FIBERMAIS - SW CISCO - ALTO DO PASCOAL,FiberMais,Switch Cisco,name_unique,170.245.223.90,170.245.223.90,2029,2029,admin,admin,False,False,switch
+b09d3f72-2771-4042-982e-9abb4185111a,FLASHNET - SW CORE-S.LOURENCO,FlashNet,Switch Huawei,name_unique,10.99.88.9,10.99.88.9,53276,53276,flashnet,flashnet,False,False,switch
+63ecf79e-0160-48e3-a417-d95881e292ed,MAXIMANET - OLT DIGISTAR - PONTE DIGITAL,Maxima Net,OLT Digistar,name_unique,45.164.8.10,45.164.8.10,23254,23254,admin,admin,True,True,olt
+a0af49e2-0f22-4e15-9b6e-330d44326703,SOFIANET - SW HW ATN 910C-A - SEBASTIAO AMARAL,SofiaNet,Switch Huawei,name_unique,192.168.190.10,192.168.190.10,22,22,sofianet,sofianet,False,False,switch
+35638375-37ab-4665-839f-f246648856c9,PIX FIBRA - SW HW 6730 - JARDIM,Pix Fibra,Switch Huawei,name_unique,172.16.0.34,172.16.0.34,22,22,thiago,thiago,False,False,switch
+37671e6f-11c5-40bc-8ff0-9387226a3b91,GRUPO VESC - SW HW 6730 - CORE,Grupo Vesc,Switch Huawei,name_unique,10.255.254.1,10.255.254.1,22,22,vescnet,vescnet,False,False,switch
+a166e5b4-c303-4180-884a-22fb0e0da138,SOFIANET - SW DM - SEBASTIAO AMARAL,SofiaNet,Switch Datacom,name_unique,192.168.0.25,192.168.0.25,22,22,admin,admin,False,False,switch
+f2b3711a-21f4-4625-8e18-b56d34d7f305,MOOD TELECOM - OLT HW X17 - NOVA MANGUABEIRA,Mood,OLT Huawei,name_unique,172.17.0.1,172.17.0.1,22,22,ajustconsulting,ajustconsulting,False,False,olt
+b0b58bb2-f14b-478d-8608-fbb8fbfba728,VIBE TELECOM - SW HW 5720 - POP ABREU,Vibe,Switch Huawei,name_unique,172.31.255.20,172.31.255.20,22,22,ajust,ajust,False,False,switch
+a5df0c51-a493-499a-b182-1c8fe67bbd89,FLASHNET - SW ACESSO-VILA TORRES GALVAO,FlashNet,Switch Huawei,name_unique,192.168.4.52,192.168.4.52,53276,53276,flashnet,flashnet,False,False,switch
+2d4109aa-9e43-4895-ae80-f05582557d66,AF TELECOM - OLT VSOL GPON - RIODOCE,AF Telecom,OLT VSOL,name_unique,179.51.150.14,179.51.150.14,2023,2023,ajust,ajust,True,True,olt
+837d07e0-cb03-4948-8d12-56fba5a2dd95,PONTE DIGITAL - SW HW - COQUINHO,Ponte Digital,Switch Huawei,name_unique,10.200.150.2,10.200.150.2,22250,22250,ajust,ajust,False,False,switch
+b3bc3b0f-f58d-4f25-a76f-8c3042c2b67b,OLT HUAWEI - CASA FORTE,Um Fibra,OLT Huawei,ip+kind,10.40.39.14,10.40.39.14,23,22,spotpf,sgp-radius,True,False,olt
+23ea0a80-e0ac-4185-8453-77f4421def00,INFOTEL - SW DM 4380 - MTC,Infotel,Switch Datacom,name_unique,10.10.10.132,10.10.10.132,22,22,ajust,ajust,False,False,switch
+234dbe0b-f706-4300-82d8-f866620df174,SWITCH - HUAWEI 6730,TC+ Fibra (Agility),Switch Huawei,ip+kind,164.163.20.78,164.163.20.78,2295,2296,arthur,ajustconsulting,False,False,switch
+2e7a2039-1791-4569-aa0f-87472c8e7706,ACESSO OLT VSOL TABAJARA,GL Soluções,OLT VSOL,ip+kind,45.191.104.10,45.191.104.10,8223,2323,ajust,sgphftel,True,True,olt
+85f346d4-8d1d-410c-a1fe-7337fdfa7131,PGI TELECOM - OLT HW - ACAÚ,PGI Telecom,OLT Huawei,name_unique,10.20.8.253,10.20.8.253,23232,23232,ajustconsulting,ajustconsulting,True,True,olt
+31beda20-e3a1-430d-887d-b54d230eb646,ULTRAFIBRA - OLT INTELBRAS,UltraFibra,OLT Intelbras,name_unique,45.186.54.32,45.186.54.32,45100,45100,admin,admin,True,True,olt
+49781f66-e009-422d-8ceb-81c4972f9f6c,FLASHNET - SW CORE-RIO-DOCE,FlashNet,Switch Huawei,name_unique,10.99.88.27,10.99.88.27,53276,53276,flashnet,flashnet,False,False,switch
+ac48305d-003c-42e6-bb0b-427217c23b79,INFORTEC - SW HW 6720 - TIMBI,Infortec,Switch Huawei,name_unique,187.86.163.14,187.86.163.14,2222,2222,ajustconsulting,ajustconsulting,False,False,switch
+6bc92c40-05b4-4f00-8f96-94fa6ea73123,NAVEGANET - OLT HW - BAYEUX,Navega Net,OLT Huawei,name_unique,190.89.144.44,190.89.144.44,53721,53721,sgpsgp,sgpsgp,True,True,olt
+6718c8c0-2cfb-4f7e-805f-e22b933aa716,NEW CONNECT - SW HW - PRAZERES,New Connect,Switch Huawei,name_unique,1.2.1.21,1.2.1.21,22,22,ericcastro,ericcastro,False,False,switch
+87514aec-3d98-43e4-aa83-0ef8938513d7,NEW CONNECT - SW HW 5720 - LOTE 92,New Connect,Switch Huawei,name_unique,1.2.1.9,1.2.1.9,22,22,ericcastro,ericcastro,False,False,switch
+f47b06de-1b9e-4a4a-82df-1dac9665e376,INFOTEL - SW DM 4380 - AURENI 02,Infotel,Switch Datacom,name_unique,10.10.10.124,10.10.10.124,26504,26504,ajust,ajust,False,False,switch
+899301f9-0832-4b83-b994-9c5be3e1ffd0,VIBE TELECOM - SW HW 5720 - POP PAU AMARELO,Vibe,Switch Huawei,name_unique,172.31.255.244,172.31.255.244,22,22,ajust,ajust,False,False,switch
+8ee35b42-992e-47d9-bbbc-c293157eeb5b,GL SOLUCOES - SW HW 6720 - HF,GL Soluções,Switch Huawei,name_unique,10.77.66.4,10.77.66.4,2203,2203,ajust,ajust,False,False,switch
+b3d599e4-8724-4e0b-bfc7-ea73a328486a,FLASHNET - SW CORE-MARIA-FARINHA,FlashNet,Switch Huawei,name_unique,10.99.88.21,10.99.88.21,53276,53276,flashnet,flashnet,False,False,switch
+34c04d41-96bf-43ba-95f8-fcfb6fb23636,MUNDONET - OLT HW - CORTES,Mundo Net,OLT Huawei,name_unique,179.42.37.40,179.42.37.40,11427,11427,ajustconsulting,ajustconsulting,True,True,olt
+321f1fbf-21c3-4bef-9b0c-bcaf0dbfbfeb,AF TELECOM - OLT VSOL EPON - JANGA 01,AF Telecom,OLT VSOL,name_unique,179.51.150.14,179.51.150.14,2042,2042,ajust,ajust,True,True,olt
+87cdf04a-e48c-4ad3-8b18-d6d0651181a6,SOFIANET - OLT HW - JARDIM PAULISTA,SofiaNet,OLT Huawei,name_unique,128.201.156.214,128.201.156.214,23088,23088,ajustconsulting,ajustconsulting,True,True,olt
+a03bc86b-8215-4862-a56d-6530297e28f4,GRUPO FLASH - OLT HW - VILA TORRES GALVAO,Grupo FlashNet ( IBTelecom ),OLT Huawei,name_unique,170.79.168.134,170.79.168.134,23088,23088,sgpacesso,sgpacesso,True,True,olt
+853bf99f-c57f-49e0-a94c-920d44b18b40,INFOTEL - SW DM 4380 - PINHEIROPOLIS,Infotel,Switch Datacom,name_unique,10.10.10.129,10.10.10.129,22,22,ajust,ajust,False,False,switch
+379346fd-c97d-4ef4-b0fd-cf9422baa4a9,VIBE TELECOM - OLT HW - ALAMEDA,Vibe,OLT Huawei,name_unique,187.17.137.188,187.17.137.188,23793,23793,ajustconsulting,ajustconsulting,True,True,olt
+b63305a7-99d7-41a9-8ea2-6ae35ee1ce43,PGI TELECOM - OLT HW - CARNE DE VACA,PGI Telecom,OLT Huawei,name_unique,10.20.4.17,10.20.4.17,23,23,root,root,True,True,olt
+b6a9d7b1-92a0-4b06-ba4a-e75a1aae1af2,NAVEGANET - OLT HW - ABREU,Navega Net,OLT Huawei,name_unique,160.19.44.162,160.19.44.162,23088,23088,ajustconsulting,ajustconsulting,True,True,olt
+37cb1ffb-0b20-4294-9c38-30d4a572a27a,RIONET - OLT HW - MURO ALTO,Rio Net,OLT Huawei,name_unique,45.162.225.66,45.162.225.66,2300,2300,sgpsgp,sgpsgp,True,True,olt
+8ba3a66f-510f-484d-9165-3dd6526e599e,GRUPO FLASH - SW HW 5732 - ARTHUR,Grupo FlashNet ( IBTelecom ),Switch Huawei,name_unique,10.77.77.12,10.77.77.12,22,22,ajustconsulting,ajustconsulting,False,False,switch
+75090c47-f06f-41af-a5d9-8152aa0c4b31,GRUPO FLASH - SW HW 5732 - AURORA,Grupo FlashNet ( IBTelecom ),Switch Huawei,name_unique,10.77.77.11,10.77.77.11,22,22,ajust,ajust,False,False,switch
+b7453e5b-7bf8-4d6f-a39f-82d1eb68f508,VIBE TELECOM - SW HW 5720 - POP OLINDA,Vibe,Switch Huawei,name_unique,172.31.255.251,172.31.255.251,22,22,ajust,ajust,False,False,switch
+3b7af5e7-4fdf-4247-8bff-1fdbaf601d15,REALNET - OLT INTELBRAS,Real Net,OLT Intelbras,name_unique,45.234.9.16,45.234.9.16,50023,50023,admin,admin,True,True,olt
+b790b33e-8ca6-407c-a2df-72bea35f4c82,MEGANET - OLT HW - MARANGUAPE,Meganet,OLT Huawei,name_unique,45.176.57.90,45.176.57.90,23088,23088,foxfox,foxfox,True,True,olt
+5de4907a-53bc-4dc1-9d6f-9407e9f6a1d3,SW-BKB-LIMOEIRO,PlanaltoNet,Switch Huawei,ip+kind,10.200.50.1,10.200.50.1,23,22,ajust,ajust,True,False,switch
+2c7d6481-3bf4-4299-bcc1-8332085e481e,PE-POP-CAETES,Navega Net,OLT Huawei,ip+kind,160.19.44.26,160.19.44.26,23032,23088,sgpsgp,ajustconsulting,True,True,olt
+b5124b2f-2c56-4e71-81f2-23ba41f8ef67,PIX FIBRA - OLT DISCOVERY,Pix Fibra,OLT Huawei,name_unique,172.19.51.142,172.19.51.142,22,22,ajust@emfibra,ajust@emfibra,False,False,olt
+3d3fe8a0-4b66-4d0c-88af-628a703c3948,GRUPO FLASH - OLT HW - NOBRE,Grupo FlashNet ( IBTelecom ),OLT Huawei,name_unique,170.79.170.154,170.79.170.154,23088,23088,sgpacesso,sgpacesso,True,True,olt
+0746ff9f-0239-4794-81d3-a71fc5e101a7,VOICE CORCP - SW HW S620,Voice Corp,Switch Huawei,name_unique,190.89.34.2,190.89.34.2,2323,2323,ajustc,ajustc,True,True,switch
+44d7ffbc-34cb-4e22-b941-b409a8094dfc,POWERNET - OLT HW - IPSEP,PowerNet,OLT Huawei,name_unique,187.17.137.188,187.17.137.188,23352,23352,ajustconsulting,ajustconsulting,False,False,olt
+4505eff3-5700-47b0-9572-ebca15785576,SN TELECOM - OLT HW - JATAUBA,SN Telecom,OLT Huawei,name_unique,181.189.92.6,181.189.92.6,3019,3019,ajustconsulting,ajustconsulting,False,False,olt
+30a17047-fe05-4878-a97e-578abcd9c64a,UMTELECOM - OLT HW - CENTRO,Um Fibra,OLT Huawei,name_unique,10.40.39.19,10.40.39.19,22,22,sgp-radius,sgp-radius,False,False,olt
+15daf9cf-1b13-475a-a97f-b6939ec7f4d0,GRUPO FLASH - OLT HW - ARTHUR,Grupo FlashNet ( IBTelecom ),OLT Huawei,name_unique,168.194.15.42,168.194.15.42,23088,23088,ajustconsulting,ajustconsulting,True,True,olt
+18ba8609-8558-4597-8cc0-fc89aaeb6689,MEGANET - OLT HW - TABAJARA,Meganet,OLT Huawei,name_unique,45.176.56.240,45.176.56.240,23433,23433,sgpolt,sgpolt,True,True,olt
+e4d1b324-b623-43e7-bc95-6332ec76dbec,SW-BKB-LAGOA-DO-CARRO,PlanaltoNet,Switch Huawei,ip+kind,10.200.20.1,10.200.20.1,23,22,ajust,ajust,True,False,switch
+b90e67db-142e-44fb-a176-8801e1383432,PGI TELECOM - OLT INTELBRAS - GAMBA,PGI Telecom,OLT Intelbras,name_unique,10.20.26.1,10.20.26.1,23,23,admin,admin,True,True,olt
+090dad35-e475-44fd-b0a8-70296f77dc0c,OLT VSOL CLEONTE NET,GL Soluções,OLT VSOL,ip+kind,45.191.104.10,45.191.104.10,2395,2323,gl,sgphftel,True,True,olt
+8ef33001-1339-445a-838f-b66ac12384dd,INFORTEC - OLT HW - SLM,Infortec,OLT Huawei,name_unique,187.86.163.100,187.86.163.100,23088,23088,ajustconsulting,ajustconsulting,True,True,olt
+0793504d-5cb1-4a74-b550-87e7e63754a9,PIX FIBRA - SW HW 6720 - PEIXINHOS,Pix Fibra,Switch Huawei,name_unique,172.16.0.1,172.16.0.1,22,22,ajust@emfibra,ajust@emfibra,False,False,switch
+2befc3f3-0dc6-42b1-85f4-11a84d2d75e7,PIX FIBRA - OLT HW - IGARASSU-CRUZ,Pix Fibra,OLT Huawei,name_unique,172.16.0.13,172.16.0.13,22,22,ajust@emfibra,ajust@emfibra,False,False,olt
+807c80cc-f4dc-4488-a8c7-60a2d6408263,PONTE DIGITAL - OLT HW - MEGAMIDIA,Ponte Digital,OLT Huawei,name_unique,10.12.107.2,10.12.107.2,22,22,ajustconsulting,ajustconsulting,False,False,olt
+ba651d2b-8a77-47c9-8d7e-bd28c6e549c7,CYBERNET - OLT VSOL REAL GARDEN,Cyber Net,OLT VSOL,name_unique,10.15.10.102,10.15.10.102,23,23,ajustconsulting,ajustconsulting,True,True,olt
+6d432c32-1067-4e9c-bb46-a358f8d284e9,PIX FIBRA - SW HW 5732 - SARAMANDAIA,Pix Fibra,Switch Huawei,name_unique,172.16.0.12,172.16.0.12,22,22,ajust@emfibra,ajust@emfibra,False,False,switch
+4656cdfb-0da0-4055-afc0-16849b5bf93c,MOND TELECOM - OLT HW - VARZEA HWNET,Mond Telecom,OLT Huawei,name_unique,45.164.181.192,45.164.181.192,2214,2214,fabiosilva,fabiosilva,True,True,olt
+bb37c073-fa34-4d22-8cbd-b8b9771dd96e,FLASHNET - SW CORE-PASSARINHO,FlashNet,Switch Huawei,name_unique,10.99.88.35,10.99.88.35,53276,53276,flashnet,flashnet,False,False,switch
+90a111e6-b250-4c24-95c7-1f27749a3304,INFOTEL - OLT DM - SILVANOPOLIS - SVP,Infotel,OLT Datacom,name_unique,10.120.0.14,10.120.0.14,22088,22088,sgpconexaoolt,sgpconexaoolt,False,False,olt
+88e8d9a1-4ebf-4ccc-a172-e850ef8c957c,RIONET - OLT DIGISTAR - BEACH CLASS,Rio Net,OLT Digistar,name_unique,45.162.225.182,45.162.225.182,9922,9922,admin,admin,False,False,olt
+a00085ae-8053-49ce-833b-59922432aec0,WELL FIBRA - OLT HW 01,Well Fibra,OLT Huawei,name_unique,10.255.255.13,10.255.255.13,23088,23088,ajustconsulting,ajustconsulting,True,True,olt
+a45dec87-06f7-47ed-a6c7-7813ae2ccaea,GRUPO TELECOM - OLT HW - INFORNET,Grupo Telecom,OLT Huawei,name_unique,181.225.168.128,181.225.168.128,2331,2331,sgpinfornet,sgpinfornet,True,True,olt
+465e7ffe-e291-40ff-a204-312fac61c2d7,HOMENET - OLT ZTE - MORRO ALTO,HomeNet,OLT ZTE,name_unique,192.168.7.2,192.168.7.2,23,23,adbthomaz,adbthomaz,True,True,olt
+8018f84f-e653-474c-9f3a-af71badb84ac,VIBE TELECOM - OLT HW - MARANGUAPE 2,Vibe,OLT Huawei,name_unique,187.17.137.188,187.17.137.188,33755,33755,sgpolt,sgpolt,True,True,olt
+8cea71ea-a347-4652-866a-7d04b531a829,SOFIANET - OLT HW - SEBASTIAO AMARAL,SofiaNet,OLT Huawei,name_unique,128.201.156.218,128.201.156.218,23088,23088,ajustconsulting,ajustconsulting,True,True,olt
+6dd756d8-af9f-47a0-b7c3-4bd038aa1918,MOOD TELECOM - SW CISCO NEXUS - FUNCIONARIOS,Mood,Switch Cisco,name_unique,192.168.50.6,192.168.50.6,22,22,ajust,ajust,False,False,switch
+305984f5-83f4-4438-a8ba-09049836386f,INET - SW HW 6730 - CORE,INET,Switch Huawei,name_unique,177.71.83.255,177.71.83.255,5557,5557,ajust,ajust,False,False,switch
+bd217529-9dc9-4acf-a487-da9a1268ddbd,INFOTEL - OLT DM - PINDORAMA - PMG,Infotel,OLT Datacom,name_unique,10.120.0.42,10.120.0.42,22088,22088,sgpconexaoolt,sgpconexaoolt,False,False,olt
+bd24434c-5d76-44db-b72a-5783a4ec3b3a,INFOTEL - OLT DM - PONTE ALTA - POL,Infotel,OLT Datacom,name_unique,10.120.0.34,10.120.0.34,22088,22088,sgpconexaoolt,sgpconexaoolt,False,False,olt
+bd89fd6e-bfa7-4358-949f-86a704d1d437,RIONET - SW HW 6730 - CORE IPOJUCA,Rio Net,Switch Huawei,name_unique,45.162.225.190,45.162.225.190,22510,22510,ajust,ajust,False,False,switch
+70359567-f3b8-4a60-8f4a-d0bdd50ecaa5,FLASHNET - SW ACESSO-REISNET,FlashNet,Switch Huawei,name_unique,192.168.4.43,192.168.4.43,53276,53276,flashnet,flashnet,False,False,switch
+1294c0f5-c6ba-4bf1-a09e-3b8096553e9d,CYBERNET - SW HW 6720 - CORE,Cyber Net,Switch Huawei,name_unique,172.20.44.2,172.20.44.2,22,22,ajust,ajust,False,False,switch
+494b84ab-1285-4ab9-b60a-b12a2970f278,PONTE DIGITAL - OLT HW - COQUINHO,Ponte Digital,OLT Huawei,name_unique,10.12.105.2,10.12.105.2,22,22,ajustconsulting,ajustconsulting,False,False,olt
+1750c692-b488-4cba-b4ba-1d6deca6d400,INFORTEC - SW HW 6730 - JPII,Infortec,Switch Huawei,name_unique,187.86.163.14,187.86.163.14,2232,2232,ajustconsulting,ajustconsulting,False,False,switch
+0d150c23-4229-4677-8192-8e365a4429c2,ULTRANET - OLT HW X2 - PINDAI,UltraNet,OLT Huawei,name_unique,192.141.106.6,192.141.106.6,23538,23538,ajustconsulting,ajustconsulting,True,True,olt
+befc95a0-504d-4a37-912f-a8c20b82aae0,GRUPO VESC - OLT HW - IPSEP,Grupo Vesc,OLT Huawei,name_unique,201.76.98.98,201.76.98.98,2323,2323,sgpsgp,sgpsgp,True,True,olt
+be23f32c-95ba-4338-a090-c49ff97cfffb,PIX FIBRA - OLT HW - COLONIA,Pix Fibra,OLT Huawei,name_unique,172.31.255.11,172.31.255.11,22,22,flashnet@emfibra,flashnet@emfibra,False,False,olt
+8f3a945c-37d2-4a0f-ac09-192748721c8a,PIX FIBRA - SW HW 5732 - MARTINS,Pix Fibra,Switch Huawei,name_unique,172.16.0.26,172.16.0.26,22,22,ajust@emfibra,ajust@emfibra,False,False,switch
+7b3e52a0-d6ab-42ad-9764-c065bc1086f6,G5 JABOATAO - OLT HW - UNYNET,G5 - Jaboatão,OLT Huawei,name_unique,172.30.31.2,172.30.31.2,23088,23088,ajustconsulting,ajustconsulting,True,True,olt
+8dfcaaaa-c60b-4bcc-9fc2-8706c266f555,VOO TELECOM - SW HW 6730 - PRAZERES ( CORE MPLS ),Voo Telecom,Switch Huawei,name_unique,10.72.13.45,10.72.13.45,22022,22022,ajustconsulting,ajustconsulting,False,False,switch
+18f5fcea-26df-4c8b-a838-58d70b6675d2,INFOTEL - OLT HW 5800 - PXC,Infotel,OLT Huawei,name_unique,10.120.0.110,10.120.0.110,22,22,infotel,infotel,False,False,olt
+23b2de75-8199-469a-8f73-0d7853bcb4b2,CONECT FIBRA - OLT HW MA5800 X2 - PARATIBE,Conect Fibra,OLT Huawei,name_unique,45.5.88.78,45.5.88.78,22999,22999,sgpacesso,sgpacesso,False,False,olt
+478b7dea-656b-475e-9ee9-3c6f816fc746,PIX FIBRA - SW HW 6730 - BOA VIAGEM,Pix Fibra,Switch Huawei,name_unique,172.16.0.3,172.16.0.3,22,22,ajust@emfibra,ajust@emfibra,False,False,switch
+c015d914-34ae-49c7-aa17-12499b5b5099,JANET - OLT HW,JaNet,OLT Huawei,name_unique,190.89.233.128,190.89.233.128,23755,23755,ajustconsulting,ajustconsulting,True,True,olt
+5b957de2-5df0-455e-a037-50dc94af8f8c,AF TELECOM - SW HW 5732 - JANGA,AF Telecom,Switch Huawei,name_unique,179.51.150.14,179.51.150.14,22783,22783,ajust,ajust,False,False,switch
+c06efff0-d86d-4834-b2e1-d32d1bcddb3c,MASNET - OLT HW - CRUZ,MAS NET,OLT Huawei,name_unique,170.79.170.8,170.79.170.8,8523,8523,admin,admin,True,True,olt
+c08089ad-e4cd-416b-b5ec-d722ddad539a,PGI TELECOM - SW HW 6720 - CDV,PGI Telecom,Switch Huawei,name_unique,10.20.100.1,10.20.100.1,5620,5620,ajust,ajust,False,False,switch
+ac494a19-97cf-4328-8303-a26d53341014,INFOTEL - SW DM 4380 - IPUEIRAS,Infotel,Switch Datacom,name_unique,10.10.10.125,10.10.10.125,26504,26504,admin,admin,False,False,switch
+aa002753-62d7-462f-a7d3-2f0e0a4f9895,INFOTEL - SW DM 4380 - SANTA TEREZA,Infotel,Switch Datacom,name_unique,10.10.10.137,10.10.10.137,22,22,ajust,ajust,False,False,switch
+4d94e645-9fe9-4f29-ad8a-ac5c5557d188,INSNET - OLT HW - AURORA,InsNet,OLT Huawei,name_unique,45.160.221.253,45.160.221.253,2235,2235,ajustconsulting,ajustconsulting,False,False,olt
+07a92312-be28-49a9-bd3e-a556dcf712c3,INFOTEL - SW DM 4380 - APARECIDA,Infotel,Switch Datacom,name_unique,10.10.10.135,10.10.10.135,22,22,admin,admin,False,False,switch
+62ce3fe6-1b7c-44ac-847e-4e0e9315448d,SOFIANET - SW HW - PE22,SofiaNet,Switch Huawei,name_unique,192.168.253.2,192.168.253.2,22,22,sofianet,sofianet,False,False,switch
+c0f93fe5-22f9-4e29-a4bd-d2c53d67cdfd,PLANALTONET - OLT HW 04,PlanaltoNet,OLT Huawei,name_unique,10.12.1.7,10.12.1.7,23,23,ajustc,ajustc,True,True,olt
+0d44b3a7-cee7-476f-9f7b-f1fa597f65dc,G5 CABO - OLT FH,G5 - Cabo,OLT FiberHome,name_unique,45.187.19.6,45.187.19.6,2330,2330,GEPON,GEPON,True,True,olt
+01df5545-53b8-4db3-8226-af5b4d1f591b,CYBERNET - OLT HW - CONDOMINIO,Cyber Net,OLT Huawei,name_unique,170.80.112.2,170.80.112.2,4749,4749,ajustconsulting,ajustconsulting,True,True,olt
+49d734b2-24ca-45a5-b1eb-161dcb9ae640,GRUPO VESC - OLT HW - MURIBECA,Grupo Vesc,OLT Huawei,name_unique,201.76.98.98,201.76.98.98,2333,2333,vescnet,vescnet,True,True,olt
+02d744c0-a55e-4a9b-a855-916dcd0ae293,MAXIMANET - OLT HW - MANGUEIRINHA,Maxima Net,OLT Huawei,name_unique,172.16.134.12,172.16.134.12,2212,2212,sgpsgp,sgpsgp,False,False,olt
+5aa21800-9bc5-475d-a756-de3d51d31ee0,MOND TELECOM - OLT HW - IPUTINGA HWNET,Mond Telecom,OLT Huawei,name_unique,45.164.181.192,45.164.181.192,2213,2213,sgpacesso,sgpacesso,True,True,olt
+7c405134-30e7-4e81-abb6-80bc75edeba1,INFOTEL - SW DM 4380 - SILVANOPOLIS,Infotel,Switch Datacom,name_unique,10.10.10.127,10.10.10.127,22,22,ajust,ajust,False,False,switch
+a03174e4-a120-4fa1-a39f-e93a7835a594,NAVEGANET - SW HW 5720 - CAMARAGIBE,Navega Net,Switch Huawei,name_unique,170.245.64.150,170.245.64.150,53726,53726,ajust,ajust,False,False,switch
+4f436f5c-cee7-43ac-b315-b3ff03e22bd4,NAVEGANET - OLT HW - ALTIPLANO,Navega Net,OLT Huawei,name_unique,190.89.144.44,190.89.144.44,2220,2220,sgpsgp,sgpsgp,True,True,olt
+4a17d872-62af-49f4-9768-c1d1163ee259,PIX FIBRA - SW HW 5732 - AFOGADOS,Pix Fibra,Switch Huawei,name_unique,172.16.0.37,172.16.0.37,22,22,ajust@emfibra,ajust@emfibra,False,False,switch
+0cab0c03-d70a-4041-96e0-e3c06cea0841,PLANALTONET - OLT HW 01,PlanaltoNet,OLT Huawei,name_unique,10.12.1.4,10.12.1.4,23,23,ajustc,ajustc,True,True,olt
+6c3ee68f-62fe-47cb-b033-9fb1f4815821,FLASHNET - SW ACESSO - JARDIM PAULISTA,FlashNet,Switch Huawei,name_unique,192.168.4.56,192.168.4.56,53276,53276,flashnet,flashnet,False,False,switch
+ee1ce613-9024-4314-bca1-c7d2bd1282a9,ONDANET - OLT HW - MARIA FARINHA,OndaNet,OLT Huawei,name_unique,187.17.137.188,187.17.137.188,33051,33051,sgpsgp,sgpsgp,True,True,olt
+aae47b12-8ca6-4ef2-a5f9-67723b5b0c91,VIBE TELECOM - OLT HW - JANGA,Vibe,OLT Huawei,name_unique,187.17.137.188,187.17.137.188,33749,33749,ajustconsulting,ajustconsulting,True,True,olt
+5459bb47-f6d4-4b7e-86c0-9ca67b5043a7,BVNET - OLT HW MA5600,BVNet,OLT Huawei,name_unique,201.76.98.98,201.76.98.98,2360,2360,sgpsgp,sgpsgp,True,True,olt
+21d3eb59-92ae-46b7-9226-f7943cccc3dd,ULTRANET - OLT HW - MAIOBAO,UltraNet,OLT Huawei,name_unique,192.141.106.6,192.141.106.6,2305,2305,ajustconsulting,ajustconsulting,True,True,olt
+3b0bb47e-2ccc-4278-afa3-185061286999,UMTELECOM - OLT HW - PINA,Um Fibra,OLT Huawei,name_unique,10.40.39.24,10.40.39.24,22,22,sgp-radius,sgp-radius,False,False,olt
+c1a6949d-922c-438c-99cb-ca65bd1ee291,FLASHNET - SW CORE-ITAPSSUMA,FlashNet,Switch Huawei,name_unique,10.99.88.30,10.99.88.30,53276,53276,flashnet,flashnet,False,False,switch
+c333da6a-b467-4f91-8416-4e7be244a010,HOMENET - OLT VSOL - UBAS,HomeNet,OLT VSOL,name_unique,10.15.10.102,10.15.10.102,23,23,adbthomaz,adbthomaz,True,True,olt
+834c7f44-d39f-468a-b02a-87e5e3302ce8,SW-BKB-TRACUNHAEM,PlanaltoNet,Switch Huawei,ip+kind,10.200.30.1,10.200.30.1,23,22,ajust,ajust,True,False,switch
+216bb84d-f039-4812-bc61-2ae86b30d97a,I4 TELECOM - OLT HW - OURO PRETO,I4 Telecom,OLT Huawei,name_unique,45.187.168.30,45.187.168.30,23088,23088,sgpsgp,sgpsgp,True,True,olt
+c4ec493d-54fa-4479-b3e8-f44af99829aa,INFOTEL - OLT DM - PORTO NACIONAL / SIM 01,Infotel,OLT Datacom,name_unique,172.16.121.16,172.16.121.16,3810,3810,infortel,infortel,False,False,olt
+78e7978e-315c-4233-846c-5f55fcebb224,WELL FIBRA - OLT HW 02,Well Fibra,OLT Huawei,name_unique,190.89.145.21,190.89.145.21,23332,23332,root,root,True,True,olt
+9d16c382-a5df-456e-a44e-057872b5068b,PLANALTONET - SW CISCO 3064 DATACENTER,PlanaltoNet,Switch Cisco,name_unique,10.12.255.250,10.12.255.250,22,22,ajust,ajust,False,False,switch
+5c9104ce-0529-48e0-9bbf-7fd36d9656fe,FLASHNET - SW ACESSO-LOCAL 01,FlashNet,Switch Huawei,name_unique,192.168.4.13,192.168.4.13,53276,53276,flashnet,flashnet,False,False,switch
+f7dd0452-1939-4597-9bef-be772ef43ee9,G5 CABO - OLT HW,G5 - Cabo,OLT Huawei,name_unique,45.187.19.14,45.187.19.14,2387,2387,g5provedor,g5provedor,True,True,olt
+44a794ff-e77d-46ad-aa98-5f9927fcf596,PIX FIBRA - OLT HW - PAULISTA,Pix Fibra,OLT Huawei,name_unique,172.16.0.8,172.16.0.8,22,22,ajust@emfibra,ajust@emfibra,False,False,olt
+5a54b9d2-867d-442b-a459-0a69b94ea4af,CNB TELECOM - OLT VSOL - LAGOA CRUZ,CNB Telecom,OLT VSOL,name_unique,172.18.19.2,172.18.19.2,22,22,admin,admin,False,False,olt
+c644a8b2-44d5-4fa7-8358-e418ba6380f0,VIBE TELECOM - SW HW 5720 - POP RECIFE,Vibe,Switch Huawei,name_unique,172.31.255.252,172.31.255.252,22,22,ajust,ajust,False,False,switch
+48d1ee7b-601b-4a0f-8968-4c6f8d2115e4,G5 JABOATAO - OLT VSOL - BONANCA,G5 - Jaboatão,OLT VSOL,name_unique,192.141.105.16,192.141.105.16,8477,8477,admin,admin,True,True,olt
+11037cad-ab5d-4e1b-b77a-e8e9a8652f98,CONECT FIBRA - OLT HW MA5800 X17 - CAETES 01,Conect Fibra,OLT Huawei,name_unique,45.5.88.50,45.5.88.50,23088,23088,sgpolt,sgpolt,True,True,olt
+018a81be-02e2-424d-8696-909e76601c61,VOICE CORP - SW DM EDD - DATA CENTER OI,Voice Corp,Switch Datacom,name_unique,192.168.77.2,192.168.77.2,23,23,admin,admin,True,True,switch
+5c9850ae-03ed-43e1-b2f5-0fceb9843822,PONTE DIGITAL - OLT INTELBRAS - CANDEIAS,Ponte Digital,OLT Intelbras,name_unique,10.12.106.2,10.12.106.2,23,23,admin,admin,True,True,olt
+c662590e-8493-4347-b587-ea359e9dfd32,MASNET - OLT HW,MAS NET,OLT Huawei,name_unique,170.79.170.0,170.79.170.0,2233,2233,sgpsgp,sgpsgp,False,False,olt
+dfc98892-8632-4534-998e-a2312d8b6abc,SWITCH HUAWEI 5700 MURO ALTO,Rio Net,Switch Huawei,ip+kind,45.162.224.126,45.162.224.126,22743,22022,ajust,rionet,False,False,switch
+7a4cdea6-a093-4900-8b83-3c8e0d657753,MUNDONET - OLT INTELBRAS - LOTEAMENTO,Mundo Net,OLT Intelbras,name_unique,179.42.37.40,179.42.37.40,11444,11444,admin,admin,True,True,olt
+5dcfdc0d-e65e-4c49-91a2-896089cae270,G5 BARRA DE JANGADA - OLT HW,G5 - Barra de Jangada,OLT Huawei,name_unique,128.201.76.176,128.201.76.176,22220,22220,ajustconsulting,ajustconsulting,False,False,olt
+5e528c7d-8dc7-4555-9cce-106db67fb9c8,MOND TELECOM - OLT HW - RUA DA LAMA HWNET,Mond Telecom,OLT Huawei,name_unique,45.164.181.192,45.164.181.192,2212,2212,fabiosilva,fabiosilva,True,True,olt
+6876708a-a8b8-4f4a-ab98-041f1a92fed7,UMTELECOM - OLT HW - NANAI,Um Fibra,OLT Huawei,name_unique,10.40.39.17,10.40.39.17,22,22,sgp-radius,sgp-radius,False,False,olt
+c6df90c9-63f1-4fb4-a9f7-2503909c7434,ZOOM FIBRA - OLT HW - RIBEIRÃO,Zoom Fibra,OLT Huawei,name_unique,179.189.243.6,179.189.243.6,2388,2388,ajustconsulting,ajustconsulting,True,True,olt
+c7450169-ae52-4f98-9807-2234562b7074,PLANALTONET - OLT FIBERHOME 01,PlanaltoNet,OLT FiberHome,name_unique,10.12.1.1,10.12.1.1,23,23,GEPON,GEPON,True,True,olt
+c82b7699-dad1-489f-9c98-0b7371d6c2b9,FLASHNET - SW CORE-VARZEA 01,FlashNet,Switch Huawei,name_unique,10.99.88.39,10.99.88.39,53276,53276,flashnet,flashnet,False,False,switch
+c7271089-f5be-40f0-a110-775258e71eee,INET - OLT FH - 01,INET,OLT FiberHome,name_unique,177.71.83.255,177.71.83.255,22534,22534,GEPON,GEPON,True,True,olt
+060e9f3b-dc84-4fd9-98a6-acc256ce88a4,I4 TELECOM - SW HW S6730 - CASA CAIADA,I4 Telecom,Switch Huawei,name_unique,45.187.169.228,45.187.169.228,22354,22354,ajust,ajust,False,False,switch
+5fd88326-e8a0-4435-a956-41b8ae37ecae,MCNET - OLT HW,MCNet,OLT Huawei,name_unique,45.164.10.128,45.164.10.128,45100,45100,sgpolt,sgpolt,True,True,olt
+c905f572-e919-4769-8913-cae062d11667,PIX FIBRA - OLT HW - IGARASSU-AGAMENON,Pix Fibra,OLT Huawei,name_unique,172.16.0.21,172.16.0.21,22,22,ajust@emfibra,ajust@emfibra,False,False,olt
+c90e4a00-fc67-4b99-ba1d-8114e4911fb6,PIX FIBRA - OLT HW CLICKNET,Pix Fibra,OLT Huawei,name_unique,172.19.51.2,172.19.51.2,22,22,ajust@emfibra,ajust@emfibra,False,False,olt
+66f05c2f-a71a-438d-ab70-91efacfa1bfc,GRUPO FLASH - OLT HW - BEIRA MAR,Grupo FlashNet ( IBTelecom ),OLT Huawei,name_unique,170.79.170.138,170.79.170.138,23088,23088,ajustconsulting,ajustconsulting,True,True,olt
+8ab333e5-cccc-4545-962d-3619e7c04c60,FLASHNET - SW-ACESSO-ELETRICO_IBTELECOM,FlashNet,Switch Huawei,name_unique,192.168.4.51,192.168.4.51,53276,53276,flashnet,flashnet,False,False,switch
+0af1512b-eca7-4c48-a89b-265ef561a4d6,SUCUPIRANET - OLT FIBERHOME,Sucupira Net,OLT FiberHome,name_unique,45.184.5.2,45.184.5.2,2323,2323,GEPON,GEPON,True,True,olt
+c9274f0d-a84c-4b7c-8e28-0fe2b9a6d878,UMTELECOM - OLT HW - MALAWI,Um Fibra,OLT Huawei,name_unique,10.1.47.81,10.1.47.81,22,22,sgp-radius,sgp-radius,False,False,olt
+485f3605-d639-45db-ba4e-2e4ba6d7ac84,GL SOLUCOES - SW HW 5735 - SANTO AMARO,GL Soluções,Switch Huawei,name_unique,45.191.104.10,45.191.104.10,22237,22237,ajust,ajust,False,False,switch
+68130814-90d2-4a57-84f1-ccabec4da77d,SOFIANET - OLT MAXPRINT,SofiaNet,OLT Maxprint,name_unique,128.201.156.214,128.201.156.214,2023,2023,admin,admin,True,True,olt
+6c9c35f6-9066-4aaf-a976-0428b425e996,CNB TELECOM - OLT HW - CARNAIBA,CNB Telecom,OLT Huawei,name_unique,179.124.142.93,179.124.142.93,2211,2211,cnbtelecom,cnbtelecom,False,False,olt
+a525950c-4c34-4ce3-ba22-9e8cbc3ff662,AF TELECOM -  SW HW S732  - JARDIM ATLANTICO 02,AF Telecom,Switch Huawei,name_unique,179.51.150.12,179.51.150.12,2223,2223,ajust,ajust,False,False,switch
+c9f1c0f4-d1b0-4b93-8467-a24a35a6897e,CONECT FIBRA - SW HW 5720 - YNOVE,Conect Fibra,Switch Huawei,name_unique,172.35.2.2,172.35.2.2,22,22,conect,conect,False,False,switch
+7b3f6792-0672-47c6-9321-610bd151cb53,VIBE TELECOM - OLT ZTE - NOBRE,Vibe,OLT ZTE,name_unique,187.17.137.188,187.17.137.188,33733,33733,acessosgp,acessosgp,True,True,olt
+7de038d7-f80a-4aef-8998-3fc6847a344e,VIBE TELECOM - OLT ZTE - NOBRE NOVA,Vibe,OLT ZTE,name_unique,187.17.137.188,187.17.137.188,23783,23783,ajustconsulting,ajustconsulting,True,True,olt
+ca4d56fd-f3ef-4bbe-a3bf-bf2b01025ec0,ICONLINK - OLT HW,IConLink,OLT Huawei,name_unique,201.76.98.98,201.76.98.98,23088,23088,ajustconsulting,ajustconsulting,True,True,olt
+ca821425-7a06-41ec-97f5-e14714a2efaa,PIX FIBRA - OLT ZTE - CURCURANA-LINEFIBRA,Pix Fibra,OLT ZTE,name_unique,172.19.53.14,172.19.53.14,22,22,lideri,lideri,False,False,olt
+51e3bae0-0574-4d03-a87a-7cd43c928ee4,OLT-GLSOLUCOES,GL Soluções,OLT Huawei,ip+kind,45.191.104.54,45.191.104.54,23,23088,glsolucoes,glsolucoes,True,True,olt
+9c2e0e43-8abd-4a39-868b-27b655b22881,UMTELECOM - OLT HW - CASA FORTE,Um Fibra,OLT Huawei,name_unique,10.40.39.14,10.40.39.14,22,22,sgp-radius,sgp-radius,False,False,olt
+ca8adf94-9ed9-4338-945c-765a9f326b8d,FLASHNET - SW CORE-ARTHUR,FlashNet,Switch Huawei,name_unique,10.99.88.8,10.99.88.8,53276,53276,flashnet,flashnet,False,False,switch
+976d0e41-6b43-4b85-9c8c-a9c44b756a0f,OLT Huawei-Vila-Torres-Galvão,Grupo FlashNet ( IBTelecom ),OLT Huawei,ip+kind,170.79.168.134,170.79.168.134,23051,23088,sgpacesso,sgpacesso,True,True,olt
+b9a34ec5-4cfd-4be9-8d56-3224cdc04e52,MOOD TELECOM - OLT HW - FUNCIONARIOS PB,Mood,OLT Huawei,name_unique,187.17.136.128,187.17.136.128,22012,22012,sgpsgp,sgpsgp,False,False,olt
+bbe85146-5f63-4eeb-a60e-734bf7f8e4a1,NEWCONNECT - SW HW - CORE LOTE92 (POP DIOGENES),New Connect,Switch Huawei,name_unique,1.2.1.9,1.2.1.9,22,22,ericcastro,ericcastro,False,False,switch
+cb2ee6ac-d326-4c2f-a04e-b06c1b10ef6f,UP CONNECT FIBRA - OLT ZTE - CENTRO,UP Connect Fibra,OLT ZTE,name_unique,172.19.50.42,172.19.50.42,22,22,ajustcon,ajustcon,False,False,olt
+cb7eb6af-6dc4-4fc7-b080-70019e1e864c,LINECONECT - OLT ZTE - TAQUARI,Line Conect,OLT ZTE,name_unique,170.150.139.249,170.150.139.249,37175,37175,zte,zte,False,False,olt
+ceeb5cc7-2690-469e-87b6-56fae94d0f26,GL SOLUCOES - SW HW 6720 - CORE,GL Soluções,Switch Huawei,name_unique,45.191.104.10,45.191.104.10,22585,22585,glsolucoes,glsolucoes,False,False,switch
+e1e0fe5f-6bce-4404-b025-7952c7ad2573,AF TELECOM - OLT VSOL EPON - JANGA 02,AF Telecom,OLT VSOL,name_unique,179.51.150.14,179.51.150.14,2041,2041,ajust,ajust,True,True,olt
+a9babfb6-9f3d-412c-93ab-2c34b86b0d4c,ECOTELECOM - OLT HW - CAVALEIRO,Eco Telecom,OLT Huawei,name_unique,45.71.170.6,45.71.170.6,1075,1075,sgpsistema,sgpsistema,True,True,olt
+aac8ef11-1ee2-447f-a4ca-03e4a190b79d,G5 PIEDADE - OLT HW X7,G5 - Piedade,OLT Huawei,name_unique,192.141.105.40,192.141.105.40,23088,23088,ajustconsulting,ajustconsulting,True,True,olt
+d05b5d87-f979-45f2-8b26-bd8a6c5429f4,FLASHNET - SW CORE-GOIANIA,FlashNet,Switch Huawei,name_unique,10.99.88.31,10.99.88.31,53276,53276,flashnet,flashnet,False,False,switch
+ad33dc87-e140-43b8-a2c6-6f35ebf15678,CAVALCANTINET - OLT HW MA5600 - CAXANGA,Cavalcanti Net,OLT Huawei,name_unique,45.164.11.6,45.164.11.6,45901,45901,suporte,suporte,True,True,olt
+ae74e748-b825-4360-8f3c-40d60223738c,G5 WILL - OLT HW X2,G5 - Will,OLT Huawei,name_unique,201.71.4.9,201.71.4.9,22120,22120,ajustconsulting,ajustconsulting,False,False,olt
+d1da074e-fb65-46ae-aa7e-02998e2a7e87,I4 TELECOM - SW HW 6730 - CORE OURO PRETO,I4 Telecom,Switch Huawei,name_unique,45.187.169.228,45.187.169.228,22454,22454,ajust,ajust,False,False,switch
+d3202db9-6511-4339-87a1-1b7d5f1802b9,FLASHNET - SW CORE-SOCORRO,FlashNet,Switch Huawei,name_unique,10.99.88.29,10.99.88.29,53276,53276,flashnet,flashnet,False,False,switch
+75a89861-d9d5-454c-9e9f-05aa7babeaaf,PIX FIBRA - SW HW - GODNET,Pix Fibra,Switch Huawei,name_unique,172.16.0.38,172.16.0.38,22,22,ajust@emfibra,ajust@emfibra,False,False,switch
+4a707592-7983-43a3-9773-a5b704096009,PIX FIBRA - SW HW 6730 - PINA 01,Pix Fibra,Switch Huawei,name_unique,172.16.0.30,172.16.0.30,22,22,ajust@emfibra,ajust@emfibra,False,False,switch
+d4791326-2f9e-4b8c-bd10-db5f11a1fb66,INFOTEL - OLT HW - BREJINHO DE NAZARE,Infotel,OLT Huawei,name_unique,10.120.0.18,10.120.0.18,22,22,oltsgp,oltsgp,False,False,olt
+d47bd120-3c5c-4cf0-b68c-81b37032f75a,RIONET - OLT HW - IPOJUCA,Rio Net,OLT Huawei,name_unique,45.162.225.246,45.162.225.246,23088,23088,ajustconsulting,ajustconsulting,True,True,olt
+2afe73cc-7de1-4688-b072-b0b8306fd292,UMTELECOM - OLT FIBERHOME - PIEDADE,Um Fibra,OLT FiberHome,name_unique,10.40.39.7,10.40.39.7,23,23,noc,noc,True,True,olt
+f864a6ad-3750-4735-9c36-e14239031c1e,PONTE DIGITAL - OLT HW - MANGUEIRINHA,Ponte Digital,OLT Huawei,name_unique,170.80.49.76,170.80.49.76,23,23,ajustconsulting,ajustconsulting,True,True,olt
+29cc73c6-aa1e-460a-9eaf-a21970747494,AF TELECOM - OLT HW MA5800,AF Telecom,OLT Huawei,name_unique,179.51.150.12,179.51.150.12,2303,2303,sgpsgp,sgpsgp,True,True,olt
+c5ef209d-3aa1-44ff-ac64-9b6e707c4fe4,OLT Huawei-Beira-mar,Grupo FlashNet ( IBTelecom ),OLT Huawei,ip+kind,170.79.170.138,170.79.170.138,23,23088,sgpacesso,ajustconsulting,True,True,olt
+d6668e4f-1e6d-4b08-ab81-15c0f14efd84,PONTE DIGITAL - OLT HW - SOTAVE / PONTEZINHA,Ponte Digital,OLT Huawei,name_unique,10.12.110.2,10.12.110.2,23,23,equipeti,equipeti,True,True,olt
+cb17c0d3-2ceb-48e0-8804-2de4037d6cc4,FIBERMAIS - SW HW 6720 - MANGABEIRA,FiberMais,Switch Huawei,name_unique,170.245.223.90,170.245.223.90,2290,2290,ajust,ajust,False,False,switch
+d7a57cbb-1f84-4e75-ab20-5443eed65610,CNB TELECOM - OLT CIANET - QUIXABA,CNB Telecom,OLT Cianet,name_unique,172.27.40.2,172.27.40.2,22,22,admin,admin,False,False,olt
+d6d42eeb-8d87-4f07-bb79-9d9de6a275d1,INFOTEL - SW HW S6730 - PMJ JD PAULISTA,Infotel,Switch Huawei,name_unique,10.10.10.120,10.10.10.120,26504,26504,ajust,ajust,False,False,switch
+ddece8bf-0c5f-4259-a570-2ccd345ddf80,INFORTEC - OLT HW - JPII,Infortec,OLT Huawei,name_unique,187.86.163.100,187.86.163.100,22001,22001,ajustconsulting,ajustconsulting,False,False,olt
+d8200461-1de8-4551-993e-1e23a4c7b88f,INFOTEL - SW HW S6730 STACK - PXC,Infotel,Switch Huawei,name_unique,10.10.10.254,10.10.10.254,26504,26504,ajust,ajust,False,False,switch
+d9757427-ac53-411b-9b43-6b88bce476fa,PONTE DIGITAL - OLT DIGISTAR - COHAB,Ponte Digital,OLT Digistar,name_unique,10.12.108.2,10.12.108.2,22,22,admin,admin,False,False,olt
+d7b2f3f0-a6c4-4d38-9fa1-ec2653624127,PLANALTONET - OLT HW 03,PlanaltoNet,OLT Huawei,name_unique,10.12.1.6,10.12.1.6,23,23,ajustc,ajustc,True,True,olt
+d976cc27-c558-47ba-acf7-53f233eba78c,GRUPO TELECOM - OLT HW,Grupo Telecom,OLT Huawei,name_unique,181.225.170.5,181.225.170.5,2503,2503,sgpacesso,sgpacesso,False,False,olt
+d9b28c55-2d6a-466c-9ed8-059ffd4bac0d,DINHONET - OLT FH,DinhoNet,OLT FiberHome,name_unique,131.108.155.144,131.108.155.144,2323,2323,ajustconsulting,ajustconsulting,True,True,olt
+01972c11-4712-4fb4-a7bf-018b6876230c,NAVEGANET - OLT HW - CAETES,Navega Net,OLT Huawei,name_unique,160.19.44.26,160.19.44.26,23088,23088,ajustconsulting,ajustconsulting,True,True,olt
+ae7a84c2-b113-471a-8883-800f90e884f3,ULTRANET - SW HW 5720 - MIRITIUA,UltraNet,Switch Huawei,name_unique,192.141.106.6,192.141.106.6,2211,2211,ultranet,ultranet,False,False,switch
+18776199-3d43-4850-9c15-945811f9999c,NAVEGANET - OLT HW - TIBIRI,Navega Net,OLT Huawei,name_unique,190.89.144.44,190.89.144.44,2321,2321,sgpsgp,sgpsgp,True,True,olt
+5ecc937c-c523-4629-bc53-2251c424fb39,AF TELECOM - OLT TPLINK - MIRUEIRA,AF Telecom,OLT TP-LINK,name_unique,179.51.150.12,179.51.150.12,2023,2023,admin,admin,True,True,olt
+55782f3f-630d-4ed4-91fd-a7c5084233be,MOOD TELECOM - OLT HW - PARATIBE,Mood,OLT Huawei,name_unique,187.17.137.188,187.17.137.188,23744,23744,speednet,speednet,True,True,olt
+da0be27f-240e-4ceb-a422-a02f2aa42fd4,FLASHNET - SW CORE-FORTALEZA,FlashNet,Switch Huawei,name_unique,10.99.88.24,10.99.88.24,53276,53276,flashnet,flashnet,False,False,switch
+86adda2a-9075-472d-86ec-7e5722bf7519,GL SOLUCOES - OLT HW - HF,GL Soluções,OLT Huawei,name_unique,45.191.104.10,45.191.104.10,2323,2323,sgphftel,sgphftel,True,True,olt
+dcc1c306-270c-4961-babb-867793780661,FLASHNET - SW CORE-AV.NORTE,FlashNet,Switch Huawei,name_unique,10.99.88.6,10.99.88.6,53276,53276,flashnet,flashnet,False,False,switch
+dd052065-c640-4445-9eee-bb176e48d743,INFOTEL - SW DM 4380 - PONTE ALTA - POL,Infotel,Switch Datacom,name_unique,10.10.10.133,10.10.10.133,22,22,ajust,ajust,False,False,switch
+dc69759f-8fcd-42d6-a836-ba0b47f8bb99,FLASHNET - SW CORE-TABAJARA,FlashNet,Switch Huawei,name_unique,10.99.88.2,10.99.88.2,53276,53276,flashnet,flashnet,False,False,switch
+69e266f9-9de7-4a13-af46-c240c8d8f016,PGI TELECOM - SW HW  6730 - CORE,PGI Telecom,Switch Huawei,name_unique,10.99.10.1,10.99.10.1,5620,5620,ajustconsulting,ajustconsulting,False,False,switch
+e03fe5e6-2c82-4ea5-ad32-e12df34a233b,INFOTEL - OLT DM - PORTO NACIONAL / SIM 03,Infotel,OLT Datacom,name_unique,172.16.121.16,172.16.121.16,3812,3812,infortel,infortel,False,False,olt
+e742e594-f012-4a53-befc-06d2c096e5b5,FLASHNET - SW CORE-BAIRRO-NOVO,FlashNet,Switch Huawei,name_unique,10.99.88.20,10.99.88.20,53276,53276,flashnet,flashnet,False,False,switch
+eb7a9c33-b2c7-4a2c-b1bc-c9b1ce88cad0,PONTE DIGITAL - OLT HW - GAIBU,Ponte Digital,OLT Huawei,name_unique,170.80.49.78,170.80.49.78,23,23,equipeti,equipeti,True,True,olt
+ebc1b360-b71a-4419-a7d3-786cb246dcd9,G5 JABOATAO - SW DM - ALPHAVILLE,G5 - Jaboatão,Switch Datacom,name_unique,192.141.105.3,192.141.105.3,18875,18875,admin,admin,True,True,switch
+eb0d320e-2437-4917-929f-aef7952a7650,CYBERNET - OLT FIBERHOME - ACUDE,Cyber Net,OLT FiberHome,name_unique,170.80.112.2,170.80.112.2,55023,55023,SGP,SGP,True,True,olt
+f1681b31-4199-4431-820c-be5031f2a800,FLASHNET - SW-ACESSO-ELETRICO,FlashNet,Switch Huawei,name_unique,192.168.4.11,192.168.4.11,53276,53276,flashnet,flashnet,False,False,switch
+ee3cf5ae-d31d-45b1-9379-f7f58ff54f5b,FLASHNET - SW CORE-VARZEA 02,FlashNet,Switch Huawei,name_unique,10.99.88.40,10.99.88.40,53276,53276,flashnet,flashnet,False,False,switch
+f537fb6e-6f27-4996-918a-acd1ea0ccf35,PIX FIBRA - OLT TPLINK - IBURA DE BAIXO,Pix Fibra,OLT TP-LINK,name_unique,10.40.0.2,10.40.0.2,23,23,admin,admin,True,True,olt
+f5ba32d0-a336-4fd2-a05d-3dd3d007842a,INFOTEL - OLT DM - PINHEIROPOLIS - PNRP,Infotel,OLT Datacom,name_unique,10.120.0.10,10.120.0.10,22088,22088,sgpconexaoolt,sgpconexaoolt,False,False,olt
+f6cec67b-6a67-4f75-9121-e3004c8701cf,PIX FIBRA - OLT HW - CACOTE,Pix Fibra,OLT Huawei,name_unique,172.31.255.27,172.31.255.27,22,22,ajust@emfibra,ajust@emfibra,False,False,olt
+f54cf440-8d46-4b72-94f5-c61548dc5450,VIBE TELECOM - OLT ZTE - CAMPINA GRANDE,Vibe,OLT ZTE,name_unique,170.79.168.72,170.79.168.72,23935,23935,acessosgp,acessosgp,True,True,olt
+fec85866-2276-4d09-9c47-7044c0ed2709,ONDANET - OLT HW - ALAMEDA,OndaNet,OLT Huawei,name_unique,187.17.137.188,187.17.137.188,23793,23793,sgpacesso,sgpacesso,True,True,olt
+f8899c66-6b63-4f97-bcbc-1e862bad8404,FLASHNET - SW CORE-IPSEP-02,FlashNet,Switch Huawei,name_unique,10.99.88.42,10.99.88.42,53276,53276,flashnet,flashnet,False,False,switch
+fe20488c-afd4-4d7b-9c59-db2c4a6ef08b,FLASHNET - SW CORE-CARPINA,FlashNet,Switch Huawei,name_unique,10.99.88.23,10.99.88.23,53276,53276,flashnet,flashnet,False,False,switch

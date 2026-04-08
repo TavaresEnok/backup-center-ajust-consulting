@@ -1,3 +1,4 @@
+import re
 from datetime import datetime, timedelta
 from typing import Optional, Any, Union
 from jose import jwt
@@ -20,6 +21,20 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 
 def get_password_hash(password: str) -> str:
     return pwd_context.hash(password)
+
+def validate_password_strength(password: str) -> str | None:
+    value = str(password or '')
+    if len(value) < 8:
+        return 'A senha deve ter pelo menos 8 caracteres.'
+    if not re.search(r'[A-Z]', value):
+        return 'A senha deve ter pelo menos 1 letra maiuscula.'
+    if not re.search(r'[a-z]', value):
+        return 'A senha deve ter pelo menos 1 letra minuscula.'
+    if not re.search(r'\d', value):
+        return 'A senha deve ter pelo menos 1 numero.'
+    if not re.search(r'[^A-Za-z0-9]', value):
+        return 'A senha deve ter pelo menos 1 caractere especial.'
+    return None
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
     to_encode = data.copy()

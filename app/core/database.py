@@ -4,7 +4,13 @@ from app.core.config import settings
 
 # engine = create_engine(settings.DATABASE_URL)
 # For development/quick start with local postgres, ensure the URL is correct
-engine = create_engine(settings.DATABASE_URL, pool_pre_ping=True)
+engine = create_engine(
+    settings.DATABASE_URL,
+    pool_pre_ping=True,
+    pool_recycle=1800,
+    pool_timeout=30,
+    pool_use_lifo=True,
+)
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 

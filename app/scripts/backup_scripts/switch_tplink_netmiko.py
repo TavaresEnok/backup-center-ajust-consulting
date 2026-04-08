@@ -100,17 +100,20 @@ def realizar_backup(
 
     logger.emit("Etapa 1/4: Testando conexao...")
     selected_type = None
+    last_exc = None
     for device_type in device_candidates:
         test_cfg = _build_conn_params(device_type, ip, porta, usuario, password)
         try:
             with ConnectHandler(**test_cfg):
                 selected_type = device_type
                 break
-        except Exception:
+        except Exception as exc:
+            last_exc = exc
             continue
 
     if not selected_type:
-        msg = "A conexao foi fechada ou as credenciais estao incorretas."
+        detail = f" Detalhe: {type(last_exc).__name__}: {last_exc}" if last_exc else ""
+        msg = f"A conexao foi fechada ou as credenciais estao incorretas.{detail}"
         logger.emit(msg, "error")
         return False, msg, None, "AUTENTICACAO"
 

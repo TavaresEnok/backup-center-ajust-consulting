@@ -22,16 +22,37 @@
                 <i data-lucide="sliders-horizontal" class="h-4 w-4"></i>
                 Central de operacao
             </a>
+            <form method="POST"
+                action="{{ url_for('tenant_schedules.apply_daily_schedule', tenant_slug=tenant.slug) }}"
+                class="inline">
+                {% include 'partials/csrf.html' %}
+                <input type="hidden" name="daily_time" value="{{ schedule_overview.default_daily_time if schedule_overview else '02:00' }}">
+                <input type="hidden" name="apply_scope" value="missing">
+                <input type="hidden" name="return_to" value="schedules">
+                <button
+                    {% if can_manage_admin %}
+                        type="submit"
+                        onclick="return confirm('Ativar fila de backup para todos os dispositivos pendentes?')"
+                    {% else %}
+                        type="button"
+                        disabled
+                        title="Sem permissao para alterar a fila de backup"
+                    {% endif %}
+                    class="inline-flex items-center gap-2 rounded-lg border px-4 py-2 text-sm font-medium transition-colors {% if can_manage_admin %}border-amber-300 bg-amber-50 text-amber-700 hover:bg-amber-100 dark:border-amber-700 dark:bg-amber-500/10 dark:text-amber-300 dark:hover:bg-amber-500/20{% else %}cursor-not-allowed border-gray-300 bg-gray-100 text-gray-400 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-500{% endif %}">
+                    <i data-lucide="power" class="h-4 w-4"></i>
+                    Ativar fila (todos)
+                </button>
+            </form>
             {% if can_manage_admin %}
                 <form id="form-run-backup-mass-schedules"
                     action="{{ url_for('tenant_devices.run_backup_all', tenant_slug=tenant.slug) }}"
                     method="POST" class="inline">
                     {% include 'partials/csrf.html' %}
-                    <input type="hidden" name="only_ready" value="1">
+                    <input type="hidden" name="include_unvalidated" value="1">
                     <button type="button" data-run-backup-live data-form-id="form-run-backup-mass-schedules"
                         class="inline-flex items-center gap-2 rounded-lg border border-brand-300 bg-brand-50 px-4 py-2 text-sm font-medium text-brand-700 transition-colors hover:bg-brand-100 dark:border-brand-700 dark:bg-brand-500/10 dark:text-brand-300 dark:hover:bg-brand-500/20">
                         <i data-lucide="play-circle" class="h-4 w-4"></i>
-                        Backup em massa (somente aptos)
+                        Backup em massa
                     </button>
                 </form>
                 <form id="form-run-connection-audit-mass-schedules"
@@ -103,37 +124,71 @@
                     <span class="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-1 font-medium text-amber-700 dark:bg-amber-500/10 dark:text-amber-300">
                         Sem rotina: {{ schedule_overview.without_schedule }}
                     </span>
+                    <span class="inline-flex items-center rounded-full bg-red-100 px-2.5 py-1 font-medium text-red-700 dark:bg-red-500/10 dark:text-red-300">
+                        Fila desativada: {{ schedule_overview.get('queue_disabled', 0) }}
+                    </span>
                 </div>
             </div>
             {% if can_manage_admin %}
-                <form method="POST" action="{{ url_for('tenant_schedules.apply_daily_schedule', tenant_slug=tenant.slug) }}"
-                    class="w-full max-w-xl rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-900/70">
-                    {% include 'partials/csrf.html' %}
-                    <div class="grid gap-3 md:grid-cols-2">
-                        <div>
-                            <label for="daily_time" class="text-xs font-semibold uppercase tracking-wide text-gray-500">Horario (24h)</label>
-                            <input id="daily_time" name="daily_time" type="time" value="{{ schedule_overview.default_daily_time }}" required
-                                class="mt-1 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-brand-500 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-white">
+                <div class="w-full max-w-xl space-y-3">
+                    <form method="POST" action="{{ url_for('tenant_schedules.apply_daily_schedule', tenant_slug=tenant.slug) }}"
+                        class="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-900/70">
+                        {% include 'partials/csrf.html' %}
+                        <div class="grid gap-3 md:grid-cols-2">
+                            <div>
+                                <label for="daily_time" class="text-xs font-semibold uppercase tracking-wide text-gray-500">Horario (24h)</label>
+                                <input id="daily_time" name="daily_time" type="time" value="{{ schedule_overview.default_daily_time }}" required
+                                    class="mt-1 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-brand-500 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-white">
+                            </div>
+                            <div>
+                                <label for="apply_scope" class="text-xs font-semibold uppercase tracking-wide text-gray-500">Aplicacao</label>
+                                <select id="apply_scope" name="apply_scope"
+                                    class="mt-1 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-brand-500 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-white">
+                                    <option value="missing" selected>Somente sem rotina (Recomendado)</option>
+                                    <option value="all">Sobrescrever todos os ativos</option>
+                                </select>
+                            </div>
                         </div>
-                        <div>
-                            <label for="apply_scope" class="text-xs font-semibold uppercase tracking-wide text-gray-500">Aplicacao</label>
-                            <select id="apply_scope" name="apply_scope"
-                                class="mt-1 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-brand-500 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-white">
-                                <option value="missing" selected>Somente sem rotina (Recomendado)</option>
-                                <option value="all">Sobrescrever todos os ativos</option>
-                            </select>
+                        <div class="mt-3 flex flex-wrap items-center justify-between gap-3">
+                            <p class="text-xs text-gray-500 dark:text-gray-400">Fuso da plataforma: UTC. Exemplo: 02:00 executa diariamente as 02:00 UTC.</p>
+                            <button type="submit"
+                                onclick="return confirm('Aplicar agendamento diario conforme o modo selecionado?')"
+                                class="inline-flex items-center gap-1 rounded-md bg-brand-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-brand-600">
+                                <i data-lucide="clock-3" class="h-4 w-4"></i>
+                                Aplicar agora
+                            </button>
                         </div>
-                    </div>
-                    <div class="mt-3 flex flex-wrap items-center justify-between gap-3">
-                        <p class="text-xs text-gray-500 dark:text-gray-400">Fuso da plataforma: UTC. Exemplo: 02:00 executa diariamente as 02:00 UTC.</p>
-                        <button type="submit"
-                            onclick="return confirm('Aplicar agendamento diario conforme o modo selecionado?')"
-                            class="inline-flex items-center gap-1 rounded-md bg-brand-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-brand-600">
-                            <i data-lucide="clock-3" class="h-4 w-4"></i>
-                            Aplicar agora
-                        </button>
-                    </div>
-                </form>
+                    </form>
+                    <form method="POST" action="{{ url_for('tenant_schedules.apply_daily_schedule', tenant_slug=tenant.slug) }}"
+                        class="rounded-xl border border-amber-200 bg-amber-50/80 p-4 dark:border-amber-900/40 dark:bg-amber-900/10">
+                        {% include 'partials/csrf.html' %}
+                        <input type="hidden" name="daily_time" value="{{ schedule_overview.default_daily_time }}">
+                        <input type="hidden" name="apply_scope" value="missing">
+                        <input type="hidden" name="return_to" value="schedules">
+                        <div class="flex flex-wrap items-center justify-between gap-3">
+                            <div>
+                                <p class="text-sm font-semibold text-amber-800 dark:text-amber-200">Fila de backup</p>
+                                <p class="text-xs text-amber-700/80 dark:text-amber-300/80">
+                                    {% if schedule_overview.get('queue_disabled', 0) > 0 %}
+                                        Habilita `backup_scheduled` para todos os dispositivos ativos que ainda estao fora da fila.
+                                    {% else %}
+                                        Todos os dispositivos ativos ja estao com a fila de backup habilitada.
+                                    {% endif %}
+                                </p>
+                            </div>
+                            <button type="submit"
+                                {% if schedule_overview.get('queue_disabled', 0) > 0 %}
+                                    onclick="return confirm('Ativar a fila de backup para todos os dispositivos ativos desativados?')"
+                                {% else %}
+                                    disabled
+                                {% endif %}
+                                class="inline-flex items-center gap-1 rounded-md px-4 py-2 text-sm font-medium text-white transition-colors {% if schedule_overview.get('queue_disabled', 0) > 0 %}bg-amber-500 hover:bg-amber-600{% else %}cursor-not-allowed bg-amber-300 opacity-70{% endif %}">
+                                <i data-lucide="power" class="h-4 w-4"></i>
+                                Ativar fila para todos
+                            </button>
+                        </div>
+                    </form>
+                </div>
             {% else %}
                 <div class="w-full max-w-xl rounded-xl border border-gray-200 bg-white p-4 text-sm text-gray-600 dark:border-gray-700 dark:bg-gray-900/70 dark:text-gray-300">
                     Apenas administradores podem alterar a rotina de agendamento.

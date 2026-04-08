@@ -95,11 +95,13 @@
             </div>
             {% endif %}
 
-            <!-- File Path -->
+            <!-- File Name -->
             {% if backup.file_path %}
             <div class="mt-6 pt-6 border-t border-gray-200 dark:border-gray-800">
-                <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Caminho do Arquivo:</p>
-                <p class="font-mono text-sm text-gray-700 dark:text-gray-300 break-all">{{ backup.file_path }}</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Arquivo salvo:</p>
+                <p class="font-mono text-sm text-gray-700 dark:text-gray-300 break-all">
+                    {{ backup.file_path.split('/')[-1].split('\\')[-1] }}
+                </p>
             </div>
             {% endif %}
 

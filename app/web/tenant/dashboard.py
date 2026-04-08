@@ -10,6 +10,7 @@ from app.models.tenant import Tenant
 from app.models.user import UserRole
 from app.services.monitor_service import MonitorService
 from app.services.plan_limits_service import PlanLimitsService
+from app.services.mass_backup_scope import resolve_mass_backup_excluded_type_ids
 from sqlalchemy import func, or_
 from sqlalchemy.orm import joinedload
 from datetime import datetime, timedelta
@@ -128,6 +129,20 @@ def dashboard(tenant_slug):
             'storage_used': usage_snapshot.get("storage_used_label") or _format_bytes(storage_bytes)
         }
 
+        mass_excluded_type_ids = resolve_mass_backup_excluded_type_ids(db)
+        backup_eligible_filter = [
+            Device.tenant_id == tenant.id,
+            Device.is_active.isnot(False),
+            Device.backup_scheduled == True,
+        ]
+        if mass_excluded_type_ids:
+            backup_eligible_filter.append(
+                or_(
+                    Device.device_type_id.is_(None),
+                    Device.device_type_id.notin_(list(mass_excluded_type_ids)),
+                )
+            )
+
         # Backup metrics (fuso local do tenant/operacao).
         local_tz = ZoneInfo(settings.APP_TIMEZONE)
         now_utc = datetime.utcnow()
@@ -145,12 +160,14 @@ def dashboard(tenant_slug):
 
         success_today_count = db.query(Backup).join(Device).filter(
             Device.tenant_id == tenant.id,
+            *backup_eligible_filter[1:],
             Backup.started_at >= start_of_day,
             Backup.started_at <= end_of_day,
             Backup.status == BackupStatus.SUCCESS.value
         ).count()
         failed_today_count = db.query(Backup).join(Device).filter(
             Device.tenant_id == tenant.id,
+            *backup_eligible_filter[1:],
             Backup.started_at >= start_of_day,
             Backup.started_at <= end_of_day,
             Backup.status == BackupStatus.FAILED.value
@@ -159,45 +176,39 @@ def dashboard(tenant_slug):
 
         success_24h = db.query(Backup).join(Device).filter(
             Device.tenant_id == tenant.id,
+            *backup_eligible_filter[1:],
             Backup.started_at >= last_24h_start,
             Backup.status == BackupStatus.SUCCESS.value
         ).count()
         failed_24h = db.query(Backup).join(Device).filter(
             Device.tenant_id == tenant.id,
+            *backup_eligible_filter[1:],
             Backup.started_at >= last_24h_start,
             Backup.status == BackupStatus.FAILED.value
         ).count()
         backups_24h = success_24h + failed_24h
 
         total_scheduled = db.query(Device).filter(
-            *active_device_filter,
-            Device.backup_scheduled == True
+            *backup_eligible_filter,
         ).count()
         pending_backups = db.query(Schedule).join(Device).filter(
             Device.tenant_id == tenant.id,
-            Device.is_active.isnot(False),
-            Device.backup_scheduled == True,
+            *backup_eligible_filter[1:],
             Schedule.is_active == True,
             Schedule.next_run_at.isnot(None),
             Schedule.next_run_at <= now_utc
         ).count()
         success_rate = round((success_today_count / backups_today) * 100) if backups_today else 0
         success_count = db.query(Device).filter(
-            Device.tenant_id == tenant.id,
-            Device.is_active.isnot(False),
-            Device.backup_scheduled == True,
+            *backup_eligible_filter,
             Device.last_backup_status == 'success'
         ).count()
         failed_count = db.query(Device).filter(
-            Device.tenant_id == tenant.id,
-            Device.is_active.isnot(False),
-            Device.backup_scheduled == True,
+            *backup_eligible_filter,
             Device.last_backup_status == 'failure'
         ).count()
         no_history_count = db.query(Device).filter(
-            Device.tenant_id == tenant.id,
-            Device.is_active.isnot(False),
-            Device.backup_scheduled == True,
+            *backup_eligible_filter,
             or_(
                 Device.last_backup_status.is_(None),
                 Device.last_backup_status.in_(['never', 'unknown'])
@@ -206,40 +217,28 @@ def dashboard(tenant_slug):
         # Cruzamento entre status de backup e ultimo teste de conexao (somente agendados).
         conn_group = Device.extra_parameters.op('->>')('connection_test_group')
         conn_login_ok_scheduled = db.query(Device).filter(
-            Device.tenant_id == tenant.id,
-            Device.is_active.isnot(False),
-            Device.backup_scheduled == True,
+            *backup_eligible_filter,
             conn_group == 'ready',
         ).count()
         conn_ping_ok_scheduled = db.query(Device).filter(
-            Device.tenant_id == tenant.id,
-            Device.is_active.isnot(False),
-            Device.backup_scheduled == True,
+            *backup_eligible_filter,
             conn_group.in_(['ready', 'ping_ok_login_fail']),
         ).count()
         conn_ping_ok_login_fail_scheduled = db.query(Device).filter(
-            Device.tenant_id == tenant.id,
-            Device.is_active.isnot(False),
-            Device.backup_scheduled == True,
+            *backup_eligible_filter,
             conn_group == 'ping_ok_login_fail',
         ).count()
         conn_no_ping_scheduled = db.query(Device).filter(
-            Device.tenant_id == tenant.id,
-            Device.is_active.isnot(False),
-            Device.backup_scheduled == True,
+            *backup_eligible_filter,
             conn_group == 'no_ping',
         ).count()
         success_on_ready = db.query(Device).filter(
-            Device.tenant_id == tenant.id,
-            Device.is_active.isnot(False),
-            Device.backup_scheduled == True,
+            *backup_eligible_filter,
             Device.last_backup_status == 'success',
             conn_group == 'ready',
         ).count()
         failed_on_ready = db.query(Device).filter(
-            Device.tenant_id == tenant.id,
-            Device.is_active.isnot(False),
-            Device.backup_scheduled == True,
+            *backup_eligible_filter,
             Device.last_backup_status == 'failure',
             conn_group == 'ready',
         ).count()
@@ -255,6 +254,7 @@ def dashboard(tenant_slug):
 
         next_backup_time = db.query(func.min(Schedule.next_run_at)).join(Device).filter(
             Device.tenant_id == tenant.id,
+            *backup_eligible_filter[1:],
             Schedule.is_active == True
         ).scalar()
         if next_backup_time:

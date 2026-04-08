@@ -17,6 +17,8 @@ TASK_META_PREFIX = "backup_center:task_meta:"
 GLOBAL_LOG_KEY = "backup_center:global_logs"
 GLOBAL_LOG_SEQ_KEY = "backup_center:global_logs_seq"
 TTL_SECONDS = 60 * 60 * 48  # 48h
+TASK_LOG_MAX_ENTRIES = 300
+GLOBAL_LOG_MAX_ENTRIES = 600
 
 
 def _now_iso() -> str:
@@ -147,12 +149,12 @@ def append_task_log(
 
         task_key = _task_log_key(task_id)
         client.rpush(task_key, serialized)
-        client.ltrim(task_key, -500, -1)
+        client.ltrim(task_key, -TASK_LOG_MAX_ENTRIES, -1)
         client.expire(task_key, TTL_SECONDS)
         client.expire(_task_log_seq_key(task_id), TTL_SECONDS)
 
         client.rpush(GLOBAL_LOG_KEY, serialized)
-        client.ltrim(GLOBAL_LOG_KEY, -2000, -1)
+        client.ltrim(GLOBAL_LOG_KEY, -GLOBAL_LOG_MAX_ENTRIES, -1)
         client.expire(GLOBAL_LOG_KEY, TTL_SECONDS)
         client.expire(GLOBAL_LOG_SEQ_KEY, TTL_SECONDS)
     except Exception:
@@ -170,9 +172,9 @@ def get_task_logs(task_id: str, after_seq: int = 0, limit: int = 200) -> Dict[st
         logger.exception("Falha ao ler logs da task %s", task_id)
         return {"entries": [], "last_seq": after_seq}
 
-    entries: List[Dict[str, Any]] = []
+    entries_reversed: List[Dict[str, Any]] = []
     last_seq = after_seq
-    for raw in raw_entries:
+    for raw in reversed(raw_entries):
         try:
             item = json.loads(raw)
         except Exception:
@@ -181,13 +183,14 @@ def get_task_logs(task_id: str, after_seq: int = 0, limit: int = 200) -> Dict[st
             continue
         seq = int(item.get("seq", 0) or 0)
         if seq <= after_seq:
-            continue
-        entries.append(item)
+            break
+        entries_reversed.append(item)
         if seq > last_seq:
             last_seq = seq
-        if len(entries) >= limit:
+        if len(entries_reversed) >= limit:
             break
 
+    entries = list(reversed(entries_reversed))
     return {"entries": entries, "last_seq": last_seq}
 
 
@@ -201,9 +204,9 @@ def get_global_logs(after_seq: int = 0, limit: int = 300, tenant_id: Optional[st
         logger.exception("Falha ao ler logs globais")
         return {"entries": [], "last_seq": after_seq}
 
-    entries: List[Dict[str, Any]] = []
+    entries_reversed: List[Dict[str, Any]] = []
     last_seq = after_seq
-    for raw in raw_entries:
+    for raw in reversed(raw_entries):
         try:
             item = json.loads(raw)
         except Exception:
@@ -212,12 +215,13 @@ def get_global_logs(after_seq: int = 0, limit: int = 300, tenant_id: Optional[st
             continue
         seq = int(item.get("global_seq", 0) or 0)
         if seq <= after_seq:
-            continue
+            break
         if tenant_id and str(item.get("tenant_id") or "") != str(tenant_id):
             continue
-        entries.append(item)
+        entries_reversed.append(item)
         if seq > last_seq:
             last_seq = seq
-        if len(entries) >= limit:
+        if len(entries_reversed) >= limit:
             break
+    entries = list(reversed(entries_reversed))
     return {"entries": entries, "last_seq": last_seq}

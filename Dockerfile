@@ -8,8 +8,11 @@ RUN apt-get update && apt-get install -y \
     postgresql-client \
     network-manager \
     iputils-ping \
+    fping \
+    netcat-openbsd \
     openssh-client \
     inetutils-telnet \
+    sshpass \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements

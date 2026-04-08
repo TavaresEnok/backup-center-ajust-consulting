@@ -6,7 +6,14 @@ from app.models.device import Device
 from app.models.tenant import Tenant
 from app.models.user import UserRole
 from app.celery_app import celery_app
-from app.services.realtime_backup_logs import get_task_meta, get_task_logs, get_global_logs, update_task_meta, append_task_log
+from app.services.realtime_backup_logs import (
+    get_task_meta,
+    get_task_logs,
+    get_global_logs,
+    update_task_meta,
+    append_task_log,
+    get_redis_client,
+)
 from app.services.backup_diagnostics import classify_failure, failure_label
 from app.services.plan_limits_service import PlanLimitsService
 from sqlalchemy import desc, func
@@ -29,9 +36,38 @@ def get_db_and_tenant(tenant_slug):
     return db, tenant
 
 
+def _bulk_status_refresh_min_interval_seconds() -> float:
+    raw = str(os.getenv("BULK_STATUS_REFRESH_MIN_INTERVAL_SECONDS", "2.5")).strip()
+    try:
+        value = float(raw)
+    except Exception:
+        value = 2.5
+    return max(0.5, min(value, 10.0))
+
+
 def _refresh_bulk_task_meta(task_id: str, task_meta: dict) -> dict:
     child_task_ids = [str(tid) for tid in (task_meta.get("child_task_ids") or []) if tid]
     total_tasks = int(task_meta.get("total_tasks") or len(child_task_ids))
+    prev_total_tasks = int(task_meta.get("total_tasks") or 0)
+    prev_total_devices = int(task_meta.get("total_devices") or 0)
+    prev_done_tasks = int(task_meta.get("done_tasks") or 0)
+    prev_success_tasks = int(task_meta.get("success_tasks") or 0)
+    prev_failed_tasks = int(task_meta.get("failed_tasks") or 0)
+    prev_done_devices = int(task_meta.get("done_devices") or 0)
+    prev_success_devices = int(task_meta.get("success_devices") or 0)
+    prev_failed_devices = int(task_meta.get("failed_devices") or 0)
+    prev_finished_task_ids = {
+        str(tid)
+        for tid in (task_meta.get("finished_task_ids") or [])
+        if tid
+    }
+    prev_failure_category_counts = {
+        str(k): int(v or 0)
+        for k, v in (task_meta.get("failure_category_counts") or {}).items()
+    }
+    prev_no_ping = int(task_meta.get("no_ping_devices") or 0)
+    prev_ping_ok_login_fail = int(task_meta.get("ping_ok_login_fail_devices") or 0)
+    prev_ping_login_ok = int(task_meta.get("ping_login_ok_devices") or 0)
     child_task_device_count = {
         str(k): int(v)
         for k, v in (task_meta.get("child_task_device_count") or {}).items()
@@ -43,9 +79,10 @@ def _refresh_bulk_task_meta(task_id: str, task_meta: dict) -> dict:
     running_tasks = 0
     queued_tasks = 0
     done_devices = 0
+    estimated_in_progress_devices = 0.0
     success_devices = 0
     failed_devices = 0
-    finished_task_ids = set()
+    finished_task_ids = set(prev_finished_task_ids)
     operation_kind = (task_meta.get("operation_kind") or "backup_bulk").strip().lower()
     no_ping_devices = 0
     ping_ok_login_fail_devices = 0
@@ -62,14 +99,32 @@ def _refresh_bulk_task_meta(task_id: str, task_meta: dict) -> dict:
     }
 
     cancel_requested = bool(task_meta.get("cancel_requested"))
+    force_cancelled_ids = {
+        str(tid)
+        for tid in (task_meta.get("force_cancelled_child_ids") or [])
+        if tid
+    }
 
     for child_id in child_task_ids:
         async_result = celery_app.AsyncResult(child_id)
+        child_task_meta = get_task_meta(child_id) or {}
         state = (async_result.state or "").upper()
+        child_meta_completed = bool(child_task_meta.get("completed"))
+        child_meta_status = str(child_task_meta.get("status") or "").strip().lower()
+        if state in {"PENDING", "RECEIVED"} and child_meta_completed:
+            if child_meta_status in {"success", "completed"}:
+                state = "SUCCESS"
+            elif child_meta_status in {"failed", "failure", "error", "stopped", "revoked"}:
+                state = "FAILURE"
+
         if state == "SUCCESS":
             done_tasks += 1
             finished_task_ids.add(child_id)
             result = async_result.result
+            if not isinstance(result, dict):
+                cached_result = child_task_meta.get("result")
+                if isinstance(cached_result, dict):
+                    result = cached_result
             device_total_for_task = child_task_device_count.get(child_id, 1)
             task_success = True
             task_success_devices = 0
@@ -163,11 +218,55 @@ def _refresh_bulk_task_meta(task_id: str, task_meta: dict) -> dict:
             done_tasks += 1
             finished_task_ids.add(child_id)
             device_total_for_task = max(1, child_task_device_count.get(child_id, 1))
-            done_devices += device_total_for_task
-            failed_devices += device_total_for_task
-            failure_category_counts["unknown"] += device_total_for_task
+            child_done_devices = max(0, int(child_task_meta.get("done_devices") or child_task_meta.get("processed_devices") or 0))
+            child_success_devices = max(0, int(child_task_meta.get("success_devices") or 0))
+            child_failed_devices = max(0, int(child_task_meta.get("failed_devices") or 0))
+            remaining_devices = max(0, device_total_for_task - child_done_devices)
+            done_devices += child_done_devices + remaining_devices
+            success_devices += child_success_devices
+            failed_devices += child_failed_devices + remaining_devices
+            failure_category_counts["unknown"] += max(1, remaining_devices)
             if operation_kind == "connection_audit":
-                ping_ok_login_fail_devices += device_total_for_task
+                ping_ok_login_fail_devices += child_failed_devices + remaining_devices
+            continue
+
+        device_total_for_task = max(1, child_task_device_count.get(child_id, 1))
+        child_progress = int(child_task_meta.get("progress") or 0)
+        child_done_devices = max(0, int(child_task_meta.get("done_devices") or child_task_meta.get("processed_devices") or 0))
+        child_success_devices = max(0, int(child_task_meta.get("success_devices") or 0))
+        child_failed_devices = max(0, int(child_task_meta.get("failed_devices") or 0))
+        if state in {"STARTED", "RETRY"} and device_total_for_task > 1:
+            done_devices += min(device_total_for_task, child_done_devices)
+            success_devices += child_success_devices
+            failed_devices += child_failed_devices
+            child_fraction = max(0.0, min(0.99, float(child_task_meta.get("current_device_fraction") or 0.0)))
+            if child_done_devices > 0 or child_fraction > 0:
+                estimated_partial = min(
+                    max(0.0, float(device_total_for_task - child_done_devices) - 0.01),
+                    child_fraction,
+                )
+            elif child_progress > 0:
+                estimated_partial = min(
+                    float(device_total_for_task) - 0.01,
+                    max(0.0, ((child_progress / 100) * device_total_for_task) - child_done_devices),
+                )
+            else:
+                estimated_partial = 0.0
+            estimated_in_progress_devices += max(0.0, estimated_partial)
+
+        if cancel_requested and (
+            (child_id in force_cancelled_ids)
+            or (not force_cancelled_ids)
+        ) and state in {"PENDING", "RECEIVED", "RETRY", "STARTED"}:
+            failed_tasks += 1
+            done_tasks += 1
+            finished_task_ids.add(child_id)
+            remaining_devices = max(0, device_total_for_task - child_done_devices)
+            done_devices += remaining_devices
+            failed_devices += remaining_devices
+            failure_category_counts["unknown"] += remaining_devices
+            if operation_kind == "connection_audit":
+                ping_ok_login_fail_devices += remaining_devices
             continue
 
         if state == "STARTED":
@@ -175,9 +274,32 @@ def _refresh_bulk_task_meta(task_id: str, task_meta: dict) -> dict:
         else:
             queued_tasks += 1
 
+    # Mantem contadores monotônicos para evitar regressão quando o backend de
+    # resultados do Celery expira e estados voltam para PENDING.
+    total_tasks = max(total_tasks, prev_total_tasks)
+    done_tasks = max(done_tasks, prev_done_tasks)
+    success_tasks = max(success_tasks, prev_success_tasks)
+    failed_tasks = max(failed_tasks, prev_failed_tasks)
+    done_tasks = max(done_tasks, success_tasks + failed_tasks)
+
+    done_devices = max(done_devices, prev_done_devices)
+    success_devices = max(success_devices, prev_success_devices)
+    failed_devices = max(failed_devices, prev_failed_devices)
+    done_devices = max(done_devices, success_devices + failed_devices)
+
+    no_ping_devices = max(no_ping_devices, prev_no_ping)
+    ping_ok_login_fail_devices = max(ping_ok_login_fail_devices, prev_ping_ok_login_fail)
+    ping_login_ok_devices = max(ping_login_ok_devices, prev_ping_login_ok)
+    for cat, prev_value in prev_failure_category_counts.items():
+        if cat not in failure_category_counts:
+            failure_category_counts[cat] = int(prev_value or 0)
+        else:
+            failure_category_counts[cat] = max(int(failure_category_counts[cat] or 0), int(prev_value or 0))
+
     total_devices = int(task_meta.get("total_devices") or 0)
     if total_devices <= 0:
         total_devices = int(done_devices + running_tasks + queued_tasks)
+    total_devices = max(total_devices, prev_total_devices)
     if done_devices > total_devices:
         total_devices = done_devices
 
@@ -191,10 +313,10 @@ def _refresh_bulk_task_meta(task_id: str, task_meta: dict) -> dict:
             else "Nenhuma task pendente para este lote."
         )
     else:
-        progress_base = done_devices if total_devices > 0 else done_tasks
+        progress_base = (done_devices + estimated_in_progress_devices) if total_devices > 0 else done_tasks
         progress_total = total_devices if total_devices > 0 else total_tasks
         progress = min(100, int((progress_base / max(1, progress_total)) * 100))
-        completed = done_tasks >= total_tasks
+        completed = bool(task_meta.get("completed")) or (done_tasks >= total_tasks)
         if completed:
             if cancel_requested:
                 status = "stopped"
@@ -616,10 +738,21 @@ def bulk_task_status(tenant_slug, task_id):
     if not task_meta.get("is_bulk"):
         return jsonify({"ok": False, "error": "Task is not a bulk operation"}), 400
 
-    refreshed = _refresh_bulk_task_meta(task_id, task_meta)
-    update_task_meta(task_id, **refreshed)
+    now_ts = time.time()
+    current = dict(task_meta or {})
+    should_refresh = False
+    if not bool(current.get("completed")):
+        last_refresh = float(current.get("bulk_last_refresh_ts") or 0.0)
+        should_refresh = (now_ts - last_refresh) >= _bulk_status_refresh_min_interval_seconds()
+    elif not current.get("status"):
+        should_refresh = True
 
-    current = get_task_meta(task_id)
+    if should_refresh:
+        refreshed = _refresh_bulk_task_meta(task_id, current)
+        refreshed["bulk_last_refresh_ts"] = now_ts
+        update_task_meta(task_id, **refreshed)
+        current.update(refreshed)
+
     return jsonify({
         "ok": True,
         "task_id": task_id,
@@ -633,6 +766,7 @@ def bulk_task_status(tenant_slug, task_id):
         "queued_direct": int(current.get("queued_direct") or 0),
         "queued_vpn_groups": int(current.get("queued_vpn_groups") or 0),
         "skipped_not_ready": int(current.get("skipped_not_ready") or 0),
+        "skipped_mass_excluded": int(current.get("skipped_mass_excluded") or 0),
         "total_tasks": int(current.get("total_tasks") or 0),
         "done_tasks": int(current.get("done_tasks") or 0),
         "success_tasks": int(current.get("success_tasks") or 0),
@@ -672,15 +806,28 @@ def cancel_bulk_task(tenant_slug, task_id):
 
     child_task_ids = [str(tid) for tid in (task_meta.get("child_task_ids") or []) if tid]
     revoke_requested = 0
+    force_cancelled_child_ids = []
+    operation_kind = str(task_meta.get("operation_kind") or "").strip().lower()
+    revoke_signal = "SIGKILL" if operation_kind == "connection_audit" else "SIGTERM"
     for child_id in child_task_ids:
         async_result = celery_app.AsyncResult(child_id)
         if async_result.state in {"SUCCESS", "FAILURE", "REVOKED"}:
             continue
         try:
-            celery_app.control.revoke(child_id, terminate=True, signal="SIGTERM")
+            celery_app.control.revoke(child_id, terminate=True, signal=revoke_signal)
             revoke_requested += 1
+            force_cancelled_child_ids.append(child_id)
         except Exception:
             logging.getLogger(__name__).exception("Falha ao revogar child task %s", child_id)
+
+    try:
+        r = get_redis_client()
+        if r:
+            # TTL curto para que tasks em execucao percebam a parada mesmo quando a
+            # revogacao do Celery nao interrompe imediatamente a task ativa.
+            r.setex("backup_center:force_stop_backups", 60 * 3, "1")
+    except Exception:
+        logging.getLogger(__name__).exception("Falha ao definir bloqueio global temporario ao cancelar lote %s", task_id)
 
     update_task_meta(
         task_id,
@@ -688,6 +835,8 @@ def cancel_bulk_task(tenant_slug, task_id):
         status="stopping",
         completed=False,
         message="Solicitacao de parada recebida. Interrompendo tasks em andamento...",
+        force_cancelled_child_ids=force_cancelled_child_ids,
+        cancel_requested_at=int(time.time()),
     )
     append_task_log(
         task_id,
@@ -731,7 +880,8 @@ def bulk_task_logs(tenant_slug, task_id):
     child_task_ids = [str(tid) for tid in (task_meta.get("child_task_ids") or []) if tid]
     allowed_task_ids = set(child_task_ids + [str(task_id)])
 
-    global_logs = get_global_logs(after_seq=after_seq, limit=1200, tenant_id=str(tenant.id))
+    # Keep payloads bounded; large responses under frequent polling can saturate uvicorn.
+    global_logs = get_global_logs(after_seq=after_seq, limit=300, tenant_id=str(tenant.id))
     entries = [
         entry
         for entry in (global_logs.get("entries") or [])

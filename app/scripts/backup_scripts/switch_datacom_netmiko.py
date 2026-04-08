@@ -13,11 +13,39 @@ ERROR_MARKERS = (
     "incomplete command",
     "error:",
 )
+NETWORK_ERROR_MARKERS = (
+    "timeout",
+    "timed out",
+    "no route to host",
+    "connection refused",
+    "tcp connection to device failed",
+    "no existing session",
+    "timeout opening channel",
+    "channelexception",
+    "eoferror",
+    "connection reset by peer",
+)
+AUTH_ERROR_MARKERS = (
+    "authentication failed",
+    "auth failed",
+    "permission denied",
+    "invalid password",
+    "login failed",
+)
 
 
 def _invalid(output: str) -> bool:
     text = (output or "").lower()
     return any(marker in text for marker in ERROR_MARKERS)
+
+
+def _classify_connection_failure(detail: str) -> str:
+    lowered = (detail or "").lower()
+    if any(marker in lowered for marker in NETWORK_ERROR_MARKERS):
+        return "CONEXAO"
+    if any(marker in lowered for marker in AUTH_ERROR_MARKERS):
+        return "AUTENTICACAO"
+    return "AUTENTICACAO"
 
 
 def realizar_backup(
@@ -62,9 +90,14 @@ def realizar_backup(
         with ConnectHandler(**device_config):
             logger.emit("Teste de conexao bem-sucedido.", "success")
     except Exception as exc:
-        msg = f"A conexao foi fechada, recusada ou as credenciais estao incorretas. Detalhe: {type(exc).__name__}: {exc}"
+        detail = f"{type(exc).__name__}: {exc}"
+        category = _classify_connection_failure(detail)
+        if category == "CONEXAO":
+            msg = f"Falha de conectividade com o dispositivo. Detalhe: {detail}"
+        else:
+            msg = f"A conexao foi fechada, recusada ou as credenciais estao incorretas. Detalhe: {detail}"
         logger.emit(msg, "error")
-        return (False, msg, None, "AUTENTICACAO")
+        return (False, msg, None, category)
 
     caminho_local = prepare_backup_path(backup_base_path, nome_provedor, nome_tipo_equip, nome_dispositivo, "cfg")
 

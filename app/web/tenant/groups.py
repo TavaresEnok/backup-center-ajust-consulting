@@ -1,7 +1,10 @@
-﻿from flask import Blueprint, render_template, redirect, url_for, request, flash, session, abort
+from flask import Blueprint, render_template, redirect, url_for, request, flash, session, abort, jsonify
 from app.web.auth.decorators import login_required, tenant_admin_required
 from app.core.database import SessionLocal
 from app.services.device_service import DeviceGroupService, DeviceService
+from app.services.connection_mode import uses_vpn_tunnel
+from app.services.realtime_backup_logs import register_task, append_task_log
+from app.tasks.monitoring import run_group_vpn_test_task
 from app.models.tenant import Tenant
 from app.models.user import UserRole
 import uuid
@@ -37,6 +40,12 @@ def _clear_global_force_stop_flag() -> bool:
     except Exception:
         logging.getLogger(__name__).exception("Falha ao limpar flag global de stop no backup de grupo")
         return False
+
+
+def _value_bool(raw_value, default: bool = False) -> bool:
+    if raw_value is None:
+        return bool(default)
+    return str(raw_value).strip().lower() in {"1", "true", "on", "yes"}
 
 
 def slugify(text):
@@ -115,14 +124,11 @@ def view_group(tenant_slug, group_id):
         db.close()
         return "Group not found", 404
     
-    devices = DeviceService.get_devices_by_group(db, group_uuid)
-    
+    # A visualizacao dedicada de grupo foi removida; redireciona para a lista
+    # de dispositivos filtrada pelo grupo para manter compatibilidade com links antigos.
     db.close()
-    return render_template(
-        'tenant/groups/view.html',
-        tenant=tenant,
-        group=group,
-        devices=devices
+    return redirect(
+        url_for('tenant_devices.list_devices', tenant_slug=tenant_slug, group_id=str(group_uuid))
     )
 
 
@@ -176,7 +182,7 @@ def edit_group(tenant_slug, group_id):
             
             DeviceGroupService.update_group(db, group_uuid, data)
             flash('Grupo atualizado com sucesso!', 'success')
-            return redirect(url_for('tenant_groups.view_group', tenant_slug=tenant_slug, group_id=group_id))
+            return redirect(url_for('tenant_groups.list_groups', tenant_slug=tenant_slug))
         except Exception as e:
             flash(f'Erro ao atualizar grupo: {str(e)}', 'error')
     
@@ -199,7 +205,7 @@ def delete_group(tenant_slug, group_id):
     try:
         group_uuid = uuid.UUID(group_id)
     except ValueError:
-        flash('ID de grupo invÃ¡lido', 'error')
+        flash('ID de grupo inválido', 'error')
         return redirect(url_for('tenant_groups.list_groups', tenant_slug=tenant_slug))
     
     if DeviceGroupService.delete_group(db, group_uuid):
@@ -233,76 +239,183 @@ def run_backup_all(tenant_slug, group_id):
     try:
         group_uuid = uuid.UUID(group_id)
     except ValueError:
-        flash('ID de grupo invÃ¡lido', 'error')
+        db.close()
+        flash('ID de grupo inválido', 'error')
         return redirect(url_for('tenant_operations.index', tenant_slug=tenant_slug))
     
     group = DeviceGroupService.get_group(db, group_uuid)
-    if not group:
-        flash('Grupo nÃ£o encontrado', 'error')
+    if not group or str(group.tenant_id) != str(tenant.id):
+        db.close()
+        flash('Grupo não encontrado', 'error')
+        return redirect(url_for('tenant_operations.index', tenant_slug=tenant_slug))
+    if not bool(getattr(group, 'is_active', True)):
+        db.close()
+        flash('Grupo inativo. Reative o grupo para executar backups.', 'warning')
         return redirect(url_for('tenant_operations.index', tenant_slug=tenant_slug))
     
     devices = DeviceService.get_devices_by_group(db, group_uuid)
-    
-    include_unvalidated = (request.form.get("include_unvalidated") or "").strip().lower() in {"1", "true", "on", "yes"}
-    skipped_not_ready = 0
-    if include_unvalidated:
-        scheduled_devices = [d for d in devices if d.backup_scheduled]
-    else:
-        from app.services.backup_diagnostics import is_connection_ready_for_backup
-        scheduled_devices = []
-        for d in devices:
-            if not d.backup_scheduled:
-                continue
-            ok, _ = is_connection_ready_for_backup(
-                d.extra_parameters or {},
-            )
-            if ok:
-                scheduled_devices.append(d)
-            else:
-                skipped_not_ready += 1
+    include_unscheduled = _value_bool(request.form.get("include_unscheduled"), default=True)
+    eligible_devices = devices if include_unscheduled else [d for d in devices if d.backup_scheduled]
 
-    if group.uses_vpn and scheduled_devices:
+    if uses_vpn_tunnel(group) and eligible_devices:
         task = run_vpn_group_backups_task.apply_async(
-            args=[str(group.id), str(tenant.id), [str(d.id) for d in scheduled_devices]],
+            args=[str(group.id), str(tenant.id), [str(d.id) for d in eligible_devices]],
             queue='vpn_queue'
         )
         db.close()
         if force_stop_cleared:
             flash('Bloqueio global de parada foi removido automaticamente para iniciar este backup.', 'warning')
         flash(
-            f'Backup do grupo enfileirado em VPN ({len(scheduled_devices)} dispositivos). Task: {task.id}',
+            f'Backup do grupo "{group.name}" enfileirado em VPN ({len(eligible_devices)} dispositivos). Task: {task.id}',
             'success'
         )
-        if skipped_not_ready > 0:
-            flash(
-                f'{skipped_not_ready} dispositivo(s) do grupo foram pulados por falta de ping+login OK no ultimo teste.',
-                'warning'
-            )
         return _redirect_target()
 
     queued = 0
-    for device in scheduled_devices:
-        run_backup_task.delay(str(device.id))
+    for device in eligible_devices:
+        target_queue = 'vpn_queue' if (device.group and uses_vpn_tunnel(device.group, device=device)) else 'celery'
+        run_backup_task.apply_async(args=[str(device.id)], queue=target_queue)
         queued += 1
 
-    if queued == 0 and not (group.uses_vpn and scheduled_devices):
+    if queued == 0 and not (uses_vpn_tunnel(group) and eligible_devices):
         db.close()
-        flash(
-            'Nenhum dispositivo apto com ping+login OK no ultimo teste para backup neste grupo.',
-            'warning'
-        )
+        if include_unscheduled:
+            flash('Nenhum dispositivo ativo elegivel para backup neste grupo.', 'warning')
+        else:
+            flash('Nenhum dispositivo agendado para backup neste grupo.', 'warning')
         return _redirect_target()
     
     db.close()
     if force_stop_cleared:
         flash('Bloqueio global de parada foi removido automaticamente para iniciar este backup.', 'warning')
-    flash(f'Backup de grupo enfileirado: {queued} dispositivos.', 'success')
-    if skipped_not_ready > 0:
-        flash(
-            f'{skipped_not_ready} dispositivo(s) do grupo foram pulados por falta de ping+login OK no ultimo teste.',
-            'warning'
-        )
-    
+    flash(f'Backup do grupo "{group.name}" enfileirado: {queued} dispositivos.', 'success')
     return _redirect_target()
+
+
+@bp.route('/<group_id>/toggle-active', methods=['POST'])
+@login_required
+@tenant_admin_required
+def toggle_group_active(tenant_slug, group_id):
+    db, tenant = get_db_and_tenant(tenant_slug)
+    if not tenant:
+        return "Tenant not found", 404
+
+    return_to = (request.form.get('return_to') or '').strip().lower()
+    action = (request.form.get('action') or '').strip().lower()
+    if action not in {'activate', 'deactivate'}:
+        action = 'toggle'
+
+    try:
+        group_uuid = uuid.UUID(group_id)
+    except ValueError:
+        db.close()
+        flash('ID de grupo inválido', 'error')
+        return redirect(url_for('tenant_operations.index', tenant_slug=tenant_slug))
+
+    group = DeviceGroupService.get_group(db, group_uuid)
+    if not group or str(group.tenant_id) != str(tenant.id):
+        db.close()
+        flash('Grupo não encontrado', 'error')
+        return redirect(url_for('tenant_operations.index', tenant_slug=tenant_slug))
+
+    current_active = bool(getattr(group, 'is_active', True))
+    if action == 'activate':
+        target_active = True
+    elif action == 'deactivate':
+        target_active = False
+    else:
+        target_active = not current_active
+
+    if target_active == current_active:
+        db.close()
+        flash(
+            f'Grupo "{group.name}" já está {"ativo" if current_active else "inativo"}.',
+            'warning',
+        )
+    else:
+        DeviceGroupService.update_group(db, group_uuid, {'is_active': target_active})
+        db.close()
+        flash(
+            f'Grupo "{group.name}" {"reativado" if target_active else "desativado"} com sucesso.',
+            'success',
+        )
+
+    if return_to == 'edit':
+        return redirect(url_for('tenant_groups.edit_group', tenant_slug=tenant_slug, group_id=group_id))
+    if return_to == 'groups':
+        return redirect(url_for('tenant_groups.list_groups', tenant_slug=tenant_slug))
+    return redirect(url_for('tenant_operations.index', tenant_slug=tenant_slug))
+
+
+@bp.route('/<group_id>/test-vpn', methods=['POST'])
+@login_required
+def test_group_vpn(tenant_slug, group_id):
+    db, tenant = get_db_and_tenant(tenant_slug)
+    if not tenant:
+        return "Tenant not found", 404
+
+    is_ajax = (
+        request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+        or 'application/json' in (request.headers.get('Accept') or '')
+    )
+
+    try:
+        group_uuid = uuid.UUID(group_id)
+    except ValueError:
+        db.close()
+        if is_ajax:
+            return jsonify({"ok": False, "error": "ID de grupo invalido."}), 400
+        flash("ID de grupo invalido.", "error")
+        return redirect(url_for('tenant_groups.list_groups', tenant_slug=tenant_slug))
+
+    group = DeviceGroupService.get_group(db, group_uuid)
+    if not group or str(group.tenant_id) != str(tenant.id):
+        db.close()
+        if is_ajax:
+            return jsonify({"ok": False, "error": "Grupo nao encontrado."}), 404
+        flash("Grupo nao encontrado.", "error")
+        return redirect(url_for('tenant_groups.list_groups', tenant_slug=tenant_slug))
+    if not bool(getattr(group, "is_active", True)):
+        db.close()
+        if is_ajax:
+            return jsonify({"ok": False, "error": "Grupo inativo. Reative para testar VPN."}), 400
+        flash("Grupo inativo. Reative para testar VPN.", "warning")
+        return redirect(url_for('tenant_groups.edit_group', tenant_slug=tenant_slug, group_id=group_id))
+
+    if not group.uses_vpn:
+        db.close()
+        if is_ajax:
+            return jsonify({"ok": False, "error": "Este grupo nao usa VPN."}), 400
+        flash("Este grupo nao usa VPN.", "warning")
+        return redirect(url_for('tenant_groups.edit_group', tenant_slug=tenant_slug, group_id=group_id))
+
+    task = run_group_vpn_test_task.apply_async(args=[str(group.id)], queue='vpn_queue')
+    task_id = str(task.id)
+    register_task(
+        task_id=task_id,
+        tenant_id=str(tenant.id),
+        device_name=f"Teste VPN - {group.name}",
+        group_id=str(group.id),
+    )
+    append_task_log(
+        task_id,
+        group.name,
+        "Task criada na fila vpn_queue. Aguardando worker iniciar.",
+        "info",
+    )
+
+    db.close()
+    if is_ajax:
+        return jsonify({
+            "ok": True,
+            "task_id": task_id,
+            "queue": "vpn_queue",
+            "device_name": f"Teste VPN - {group.name}",
+            "status_url": url_for('tenant_backups.task_status', tenant_slug=tenant_slug, task_id=task_id),
+            "logs_url": url_for('tenant_backups.task_logs', tenant_slug=tenant_slug, task_id=task_id),
+        }), 202
+
+    flash(f"Teste VPN enfileirado com sucesso! Task: {task_id}", "success")
+    return redirect(url_for('tenant_groups.edit_group', tenant_slug=tenant_slug, group_id=group_id))
 
 

@@ -4,6 +4,7 @@ from app.models.user import User, UserRole
 from app.models.device import Device
 from app.models.device_type import DeviceType
 from app.models.device_group import DeviceGroup
+from app.models.device_subgroup import DeviceSubgroup
 from app.models.backup import Backup, BackupStatus
 from app.models.schedule import Schedule, ScheduleFrequency
 from app.models.plan import Plan
@@ -24,6 +25,7 @@ __all__ = [
     "Device",
     "DeviceType",
     "DeviceGroup",
+    "DeviceSubgroup",
     "Backup",
     "BackupStatus",
     "Schedule",

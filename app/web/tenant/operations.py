@@ -14,6 +14,7 @@ from app.models.tenant import Tenant
 from app.models.user import UserRole
 from app.web.auth.decorators import login_required
 from app.services.backup_diagnostics import classify_failure
+from app.services.mass_backup_scope import resolve_mass_backup_excluded_type_ids
 
 bp = Blueprint("tenant_operations", __name__, url_prefix="/tenant/<tenant_slug>/operations")
 
@@ -39,17 +40,29 @@ def index(tenant_slug):
         view_mode = (request.args.get("view") or "cards").strip().lower()
         if view_mode not in {"cards", "table"}:
             view_mode = "cards"
+        group_filter = (request.args.get("group_filter") or "all").strip().lower()
+        if group_filter not in {"all", "vpn", "jump", "no_vpn"}:
+            group_filter = "all"
         now_utc = datetime.utcnow()
         last_24h = now_utc - timedelta(hours=24)
         last_7d = now_utc - timedelta(days=7)
         last_14d = now_utc - timedelta(days=14)
         last_30d = now_utc - timedelta(days=30)
+        mass_excluded_type_ids = resolve_mass_backup_excluded_type_ids(db)
+
+        device_scope_filter = [
+            Device.tenant_id == tenant.id,
+            Device.is_active == True,
+        ]
+        if mass_excluded_type_ids:
+            device_scope_filter.append(
+                (Device.device_type_id.is_(None) | Device.device_type_id.notin_(list(mass_excluded_type_ids)))
+            )
 
         groups = (
             db.query(DeviceGroup)
             .filter(
                 DeviceGroup.tenant_id == tenant.id,
-                DeviceGroup.is_active == True,
             )
             .order_by(DeviceGroup.name.asc())
             .all()
@@ -58,10 +71,7 @@ def index(tenant_slug):
         devices = (
             db.query(Device)
             .options(joinedload(Device.group))
-            .filter(
-                Device.tenant_id == tenant.id,
-                Device.is_active == True,
-            )
+            .filter(*device_scope_filter)
             .all()
         )
 
@@ -70,6 +80,7 @@ def index(tenant_slug):
             .join(Device)
             .filter(
                 Device.tenant_id == tenant.id,
+                *device_scope_filter[1:],
                 Schedule.is_active == True,
             )
             .all()
@@ -83,7 +94,7 @@ def index(tenant_slug):
             for row in (
                 db.query(Backup.device_id)
                 .join(Device)
-                .filter(Device.tenant_id == tenant.id)
+                .filter(Device.tenant_id == tenant.id, *device_scope_filter[1:])
                 .distinct()
                 .all()
             )
@@ -92,7 +103,7 @@ def index(tenant_slug):
         last_backup_rows = (
             db.query(Backup.device_id, func.max(Backup.started_at))
             .join(Device)
-            .filter(Device.tenant_id == tenant.id)
+            .filter(Device.tenant_id == tenant.id, *device_scope_filter[1:])
             .group_by(Backup.device_id)
             .all()
         )
@@ -103,6 +114,7 @@ def index(tenant_slug):
             .join(Device)
             .filter(
                 Device.tenant_id == tenant.id,
+                *device_scope_filter[1:],
                 Backup.started_at >= last_24h,
             )
             .group_by(Backup.device_id, Backup.status)
@@ -124,6 +136,8 @@ def index(tenant_slug):
                 "name": group.name,
                 "connection_type": group.connection_type or "direct",
                 "uses_vpn": bool(group.uses_vpn),
+                "uses_jump_host": bool(group.uses_jump_host),
+                "is_active": bool(getattr(group, "is_active", True)),
                 "total_devices": 0,
                 "fully_configured": 0,
                 "auto_disabled": 0,
@@ -131,6 +145,9 @@ def index(tenant_slug):
                 "without_any_backup": 0,
                 "failed_24h": 0,
                 "success_24h": 0,
+                "devices_success": 0,
+                "devices_failed": 0,
+                "devices_unknown": 0,
                 "last_backup_at": None,
                 "coverage_pct": 0,
                 "attention_score": 0,
@@ -150,6 +167,8 @@ def index(tenant_slug):
             "name": "Sem grupo",
             "connection_type": "direct",
             "uses_vpn": False,
+            "uses_jump_host": False,
+            "is_active": True,
             "total_devices": 0,
             "fully_configured": 0,
             "auto_disabled": 0,
@@ -157,6 +176,9 @@ def index(tenant_slug):
             "without_any_backup": 0,
             "failed_24h": 0,
             "success_24h": 0,
+            "devices_success": 0,
+            "devices_failed": 0,
+            "devices_unknown": 0,
             "last_backup_at": None,
             "coverage_pct": 0,
             "attention_score": 0,
@@ -176,6 +198,7 @@ def index(tenant_slug):
             .join(Device, Device.id == Backup.device_id)
             .filter(
                 Device.tenant_id == tenant.id,
+                *device_scope_filter[1:],
                 Backup.started_at >= last_7d,
             )
             .group_by(Device.group_id, Backup.status)
@@ -186,6 +209,7 @@ def index(tenant_slug):
             .join(Device, Device.id == Backup.device_id)
             .filter(
                 Device.tenant_id == tenant.id,
+                *device_scope_filter[1:],
                 Backup.started_at >= last_14d,
                 Backup.started_at < last_7d,
             )
@@ -239,6 +263,13 @@ def index(tenant_slug):
                 bucket["without_any_backup"] += 1
             bucket["failed_24h"] += failed_24h
             bucket["success_24h"] += success_24h
+            last_status = str(device.last_backup_status or "").strip().lower()
+            if last_status == BackupStatus.SUCCESS.value:
+                bucket["devices_success"] += 1
+            elif last_status == BackupStatus.FAILED.value:
+                bucket["devices_failed"] += 1
+            else:
+                bucket["devices_unknown"] += 1
 
             device_last_backup = last_backup_by_device.get(device.id)
             if device_last_backup and (not bucket["last_backup_at"] or device_last_backup > bucket["last_backup_at"]):
@@ -271,9 +302,12 @@ def index(tenant_slug):
 
         group_rows = []
         for bucket in group_buckets.values():
-            if bucket["total_devices"] == 0:
+            if bucket["total_devices"] == 0 and bucket["is_active"]:
                 continue
-            bucket["coverage_pct"] = int(round((bucket["fully_configured"] / bucket["total_devices"]) * 100))
+            if bucket["total_devices"] > 0:
+                bucket["coverage_pct"] = int(round((bucket["fully_configured"] / bucket["total_devices"]) * 100))
+            else:
+                bucket["coverage_pct"] = 0
             bucket["attention_score"] = (
                 (bucket["auto_disabled"] * 3)
                 + (bucket["missing_schedule"] * 2)
@@ -316,6 +350,7 @@ def index(tenant_slug):
             .join(Device, Device.id == Backup.device_id)
             .filter(
                 Device.tenant_id == tenant.id,
+                *device_scope_filter[1:],
                 Backup.status == BackupStatus.FAILED,
                 Backup.created_at >= last_30d,
             )
@@ -380,6 +415,13 @@ def index(tenant_slug):
             group_rows = all_group_rows
             attention_devices = all_attention_devices[:40]
 
+        if group_filter == "vpn":
+            group_rows = [row for row in group_rows if row["uses_vpn"]]
+        elif group_filter == "jump":
+            group_rows = [row for row in group_rows if row["uses_jump_host"]]
+        elif group_filter == "no_vpn":
+            group_rows = [row for row in group_rows if not row["uses_vpn"]]
+
         critical_devices = sum(
             1
             for row in all_attention_devices
@@ -390,6 +432,11 @@ def index(tenant_slug):
 
         summary = {
             "total_groups": len(all_group_rows),
+            "active_groups": sum(1 for g in all_group_rows if g["is_active"]),
+            "inactive_groups": sum(1 for g in all_group_rows if not g["is_active"]),
+            "vpn_groups": sum(1 for g in all_group_rows if g["uses_vpn"]),
+            "jump_groups": sum(1 for g in all_group_rows if g["uses_jump_host"]),
+            "no_vpn_groups": sum(1 for g in all_group_rows if not g["uses_vpn"]),
             "total_devices": len(devices),
             "fully_configured": sum(g["fully_configured"] for g in all_group_rows),
             "auto_disabled": sum(g["auto_disabled"] for g in all_group_rows),
@@ -417,6 +464,7 @@ def index(tenant_slug):
             now_utc=now_utc,
             focus_mode=focus_mode,
             view_mode=view_mode,
+            group_filter=group_filter,
         )
     finally:
         db.close()

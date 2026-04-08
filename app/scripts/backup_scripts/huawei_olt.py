@@ -4,7 +4,7 @@ import time
 
 import pexpect
 
-from script_helpers import BackupLogger, prepare_backup_path
+from script_helpers import BackupLogger, prepare_backup_path, open_pexpect_session, close_pexpect_session
 
 PROMPT_ANY_LINE = r"(?m)^(?:<[^>\r\n]+>|\(config\)#|\S+[>#\]])\s*$"
 PROMPT_PRIV_LINE = r"(?m)^(?:\(config\)#|\S+#)\s*$"
@@ -20,6 +20,31 @@ ERROR_MARKERS = (
     "error locates at '^'",
 )
 
+CONNECTION_MARKERS = (
+    "timeout",
+    "timed out",
+    "connection refused",
+    "unable to connect",
+    "no route to host",
+    "network is unreachable",
+    "error reading ssh protocol banner",
+    "timeout opening channel",
+    "sessao com jump host encerrada",
+    "sessão com jump host encerrada",
+    "jump host",
+    "jump_session_closed",
+)
+
+AUTH_MARKERS = (
+    "authentication failed",
+    "netmikoauthenticationexception",
+    "senha",
+    "password",
+    "credenciais",
+    "usuario",
+    "usuário",
+)
+
 
 def _ssh_command(ip: str, usuario: str, porta: int) -> str:
     return (
@@ -28,7 +53,6 @@ def _ssh_command(ip: str, usuario: str, porta: int) -> str:
         "-o UserKnownHostsFile=/dev/null "
         "-o ConnectTimeout=25 "
         "-o HostKeyAlgorithms=+ssh-rsa,ssh-dss "
-        "-o PubkeyAcceptedAlgorithms=+ssh-rsa,ssh-dss "
         "-o KexAlgorithms=+diffie-hellman-group1-sha1,diffie-hellman-group14-sha1 "
         "-o Ciphers=+aes128-cbc,3des-cbc "
         f"{usuario}@{ip} -p {int(porta)}"
@@ -50,21 +74,58 @@ def _looks_invalid(output: str) -> bool:
     return any(marker in low for marker in ERROR_MARKERS)
 
 
-def _login(child, usuario: str, password: str, timeout: int = 25) -> bool:
+def _coerce_pexpect_text(value) -> str:
+    if isinstance(value, str):
+        return value
+    if value is None:
+        return ""
+    try:
+        return str(value)
+    except Exception:
+        return ""
+
+
+def _failure_category_from_reason(reason: str | None) -> str:
+    text = str(reason or "").strip().lower()
+    if not text:
+        return "SCRIPT"
+    if any(marker in text for marker in CONNECTION_MARKERS):
+        return "CONEXAO"
+    if any(marker in text for marker in AUTH_MARKERS):
+        return "AUTENTICACAO"
+    return "SCRIPT"
+
+
+def _login(
+    child,
+    usuario: str,
+    password: str,
+    timeout: int = 25,
+    max_total_seconds: int = 80,
+):
     user_prompt = r"(?i)(?:user\s*name|username)\s*[:>]|(?:^|\n)\s*login\s*[:>]\s*$"
     pass_prompt = r"(?i)password\s*[:>]"
-    for _ in range(14):
+    refused_prompt = r"(?i)(connection refused|closed by remote host|refused by remote host|no route to host|network is unreachable)"
+    last_reason = ""
+    deadline = time.monotonic() + max(10, int(max_total_seconds or 80))
+    attempts = 0
+    while attempts < 14:
+        remaining = int(deadline - time.monotonic())
+        if remaining <= 0:
+            break
+        attempts += 1
         idx = child.expect(
             [
                 r"(?i)are you sure you want to continue connecting",
                 user_prompt,
                 pass_prompt,
+                refused_prompt,
                 r"(?i)(press\s+enter|pressione\s+enter|any key to continue)",
                 PROMPT_ANY_LINE,
                 pexpect.TIMEOUT,
                 pexpect.EOF,
             ],
-            timeout=timeout,
+            timeout=max(1, min(timeout, remaining)),
         )
         if idx == 0:
             child.sendline("yes")
@@ -76,14 +137,18 @@ def _login(child, usuario: str, password: str, timeout: int = 25) -> bool:
             child.sendline(password)
             continue
         if idx == 3:
-            child.sendline("")
-            continue
+            last_reason = _clean_terminal_text(_coerce_pexpect_text(child.after) + _coerce_pexpect_text(child.before))
+            return False, last_reason or "Conexao recusada pelo destino."
         if idx == 4:
-            return True
-        if idx in (5, 6):
             child.sendline("")
             continue
-    return False
+        if idx == 5:
+            return True, ""
+        if idx in (6, 7):
+            last_reason = _clean_terminal_text(_coerce_pexpect_text(child.before) + _coerce_pexpect_text(child.after))
+            child.sendline("")
+            continue
+    return False, (last_reason or "Nao foi possivel completar autenticacao dentro do tempo limite.")
 
 
 def _try_enable(child, secrets: List[str], timeout: int = 12) -> bool:
@@ -169,6 +234,7 @@ def realizar_backup(
     use_telnet = bool(parametros.get("use_telnet") or kwargs.get("use_telnet") or kwargs.get("usar_telnet"))
     enable_password = parametros.get("enable_password")
     secrets = [enable_password, password, usuario]
+    jump_host = kwargs.get("jump_host") or parametros.get("jump_host") or None
 
     command = f"telnet {ip} {int(porta)}" if use_telnet else _ssh_command(ip, usuario, porta)
     backup_path = prepare_backup_path(backup_base_path, nome_provedor, nome_tipo_equip, nome_dispositivo, "cfg")
@@ -176,12 +242,28 @@ def realizar_backup(
     child = None
     try:
         logger.emit("Etapa 1/3: Conectando e autenticando...")
-        child = pexpect.spawn(command, timeout=35, encoding="utf-8", codec_errors="ignore")
+        if jump_host and jump_host.get("host"):
+            logger.emit("Sessao interativa via Jump Host habilitada para OLT Huawei.")
+        child = open_pexpect_session(
+            command,
+            jump_host=jump_host,
+            timeout=35,
+            encoding="utf-8",
+            codec_errors="ignore",
+            logger=logger,
+        )
 
-        if not _login(child, usuario, password, timeout=28):
-            msg = "A conexao foi fechada, recusada ou as credenciais estao incorretas."
+        ok_login, login_reason = _login(child, usuario, password, timeout=28)
+        if not ok_login:
+            category = _failure_category_from_reason(login_reason)
+            if category == "CONEXAO":
+                msg = "Falha de conectividade com o dispositivo."
+            else:
+                msg = "A conexao foi fechada, recusada ou as credenciais estao incorretas."
+            if login_reason:
+                msg = f"{msg} Detalhe: {login_reason}"
             logger.emit(msg, "error")
-            return (False, msg, None, "AUTENTICACAO")
+            return (False, msg, None, category)
 
         logger.emit("Login concluido.", "success")
 
@@ -267,9 +349,12 @@ def realizar_backup(
         logger.emit(msg, "error")
         return (False, msg, None, "TIMEOUT")
     except Exception as exc:
-        msg = f"Falha critica durante o backup: {exc}"
+        category = _failure_category_from_reason(str(exc))
+        if category == "CONEXAO":
+            msg = f"Falha de conectividade com o dispositivo. Detalhe: {exc}"
+        else:
+            msg = f"Falha critica durante o backup: {exc}"
         logger.emit(msg, "error")
-        return (False, msg, None, "SCRIPT")
+        return (False, msg, None, category)
     finally:
-        if child and child.isalive():
-            child.close(force=True)
+        close_pexpect_session(child)
