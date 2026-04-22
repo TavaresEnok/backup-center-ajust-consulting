@@ -5,473 +5,593 @@
 {% block content %}
 {% set role = session.get('user_role') %}
 {% set can_manage_admin = role in ['super_admin', 'tenant_owner', 'tenant_admin'] %}
+
 <style>
-    .form-card {
-        background: var(--card-bg);
-        border: 1px solid var(--card-border);
-        border-radius: 16px;
-        padding: 2rem;
-        max-width: 700px;
-    }
+  .ge-page {
+    max-width: 920px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    color: #cbd5e1;
+  }
 
-    .form-label {
-        display: block;
-        font-size: 0.875rem;
-        font-weight: 500;
-        color: #94a3b8;
-        margin-bottom: 0.5rem;
-    }
+  .ge-back {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    color: #64748b;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    text-decoration: none;
+  }
 
-    .form-input {
-        width: 100%;
-        padding: 0.75rem 1rem;
-        background: var(--card-bg);
-        border: 1px solid var(--card-border);
-        border-radius: 10px;
-        color: var(--text-main);
-        font-size: 0.875rem;
-        transition: all 0.2s;
-    }
+  .ge-back:hover { color: #818cf8; }
 
-    .form-input:focus {
-        outline: none;
-        border-color: #3b82f6;
-        box-shadow: 0 0 15px rgba(59, 130, 246, 0.2);
-    }
+  .ge-head {
+    border-bottom: 1px solid #1f2937;
+    padding-bottom: .95rem;
+    display: flex;
+    flex-direction: column;
+    gap: .7rem;
+  }
 
-    .form-input::placeholder {
-        color: var(--text-muted);
-    }
+  .ge-title-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: .8rem;
+    flex-wrap: wrap;
+  }
 
-    .form-textarea {
-        min-height: 80px;
-        resize: vertical;
-    }
+  .ge-title-wrap {
+    display: flex;
+    align-items: center;
+    gap: .62rem;
+  }
 
-    .form-radio {
-        width: 18px;
-        height: 18px;
-        accent-color: #3b82f6;
-        cursor: pointer;
-    }
+  .ge-title-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: .58rem;
+    background: #0f172a;
+    border: 1px solid #1f2937;
+    color: #818cf8;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
 
-    .form-select {
-        appearance: none;
-        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
-        background-position: right 0.75rem center;
-        background-repeat: no-repeat;
-        background-size: 1.5em 1.5em;
-        padding-right: 2.5rem;
-    }
+  .ge-title {
+    margin: 0;
+    color: #f8fafc;
+    font-size: clamp(1.45rem, 2.8vw, 2.12rem);
+    font-weight: 800;
+    letter-spacing: -.02em;
+    line-height: 1.05;
+  }
 
-    .btn-premium {
-        background: linear-gradient(135deg, #3b82f6, #6366f1);
-        color: white;
-        padding: 0.75rem 2rem;
-        border-radius: 10px;
-        font-weight: 600;
-        transition: all 0.2s;
-        border: none;
-        cursor: pointer;
-    }
+  .ge-subtitle {
+    margin: .24rem 0 0;
+    font-size: 13px;
+    color: #94a3b8;
+  }
 
-    .btn-premium:hover {
-        box-shadow: 0 0 20px rgba(59, 130, 246, 0.4);
-        transform: translateY(-1px);
-    }
+  .ge-status {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    border-radius: 9999px;
+    border: 1px solid #334155;
+    padding: .28rem .65rem;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    background: #0f172a;
+    color: #cbd5e1;
+  }
 
-    .btn-secondary {
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid var(--card-border);
-        color: #94a3b8;
-        padding: 0.75rem 1.5rem;
-        border-radius: 10px;
-        font-weight: 500;
-        transition: all 0.2s;
-        text-decoration: none;
-    }
+  .ge-status.active {
+    border-color: rgba(16, 185, 129, 0.32);
+    background: rgba(16, 185, 129, 0.12);
+    color: #34d399;
+  }
 
-    .btn-secondary:hover {
-        background: rgba(255, 255, 255, 0.1);
-        color: white;
-    }
+  .ge-quick {
+    display: flex;
+    align-items: center;
+    gap: .45rem;
+    flex-wrap: wrap;
+  }
 
-    .btn-danger {
-        background: rgba(239, 68, 68, 0.15);
-        border: 1px solid rgba(239, 68, 68, 0.3);
-        color: #ef4444;
-        padding: 0.75rem 1.5rem;
-        border-radius: 10px;
-        font-weight: 500;
-        transition: all 0.2s;
-        cursor: pointer;
-    }
+  .ge-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .4rem;
+    border-radius: .58rem;
+    border: 1px solid #334155;
+    background: #0f172a;
+    color: #cbd5e1;
+    min-height: 34px;
+    font-size: 11px;
+    font-weight: 700;
+    padding: .48rem .78rem;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all .16s ease;
+  }
 
-    .btn-danger:hover {
-        background: rgba(239, 68, 68, 0.25);
-    }
+  .ge-btn:hover { background: #1e293b; color: #fff; border-color: #475569; }
+  .ge-btn:focus-visible { outline: 2px solid #6366f1; outline-offset: 2px; }
 
-    .connection-section {
-        border-radius: 12px;
-        padding: 1.5rem;
-        margin-top: 1rem;
-    }
+  .ge-btn.indigo {
+    border-color: rgba(99, 102, 241, 0.38);
+    background: rgba(79, 70, 229, 0.15);
+    color: #a5b4fc;
+  }
 
-    .vpn-section {
-        background: rgba(139, 92, 246, 0.05);
-        border: 1px solid rgba(139, 92, 246, 0.2);
-    }
+  .ge-btn.indigo:hover { background: rgba(79, 70, 229, 0.22); color: #c7d2fe; }
 
-    .jump-section {
-        background: rgba(16, 185, 129, 0.05);
-        border: 1px solid rgba(16, 185, 129, 0.2);
-    }
+  .ge-btn.success {
+    border-color: rgba(16, 185, 129, 0.35);
+    background: rgba(16, 185, 129, 0.15);
+    color: #34d399;
+  }
 
-    .section-title {
-        font-size: 1rem;
-        font-weight: 600;
-        color: var(--text-main);
-        margin-bottom: 1rem;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
+  .ge-btn.success:hover { background: rgba(16, 185, 129, 0.22); color: #6ee7b7; }
 
-    .form-row {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 1rem;
-    }
+  .ge-btn.primary {
+    border-color: #4f46e5;
+    background: #4f46e5;
+    color: #fff;
+  }
 
-    .connection-option {
-        display: flex;
-        align-items: flex-start;
-        gap: 0.75rem;
-        padding: 1rem;
-        border-radius: 10px;
-        border: 1px solid var(--card-border);
-        cursor: pointer;
-        transition: all 0.2s;
-    }
+  .ge-btn.primary:hover { background: #4338ca; border-color: #4338ca; }
 
-    .connection-option:hover {
-        border-color: rgba(255, 255, 255, 0.2);
-        background: rgba(255, 255, 255, 0.02);
-    }
+  .ge-btn.danger-soft {
+    border-color: rgba(244, 63, 94, 0.35);
+    background: rgba(244, 63, 94, 0.12);
+    color: #fb7185;
+  }
 
-    .connection-option.selected {
-        border-color: #3b82f6;
-        background: rgba(59, 130, 246, 0.1);
-    }
+  .ge-btn.danger-soft:hover { background: rgba(244, 63, 94, 0.2); color: #fecdd3; }
 
-    .connection-icon {
-        width: 40px;
-        height: 40px;
-        border-radius: 10px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-    }
+  .ge-btn.danger {
+    border-color: #e11d48;
+    background: #e11d48;
+    color: #fff;
+  }
 
-    .connection-icon.direct {
-        background: rgba(100, 116, 139, 0.2);
-        color: #94a3b8;
-    }
+  .ge-btn.danger:hover { background: #be123c; border-color: #be123c; }
 
-    .connection-icon.vpn {
-        background: rgba(139, 92, 246, 0.2);
-        color: #a78bfa;
-    }
+  .ge-form-card {
+    border: 1px solid #1f2937;
+    border-radius: .95rem;
+    background: #111113;
+    box-shadow: 0 14px 34px rgba(2, 6, 23, 0.34);
+    overflow: hidden;
+  }
 
-    .connection-icon.jump {
-        background: rgba(16, 185, 129, 0.2);
-        color: #34d399;
-    }
+  .ge-form-body {
+    padding: 1.1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
 
-    @media (max-width: 640px) {
-        .form-row {
-            grid-template-columns: 1fr;
-        }
-    }
+  .ge-section-title {
+    margin: 0;
+    border-bottom: 1px solid #1f2937;
+    padding-bottom: .45rem;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: .09em;
+    text-transform: uppercase;
+    color: #64748b;
+  }
+
+  .ge-field { display: flex; flex-direction: column; gap: .32rem; }
+
+  .ge-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: #e2e8f0;
+  }
+
+  .ge-help {
+    margin: 0;
+    font-size: 11px;
+    color: #64748b;
+  }
+
+  .ge-input, .ge-textarea, .ge-select {
+    width: 100%;
+    min-height: 38px;
+    border: 1px solid #1f2937;
+    border-radius: .56rem;
+    background: #0a0a0b;
+    color: #f8fafc;
+    font-size: 13px;
+    padding: .58rem .7rem;
+    transition: all .15s ease;
+  }
+
+  .ge-textarea { min-height: 96px; resize: vertical; }
+
+  .ge-input:focus, .ge-textarea:focus, .ge-select:focus {
+    outline: none;
+    border-color: rgba(99, 102, 241, 0.65);
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.16);
+  }
+
+  .ge-grid-2 {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: .78rem;
+  }
+
+  .ge-conn-list {
+    display: grid;
+    gap: .6rem;
+  }
+
+  .ge-conn-card {
+    display: flex;
+    align-items: flex-start;
+    gap: .75rem;
+    border: 2px solid #1f2937;
+    border-radius: .82rem;
+    background: #0a0a0b;
+    padding: .72rem .76rem;
+    cursor: pointer;
+    transition: all .15s ease;
+  }
+
+  .ge-conn-card:hover { border-color: #334155; background: #0f172a; }
+
+  .ge-conn-card.selected {
+    border-color: rgba(99, 102, 241, 0.68);
+    background: rgba(79, 70, 229, 0.1);
+    box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.22) inset;
+  }
+
+  .ge-conn-radio {
+    margin-top: .25rem;
+    width: 16px;
+    height: 16px;
+    accent-color: #6366f1;
+    flex-shrink: 0;
+  }
+
+  .ge-conn-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: .55rem;
+    border: 1px solid #334155;
+    background: #111827;
+    color: #94a3b8;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .ge-conn-card.selected .ge-conn-icon {
+    border-color: rgba(99, 102, 241, 0.48);
+    color: #a5b4fc;
+    background: rgba(79, 70, 229, 0.2);
+  }
+
+  .ge-conn-title {
+    margin: 0;
+    color: #f8fafc;
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: -.01em;
+  }
+
+  .ge-conn-desc {
+    margin: .25rem 0 0;
+    color: #94a3b8;
+    font-size: 12px;
+    line-height: 1.4;
+  }
+
+  .ge-subbox {
+    border: 1px solid #334155;
+    border-radius: .72rem;
+    background: #0f172a;
+    padding: .78rem;
+    display: grid;
+    gap: .72rem;
+  }
+
+  .ge-subbox.vpn {
+    border-color: rgba(99, 102, 241, 0.36);
+    background: rgba(79, 70, 229, 0.08);
+  }
+
+  .ge-subbox.jump {
+    border-color: rgba(16, 185, 129, 0.32);
+    background: rgba(16, 185, 129, 0.08);
+  }
+
+  .ge-form-foot {
+    border-top: 1px solid #1f2937;
+    background: #161618;
+    padding: .8rem 1.1rem;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: .52rem;
+    flex-wrap: wrap;
+  }
+
+  .ge-danger {
+    border: 1px solid rgba(190, 24, 93, 0.45);
+    border-radius: .95rem;
+    background: rgba(76, 5, 25, 0.38);
+    box-shadow: 0 14px 34px rgba(2, 6, 23, 0.34);
+  }
+
+  .ge-danger-body {
+    padding: 1rem 1.1rem;
+    display: flex;
+    flex-direction: column;
+    gap: .78rem;
+  }
+
+  .ge-danger-title {
+    margin: 0;
+    color: #fb7185;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .09em;
+    text-transform: uppercase;
+    display: inline-flex;
+    align-items: center;
+    gap: .34rem;
+  }
+
+  .ge-danger-text {
+    margin: 0;
+    color: #fecdd3;
+    font-size: 12px;
+    line-height: 1.45;
+  }
+
+  @media (max-width: 768px) {
+    .ge-grid-2 { grid-template-columns: 1fr; }
+    .ge-form-foot { justify-content: stretch; }
+    .ge-form-foot .ge-btn { width: 100%; }
+  }
 </style>
 
-<div class="space-y-6 pb-4">
-    <!-- Header -->
-    <div class="mb-8">
-        <a href="{{ url_for('tenant_groups.list_groups', tenant_slug=tenant.slug) }}"
-            class="inline-flex items-center gap-2 text-[var(--text-muted)] hover:text-white transition mb-4">
-            <i data-lucide="arrow-left" class="w-4 h-4"></i>
-            <span>Voltar para Grupos</span>
-        </a>
-        <h1 class="text-3xl font-bold text-[var(--text-main)]">Editar Grupo</h1>
-        <p class="text-[var(--text-muted)] text-sm mt-1">Atualize as informações do grupo "{{ group.name }}"</p>
-        <div class="mt-2">
-            <span class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium {% if group.is_active %}border border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800/40 dark:bg-emerald-900/20 dark:text-emerald-300{% else %}border border-slate-300 bg-slate-100 text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300{% endif %}">
-                Status: {{ 'Ativo' if group.is_active else 'Inativo' }}
-            </span>
+<div class="ge-page">
+  <a href="{{ url_for('tenant_groups.list_groups', tenant_slug=tenant.slug) }}" class="ge-back">
+    <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+    Voltar para grupos
+  </a>
+
+  <div class="ge-head">
+    <div class="ge-title-row">
+      <div>
+        <div class="ge-title-wrap">
+          <span class="ge-title-icon"><i data-lucide="folder-tree" class="w-5 h-5"></i></span>
+          <div>
+            <h1 class="ge-title">Editar Grupo</h1>
+            <p class="ge-subtitle">Atualize as informacoes operacionais e o metodo de conectividade de <strong style="color:#e2e8f0;">{{ group.name }}</strong>.</p>
+          </div>
         </div>
-        <div class="mt-3 flex flex-wrap items-center gap-2">
-            <a href="{{ url_for('tenant_devices.list_devices', tenant_slug=tenant.slug, group_id=group.id) }}"
-                class="inline-flex items-center gap-1 rounded-lg border border-[var(--card-border)] px-3 py-1.5 text-xs font-medium text-[var(--text-main)] hover:bg-[var(--line-color)] transition">
-                Ver dispositivos do grupo
-            </a>
-            {% if can_manage_admin %}
-            <form id="form-run-connection-audit-edit-group"
-                action="{{ url_for('tenant_devices.run_connection_audit_all', tenant_slug=tenant.slug) }}"
-                method="POST" class="inline">
-                {% include 'partials/csrf.html' %}
-                <input type="hidden" name="group_id" value="{{ group.id }}">
-                <button type="button" data-run-backup-live data-form-id="form-run-connection-audit-edit-group"
-                    class="inline-flex items-center gap-1 rounded-lg border border-blue-300 bg-blue-50 px-3 py-1.5 text-xs font-medium text-blue-700 transition-colors hover:bg-blue-100 dark:border-blue-700 dark:bg-blue-500/10 dark:text-blue-300 dark:hover:bg-blue-500/20">
-                    Testar conexao deste grupo
-                </button>
-            </form>
-            {% if group.uses_vpn %}
-            <form id="form-test-vpn-edit-group"
-                action="{{ url_for('tenant_groups.test_group_vpn', tenant_slug=tenant.slug, group_id=group.id) }}"
-                method="POST" class="inline">
-                {% include 'partials/csrf.html' %}
-                <button type="button" data-run-backup-live data-form-id="form-test-vpn-edit-group"
-                    class="inline-flex items-center gap-1 rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-1.5 text-xs font-medium text-emerald-700 transition-colors hover:bg-emerald-100 dark:border-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300 dark:hover:bg-emerald-500/20">
-                    Testar VPN deste grupo
-                </button>
-            </form>
-            {% endif %}
-            {% endif %}
-        </div>
+      </div>
+
+      <span class="ge-status {% if group.is_active %}active{% endif %}">
+        <i data-lucide="{% if group.is_active %}check-circle-2{% else %}power-off{% endif %}" class="w-3.5 h-3.5"></i>
+        Status: {{ 'Ativo' if group.is_active else 'Inativo' }}
+      </span>
     </div>
 
-    <div class="form-card">
-        <form action="{{ url_for('tenant_groups.edit_group', tenant_slug=tenant.slug, group_id=group.id) }}"
-            method="POST">
-            {% include 'partials/csrf.html' %}
+    <div class="ge-quick">
+      <a href="{{ url_for('tenant_devices.list_devices', tenant_slug=tenant.slug, group_id=group.id) }}" class="ge-btn">
+        <i data-lucide="monitor-smartphone" class="w-3.5 h-3.5"></i>
+        Ver dispositivos
+      </a>
 
-            <!-- Basic Info -->
-            <div class="space-y-5">
-                <div>
-                    <label class="form-label">Nome do Grupo *</label>
-                    <input type="text" name="name" value="{{ group.name }}" required class="form-input"
-                        placeholder="Ex: Provedor XYZ">
-                </div>
+      {% if can_manage_admin %}
+      <form id="form-run-connection-audit-edit-group" action="{{ url_for('tenant_devices.run_connection_audit_all', tenant_slug=tenant.slug) }}" method="POST" class="inline">
+        {% include 'partials/csrf.html' %}
+        <input type="hidden" name="group_id" value="{{ group.id }}">
+        <button type="button" data-run-backup-live data-form-id="form-run-connection-audit-edit-group" class="ge-btn indigo">
+          <i data-lucide="activity" class="w-3.5 h-3.5"></i>
+          Testar conexao do grupo
+        </button>
+      </form>
 
-                <div>
-                    <label class="form-label">Descrição</label>
-                    <textarea name="description" class="form-input form-textarea"
-                        placeholder="Descrição opcional do grupo...">{{ group.description or '' }}</textarea>
-                </div>
+      {% if group.uses_vpn %}
+      <form id="form-test-vpn-edit-group" action="{{ url_for('tenant_groups.test_group_vpn', tenant_slug=tenant.slug, group_id=group.id) }}" method="POST" class="inline">
+        {% include 'partials/csrf.html' %}
+        <button type="button" data-run-backup-live data-form-id="form-test-vpn-edit-group" class="ge-btn success">
+          <i data-lucide="shield-check" class="w-3.5 h-3.5"></i>
+          Testar VPN
+        </button>
+      </form>
+      {% endif %}
+      {% endif %}
+    </div>
+  </div>
 
-                <!-- Connection Type Selection -->
-                <div class="pt-4 border-t border-[var(--line-color)]">
-                    <label class="form-label mb-3">Tipo de Conexão</label>
+  <div class="ge-form-card">
+    <form action="{{ url_for('tenant_groups.edit_group', tenant_slug=tenant.slug, group_id=group.id) }}" method="POST" x-data="{ connectionType: '{{ group.connection_type or ('vpn' if group.uses_vpn else ('jump_host' if group.uses_jump_host else 'direct')) }}' }">
+      {% include 'partials/csrf.html' %}
 
-                    <div class="space-y-3"
-                        x-data="{ connectionType: '{{ group.connection_type or ('vpn' if group.uses_vpn else ('jump_host' if group.uses_jump_host else 'direct')) }}' }">
-
-                        <!-- Direct Connection -->
-                        <label class="connection-option" :class="{'selected': connectionType === 'direct'}">
-                            <input type="radio" name="connection_type" value="direct" class="form-radio mt-1"
-                                x-model="connectionType">
-                            <div class="connection-icon direct">
-                                <i data-lucide="wifi" class="w-5 h-5"></i>
-                            </div>
-                            <div>
-                                <div class="text-[var(--text-main)] font-medium">Conexão Direta</div>
-                                <div class="text-[var(--text-muted)] text-sm">Conecta diretamente ao IP do dispositivo
-                                    (SSH/Telnet)</div>
-                            </div>
-                        </label>
-
-                        <!-- VPN Connection -->
-                        <label class="connection-option" :class="{'selected': connectionType === 'vpn'}">
-                            <input type="radio" name="connection_type" value="vpn" class="form-radio mt-1"
-                                x-model="connectionType">
-                            <div class="connection-icon vpn">
-                                <i data-lucide="shield" class="w-5 h-5"></i>
-                            </div>
-                            <div>
-                                <div class="text-[var(--text-main)] font-medium">VPN (L2TP/PPTP/WireGuard)</div>
-                                <div class="text-[var(--text-muted)] text-sm">Estabelece túnel VPN antes de conectar aos
-                                    dispositivos</div>
-                            </div>
-                        </label>
-
-                        <!-- Jump Host Connection -->
-                        <label class="connection-option" :class="{'selected': connectionType === 'jump_host'}">
-                            <input type="radio" name="connection_type" value="jump_host" class="form-radio mt-1"
-                                x-model="connectionType">
-                            <div class="connection-icon jump">
-                                <i data-lucide="git-branch" class="w-5 h-5"></i>
-                            </div>
-                            <div>
-                                <div class="text-[var(--text-main)] font-medium">SSH Jump Host (Bastion)</div>
-                                <div class="text-[var(--text-muted)] text-sm">Conecta via servidor intermediário do provedor</div>
-                            </div>
-                        </label>
-
-                        <!-- VPN Settings -->
-                        <div x-show="connectionType === 'vpn'" x-transition class="connection-section vpn-section">
-                            <div class="section-title">
-                                <i data-lucide="shield" class="w-4 h-4 text-purple-400"></i>
-                                Configurações VPN
-                            </div>
-
-                            <div class="space-y-4">
-                                <div class="form-row">
-                                    <div>
-                                        <label class="form-label">Tipo de VPN</label>
-                                        <select name="vpn_type" class="form-input form-select">
-                                            <option value="l2tp" {{ 'selected' if group.vpn_type=='l2tp' else '' }}>
-                                                L2TP/IPSec</option>
-                                            <option value="pptp" {{ 'selected' if group.vpn_type=='pptp' else '' }}>PPTP
-                                            </option>
-                                            <option value="openvpn" {{ 'selected' if group.vpn_type=='openvpn' else ''
-                                                }}>OpenVPN</option>
-                                            <option value="wireguard" {{ 'selected' if group.vpn_type=='wireguard'
-                                                else '' }}>WireGuard</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label class="form-label">Servidor VPN</label>
-                                        <input type="text" name="vpn_server" value="{{ group.vpn_server or '' }}"
-                                            class="form-input" placeholder="vpn.provedor.com.br">
-                                    </div>
-                                </div>
-
-                                <div class="form-row">
-                                    <div>
-                                        <label class="form-label">Usuário VPN</label>
-                                        <input type="text" name="vpn_username" value="{{ group.vpn_username or '' }}"
-                                            class="form-input" placeholder="usuario_vpn">
-                                    </div>
-                                    <div>
-                                        <label class="form-label">Senha VPN</label>
-                                        <input type="password" name="vpn_password" class="form-input"
-                                            placeholder="••••••••">
-                                        <p class="text-xs text-[var(--text-muted)] mt-1">Deixe em branco para manter a atual</p>
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <label class="form-label">IPSec Secret (PSK)</label>
-                                    <input type="password" name="vpn_ipsec_secret" class="form-input"
-                                        placeholder="••••••••">
-                                    <p class="text-xs text-[var(--text-muted)] mt-1">Deixe em branco para manter o atual</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Jump Host Settings -->
-                        <div x-show="connectionType === 'jump_host'" x-transition
-                            class="connection-section jump-section">
-                            <div class="section-title">
-                                <i data-lucide="git-branch" class="w-4 h-4 text-emerald-400"></i>
-                                Configurações Jump Host
-                            </div>
-
-                            <div class="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 mb-4">
-                                <p class="text-emerald-300 text-sm">
-                                    <i data-lucide="info" class="w-4 h-4 inline-block mr-1"></i>
-                                    O Jump Host é um servidor Linux do provedor. Seu sistema conectará primeiro neste
-                                    servidor,
-                                    e depois nos dispositivos da rede interna.
-                                </p>
-                            </div>
-
-                            <div class="space-y-4">
-                                <div class="form-row">
-                                    <div>
-                                        <label class="form-label">Host / IP do Servidor *</label>
-                                        <input type="text" name="jump_host" value="{{ group.jump_host or '' }}"
-                                            class="form-input" placeholder="ssh.provedor.com.br ou 200.x.x.x">
-                                    </div>
-                                    <div>
-                                        <label class="form-label">Porta SSH</label>
-                                        <input type="number" name="jump_port" value="{{ group.jump_port or 22 }}"
-                                            class="form-input" placeholder="22">
-                                    </div>
-                                </div>
-
-                                <div class="form-row">
-                                    <div>
-                                        <label class="form-label">Usuário SSH *</label>
-                                        <input type="text" name="jump_username" value="{{ group.jump_username or '' }}"
-                                            class="form-input" placeholder="backup_user">
-                                    </div>
-                                    <div>
-                                        <label class="form-label">Senha SSH</label>
-                                        <input type="password" name="jump_password" class="form-input"
-                                            placeholder="••••••••">
-                                        <p class="text-xs text-[var(--text-muted)] mt-1">Deixe em branco para manter a atual</p>
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <label class="form-label">Chave Privada SSH (opcional)</label>
-                                    <textarea name="jump_key" class="form-input form-textarea"
-                                        placeholder="-----BEGIN RSA PRIVATE KEY-----&#10;...&#10;-----END RSA PRIVATE KEY-----"></textarea>
-                                    <p class="text-xs text-[var(--text-muted)] mt-1">Cole a chave privada para autenticação por
-                                        chave. Deixe em branco para usar senha.</p>
-                                </div>
-                            </div>
-                        </div>
-
-                    </div>
-                </div>
+      <div class="ge-form-body">
+        <div>
+          <p class="ge-section-title">Informacoes Gerais</p>
+          <div style="display:grid;gap:.72rem;margin-top:.72rem;">
+            <div class="ge-field">
+              <label for="group_name" class="ge-label">Nome do Grupo <span style="color:#fb7185;">*</span></label>
+              <input id="group_name" type="text" name="name" value="{{ group.name }}" required class="ge-input" placeholder="Ex: Provedor XYZ">
             </div>
 
-            <!-- Actions -->
-            <div class="flex items-center justify-between mt-8 pt-6 border-t border-[var(--line-color)]">
-                <a href="{{ url_for('tenant_groups.list_groups', tenant_slug=tenant.slug) }}" class="btn-secondary">
-                    Cancelar
-                </a>
-                <button type="submit" class="btn-premium">
-                    <span class="flex items-center gap-2">
-                        <i data-lucide="save" class="w-4 h-4"></i>
-                        Salvar Alterações
-                    </span>
-                </button>
+            <div class="ge-field">
+              <label for="group_description" class="ge-label">Descricao</label>
+              <textarea id="group_description" name="description" class="ge-textarea" placeholder="Descricao opcional do grupo...">{{ group.description or '' }}</textarea>
             </div>
-        </form>
-    </div>
+          </div>
+        </div>
 
-    <!-- Delete Section -->
-    <div class="form-card mt-6" style="border-color: rgba(239, 68, 68, 0.2);">
-        <h3 class="text-red-400 font-semibold mb-2">Zona de Perigo</h3>
-        <p class="text-[var(--text-muted)] text-sm mb-4">
-            Ao excluir este grupo, os dispositivos associados não serão excluídos, apenas desvinculados.
-        </p>
-        <form action="{{ url_for('tenant_groups.toggle_group_active', tenant_slug=tenant.slug, group_id=group.id) }}"
-            method="POST"
-            onsubmit="return confirm('{% if group.is_active %}Desativar{% else %}Reativar{% endif %} o grupo {{ group.name }}?')"
-            class="mb-4">
-            {% include 'partials/csrf.html' %}
-            <input type="hidden" name="return_to" value="edit">
-            <input type="hidden" name="action" value="{{ 'deactivate' if group.is_active else 'activate' }}">
-            <button type="submit" class="btn-secondary">
-                <span class="flex items-center gap-2">
-                    <i data-lucide="{{ 'pause-circle' if group.is_active else 'play-circle' }}" class="w-4 h-4"></i>
-                    {{ 'Desativar grupo' if group.is_active else 'Reativar grupo' }}
-                </span>
-            </button>
+        <div>
+          <p class="ge-section-title">Metodo de Conexao</p>
+          <div class="ge-conn-list" style="margin-top:.72rem;">
+            <label class="ge-conn-card" :class="{ 'selected': connectionType === 'direct' }">
+              <input type="radio" name="connection_type" value="direct" class="ge-conn-radio" x-model="connectionType">
+              <span class="ge-conn-icon"><i data-lucide="wifi" class="w-4 h-4"></i></span>
+              <span>
+                <span class="ge-conn-title">Conexao Direta</span>
+                <span class="ge-conn-desc">Conecta diretamente ao IP publico do dispositivo via SSH ou Telnet.</span>
+              </span>
+            </label>
+
+            <label class="ge-conn-card" :class="{ 'selected': connectionType === 'vpn' }">
+              <input type="radio" name="connection_type" value="vpn" class="ge-conn-radio" x-model="connectionType">
+              <span class="ge-conn-icon"><i data-lucide="shield-check" class="w-4 h-4"></i></span>
+              <span>
+                <span class="ge-conn-title">VPN (L2TP / PPTP / WireGuard)</span>
+                <span class="ge-conn-desc">Estabelece tunel VPN seguro antes de acessar os IPs internos.</span>
+              </span>
+            </label>
+
+            <label class="ge-conn-card" :class="{ 'selected': connectionType === 'jump_host' }">
+              <input type="radio" name="connection_type" value="jump_host" class="ge-conn-radio" x-model="connectionType">
+              <span class="ge-conn-icon"><i data-lucide="network" class="w-4 h-4"></i></span>
+              <span>
+                <span class="ge-conn-title">SSH Jump Host (Bastion)</span>
+                <span class="ge-conn-desc">Conecta por servidor Linux intermediario na rede do provedor.</span>
+              </span>
+            </label>
+          </div>
+        </div>
+
+        <div x-show="connectionType === 'vpn'" x-transition class="ge-subbox vpn">
+          <p class="ge-section-title" style="margin:0;border-bottom:0;padding-bottom:0;color:#a5b4fc;">Configuracoes VPN</p>
+          <div class="ge-grid-2">
+            <div class="ge-field">
+              <label class="ge-label">Tipo de VPN</label>
+              <select name="vpn_type" class="ge-select">
+                <option value="l2tp" {{ 'selected' if group.vpn_type == 'l2tp' else '' }}>L2TP/IPSec</option>
+                <option value="pptp" {{ 'selected' if group.vpn_type == 'pptp' else '' }}>PPTP</option>
+                <option value="openvpn" {{ 'selected' if group.vpn_type == 'openvpn' else '' }}>OpenVPN</option>
+                <option value="wireguard" {{ 'selected' if group.vpn_type == 'wireguard' else '' }}>WireGuard</option>
+              </select>
+            </div>
+            <div class="ge-field">
+              <label class="ge-label">Servidor VPN</label>
+              <input type="text" name="vpn_server" value="{{ group.vpn_server or '' }}" class="ge-input" placeholder="vpn.provedor.com.br">
+            </div>
+          </div>
+          <div class="ge-grid-2">
+            <div class="ge-field">
+              <label class="ge-label">Usuario VPN</label>
+              <input type="text" name="vpn_username" value="{{ group.vpn_username or '' }}" class="ge-input" placeholder="usuario_vpn">
+            </div>
+            <div class="ge-field">
+              <label class="ge-label">Senha VPN</label>
+              <input type="password" name="vpn_password" class="ge-input" placeholder="********">
+              <p class="ge-help">Deixe em branco para manter a senha atual.</p>
+            </div>
+          </div>
+          <div class="ge-field">
+            <label class="ge-label">IPSec Secret (PSK)</label>
+            <input type="password" name="vpn_ipsec_secret" class="ge-input" placeholder="********">
+            <p class="ge-help">Deixe em branco para manter o segredo atual.</p>
+          </div>
+        </div>
+
+        <div x-show="connectionType === 'jump_host'" x-transition class="ge-subbox jump">
+          <p class="ge-section-title" style="margin:0;border-bottom:0;padding-bottom:0;color:#6ee7b7;">Configuracoes Jump Host</p>
+          <div class="ge-grid-2">
+            <div class="ge-field">
+              <label class="ge-label">Host / IP do Servidor</label>
+              <input type="text" name="jump_host" value="{{ group.jump_host or '' }}" class="ge-input" placeholder="ssh.provedor.com.br ou 200.x.x.x">
+            </div>
+            <div class="ge-field">
+              <label class="ge-label">Porta SSH</label>
+              <input type="number" name="jump_port" value="{{ group.jump_port or 22 }}" class="ge-input" placeholder="22">
+            </div>
+          </div>
+          <div class="ge-grid-2">
+            <div class="ge-field">
+              <label class="ge-label">Usuario SSH</label>
+              <input type="text" name="jump_username" value="{{ group.jump_username or '' }}" class="ge-input" placeholder="backup_user">
+            </div>
+            <div class="ge-field">
+              <label class="ge-label">Senha SSH</label>
+              <input type="password" name="jump_password" class="ge-input" placeholder="********">
+              <p class="ge-help">Deixe em branco para manter a senha atual.</p>
+            </div>
+          </div>
+          <div class="ge-field">
+            <label class="ge-label">Chave Privada SSH (opcional)</label>
+            <textarea name="jump_key" class="ge-textarea" placeholder="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----"></textarea>
+            <p class="ge-help">Cole a chave privada para autenticacao por chave.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="ge-form-foot">
+        <a href="{{ url_for('tenant_groups.list_groups', tenant_slug=tenant.slug) }}" class="ge-btn">Cancelar</a>
+        <button type="submit" class="ge-btn primary">
+          <i data-lucide="save" class="w-3.5 h-3.5"></i>
+          Salvar alteracoes
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <div class="ge-danger">
+    <div class="ge-danger-body">
+      <h3 class="ge-danger-title">
+        <i data-lucide="alert-triangle" class="w-4 h-4"></i>
+        Zona de Perigo
+      </h3>
+      <p class="ge-danger-text">
+        Acoes destrutivas para este grupo. Ao excluir, os dispositivos nao serao apagados, somente perdem o vinculo com este grupo.
+      </p>
+
+      <div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;">
+        <form action="{{ url_for('tenant_groups.toggle_group_active', tenant_slug=tenant.slug, group_id=group.id) }}" method="POST" onsubmit="return confirm('{% if group.is_active %}Desativar{% else %}Reativar{% endif %} o grupo {{ group.name }}?')">
+          {% include 'partials/csrf.html' %}
+          <input type="hidden" name="return_to" value="edit">
+          <input type="hidden" name="action" value="{{ 'deactivate' if group.is_active else 'activate' }}">
+          <button type="submit" class="ge-btn danger-soft">
+            <i data-lucide="power-off" class="w-3.5 h-3.5"></i>
+            {{ 'Desativar grupo' if group.is_active else 'Reativar grupo' }}
+          </button>
         </form>
-        <form action="{{ url_for('tenant_groups.delete_group', tenant_slug=tenant.slug, group_id=group.id) }}"
-            method="POST" onsubmit="return confirm('Tem certeza que deseja excluir o grupo {{ group.name }}?')">
-            {% include 'partials/csrf.html' %}
-            <button type="submit" class="btn-danger">
-                <span class="flex items-center gap-2">
-                    <i data-lucide="trash-2" class="w-4 h-4"></i>
-                    Excluir Grupo
-                </span>
-            </button>
+
+        <form action="{{ url_for('tenant_groups.delete_group', tenant_slug=tenant.slug, group_id=group.id) }}" method="POST" onsubmit="return confirm('Tem certeza que deseja excluir o grupo {{ group.name }}?')">
+          {% include 'partials/csrf.html' %}
+          <button type="submit" class="ge-btn danger">
+            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+            Excluir grupo
+          </button>
         </form>
+      </div>
     </div>
+  </div>
 </div>
 
 {% include 'partials/backup_live_modal.html' %}
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        lucide.createIcons();
-    });
+document.addEventListener('DOMContentLoaded', function () {
+  if (window.lucide && window.lucide.createIcons) {
+    window.lucide.createIcons();
+  }
+});
 </script>
 {% endblock %}

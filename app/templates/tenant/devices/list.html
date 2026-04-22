@@ -17,581 +17,930 @@
 {% set has_any_filter = arg_q or current_group or arg_connection or arg_auto or arg_result or arg_history or arg_audit or arg_due or arg_subgroup %}
 {% set role = session.get('user_role') %}
 {% set can_manage_admin = role in ['super_admin', 'tenant_owner', 'tenant_admin'] %}
+
 <style>
-    .device-table {
-        width: 100%;
-        border-collapse: collapse;
-    }
+  .dev-page {
+    margin: -1rem;
+    min-height: 100vh;
+    background: #020617;
+    color: #e2e8f0;
+    padding: 1rem;
+  }
+  @media (min-width: 768px) {
+    .dev-page { margin: -1.25rem; padding: 1.5rem; }
+  }
+  @media (min-width: 1280px) {
+    .dev-page { margin: -1.5rem; }
+  }
 
-    .device-table th {
-        text-align: left;
-        padding: 0.75rem 1rem;
-        font-size: 0.75rem;
-        text-transform: uppercase;
-        color: var(--text-muted);
-        border-bottom: 1px solid var(--line-color);
-        position: sticky;
-        top: 0;
-        background: var(--card-bg);
-        z-index: 5;
-    }
-    .dark .device-table th,
-    .dark .device-table td {
-        border-bottom: 1px solid #1e293b;
-    }
+  .dev-wrap {
+    max-width: 1600px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
 
-    .device-table td {
-        padding: 1rem;
-        border-bottom: 1px solid var(--line-color);
-    }
+  .dev-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: .35rem;
+    margin-bottom: .35rem;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: #64748b;
+  }
+  .dev-breadcrumb a { color: #64748b; text-decoration: none; }
+  .dev-breadcrumb a:hover { color: #818cf8; }
 
-    .device-table tr:hover td {
-        background: var(--line-color);
+  .dev-head-main {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  @media (min-width: 768px) {
+    .dev-head-main {
+      flex-direction: row;
+      align-items: end;
+      justify-content: space-between;
     }
-    .dark .device-table tr:hover td {
-        background: rgba(59, 130, 246, 0.1);
-    }
+  }
 
-    .btn-premium-neon {
-        background: linear-gradient(135deg, #3b82f6, #6366f1);
-        color: white;
-        padding: 0.5rem 1.5rem;
-        border-radius: 8px;
-        font-weight: 600;
-        transition: all 0.2s;
-    }
+  .dev-head-title-row {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+  }
 
-    .btn-premium-neon:hover {
-        box-shadow: 0 0 20px rgba(59, 130, 246, 0.4);
-        transform: translateY(-1px);
-    }
+  .dev-head-icon {
+    display: none;
+    padding: .62rem;
+    border-radius: .5rem;
+    border: 1px solid #1e293b;
+    background: #0f172a;
+  }
+  .dev-head-icon i { width: 1.25rem; height: 1.25rem; color: #818cf8; }
+  @media (min-width: 640px) { .dev-head-icon { display: inline-flex; } }
 
-    .status-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.25rem;
-        padding: 0.25rem 0.75rem;
-        border-radius: 9999px;
-        font-size: 0.75rem;
-        font-weight: 600;
-    }
+  .dev-title {
+    margin: 0;
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: -0.02em;
+  }
 
-    .status-online {
-        background: rgba(16, 185, 129, 0.15);
-        color: #10b981;
-    }
+  .dev-subtitle {
+    margin: .5rem 0 0;
+    font-size: .92rem;
+    color: #94a3b8;
+    max-width: 50rem;
+  }
 
-    .status-offline {
-        background: rgba(239, 68, 68, 0.15);
-        color: #ef4444;
-    }
+  .dev-top-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .6rem;
+  }
 
-    .status-unknown {
-        background: rgba(100, 116, 139, 0.15);
-        color: var(--text-muted);
-    }
+  .dev-top-sep {
+    width: 1px;
+    height: 1.5rem;
+    background: #1e293b;
+    margin: 0 .2rem;
+    display: none;
+  }
+  @media (min-width: 640px) { .dev-top-sep { display: block; } }
 
-    /* Dropdown Menu Styles */
-    .dropdown-menu {
-        position: absolute;
-        right: 0;
-        margin-top: 8px;
-        width: 280px;
-        max-height: 400px;
-        overflow-y: auto;
-        z-index: 10050;
-        background-color: var(--card-bg);
-        border: 1px solid var(--card-border);
-        border-radius: 12px;
-        box-shadow: var(--card-shadow);
-        backdrop-filter: blur(20px);
-    }
-    
+  .dev-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    border-radius: .5rem;
+    border: 1px solid #334155;
+    background: rgba(15, 23, 42, .5);
+    color: #cbd5e1;
+    font-size: .75rem;
+    font-weight: 700;
+    padding: .5rem .9rem;
+    text-decoration: none;
+    transition: all .15s ease;
+  }
+  .dev-btn:hover { background: #1e293b; color: #fff; }
+  .dev-btn i { width: .9rem; height: .9rem; }
 
-    .dropdown-item {
-        display: block;
-        padding: 10px 16px;
-        font-size: 14px;
-        color: var(--text-muted);
-        background-color: var(--card-bg);
-        text-decoration: none;
-        transition: background-color 0.15s;
-    }
+  .dev-btn-indigo {
+    border-color: rgba(99, 102, 241, .35);
+    background: rgba(99, 102, 241, .12);
+    color: #818cf8;
+  }
+  .dev-btn-indigo:hover { background: rgba(99, 102, 241, .22); }
 
-    .dropdown-item:first-child {
-        border-bottom: 1px solid var(--line-color);
-    }
-    .dark .dropdown-item:first-child {
-        border-bottom: 1px solid #334155;
-    }
+  .dev-btn-primary {
+    border-color: #4f46e5;
+    background: #4f46e5;
+    color: #fff;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    box-shadow: 0 8px 18px rgba(79,70,229,.24);
+  }
+  .dev-btn-primary:hover { background: #6366f1; border-color: #6366f1; }
 
-    .dropdown-item:hover {
-        background-color: var(--line-color);
-        color: var(--text-main);
-    }
-    .dark .dropdown-item:hover {
-        background-color: #1e293b;
-    }
+  .dev-filters {
+    background: rgba(15, 23, 42, .65);
+    border: 1px solid #1e293b;
+    border-radius: .85rem;
+    padding: 1.15rem;
+    box-shadow: 0 8px 20px rgba(0,0,0,.2);
+    backdrop-filter: blur(6px);
+  }
 
-    .dropdown-item.dropdown-active {
-        background-color: rgba(59, 130, 246, 0.1);
-        color: var(--primary);
+  .dev-filter-row {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  @media (min-width: 1280px) {
+    .dev-filter-row {
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
     }
-    .dark .dropdown-item.dropdown-active {
-        background-color: #1e3a5f;
-        color: #60a5fa;
-    }
+  }
 
-    .dropdown-count {
-        float: right;
-        color: var(--text-muted);
-        font-size: 12px;
-    }
+  .dev-search-wrap { position: relative; width: 100%; }
+  @media (min-width: 1280px) { .dev-search-wrap { width: 24rem; flex: none; } }
+  .dev-search-wrap i {
+    position: absolute;
+    left: .88rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 1rem;
+    height: 1rem;
+    color: #64748b;
+  }
 
+  .dev-input,
+  .dev-select {
+    width: 100%;
+    background: #020617;
+    border: 1px solid #1e293b;
+    border-radius: .55rem;
+    color: #e2e8f0;
+    font-size: .8rem;
+    outline: none;
+    transition: border-color .15s ease, box-shadow .15s ease;
+    min-height: 2.4rem;
+  }
+  .dev-input { padding: .58rem .8rem .58rem 2.35rem; }
+  .dev-select { padding: .58rem .65rem; }
+
+  .dev-input::placeholder { color: #64748b; }
+  .dev-input:focus,
+  .dev-select:focus {
+    border-color: rgba(99, 102, 241, .7);
+    box-shadow: 0 0 0 1px rgba(99, 102, 241, .6);
+  }
+
+  .dev-selects {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: .75rem;
+  }
+  @media (min-width: 640px) {
+    .dev-selects {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .75rem;
+      width: auto;
+    }
+    .dev-select { width: auto; min-width: 170px; }
+  }
+
+  .dev-subgroups {
+    margin-top: 1rem;
+    border-top: 1px solid rgba(30,41,59,.65);
+    padding-top: .85rem;
+    display: flex;
+    align-items: center;
+    gap: .35rem;
+    overflow-x: auto;
+    padding-bottom: .2rem;
+  }
+
+  .dev-subgroups-label {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: #64748b;
+    margin-right: .45rem;
+    white-space: nowrap;
+  }
+  .dev-subgroups-label i { width: .9rem; height: .9rem; }
+
+  .dev-tab {
+    white-space: nowrap;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    padding: .4rem .9rem;
+    font-size: .74rem;
+    font-weight: 600;
+    color: #94a3b8;
+    text-decoration: none;
+    transition: all .15s ease;
+  }
+  .dev-tab:hover { background: rgba(30,41,59,.65); color: #e2e8f0; }
+  .dev-tab.is-active,
+  .dev-tab.active-gray { background: #1e293b; border-color: #334155; color: #fff; }
+  .dev-tab.active-indigo { background: rgba(99,102,241,.12); border-color: rgba(99,102,241,.35); color: #818cf8; }
+  .dev-tab.active-sky { background: rgba(14,165,233,.12); border-color: rgba(14,165,233,.35); color: #38bdf8; }
+
+  .dev-bulk {
+    border: 1px solid #1e293b;
+    border-radius: .85rem;
+    background: rgba(15,23,42,.7);
+    padding: .9rem 1.1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .85rem;
+    flex-wrap: wrap;
+  }
+
+  .dev-bulk-left {
+    display: flex;
+    align-items: center;
+    gap: .7rem;
+  }
+  .dev-bulk-badge {
+    font-size: .72rem;
+    font-weight: 700;
+    border-radius: .45rem;
+    padding: .2rem .55rem;
+    background: rgba(99,102,241,.15);
+    color: #818cf8;
+    border: 1px solid rgba(99,102,241,.28);
+  }
+  .dev-bulk-text { font-size: .8rem; color: #94a3b8; }
+
+  .dev-bulk-actions {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    flex-wrap: wrap;
+  }
+
+  .dev-floating-bulk {
+    position: fixed;
+    left: 50%;
+    bottom: 1.2rem;
+    transform: translateX(-50%);
+    z-index: 100;
+    width: min(92vw, 760px);
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    gap: .8rem;
+    border-radius: .85rem;
+    border: 1px solid rgba(99,102,241,.35);
+    background: rgba(2,6,23,.92);
+    padding: .78rem .95rem;
+    box-shadow: 0 18px 40px rgba(0,0,0,.45);
+    backdrop-filter: blur(8px);
+  }
+  .dev-floating-bulk.is-visible { display: flex; }
+  .dev-floating-bulk-label { font-size: .84rem; color: #cbd5e1; }
+  .dev-floating-bulk-label strong { color: #818cf8; }
+
+  .dev-table-card {
+    border: 1px solid #1e293b;
+    border-radius: .85rem;
+    overflow: hidden;
+    background: rgba(15,23,42,.65);
+    box-shadow: 0 10px 22px rgba(0,0,0,.24);
+    backdrop-filter: blur(6px);
+  }
+
+  .dev-table-wrap { overflow-x: auto; }
+  .dev-table { width: 100%; border-collapse: collapse; min-width: 1180px; }
+
+  .dev-table thead th {
+    background: rgba(15,23,42,.72);
+    border-bottom: 1px solid #1e293b;
+    color: #64748b;
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    padding: 1rem .9rem;
+    text-align: left;
+    vertical-align: middle;
+  }
+
+  .dev-table tbody td {
+    border-bottom: 1px solid rgba(30,41,59,.65);
+    padding: .92rem .9rem;
+    vertical-align: middle;
+  }
+
+  .dev-row { border-left: 2px solid transparent; transition: background .15s ease; }
+  .dev-row.is-online { border-left-color: rgba(16,185,129,.88); }
+  .dev-row.is-offline { border-left-color: rgba(244,63,94,.9); }
+  .dev-row:hover { background: rgba(30,41,59,.55); }
+  .dev-row.is-failure { background: rgba(244,63,94,.04); }
+  .dev-row.is-selected { border-left-color: #6366f1; background: rgba(99,102,241,.08); }
+
+  .dev-name { font-weight: 700; color: #f1f5f9; }
+  .dev-meta { margin-top: .25rem; font-size: 11px; color: #64748b; display: flex; align-items: center; gap: .3rem; flex-wrap: wrap; }
+  .dev-meta-subgroup {
+    display: inline-flex;
+    align-items: center;
+    gap: .25rem;
+    color: rgba(129,140,248,.85);
+  }
+
+  .dev-pill {
+    display: inline-flex;
+    align-items: center;
+    border-radius: .4rem;
+    border: 1px solid #334155;
+    background: rgba(30,41,59,.7);
+    color: #94a3b8;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    padding: .3rem .55rem;
+  }
+  .dev-pill.huawei { border-color: rgba(14,165,233,.25); background: rgba(14,165,233,.12); color: #38bdf8; }
+  .dev-pill.mikrotik { border-color: rgba(99,102,241,.25); background: rgba(99,102,241,.12); color: #818cf8; }
+
+  .dev-ip-wrap { display: flex; flex-direction: column; align-items: start; gap: .36rem; }
+  .dev-ip-copy {
+    display: inline-flex;
+    align-items: center;
+    gap: .38rem;
+    border: 1px solid #1e293b;
+    border-radius: .42rem;
+    background: #020617;
+    color: #cbd5e1;
+    padding: .28rem .45rem;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all .15s ease;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  }
+  .dev-ip-copy:hover { border-color: #334155; background: #0f172a; }
+  .dev-ip-copy .ip-main { color: #a5b4fc; }
+  .dev-ip-copy .ip-port { color: #64748b; }
+  .dev-ip-copy i,
+  .dev-ip-copy svg { width: .75rem; height: .75rem; color: #475569; flex-shrink: 0; }
+  .dev-ip-copy.copied i { color: #34d399; }
+
+  .dev-conn {
+    display: inline-flex;
+    align-items: center;
+    gap: .32rem;
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+  }
+  .dev-conn-dot { width: .38rem; height: .38rem; border-radius: 999px; display: inline-block; }
+  .dev-conn.online { color: #94a3b8; }
+  .dev-conn.online .dev-conn-dot { background: #10b981; box-shadow: 0 0 6px rgba(16,185,129,.6); }
+  .dev-conn.offline { color: #fb7185; }
+  .dev-conn.offline .dev-conn-dot { background: #f43f5e; box-shadow: 0 0 6px rgba(244,63,94,.6); }
+
+  .dev-lastbackup { display: inline-flex; align-items: center; gap: .4rem; font-size: 12px; color: #cbd5e1; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+  .dev-lastbackup i,
+  .dev-lastbackup svg { width: .85rem; height: .85rem; color: #475569; flex-shrink: 0; }
+
+  .dev-status {
+    display: inline-flex;
+    align-items: center;
+    gap: .32rem;
+    border-radius: .38rem;
+    border: 1px solid rgba(100,116,139,.35);
+    background: rgba(30,41,59,.7);
+    color: #94a3b8;
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    padding: .22rem .45rem;
+  }
+  .dev-status i,
+  .dev-status svg { width: .8rem; height: .8rem; flex-shrink: 0; }
+  .dev-status.success {
+    border-color: rgba(16,185,129,.35);
+    background: rgba(16,185,129,.12);
+    color: #34d399;
+  }
+  .dev-status.fail {
+    border-color: rgba(244,63,94,.35);
+    background: rgba(244,63,94,.12);
+    color: #fb7185;
+  }
+
+  .dev-status-meta {
+    margin-top: .35rem;
+    display: flex;
+    align-items: center;
+    gap: .8rem;
+    font-size: 10px;
+    font-weight: 700;
+    color: #64748b;
+  }
+  .dev-status-meta span {
+    display: inline-flex;
+    align-items: center;
+    gap: .28rem;
+  }
+  .dev-status-meta i,
+  .dev-status-meta svg { width: .72rem; height: .72rem; flex-shrink: 0; }
+  .dev-status-meta .on { color: #818cf8; }
+  .dev-status-meta .critical { color: #f59e0b; }
+
+  .dev-actions {
+    display: flex;
+    justify-content: end;
+    align-items: center;
+    gap: .2rem;
+    opacity: .35;
+    transition: opacity .2s ease;
+  }
+  .dev-row:hover .dev-actions { opacity: 1; }
+
+  .dev-icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: .5rem;
+    color: #94a3b8;
+    transition: all .15s ease;
+  }
+  .dev-icon-btn i { width: 1rem; height: 1rem; }
+  .dev-icon-btn:hover { background: #1e293b; color: #fff; }
+  .dev-icon-btn.play:hover { color: #34d399; background: rgba(16,185,129,.12); }
+  .dev-icon-btn.terminal:hover { color: #38bdf8; background: rgba(14,165,233,.12); }
+  .dev-icon-btn.logs:hover { color: #818cf8; background: rgba(99,102,241,.12); }
+  .dev-icon-sep { width: 1px; height: 1.2rem; background: #1e293b; margin: 0 .2rem; }
+
+  .dev-pagination {
+    border-top: 1px solid rgba(30,41,59,.75);
+    background: rgba(15,23,42,.5);
+    padding: .9rem 1.1rem;
+    display: flex;
+    flex-direction: column;
+    gap: .65rem;
+    justify-content: space-between;
+    align-items: center;
+  }
+  @media (min-width: 640px) {
+    .dev-pagination { flex-direction: row; }
+  }
+
+  .dev-page-text { font-size: 12px; color: #94a3b8; }
+  .dev-page-text strong { color: #e2e8f0; font-weight: 600; }
+
+  .dev-page-links {
+    display: flex;
+    align-items: center;
+    gap: .3rem;
+    flex-wrap: wrap;
+  }
+
+  .dev-page-btn {
+    border: 1px solid #334155;
+    border-radius: .48rem;
+    background: #1e293b;
+    color: #94a3b8;
+    font-size: 11px;
+    font-weight: 600;
+    padding: .38rem .7rem;
+    text-decoration: none;
+    transition: all .15s ease;
+  }
+  .dev-page-btn:hover { background: #334155; color: #e2e8f0; }
+  .dev-page-btn.active {
+    border-color: #4f46e5;
+    background: #4f46e5;
+    color: #fff;
+  }
+
+  .dev-empty {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: #94a3b8;
+  }
+  .dev-empty i { width: 2.5rem; height: 2.5rem; color: #475569; margin: 0 auto .8rem; display: block; }
+
+  .dev-row-check {
+    width: 1rem;
+    height: 1rem;
+    border-radius: .2rem;
+    border: 1px solid #475569;
+    accent-color: #6366f1;
+  }
 </style>
 
-<div class="space-y-6 pb-4">
-    <!-- Header -->
-    <div class="mb-8 space-y-4">
-        <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <div>
-                <h1 class="text-3xl font-bold text-[var(--text-main)]">Dispositivos</h1>
-            </div>
-            <div class="flex flex-wrap items-center gap-2">
-                {% if has_any_filter %}
-                <a href="{{ url_for('tenant_devices.list_devices', tenant_slug=tenant.slug, compare=arg_compare) }}"
-                    class="px-3 py-2 rounded-lg border border-[var(--card-border)] text-[var(--text-muted)] hover:text-[var(--text-main)] transition text-sm">
-                    Limpar filtros
-                </a>
-                {% endif %}
-                {% if current_group %}
-                <a href="{{ url_for('tenant_groups.list_groups', tenant_slug=tenant.slug) }}"
-                    class="px-3 py-2 rounded-lg border border-[var(--card-border)] text-[var(--text-muted)] hover:text-[var(--text-main)] transition text-sm">
-                    Voltar para grupos
-                </a>
-                {% endif %}
-                {% if current_group and can_manage_admin %}
-                <form id="form-run-connection-audit-current-group-header"
-                    action="{{ url_for('tenant_devices.run_connection_audit_all', tenant_slug=tenant.slug) }}"
-                    method="POST" class="inline">
-                    {% include 'partials/csrf.html' %}
-                    <input type="hidden" name="group_id" value="{{ current_group.id }}">
-                    <button type="button" data-run-backup-live data-form-id="form-run-connection-audit-current-group-header"
-                        class="px-3 py-2 rounded-lg border border-blue-300 bg-blue-50 text-blue-700 hover:bg-blue-100 transition text-sm dark:border-blue-700 dark:bg-blue-500/10 dark:text-blue-300 dark:hover:bg-blue-500/20">
-                        Testar conexão deste grupo
-                    </button>
-                </form>
-                {% endif %}
-                {% if current_group %}
-                <button type="button" id="openSubgroupModal"
-                    class="px-3 py-2 rounded-lg border border-indigo-500/40 bg-indigo-500/10 text-indigo-300 hover:bg-indigo-500/20 transition text-sm flex items-center gap-2">
-                    <i data-lucide="folder-tree" class="w-4 h-4"></i>
-                    <span>Criar Subgrupo</span>
-                </button>
-                {% if is_subgroup_selected %}
-                <button type="button" id="openEditSubgroupModal"
-                    class="px-3 py-2 rounded-lg border border-amber-500/40 bg-amber-500/10 text-amber-300 hover:bg-amber-500/20 transition text-sm flex items-center gap-2">
-                    <i data-lucide="settings-2" class="w-4 h-4"></i>
-                    <span>Editar Subgrupo</span>
-                </button>
-                {% endif %}
-                {% endif %}
-                <a href="{{ url_for('tenant_devices.add_device', tenant_slug=tenant.slug) }}"
-                    class="btn-premium flex items-center gap-2">
-                    <i data-lucide="plus" class="w-4 h-4"></i>
-                    <span>Novo Dispositivo</span>
-                </a>
-            </div>
-        </div>
+<div class="dev-page">
+  <div class="dev-wrap">
 
-        {% if compare_mode %}
-        <div class="rounded-xl border border-blue-300/50 bg-blue-500/10 px-4 py-3 text-sm text-blue-300">
-            Modo comparação ativo: escolha o dispositivo e clique no ícone <span class="font-semibold">Comparar</span> na coluna de ações.
-        </div>
+    <div>
+      <div class="dev-breadcrumb">
+        <a href="{{ url_for('tenant.dashboard', tenant_slug=tenant.slug) }}">Home</a>
+        <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+        <a href="{{ url_for('tenant_groups.list_groups', tenant_slug=tenant.slug) }}">Grupos</a>
+        {% if current_group %}
+        <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+        <span style="color:#cbd5e1;">{{ current_group.name }}</span>
         {% endif %}
+      </div>
 
-        <div class="premium-card p-4 relative z-30">
-            <form action="" method="GET" class="grid grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-8">
-                {% if compare_mode %}
-                <input type="hidden" name="compare" value="1">
-                {% endif %}
-                {% if arg_subgroup %}
-                <input type="hidden" name="subgroup" value="{{ arg_subgroup }}">
-                {% endif %}
-                <input type="text" name="q" value="{{ arg_q }}"
-                    placeholder="Buscar por nome ou IP..."
-                    class="px-4 py-2 rounded-lg bg-[var(--card-bg)] border border-[var(--card-border)] text-[var(--text-main)] placeholder-slate-500 focus:border-blue-500 focus:outline-none xl:col-span-2">
-                <div id="groupCombobox" class="relative md:col-span-2 xl:col-span-2">
-                    <input type="hidden" id="groupSelectValue" name="group_id" value="{{ current_group.id if current_group else '' }}">
-                    <button id="groupSelectToggle" type="button"
-                        class="flex w-full items-center justify-between px-3 py-2 rounded-lg bg-[var(--card-bg)] border border-[var(--card-border)] text-sm text-[var(--text-main)] focus:border-blue-500 focus:outline-none">
-                        <span id="groupSelectLabel">
-                            {% if current_group %}
-                                {{ current_group.name }}
-                            {% else %}
-                                Todos os grupos
-                            {% endif %}
-                        </span>
-                        <i data-lucide="chevrons-up-down" class="w-4 h-4 text-[var(--text-muted)]"></i>
-                    </button>
-                    <div id="groupSelectMenu"
-                        class="hidden absolute left-0 right-0 mt-2 z-[120] rounded-xl border border-[var(--card-border)] bg-[var(--card-bg)] shadow-xl">
-                        <div class="p-2 border-b border-[var(--line-color)]">
-                            <input id="groupSelectSearchInner" type="text" placeholder="Buscar grupo na lista..."
-                                class="w-full px-3 py-2 rounded-lg bg-[var(--card-bg)] border border-[var(--card-border)] text-sm text-[var(--text-main)] placeholder:text-[var(--text-muted)] focus:border-blue-500 focus:outline-none">
-                        </div>
-                        <div id="groupSelectOptions" class="max-h-64 overflow-y-auto p-1">
-                            <button type="button" data-group-option data-value="" data-label="Todos os grupos"
-                                class="group-option w-full text-left rounded-lg px-3 py-2 text-sm text-[var(--text-main)] hover:bg-[var(--line-color)]">
-                                Todos os grupos
-                            </button>
-                            {% for g in groups %}
-                            <button type="button" data-group-option data-value="{{ g.group.id }}" data-label="{{ g.group.name }}"
-                                class="group-option w-full text-left rounded-lg px-3 py-2 text-sm text-[var(--text-main)] hover:bg-[var(--line-color)]">
-                                {{ g.group.name }} ({{ g.device_count }})
-                            </button>
-                            {% endfor %}
-                        </div>
-                    </div>
-                </div>
-                <select name="connection"
-                    class="px-3 py-2 rounded-lg bg-[var(--card-bg)] border border-[var(--card-border)] text-sm text-[var(--text-main)] focus:border-blue-500 focus:outline-none">
-                    <option value="">Conexão: todas</option>
-                    <option value="online" {% if arg_connection == 'online' %}selected{% endif %}>Online</option>
-                    <option value="offline" {% if arg_connection == 'offline' %}selected{% endif %}>Offline/Erro</option>
-                    <option value="unknown" {% if arg_connection == 'unknown' %}selected{% endif %}>Não monitorado</option>
-                </select>
-                <select name="auto"
-                    class="px-3 py-2 rounded-lg bg-[var(--card-bg)] border border-[var(--card-border)] text-sm text-[var(--text-main)] focus:border-blue-500 focus:outline-none">
-                    <option value="">Auto-backup: todos</option>
-                    <option value="enabled" {% if arg_auto == 'enabled' %}selected{% endif %}>Ativado</option>
-                    <option value="disabled" {% if arg_auto == 'disabled' %}selected{% endif %}>Desativado</option>
-                </select>
-                <select name="result"
-                    class="px-3 py-2 rounded-lg bg-[var(--card-bg)] border border-[var(--card-border)] text-sm text-[var(--text-main)] focus:border-blue-500 focus:outline-none">
-                    <option value="">Último resultado: todos</option>
-                    <option value="success" {% if arg_result == 'success' %}selected{% endif %}>Sucesso</option>
-                    <option value="failed" {% if arg_result == 'failed' %}selected{% endif %}>Falha</option>
-                    <option value="never" {% if arg_result == 'never' %}selected{% endif %}>Nunca executado</option>
-                </select>
-                <select name="history"
-                    class="px-3 py-2 rounded-lg bg-[var(--card-bg)] border border-[var(--card-border)] text-sm text-[var(--text-main)] focus:border-blue-500 focus:outline-none">
-                    <option value="">Histórico: todos</option>
-                    <option value="with_history" {% if arg_history == 'with_history' %}selected{% endif %}>Com histórico</option>
-                    <option value="without_history" {% if arg_history == 'without_history' %}selected{% endif %}>Sem histórico</option>
-                </select>
-                <select name="sort"
-                    class="px-3 py-2 rounded-lg bg-[var(--card-bg)] border border-[var(--card-border)] text-sm text-[var(--text-main)] focus:border-blue-500 focus:outline-none">
-                    <option value="name_asc" {% if arg_sort == 'name_asc' %}selected{% endif %}>Nome A-Z</option>
-                    <option value="name_desc" {% if arg_sort == 'name_desc' %}selected{% endif %}>Nome Z-A</option>
-                    <option value="last_backup_desc" {% if arg_sort == 'last_backup_desc' %}selected{% endif %}>Últ. backup (novo)</option>
-                    <option value="last_backup_asc" {% if arg_sort == 'last_backup_asc' %}selected{% endif %}>Últ. backup (antigo)</option>
-                    <option value="status_priority" {% if arg_sort == 'status_priority' %}selected{% endif %}>Priorizar problemas</option>
-                </select>
-                <div class="flex gap-2">
-                    <select name="per_page"
-                        class="w-full px-3 py-2 rounded-lg bg-[var(--card-bg)] border border-[var(--card-border)] text-sm text-[var(--text-main)] focus:border-blue-500 focus:outline-none">
-                        <option value="30" {% if per_page == 30 %}selected{% endif %}>30 / pág</option>
-                        <option value="50" {% if per_page == 50 %}selected{% endif %}>50 / pág</option>
-                        <option value="100" {% if per_page == 100 %}selected{% endif %}>100 / pág</option>
-                    </select>
-                    <button type="submit"
-                        class="px-4 py-2 rounded-lg bg-blue-500/20 text-blue-400 text-sm font-semibold hover:bg-blue-500/30 transition">
-                        Aplicar
-                    </button>
-                </div>
-            </form>
+      <div class="dev-head-main">
+        <div>
+          <div class="dev-head-title-row">
+            <span class="dev-head-icon"><i data-lucide="server"></i></span>
+            <h1 class="dev-title">Dispositivos</h1>
+          </div>
+          <p class="dev-subtitle">Gestao de equipamentos do grupo. Selecione itens para executar acoes operacionais em lote de forma rapida e segura.</p>
         </div>
+
+        <div class="dev-top-actions">
+          {% if has_any_filter %}
+          <a href="{{ url_for('tenant_devices.list_devices', tenant_slug=tenant.slug, compare=arg_compare) }}" class="dev-btn">
+            <i data-lucide="x-circle"></i>
+            Limpar filtros
+          </a>
+          {% endif %}
+
+          {% if current_group %}
+          <a href="{{ url_for('tenant_groups.list_groups', tenant_slug=tenant.slug) }}" class="dev-btn">
+            <i data-lucide="arrow-left"></i>
+            Voltar
+          </a>
+          {% endif %}
+
+          {% if current_group and can_manage_admin %}
+          <form id="form-run-connection-audit-current-group-header"
+                action="{{ url_for('tenant_devices.run_connection_audit_all', tenant_slug=tenant.slug) }}"
+                method="POST" class="inline">
+            {% include 'partials/csrf.html' %}
+            <input type="hidden" name="group_id" value="{{ current_group.id }}">
+            <button type="button" data-run-backup-live data-form-id="form-run-connection-audit-current-group-header" class="dev-btn dev-btn-indigo">
+              <i data-lucide="activity"></i>
+              Testar Conexao
+            </button>
+          </form>
+          {% endif %}
+
+          {% if current_group %}
+          <button type="button" id="openSubgroupModal" class="dev-btn">
+            <i data-lucide="folder-tree"></i>
+            Subgrupo
+          </button>
+          {% if is_subgroup_selected %}
+          <button type="button" id="openEditSubgroupModal" class="dev-btn">
+            <i data-lucide="settings-2"></i>
+            Editar Subgrupo
+          </button>
+          {% endif %}
+          {% endif %}
+
+          <span class="dev-top-sep"></span>
+
+          <a href="{{ url_for('tenant_devices.add_device', tenant_slug=tenant.slug) }}" class="dev-btn dev-btn-primary">
+            <i data-lucide="plus"></i>
+            Novo
+          </a>
+        </div>
+      </div>
     </div>
 
-    {% if current_group %}
-    <div class="premium-card p-4 mb-4">
-        <div class="mb-3 flex items-center gap-2">
-            <i data-lucide="folder-open" class="w-4 h-4 text-indigo-400"></i>
-            <h2 class="text-sm font-semibold text-[var(--text-main)]">Organização Interna (Subgrupos)</h2>
-        </div>
-        <div class="flex flex-wrap gap-2">
-            <a href="{{ url_for('tenant_devices.list_devices', tenant_slug=tenant.slug, q=arg_q, group_id=current_group.id, connection=arg_connection, auto=arg_auto, result=arg_result, history=arg_history, audit=arg_audit, due=arg_due, sort=arg_sort, per_page=per_page, compare=arg_compare) }}"
-                class="inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-xs font-semibold transition {% if not arg_subgroup %}bg-gray-900 text-white border-gray-900 shadow-sm{% else %}bg-white border-gray-200 text-gray-700 hover:border-gray-300 hover:bg-gray-50{% endif %}">
-                <i data-lucide="layers-3" class="w-3.5 h-3.5 {% if not arg_subgroup %}text-gray-200{% else %}text-gray-500{% endif %}"></i>
-                Todos
-                <span class="rounded-full px-2 py-0.5 text-[10px] {% if not arg_subgroup %}bg-gray-700 text-white{% else %}bg-gray-100 text-gray-700{% endif %}">
-                    {{ subgroup_total_count }}
-                </span>
-            </a>
-
-            {% for row in group_subgroups %}
-            {% if row and row.subgroup %}
-            {% set is_active_subgroup = arg_subgroup == (row.subgroup.id|string) %}
-            <a href="{{ url_for('tenant_devices.list_devices', tenant_slug=tenant.slug, q=arg_q, group_id=current_group.id, subgroup=row.subgroup.id, connection=arg_connection, auto=arg_auto, result=arg_result, history=arg_history, audit=arg_audit, due=arg_due, sort=arg_sort, per_page=per_page, compare=arg_compare) }}"
-                data-subgroup-chip="1"
-                data-active="{{ '1' if is_active_subgroup else '0' }}"
-                data-subgroup-id="{{ row.subgroup.id }}"
-                data-subgroup-name="{{ row.subgroup.name }}"
-                data-subgroup-connection="{{ row.subgroup.connection_type or 'direct' }}"
-                class="inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-xs font-semibold transition {% if is_active_subgroup %}bg-indigo-600 text-white border-indigo-600 shadow-sm{% else %}bg-white border-gray-200 text-gray-700 hover:border-indigo-200 hover:bg-indigo-50{% endif %}">
-                <i data-lucide="folder-tree" class="w-3.5 h-3.5 {% if is_active_subgroup %}text-indigo-100{% else %}text-indigo-400{% endif %}"></i>
-                {{ row.subgroup.name }}
-                <span class="rounded-full px-2 py-0.5 text-[10px] {% if is_active_subgroup %}bg-indigo-500 text-white{% else %}bg-gray-100 text-gray-700{% endif %}">
-                    {{ row.device_count }}
-                </span>
-            </a>
-            {% endif %}
-            {% endfor %}
-
-            <a href="{{ url_for('tenant_devices.list_devices', tenant_slug=tenant.slug, q=arg_q, group_id=current_group.id, subgroup='none', connection=arg_connection, auto=arg_auto, result=arg_result, history=arg_history, audit=arg_audit, due=arg_due, sort=arg_sort, per_page=per_page, compare=arg_compare) }}"
-                class="inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-xs font-semibold transition {% if arg_subgroup == 'none' %}bg-gray-700 text-white border-gray-700 shadow-sm{% else %}bg-white border-gray-200 text-gray-700 hover:border-gray-300 hover:bg-gray-50{% endif %}">
-                <i data-lucide="folder-minus" class="w-3.5 h-3.5 {% if arg_subgroup == 'none' %}text-gray-100{% else %}text-gray-500{% endif %}"></i>
-                Sem subgrupo
-                <span class="rounded-full px-2 py-0.5 text-[10px] {% if arg_subgroup == 'none' %}bg-gray-600 text-white{% else %}bg-gray-100 text-gray-700{% endif %}">
-                    {{ subgroup_none_count }}
-                </span>
-            </a>
-        </div>
+    {% if compare_mode %}
+    <div class="dev-btn dev-btn-indigo" style="padding:.7rem .85rem;">
+      Modo comparacao ativo: escolha o dispositivo e use a acao de comparar.
     </div>
     {% endif %}
 
-    <!-- Bulk Actions -->
-    <form id="bulkForm" action="{{ url_for('tenant_devices.run_backup_selected', tenant_slug=tenant.slug) }}"
-        method="POST">
-        {% include 'partials/csrf.html' %}
-        {% if current_group %}<input type="hidden" name="group_id" value="{{ current_group.id }}">{% endif %}
-        {% if arg_subgroup %}<input type="hidden" name="subgroup" value="{{ arg_subgroup }}">{% endif %}
+    <section class="dev-filters">
+      <form action="" method="GET" class="dev-filter-row">
+        {% if compare_mode %}
+        <input type="hidden" name="compare" value="1">
+        {% endif %}
+        {% if current_group %}
+        <input type="hidden" name="group_id" value="{{ current_group.id }}">
+        {% endif %}
+        {% if arg_subgroup %}
+        <input type="hidden" name="subgroup" value="{{ arg_subgroup }}">
+        {% endif %}
+        {% if arg_history %}<input type="hidden" name="history" value="{{ arg_history }}">{% endif %}
+        {% if arg_audit %}<input type="hidden" name="audit" value="{{ arg_audit }}">{% endif %}
+        {% if arg_due %}<input type="hidden" name="due" value="{{ arg_due }}">{% endif %}
+        <input type="hidden" name="sort" value="{{ arg_sort }}">
+        <input type="hidden" name="per_page" value="{{ per_page }}">
 
-        <div class="premium-card p-6 mb-4 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <input type="checkbox" id="selectAll" class="w-4 h-4 rounded">
-                <span class="text-sm text-[var(--text-muted)]">Selecionar Todos</span>
-                <span id="selectedCount"
-                    class="px-2 py-1 rounded bg-blue-500/15 text-blue-400 text-xs font-semibold">0 selecionados</span>
-            </div>
-            <div class="flex gap-2">
-                <button type="button" id="bulkSubmitTrigger" data-run-backup-live data-form-id="bulkForm"
-                    class="px-4 py-2 rounded-lg bg-emerald-500/20 text-emerald-400 text-sm font-semibold hover:bg-emerald-500/30 transition">
-                    <i data-lucide="play" class="w-4 h-4 inline-block mr-1"></i> Backup Selecionados
-                </button>
-                <button type="button" data-run-backup-live data-form-id="form-backup-all"
-                    class="px-4 py-2 rounded-lg bg-blue-500/20 text-blue-400 text-sm font-semibold hover:bg-blue-500/30 transition">
-                    <i data-lucide="layers" class="w-4 h-4 inline-block mr-1"></i>
-                    Backup Todos ({{ stats.total if current_group else stats.scheduled }})
-                </button>
-            </div>
+        <div class="dev-search-wrap">
+          <i data-lucide="search"></i>
+          <input class="dev-input" type="text" name="q" value="{{ arg_q }}" placeholder="Buscar por nome ou IP...">
         </div>
 
-        <div id="bulkActionBar"
-            class="fixed bottom-5 left-1/2 z-[100] hidden w-[min(92vw,760px)] -translate-x-1/2 items-center justify-between rounded-xl border border-blue-500/30 bg-slate-950/90 px-4 py-3 shadow-2xl backdrop-blur">
-            <div class="text-sm text-slate-200">
-                <span id="bulkActionLabel" class="font-semibold text-blue-400">0 dispositivos selecionados</span>
-                <span class="text-slate-400"> · Ações em lote</span>
-            </div>
-            <div class="flex items-center gap-2">
-                <button type="button" id="bulkActionClear"
-                    class="rounded-lg border border-slate-600 px-3 py-1.5 text-xs font-semibold text-slate-200 hover:bg-slate-800 transition">
-                    Limpar seleção
-                </button>
-                <button type="button" id="bulkActionRun"
-                    class="rounded-lg border border-emerald-600/40 bg-emerald-500/15 px-3 py-1.5 text-xs font-semibold text-emerald-300 hover:bg-emerald-500/25 transition">
-                    Backup Agora
-                </button>
-            </div>
+        <div class="dev-selects">
+          <select name="connection" class="dev-select">
+            <option value="">Conexao: Todos</option>
+            <option value="online" {% if arg_connection == 'online' %}selected{% endif %}>Online</option>
+            <option value="offline" {% if arg_connection == 'offline' %}selected{% endif %}>Offline</option>
+            <option value="unknown" {% if arg_connection == 'unknown' %}selected{% endif %}>Nao monitorado</option>
+          </select>
+
+          <select name="auto" class="dev-select">
+            <option value="">Auto-backup: Todos</option>
+            <option value="enabled" {% if arg_auto == 'enabled' %}selected{% endif %}>Ativado</option>
+            <option value="disabled" {% if arg_auto == 'disabled' %}selected{% endif %}>Desativado</option>
+          </select>
+
+          <select name="result" class="dev-select">
+            <option value="">Resultado: Todos</option>
+            <option value="success" {% if arg_result == 'success' %}selected{% endif %}>Sucesso</option>
+            <option value="failed" {% if arg_result == 'failed' %}selected{% endif %}>Falha</option>
+            <option value="never" {% if arg_result == 'never' %}selected{% endif %}>Nunca executado</option>
+          </select>
+
+          <button type="submit" class="dev-btn dev-btn-indigo" style="justify-content:center;min-width:120px;">
+            <i data-lucide="check"></i>
+            Aplicar
+          </button>
+        </div>
+      </form>
+
+      {% if current_group %}
+      <div class="dev-subgroups">
+        <span class="dev-subgroups-label">
+          <i data-lucide="folder-tree"></i>
+          Organizacao Interna:
+        </span>
+
+        <a href="{{ url_for('tenant_devices.list_devices', tenant_slug=tenant.slug, q=arg_q, group_id=current_group.id, connection=arg_connection, auto=arg_auto, result=arg_result, history=arg_history, audit=arg_audit, due=arg_due, sort=arg_sort, per_page=per_page, compare=arg_compare) }}"
+           class="dev-tab {% if not arg_subgroup %}is-active active-gray{% endif %}">Todos ({{ subgroup_total_count }})</a>
+
+        {% for row in group_subgroups %}
+        {% if row and row.subgroup %}
+        {% set is_active_subgroup = arg_subgroup == (row.subgroup.id|string) %}
+        {% set subgroup_mode = (row.subgroup.connection_type or 'direct') %}
+        <a href="{{ url_for('tenant_devices.list_devices', tenant_slug=tenant.slug, q=arg_q, group_id=current_group.id, subgroup=row.subgroup.id, connection=arg_connection, auto=arg_auto, result=arg_result, history=arg_history, audit=arg_audit, due=arg_due, sort=arg_sort, per_page=per_page, compare=arg_compare) }}"
+           data-subgroup-chip="1"
+           data-active="{{ '1' if is_active_subgroup else '0' }}"
+           data-subgroup-id="{{ row.subgroup.id }}"
+           data-subgroup-name="{{ row.subgroup.name }}"
+           data-subgroup-connection="{{ subgroup_mode }}"
+           class="dev-tab {% if is_active_subgroup %}{% if subgroup_mode == 'vpn' %}is-active active-indigo{% elif subgroup_mode in ['jump_host', 'jump'] %}is-active active-sky{% else %}is-active active-gray{% endif %}{% endif %}">
+          {{ row.subgroup.name }} ({{ row.device_count }})
+        </a>
+        {% endif %}
+        {% endfor %}
+
+        <a href="{{ url_for('tenant_devices.list_devices', tenant_slug=tenant.slug, q=arg_q, group_id=current_group.id, subgroup='none', connection=arg_connection, auto=arg_auto, result=arg_result, history=arg_history, audit=arg_audit, due=arg_due, sort=arg_sort, per_page=per_page, compare=arg_compare) }}"
+           class="dev-tab {% if arg_subgroup == 'none' %}is-active active-gray{% endif %}">Sem Subgrupo ({{ subgroup_none_count }})</a>
+      </div>
+      {% endif %}
+    </section>
+
+    <form id="bulkForm" action="{{ url_for('tenant_devices.run_backup_selected', tenant_slug=tenant.slug) }}" method="POST">
+      {% include 'partials/csrf.html' %}
+      {% if current_group %}<input type="hidden" name="group_id" value="{{ current_group.id }}">{% endif %}
+      {% if arg_subgroup %}<input type="hidden" name="subgroup" value="{{ arg_subgroup }}">{% endif %}
+
+      <div class="dev-bulk">
+        <div class="dev-bulk-left">
+          <input type="checkbox" id="selectAll" class="dev-row-check">
+          <span class="dev-bulk-text">Selecionar Todos</span>
+          <span id="selectedCount" class="dev-bulk-badge">0 selecionados</span>
         </div>
 
-        <!-- Device Table -->
-        <div class="premium-card p-6 overflow-hidden relative z-10" style="padding: 0;">
-            <div class="overflow-x-auto">
-                <table class="device-table">
-                    <thead>
-                        <tr>
-                            <th style="width: 40px;"></th>
-                            <th>Dispositivo</th>
-                            <th>Tipo</th>
-                            <th>IP</th>
-                            <th>Conectividade</th>
-                            <th>Último Backup</th>
-                            <th>Status</th>
-                            <th style="text-align: right;">Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% if devices %}
-                        {% for device in devices %}
-                        {% set row_state = 'critical' if device.last_backup_status == 'failure' else ('attention' if (device.last_connection_status in ['offline', 'error'] or not device.backup_scheduled) else 'normal') %}
-                        <tr class="{% if row_state == 'critical' %}bg-red-500/5{% elif row_state == 'attention' %}bg-amber-500/5{% endif %}">
-                            <td>
-                                <input type="checkbox" name="device_ids" value="{{ device.id }}"
-                                    form="bulkForm"
-                                    data-device-type-id="{{ device.device_type_id or '' }}"
-                                    class="w-4 h-4 rounded row-checkbox">
-                            </td>
-                            <td>
-                                <div class="font-semibold text-[var(--text-main)]">{{ device.name }}</div>
-                                {% if device.group %}
-                                <div class="text-xs text-[var(--text-muted)]">{{ device.group.name }}</div>
-                                {% endif %}
-                                {% if device.subgroup and device.subgroup.is_active %}
-                                {% set subgroup_mode = (device.subgroup.connection_type or '') %}
-                                <div class="mt-1 inline-flex items-center rounded-full bg-indigo-500/15 px-2 py-0.5 text-[11px] font-semibold text-indigo-300">
-                                    Subgrupo {{ device.subgroup.name }} · {{ 'VPN' if subgroup_mode == 'vpn' else ('Jump Host' if subgroup_mode in ['jump', 'jump_host'] else 'Direto') }}
-                                </div>
-                                {% endif %}
-                            </td>
-                            <td>
-                                <span class="text-xs px-2 py-1 rounded bg-[var(--line-color)] text-[var(--text-main)] font-medium">
-                                    {{ device.type.name if device.type else 'Nao definido' }}
-                                </span>
-                            </td>
-                            <td class="text-[var(--text-main)] font-medium font-mono text-sm">
-                                {{ device.ip_address }}:{{ device.port }}
-                            </td>
-                            <td>
-                                {% if device.last_connection_status == 'online' %}
-                                <span class="status-badge status-online">Online</span>
-                                {% elif device.last_connection_status in ['offline', 'error'] %}
-                                <span class="status-badge status-offline">Offline</span>
-                                {% else %}
-                                <span class="status-badge status-unknown">Não monitorado</span>
-                                {% endif %}
-                            </td>
-                            <td>
-                                {% if device.last_backup_at %}
-                                <div class="text-sm text-[var(--text-main)]">{{ (device.last_backup_at|localtime).strftime('%Y-%m-%d %H:%M') }}
-                                </div>
-                                {% else %}
-                                <span class="text-[var(--text-muted)] italic text-sm">Nunca</span>
-                                {% endif %}
-                            </td>
-                            <td>
-                                {% if device.last_backup_status == 'success' %}
-                                <span class="status-badge status-online">Sucesso</span>
-                                {% elif device.last_backup_status == 'failure' %}
-                                <span class="status-badge status-offline">Falha</span>
-                                {% elif not device.last_backup_at %}
-                                <span class="status-badge status-unknown">Nunca executado</span>
-                                {% else %}
-                                <span class="status-badge status-unknown">Desconhecido</span>
-                                {% endif %}
-                                <div class="mt-1 text-xs {% if device.backup_scheduled %}text-blue-400{% else %}text-[var(--text-muted)]{% endif %}">
-                                    Auto-backup: {{ 'Ativado' if device.backup_scheduled else 'Desativado' }}
-                                </div>
-                                <div class="mt-1 text-[11px] {% if row_state == 'critical' %}text-red-300{% elif row_state == 'attention' %}text-amber-300{% else %}text-emerald-300{% endif %}">
-                                    Prioridade: {% if row_state == 'critical' %}Critica{% elif row_state == 'attention' %}Atencao{% else %}Normal{% endif %}
-                                </div>
-                            </td>
-                            <td style="text-align: right;">
-                                <div class="flex justify-end gap-2">
-                                    <a href="{{ url_for('tenant_devices.view_device', tenant_slug=tenant.slug, device_id=device.id, group_id=current_group.id if current_group else None) }}"
-                                        class="p-2 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-[var(--text-muted)] hover:text-white transition"
-                                        title="Ver">
-                                        <i data-lucide="eye" class="w-4 h-4"></i>
-                                    </a>
-                                    <a href="{{ url_for('tenant_devices.edit_device', tenant_slug=tenant.slug, device_id=device.id, group_id=current_group.id if current_group else None) }}"
-                                        class="p-2 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-[var(--text-muted)] hover:text-white transition"
-                                        title="Editar">
-                                        <i data-lucide="settings" class="w-4 h-4"></i>
-                                    </a>
-                                    <a href="{{ url_for('tenant_compare.compare_backups', tenant_slug=tenant.slug, device_id=device.id) }}"
-                                        class="p-2 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-[var(--text-muted)] hover:text-blue-400 transition"
-                                        title="Comparar Backups">
-                                        <i data-lucide="git-compare" class="w-4 h-4"></i>
-                                    </a>
-                                    <button type="button"
-                                        data-run-backup-live
-                                        data-form-id="form-backup-{{ device.id }}"
-                                        class="p-2 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-[var(--text-muted)] hover:text-emerald-400 transition"
-                                        title="Backup Manual">
-                                        <i data-lucide="play-circle" class="w-4 h-4"></i>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                        {% else %}
-                        <tr>
-                            <td colspan="8" class="text-center py-12 text-[var(--text-muted)]">
-                                <i data-lucide="inbox" class="w-12 h-12 mx-auto mb-4 opacity-30"></i>
-                                <p>Nenhum dispositivo encontrado.</p>
-                                <div class="mt-4">
-                                    <a href="{{ url_for('tenant_devices.list_devices', tenant_slug=tenant.slug) }}"
-                                        class="px-4 py-2 rounded-lg border border-[var(--card-border)] hover:bg-slate-100 dark:hover:bg-slate-700 transition">
-                                        Limpar filtros
-                                    </a>
-                                </div>
-                            </td>
-                        </tr>
-                        {% endif %}
-                    </tbody>
-                </table>
-            </div>
+        <div class="dev-bulk-actions">
+          <button type="button" id="bulkSubmitTrigger" data-run-backup-live data-form-id="bulkForm" class="dev-btn dev-btn-emerald" style="border-color:rgba(16,185,129,.35);background:rgba(16,185,129,.12);color:#34d399;">
+            <i data-lucide="play"></i>
+            Backup Selecionados
+          </button>
+          <button type="button" data-run-backup-live data-form-id="form-backup-all" class="dev-btn dev-btn-indigo">
+            <i data-lucide="layers"></i>
+            Backup Todos ({{ stats.total if current_group else stats.scheduled }})
+          </button>
         </div>
+      </div>
 
-        <!-- Pagination -->
-        {% if total_pages > 1 %}
-        <div class="flex justify-between items-center mt-6 text-sm text-[var(--text-muted)]">
-            <div>Mostrando {{ start_idx }}-{{ end_idx }} de {{ stats.total }}</div>
-            <div class="flex gap-2">
-                {% if page > 1 %}
-                <a href="{{ url_for('tenant_devices.list_devices', tenant_slug=tenant.slug, page=page-1, q=arg_q, group_id=current_group.id if current_group else None, subgroup=arg_subgroup or None, connection=arg_connection, auto=arg_auto, result=arg_result, history=arg_history, audit=arg_audit, due=arg_due, sort=arg_sort, per_page=per_page, compare=arg_compare) }}"
-                    class="px-3 py-1 rounded bg-[var(--card-bg)] hover:bg-slate-100 dark:hover:bg-slate-700 transition">Anterior</a>
-                {% endif %}
+      <div id="bulkActionBar" class="dev-floating-bulk">
+        <div class="dev-floating-bulk-label"><strong id="bulkActionLabel">0 dispositivos selecionados</strong> · Acoes em lote</div>
+        <div class="dev-bulk-actions">
+          <button type="button" id="bulkActionClear" class="dev-btn">Limpar selecao</button>
+          <button type="button" id="bulkActionRun" class="dev-btn" style="border-color:rgba(16,185,129,.35);background:rgba(16,185,129,.12);color:#34d399;">Backup Agora</button>
+        </div>
+      </div>
 
-                {% for p in range(1, total_pages + 1) %}
-                {% if p == page %}
-                <span class="px-3 py-1 rounded bg-blue-600 text-[var(--text-main)]">{{ p }}</span>
-                {% else %}
-                <a href="{{ url_for('tenant_devices.list_devices', tenant_slug=tenant.slug, page=p, q=arg_q, group_id=current_group.id if current_group else None, subgroup=arg_subgroup or None, connection=arg_connection, auto=arg_auto, result=arg_result, history=arg_history, audit=arg_audit, due=arg_due, sort=arg_sort, per_page=per_page, compare=arg_compare) }}"
-                    class="px-3 py-1 rounded bg-[var(--card-bg)] hover:bg-slate-100 dark:hover:bg-slate-700 transition">{{ p }}</a>
-                {% endif %}
-                {% endfor %}
+      <section class="dev-table-card">
+        <div class="dev-table-wrap">
+          <table class="dev-table">
+            <thead>
+              <tr>
+                <th style="width:48px;text-align:center;"><button type="button" id="toggleAllBtn" class="dev-icon-btn" style="margin:0 auto;"><i data-lucide="square"></i></button></th>
+                <th>Dispositivo e Organizacao</th>
+                <th>Tipo de Equipamento</th>
+                <th>Endereco IP e Status</th>
+                <th>Ultimo Backup</th>
+                <th>Estado Operacional</th>
+                <th style="text-align:right;">Acoes</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% if devices %}
+              {% for device in devices %}
+              {% set row_state = 'critical' if device.last_backup_status == 'failure' else ('attention' if (device.last_connection_status in ['offline', 'error'] or not device.backup_scheduled) else 'normal') %}
+              {% set is_failed = device.last_backup_status == 'failure' %}
+              {% set conn_offline = device.last_connection_status in ['offline', 'error'] %}
+              {% set type_name = device.type.name if device.type else 'Nao definido' %}
+              {% set type_name_lc = type_name|lower %}
+              <tr class="dev-row {% if conn_offline %}is-offline{% else %}is-online{% endif %} {% if is_failed %}is-failure{% endif %}" data-row-device-id="{{ device.id }}">
+                <td style="text-align:center;">
+                  <input type="checkbox" name="device_ids" value="{{ device.id }}" form="bulkForm" data-device-type-id="{{ device.device_type_id or '' }}" class="dev-row-check row-checkbox">
+                </td>
 
-                {% if page < total_pages %} <a
-                    href="{{ url_for('tenant_devices.list_devices', tenant_slug=tenant.slug, page=page+1, q=arg_q, group_id=current_group.id if current_group else None, subgroup=arg_subgroup or None, connection=arg_connection, auto=arg_auto, result=arg_result, history=arg_history, audit=arg_audit, due=arg_due, sort=arg_sort, per_page=per_page, compare=arg_compare) }}"
-                    class="px-3 py-1 rounded bg-[var(--card-bg)] hover:bg-slate-100 dark:hover:bg-slate-700 transition">Próximo</a>
+                <td>
+                  <div class="dev-name">{{ device.name }}</div>
+                  <div class="dev-meta">
+                    {{ device.group.name if device.group else 'Sem grupo' }}
+                    {% if device.subgroup and device.subgroup.is_active %}
+                    <span>"</span>
+                    <span class="dev-meta-subgroup">
+                      <i data-lucide="folder-tree" class="w-3 h-3"></i>
+                      {{ device.subgroup.name }}
+                    </span>
                     {% endif %}
-            </div>
+                  </div>
+                </td>
+
+                <td>
+                  <span class="dev-pill {% if 'huawei' in type_name_lc %}huawei{% elif 'mikrotik' in type_name_lc %}mikrotik{% endif %}">{{ type_name }}</span>
+                </td>
+
+                <td>
+                  <div class="dev-ip-wrap">
+                    <button type="button" class="dev-ip-copy" data-copy-ip="{{ device.ip_address }}" data-copy-port="{{ device.port }}" data-copy-id="{{ device.id }}">
+                      <span class="ip-main">{{ device.ip_address }}</span>
+                      <span class="ip-port">:{{ device.port }}</span>
+                      <i data-lucide="copy" class="copy-icon"></i>
+                    </button>
+                    <span class="dev-conn {% if conn_offline %}offline{% else %}online{% endif %}">
+                      <span class="dev-conn-dot"></span>
+                      {{ 'Offline' if conn_offline else 'Online' }}
+                    </span>
+                  </div>
+                </td>
+
+                <td>
+                  {% if device.last_backup_at %}
+                  <span class="dev-lastbackup">
+                    <i data-lucide="activity"></i>
+                    {{ (device.last_backup_at|localtime).strftime('%Y-%m-%d %H:%M') }}
+                  </span>
+                  {% else %}
+                  <span class="dev-lastbackup" style="color:#64748b;">Nunca</span>
+                  {% endif %}
+                </td>
+
+                <td>
+                  {% if device.last_backup_status == 'success' %}
+                  <span class="dev-status success"><i data-lucide="check-circle-2"></i>Sucesso</span>
+                  {% elif device.last_backup_status == 'failure' %}
+                  <span class="dev-status fail"><i data-lucide="x-circle"></i>Falha</span>
+                  {% elif not device.last_backup_at %}
+                  <span class="dev-status"><i data-lucide="clock-3"></i>Nunca executado</span>
+                  {% else %}
+                  <span class="dev-status"><i data-lucide="help-circle"></i>Desconhecido</span>
+                  {% endif %}
+
+                  <div class="dev-status-meta">
+                    <span class="{% if device.backup_scheduled %}on{% endif %}">
+                      <i data-lucide="refresh-cw"></i>
+                      {{ 'ON' if device.backup_scheduled else 'OFF' }}
+                    </span>
+                    <span class="{% if row_state == 'critical' %}critical{% endif %}">
+                      <i data-lucide="flag"></i>
+                      {{ 'Critica' if row_state == 'critical' else 'Normal' }}
+                    </span>
+                  </div>
+                </td>
+
+                <td style="text-align:right;">
+                  <div class="dev-actions">
+                    <button type="button" data-run-backup-live data-form-id="form-backup-{{ device.id }}" class="dev-icon-btn play" title="Backup Manual">
+                      <i data-lucide="play"></i>
+                    </button>
+
+                    <a href="{{ url_for('tenant_devices.view_device', tenant_slug=tenant.slug, device_id=device.id, group_id=current_group.id if current_group else None) }}" class="dev-icon-btn terminal" title="Detalhes">
+                      <i data-lucide="terminal-square"></i>
+                    </a>
+
+                    <a href="{{ url_for('tenant_compare.compare_backups', tenant_slug=tenant.slug, device_id=device.id) }}" class="dev-icon-btn logs" title="Comparar Backups">
+                      <i data-lucide="file-text"></i>
+                    </a>
+
+                    <span class="dev-icon-sep"></span>
+
+                    <a href="{{ url_for('tenant_devices.edit_device', tenant_slug=tenant.slug, device_id=device.id, group_id=current_group.id if current_group else None) }}" class="dev-icon-btn" title="Editar">
+                      <i data-lucide="settings"></i>
+                    </a>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+              {% else %}
+              <tr>
+                <td colspan="7" class="dev-empty">
+                  <i data-lucide="inbox"></i>
+                  <p>Nenhum dispositivo encontrado.</p>
+                  <div style="margin-top:1rem;">
+                    <a href="{{ url_for('tenant_devices.list_devices', tenant_slug=tenant.slug) }}" class="dev-btn">Limpar filtros</a>
+                  </div>
+                </td>
+              </tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+
+        {% if total_pages > 1 %}
+        <div class="dev-pagination">
+          <span class="dev-page-text">Mostrando <strong>{{ start_idx }}-{{ end_idx }}</strong> de <strong>{{ stats.total }}</strong> dispositivos</span>
+          <div class="dev-page-links">
+            {% if page > 1 %}
+            <a class="dev-page-btn" href="{{ url_for('tenant_devices.list_devices', tenant_slug=tenant.slug, page=page-1, q=arg_q, group_id=current_group.id if current_group else None, subgroup=arg_subgroup or None, connection=arg_connection, auto=arg_auto, result=arg_result, history=arg_history, audit=arg_audit, due=arg_due, sort=arg_sort, per_page=per_page, compare=arg_compare) }}">Anterior</a>
+            {% else %}
+            <span class="dev-page-btn" style="opacity:.5;cursor:not-allowed;">Anterior</span>
+            {% endif %}
+
+            {% for p in range(1, total_pages + 1) %}
+            {% if p == page %}
+            <span class="dev-page-btn active">{{ p }}</span>
+            {% else %}
+            <a class="dev-page-btn" href="{{ url_for('tenant_devices.list_devices', tenant_slug=tenant.slug, page=p, q=arg_q, group_id=current_group.id if current_group else None, subgroup=arg_subgroup or None, connection=arg_connection, auto=arg_auto, result=arg_result, history=arg_history, audit=arg_audit, due=arg_due, sort=arg_sort, per_page=per_page, compare=arg_compare) }}">{{ p }}</a>
+            {% endif %}
+            {% endfor %}
+
+            {% if page < total_pages %}
+            <a class="dev-page-btn" href="{{ url_for('tenant_devices.list_devices', tenant_slug=tenant.slug, page=page+1, q=arg_q, group_id=current_group.id if current_group else None, subgroup=arg_subgroup or None, connection=arg_connection, auto=arg_auto, result=arg_result, history=arg_history, audit=arg_audit, due=arg_due, sort=arg_sort, per_page=per_page, compare=arg_compare) }}">Proximo</a>
+            {% else %}
+            <span class="dev-page-btn" style="opacity:.5;cursor:not-allowed;">Proximo</span>
+            {% endif %}
+          </div>
         </div>
         {% endif %}
+      </section>
     </form>
 
     {% for device in devices %}
-    <form id="form-backup-{{ device.id }}"
-        action="{{ url_for('tenant_devices.run_backup', tenant_slug=tenant.slug, device_id=device.id) }}"
-        method="POST" class="hidden">
-        {% include 'partials/csrf.html' %}
-        {% if current_group %}<input type="hidden" name="group_id" value="{{ current_group.id }}">{% endif %}
+    <form id="form-backup-{{ device.id }}" action="{{ url_for('tenant_devices.run_backup', tenant_slug=tenant.slug, device_id=device.id) }}" method="POST" class="hidden">
+      {% include 'partials/csrf.html' %}
+      {% if current_group %}<input type="hidden" name="group_id" value="{{ current_group.id }}">{% endif %}
     </form>
     {% endfor %}
 
-    <!-- Hidden Form for 'Backup All' -->
-    <form id="form-backup-all" action="{{ url_for('tenant_devices.run_backup_all', tenant_slug=tenant.slug) }}"
-        method="POST" class="hidden"
-        onsubmit="return confirm('Executar backup para todos os dispositivos deste filtro?')">
-        {% include 'partials/csrf.html' %}
-        <input type="hidden" name="include_unvalidated" value="1">
-        {% if current_group %}
-        <input type="hidden" name="include_unscheduled" value="1">
-        {% endif %}
-        {% if current_group %}
-        <input type="hidden" name="group_id" value="{{ current_group.id }}">
-        {% endif %}
-        {% if arg_subgroup %}
-        <input type="hidden" name="subgroup" value="{{ arg_subgroup }}">
-        {% endif %}
+    <form id="form-backup-all" action="{{ url_for('tenant_devices.run_backup_all', tenant_slug=tenant.slug) }}" method="POST" class="hidden"
+          onsubmit="return confirm('Executar backup para todos os dispositivos deste filtro?')">
+      {% include 'partials/csrf.html' %}
+      <input type="hidden" name="include_unvalidated" value="1">
+      {% if current_group %}
+      <input type="hidden" name="include_unscheduled" value="1">
+      <input type="hidden" name="group_id" value="{{ current_group.id }}">
+      {% endif %}
+      {% if arg_subgroup %}
+      <input type="hidden" name="subgroup" value="{{ arg_subgroup }}">
+      {% endif %}
     </form>
 
-    <form id="form-subgroup-connection"
-        action="{{ url_for('tenant_devices.bulk_subgroup_connection', tenant_slug=tenant.slug) }}"
-        method="POST" class="hidden">
-        {% include 'partials/csrf.html' %}
-        {% if current_group %}
-        <input type="hidden" name="group_id" value="{{ current_group.id }}">
-        {% endif %}
-        <input type="hidden" id="subgroupActionInput" name="subgroup_action" value="create">
-        <input type="hidden" id="subgroupIdInput" name="subgroup_id" value="">
-        <input type="hidden" id="subgroupConnectionTypeInput" name="subgroup_connection_type" value="vpn">
-        <input type="hidden" id="subgroupNameInputHidden" name="subgroup_name" value="">
-        {% if arg_subgroup %}
-        <input type="hidden" name="subgroup" value="{{ arg_subgroup }}">
-        {% endif %}
+    <form id="form-subgroup-connection" action="{{ url_for('tenant_devices.bulk_subgroup_connection', tenant_slug=tenant.slug) }}" method="POST" class="hidden">
+      {% include 'partials/csrf.html' %}
+      {% if current_group %}
+      <input type="hidden" name="group_id" value="{{ current_group.id }}">
+      {% endif %}
+      <input type="hidden" id="subgroupActionInput" name="subgroup_action" value="create">
+      <input type="hidden" id="subgroupIdInput" name="subgroup_id" value="">
+      <input type="hidden" id="subgroupConnectionTypeInput" name="subgroup_connection_type" value="vpn">
+      <input type="hidden" id="subgroupNameInputHidden" name="subgroup_name" value="">
+      {% if arg_subgroup %}
+      <input type="hidden" name="subgroup" value="{{ arg_subgroup }}">
+      {% endif %}
     </form>
 
     {% if current_group %}
@@ -725,7 +1074,9 @@
 
         // Select All Logic
         const selectAll = document.getElementById('selectAll');
+        const toggleAllBtn = document.getElementById('toggleAllBtn');
         const rowChecks = document.querySelectorAll('.row-checkbox');
+        const ipCopyButtons = document.querySelectorAll('.dev-ip-copy');
         const selectedCount = document.getElementById('selectedCount');
         const bulkActionBar = document.getElementById('bulkActionBar');
         const bulkActionLabel = document.getElementById('bulkActionLabel');
@@ -760,6 +1111,8 @@
 
         function refreshSelectedCount() {
             const checked = [...rowChecks].filter(cb => cb.checked).length;
+            const allChecked = rowChecks.length > 0 && checked === rowChecks.length;
+
             if (selectedCount) {
                 selectedCount.textContent = `${checked} selecionados`;
             }
@@ -767,8 +1120,18 @@
                 bulkActionLabel.textContent = `${checked} dispositivos selecionados`;
             }
             if (bulkActionBar) {
-                bulkActionBar.classList.toggle('hidden', checked === 0);
-                bulkActionBar.classList.toggle('flex', checked > 0);
+                bulkActionBar.classList.toggle('is-visible', checked > 0);
+            }
+            if (selectAll) {
+                selectAll.checked = allChecked;
+            }
+            rowChecks.forEach((cb) => {
+                const row = cb.closest('tr');
+                if (row) row.classList.toggle('is-selected', cb.checked);
+            });
+            if (toggleAllBtn) {
+                toggleAllBtn.innerHTML = allChecked ? '<i data-lucide="check-square"></i>' : '<i data-lucide="square"></i>';
+                lucide.createIcons();
             }
         }
 
@@ -778,9 +1141,57 @@
                 refreshSelectedCount();
             });
         }
+        if (toggleAllBtn) {
+            toggleAllBtn.addEventListener('click', () => {
+                const allChecked = rowChecks.length > 0 && [...rowChecks].every((cb) => cb.checked);
+                rowChecks.forEach((cb) => { cb.checked = !allChecked; });
+                if (selectAll) selectAll.checked = !allChecked;
+                refreshSelectedCount();
+            });
+        }
 
         rowChecks.forEach(cb => cb.addEventListener('change', refreshSelectedCount));
         refreshSelectedCount();
+
+        ipCopyButtons.forEach((btn) => {
+            btn.addEventListener('click', async () => {
+                const ip = btn.dataset.copyIp || '';
+                if (!ip) return;
+                try {
+                    if (navigator.clipboard && window.isSecureContext) {
+                        await navigator.clipboard.writeText(ip);
+                    } else {
+                        const ta = document.createElement('textarea');
+                        ta.value = ip;
+                        ta.style.position = 'fixed';
+                        ta.style.left = '-9999px';
+                        document.body.appendChild(ta);
+                        ta.select();
+                        document.execCommand('copy');
+                        document.body.removeChild(ta);
+                    }
+                    btn.classList.add('copied');
+                    btn.innerHTML = `
+                        <span class="ip-main">${ip}</span>
+                        <span class="ip-port"></span>
+                        <i data-lucide="check"></i>
+                    `;
+                    lucide.createIcons();
+                    setTimeout(() => {
+                        const portText = btn.dataset.copyPort || '';
+                        btn.classList.remove('copied');
+                        btn.innerHTML = `
+                            <span class="ip-main">${ip}</span>
+                            <span class="ip-port">${portText ? ':' + portText : ''}</span>
+                            <i data-lucide="copy" class="copy-icon"></i>
+                        `;
+                        lucide.createIcons();
+                    }, 1400);
+                } catch (err) {
+                    console.error('Falha ao copiar IP', err);
+                }
+            });
+        });
 
         function collectModalSelectedIds() {
             return [...subgroupDeviceCheckboxes]

@@ -73,7 +73,9 @@ def add_group(tenant_slug):
     
     if request.method == 'POST':
         try:
-            name = request.form.get('name')
+            name = (request.form.get('name') or '').strip()
+            if not name:
+                raise ValueError('Informe o nome do grupo.')
             connection_type = request.form.get('connection_type', 'direct')
             
             data = {

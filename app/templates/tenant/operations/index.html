@@ -3,234 +3,595 @@
 {% block title %}Grupos | Backup Center{% endblock %}
 
 {% block content %}
-{% set page_title = "Grupos" %}
-{% include 'partials/breadcrumb.html' %}
 {% set role = session.get('user_role') %}
 {% set can_manage_admin = role in ['super_admin', 'tenant_owner', 'tenant_admin'] %}
 
-<div class="space-y-4 pb-4">
-    <section class="rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900/60">
-        <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Grupos / Provedores</h3>
-        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            Lista objetiva dos grupos, com status e acesso rápido para dispositivos e edição.
-        </p>
-    </section>
+<style>
+  .ops-page {
+    margin: -1rem;
+    min-height: 100vh;
+    background: #020617;
+    color: #e2e8f0;
+    padding: 1rem;
+  }
+  @media (min-width: 768px) {
+    .ops-page { margin: -1.25rem; padding: 1.5rem; }
+  }
+  @media (min-width: 1280px) {
+    .ops-page { margin: -1.5rem; }
+  }
 
-    <section class="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900/60">
-        <div class="grid grid-cols-1 gap-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
-            <div>
-                <label for="groupSearchInput" class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                    Buscar grupo
-                </label>
-                <input
-                    id="groupSearchInput"
-                    type="text"
-                    placeholder="Digite o nome do grupo..."
-                    class="mt-1 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-brand-500 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-white"
-                >
-            </div>
-            <div class="flex flex-wrap items-center gap-2 text-xs">
-                <a
-                    href="{{ url_for('tenant_operations.index', tenant_slug=tenant.slug, focus='1' if focus_mode else None, view=view_mode if view_mode != 'cards' else None, group_filter='all') }}"
-                    class="rounded-full border px-2.5 py-1 transition {% if group_filter == 'all' %}border-gray-900 bg-gray-900 text-white dark:border-white dark:bg-white dark:text-gray-900{% else %}border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:border-gray-600 dark:hover:bg-gray-800{% endif %}"
-                >
-                    {{ summary.total_groups }} grupos
-                </a>
-                <span class="rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-emerald-700 dark:border-emerald-800/40 dark:bg-emerald-900/20 dark:text-emerald-300">
-                    {{ summary.active_groups }} ativos
-                </span>
-                <span class="rounded-full border border-slate-300 bg-slate-100 px-2.5 py-1 text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
-                    {{ summary.inactive_groups }} inativos
-                </span>
-                <a
-                    href="{{ url_for('tenant_operations.index', tenant_slug=tenant.slug, focus='1' if focus_mode else None, view=view_mode if view_mode != 'cards' else None, group_filter='vpn') }}"
-                    class="rounded-full border px-2.5 py-1 transition {% if group_filter == 'vpn' %}border-emerald-600 bg-emerald-600 text-white dark:border-emerald-500 dark:bg-emerald-500 dark:text-white{% else %}border-emerald-200 bg-emerald-50 text-emerald-700 hover:border-emerald-300 hover:bg-emerald-100 dark:border-emerald-800/40 dark:bg-emerald-900/20 dark:text-emerald-300 dark:hover:bg-emerald-900/30{% endif %}"
-                >
-                    {{ summary.vpn_groups }} com VPN
-                </a>
-                <a
-                    href="{{ url_for('tenant_operations.index', tenant_slug=tenant.slug, focus='1' if focus_mode else None, view=view_mode if view_mode != 'cards' else None, group_filter='jump') }}"
-                    class="rounded-full border px-2.5 py-1 transition {% if group_filter == 'jump' %}border-teal-600 bg-teal-600 text-white dark:border-teal-500 dark:bg-teal-500 dark:text-white{% else %}border-teal-200 bg-teal-50 text-teal-700 hover:border-teal-300 hover:bg-teal-100 dark:border-teal-800/40 dark:bg-teal-900/20 dark:text-teal-300 dark:hover:bg-teal-900/30{% endif %}"
-                >
-                    {{ summary.jump_groups }} com Jump Host
-                </a>
-                <a
-                    href="{{ url_for('tenant_operations.index', tenant_slug=tenant.slug, focus='1' if focus_mode else None, view=view_mode if view_mode != 'cards' else None, group_filter='no_vpn') }}"
-                    class="rounded-full border px-2.5 py-1 transition {% if group_filter == 'no_vpn' %}border-blue-600 bg-blue-600 text-white dark:border-blue-500 dark:bg-blue-500 dark:text-white{% else %}border-blue-200 bg-blue-50 text-blue-700 hover:border-blue-300 hover:bg-blue-100 dark:border-blue-800/40 dark:bg-blue-900/20 dark:text-blue-300 dark:hover:bg-blue-900/30{% endif %}"
-                >
-                    {{ summary.no_vpn_groups }} sem VPN
-                </a>
-                <p id="groupVisibleCount" class="ml-1 text-sm font-medium text-gray-600 dark:text-gray-300"></p>
-            </div>
+  .ops-wrap {
+    max-width: 1600px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .ops-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: .35rem;
+    font-size: .75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: #64748b;
+    margin-bottom: .4rem;
+  }
+  .ops-breadcrumb span:first-child:hover { color: #818cf8; cursor: pointer; }
+
+  .ops-title-row { display: flex; align-items: center; gap: .75rem; }
+  .ops-title { margin: 0; font-size: 1.6rem; font-weight: 800; color: #fff; letter-spacing: -0.02em; }
+  .ops-subtitle { margin: .4rem 0 0; font-size: .92rem; color: #94a3b8; }
+  .ops-top {
+    display: flex;
+    flex-direction: column;
+    gap: .85rem;
+  }
+  @media (min-width: 1024px) {
+    .ops-top {
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: flex-end;
+    }
+  }
+  .ops-top-actions {
+    display: flex;
+    align-items: center;
+    gap: .55rem;
+    flex-wrap: wrap;
+  }
+  .ops-btn-primary {
+    border-color: rgba(99,102,241,.4);
+    background: linear-gradient(135deg, rgba(99,102,241,.95), rgba(79,70,229,.9));
+    color: #fff;
+    box-shadow: 0 8px 24px rgba(79,70,229,.24);
+  }
+  .ops-btn-primary:hover {
+    background: linear-gradient(135deg, rgba(99,102,241,1), rgba(79,70,229,.96));
+    color: #fff;
+  }
+
+  .ops-controls {
+    background: #0f172a;
+    border: 1px solid #1e293b;
+    border-radius: .7rem;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    box-shadow: 0 8px 24px rgba(0,0,0,.25);
+  }
+  @media (min-width: 1024px) {
+    .ops-controls { flex-direction: row; align-items: center; justify-content: space-between; }
+  }
+
+  .ops-search-wrap { position: relative; width: 100%; }
+  @media (min-width: 1024px) {
+    .ops-search-wrap { width: 24rem; }
+  }
+  .ops-search-icon { position: absolute; left: .75rem; top: 50%; transform: translateY(-50%); color: #64748b; width: 1rem; height: 1rem; }
+  .ops-search {
+    width: 100%;
+    background: #0a0f18;
+    border: 1px solid #1e293b;
+    color: #e2e8f0;
+    font-size: .875rem;
+    border-radius: .45rem;
+    padding: .58rem .75rem .58rem 2.2rem;
+    outline: none;
+    transition: all .15s ease;
+  }
+  .ops-search::placeholder { color: #64748b; }
+  .ops-search:focus { border-color: #6366f1; box-shadow: 0 0 0 1px #6366f1; }
+
+  .ops-filters {
+    display: flex;
+    align-items: center;
+    gap: .35rem;
+    overflow-x: auto;
+    padding-bottom: .15rem;
+  }
+  .ops-filter-icon { color: #64748b; width: 1rem; height: 1rem; margin-right: .1rem; flex: none; }
+  .ops-filter-divider { width: 1px; height: 1.15rem; background: #1e293b; margin: 0 .25rem; }
+
+  .ops-filter-btn {
+    white-space: nowrap;
+    border-radius: .38rem;
+    border: 1px solid transparent;
+    background: transparent;
+    color: #94a3b8;
+    font-size: .75rem;
+    font-weight: 700;
+    padding: .37rem .72rem;
+    cursor: pointer;
+    transition: all .15s ease;
+  }
+  .ops-filter-btn:hover { background: #1e293b; color: #e2e8f0; }
+  .ops-filter-btn.is-active.ops-filter-all,
+  .ops-filter-btn.is-active.ops-filter-no-vpn { background: #334155; border-color: #334155; color: #fff; }
+  .ops-filter-btn.is-active.ops-filter-active { background: rgba(16,185,129,.2); border-color: rgba(16,185,129,.35); color: #34d399; }
+  .ops-filter-btn.is-active.ops-filter-inactive { background: rgba(244,63,94,.2); border-color: rgba(244,63,94,.35); color: #fb7185; }
+  .ops-filter-btn.is-active.ops-filter-vpn { background: rgba(99,102,241,.2); border-color: rgba(99,102,241,.35); color: #818cf8; }
+  .ops-filter-btn.is-active.ops-filter-jump { background: rgba(14,165,233,.2); border-color: rgba(14,165,233,.35); color: #38bdf8; }
+
+  .ops-visible-count { margin-left: .5rem; white-space: nowrap; font-size: .75rem; font-weight: 600; color: #94a3b8; }
+
+  .ops-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+  @media (min-width: 1024px) {
+    .ops-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  @media (min-width: 1536px) {
+    .ops-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  }
+
+  .ops-card {
+    background: #0f172a;
+    border: 1px solid #1e293b;
+    border-radius: .85rem;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 12px 25px rgba(0,0,0,.28);
+    transition: all .15s ease;
+  }
+  .ops-card.ops-has-fail { border-color: rgba(159,18,57,.55); box-shadow: 0 0 14px rgba(225,29,72,.08); }
+  .ops-card.ops-inactive { opacity: .62; filter: grayscale(.3); }
+
+  .ops-card-head {
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid rgba(30,41,59,.7);
+    background: rgba(15,23,42,.55);
+  }
+  .ops-card-title-row { display: flex; align-items: center; gap: .45rem; margin-bottom: .25rem; }
+  .ops-card-title { margin: 0; font-size: 1.05rem; font-weight: 700; color: #fff; letter-spacing: -0.01em; }
+  .ops-pill-inactive {
+    border: 1px solid rgba(244,63,94,.25);
+    background: rgba(244,63,94,.12);
+    color: #fb7185;
+    font-size: .56rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    border-radius: .25rem;
+    padding: .12rem .35rem;
+  }
+
+  .ops-type-pill {
+    display: inline-flex;
+    align-items: center;
+    border-radius: .3rem;
+    font-size: .67rem;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    letter-spacing: .02em;
+    padding: .2rem .5rem;
+    border: 1px solid #334155;
+    background: #1e293b;
+    color: #94a3b8;
+  }
+  .ops-type-pill.vpn { border-color: rgba(99,102,241,.28); background: rgba(99,102,241,.12); color: #818cf8; }
+  .ops-type-pill.jump { border-color: rgba(14,165,233,.28); background: rgba(14,165,233,.12); color: #38bdf8; }
+
+  .ops-card-body { padding: 1.25rem; flex: 1; }
+  .ops-metrics {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1px;
+    border: 1px solid #1e293b;
+    background: #1e293b;
+    border-radius: .55rem;
+    overflow: hidden;
+  }
+  .ops-metric { background: #0a0f18; padding: .62rem; display: flex; flex-direction: column; }
+  .ops-metric-label { font-size: .62rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; margin-bottom: .23rem; color: #64748b; }
+  .ops-metric-value { font-size: 1.25rem; line-height: 1.1; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; color: #fff; }
+  .ops-metric.ok { border-bottom: 2px solid rgba(16,185,129,.55); }
+  .ops-metric.ok .ops-metric-label { color: rgba(16,185,129,.75); }
+  .ops-metric.ok .ops-metric-value { color: #34d399; }
+  .ops-metric.fail { border-bottom: 2px solid #1e293b; }
+  .ops-metric.fail.ops-has-fail { border-bottom-color: rgba(244,63,94,.85); background: rgba(244,63,94,.06); }
+  .ops-metric.fail .ops-metric-label { color: #475569; }
+  .ops-metric.fail.ops-has-fail .ops-metric-label { color: #fb7185; }
+  .ops-metric.fail .ops-metric-value { color: #64748b; }
+  .ops-metric.fail.ops-has-fail .ops-metric-value { color: #fb7185; font-weight: 700; }
+  .ops-metric.unknown .ops-metric-value { color: #94a3b8; }
+
+  .ops-card-note {
+    margin-top: .7rem;
+    display: flex;
+    align-items: center;
+    gap: .35rem;
+    font-size: .62rem;
+    color: #64748b;
+  }
+  .ops-card-note i { width: .9rem; height: .9rem; }
+
+  .ops-card-foot {
+    padding: .75rem 1.25rem;
+    border-top: 1px solid #1e293b;
+    background: rgba(15,23,42,.8);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .5rem;
+  }
+
+  .ops-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    border-radius: .36rem;
+    border: 1px solid #334155;
+    color: #cbd5e1;
+    background: transparent;
+    font-size: .74rem;
+    font-weight: 700;
+    padding: .37rem .72rem;
+    text-decoration: none;
+    transition: all .15s ease;
+  }
+  .ops-btn i { width: .88rem; height: .88rem; }
+  .ops-btn:hover { background: #1e293b; color: #fff; }
+  .ops-btn-indigo { border-color: rgba(99,102,241,.35); background: rgba(99,102,241,.12); color: #818cf8; }
+  .ops-btn-indigo:hover { background: rgba(99,102,241,.22); }
+  .ops-btn-emerald { border-color: rgba(16,185,129,.35); background: rgba(16,185,129,.12); color: #34d399; }
+  .ops-btn-emerald:hover { background: rgba(16,185,129,.22); }
+
+  .ops-spacer { flex: 1; }
+
+  .ops-icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: .36rem;
+    padding: .35rem;
+    background: transparent;
+    border: 1px solid transparent;
+    color: #94a3b8;
+    transition: all .15s ease;
+  }
+  .ops-icon-btn:hover { background: #1e293b; color: #fff; }
+  .ops-icon-btn i { width: 1rem; height: 1rem; }
+  .ops-icon-btn .amber { color: rgba(245,158,11,.8); }
+  .ops-icon-btn .emerald { color: rgba(16,185,129,.85); }
+
+  .ops-empty {
+    border: 1px dashed #1e293b;
+    border-radius: .85rem;
+    background: rgba(15,23,42,.55);
+    text-align: center;
+    padding: 3rem 1rem;
+  }
+  .ops-empty i { width: 2rem; height: 2rem; color: #475569; margin-bottom: .75rem; }
+  .ops-empty p { margin: 0; color: #94a3b8; font-weight: 600; }
+  .ops-empty .ops-clear {
+    margin-top: 1rem;
+    border: 0;
+    border-radius: .38rem;
+    background: #1e293b;
+    color: #cbd5e1;
+    font-size: .74rem;
+    font-weight: 700;
+    padding: .48rem .88rem;
+    cursor: pointer;
+  }
+  .ops-empty .ops-clear:hover { background: #334155; color: #fff; }
+
+  .ops-hidden { display: none !important; }
+</style>
+
+<div class="ops-page">
+  <div class="ops-wrap">
+    <div class="ops-top">
+      <div>
+        <div class="ops-breadcrumb">
+          <span>Home</span>
+          <i data-lucide="chevron-right"></i>
+          <span style="color:#cbd5e1;">Grupos</span>
         </div>
-    </section>
+        <div class="ops-title-row">
+          <i data-lucide="folder-tree" style="width:1.5rem;height:1.5rem;color:#6366f1;"></i>
+          <h1 class="ops-title">Grupos / Provedores</h1>
+        </div>
+        <p class="ops-subtitle">Lista objetiva dos grupos, com status e acesso rapido para dispositivos e edicao.</p>
+      </div>
+      <div class="ops-top-actions">
+        <a href="{{ url_for('tenant_devices.list_devices', tenant_slug=tenant.slug) }}" class="ops-btn">
+          <i data-lucide="monitor-smartphone"></i>
+          Dispositivos
+        </a>
+        {% if can_manage_admin %}
+        <a href="{{ url_for('tenant_groups.add_group', tenant_slug=tenant.slug) }}" class="ops-btn ops-btn-primary">
+          <i data-lucide="plus"></i>
+          Novo Grupo
+        </a>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="ops-controls">
+      <div class="ops-search-wrap">
+        <i data-lucide="search" class="ops-search-icon"></i>
+        <input id="groupSearchInput" type="text" class="ops-search" placeholder="Buscar grupo...">
+      </div>
+
+      <div class="ops-filters">
+        <i data-lucide="filter" class="ops-filter-icon"></i>
+
+        <button type="button" class="ops-filter-btn ops-filter-all" data-filter="ALL">Todos ({{ summary.total_groups }})</button>
+        <button type="button" class="ops-filter-btn ops-filter-active" data-filter="ACTIVE">Ativos ({{ summary.active_groups }})</button>
+        <button type="button" class="ops-filter-btn ops-filter-inactive" data-filter="INACTIVE">Inativos ({{ summary.inactive_groups }})</button>
+
+        <div class="ops-filter-divider"></div>
+
+        <button type="button" class="ops-filter-btn ops-filter-vpn" data-filter="VPN">VPN ({{ summary.vpn_groups }})</button>
+        <button type="button" class="ops-filter-btn ops-filter-jump" data-filter="JUMP_HOST">Jump Host ({{ summary.jump_groups }})</button>
+        <button type="button" class="ops-filter-btn ops-filter-no-vpn" data-filter="NO_VPN">Sem VPN ({{ summary.no_vpn_groups }})</button>
+
+        <p id="groupVisibleCount" class="ops-visible-count"></p>
+      </div>
+    </div>
 
     {% if group_rows %}
-    <section class="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
-        {% for row in group_rows %}
-        {% set success_count = row.devices_success if row.devices_success is defined and row.devices_success is not none else (row.success_24h if row.success_24h is defined and row.success_24h is not none else 0) %}
-        {% set failed_count = row.devices_failed if row.devices_failed is defined and row.devices_failed is not none else (row.failed_24h if row.failed_24h is defined and row.failed_24h is not none else 0) %}
-        {% set unknown_count = row.devices_unknown if row.devices_unknown is defined and row.devices_unknown is not none else ([row.total_devices - success_count - failed_count, 0]|max) %}
-        <article class="group-item rounded-xl border border-gray-200 bg-white p-4 transition-colors hover:border-gray-300 dark:border-gray-800 dark:bg-gray-900/60 dark:hover:border-gray-700 {% if not row.is_active %}opacity-75 border-slate-300 bg-slate-50/60 dark:border-slate-700 dark:bg-slate-800/40{% endif %}" data-group-name="{{ row.name|lower }}">
-            <div class="space-y-3">
-                <div class="flex items-start justify-between gap-3">
-                    <div class="min-w-0">
-                        <h4 class="truncate text-sm font-semibold text-gray-900 dark:text-white">{{ row.name }}</h4>
-                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ row.connection_type|replace('_', ' ')|title }}</p>
-                    </div>
-                    <div class="flex flex-col items-end gap-1">
-                        <span class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium {% if row.uses_jump_host %}border border-teal-200 bg-teal-50 text-teal-700 dark:border-teal-800/40 dark:bg-teal-900/20 dark:text-teal-300{% elif row.uses_vpn %}border border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800/40 dark:bg-emerald-900/20 dark:text-emerald-300{% else %}border border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-800/40 dark:bg-blue-900/20 dark:text-blue-300{% endif %}">
-                            {{ 'Com Jump Host' if row.uses_jump_host else ('Com VPN' if row.uses_vpn else 'Sem VPN') }}
-                        </span>
-                        <span class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium {% if row.is_active %}border border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800/40 dark:bg-emerald-900/20 dark:text-emerald-300{% else %}border border-slate-300 bg-slate-100 text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300{% endif %}">
-                            {{ 'Ativo' if row.is_active else 'Inativo' }}
-                        </span>
-                    </div>
-                </div>
+    <div id="groupsGrid" class="ops-grid">
+      {% for row in group_rows %}
+      {% set success_count = row.devices_success if row.devices_success is defined and row.devices_success is not none else (row.success_24h if row.success_24h is defined and row.success_24h is not none else 0) %}
+      {% set failed_count = row.devices_failed if row.devices_failed is defined and row.devices_failed is not none else (row.failed_24h if row.failed_24h is defined and row.failed_24h is not none else 0) %}
+      {% set unknown_count = row.devices_unknown if row.devices_unknown is defined and row.devices_unknown is not none else ([row.total_devices - success_count - failed_count, 0]|max) %}
 
-                <div class="rounded-lg border border-blue-100 bg-blue-50/80 px-3 py-2.5 dark:border-slate-700 dark:bg-slate-800/45">
-                    <div class="flex items-end justify-between gap-3">
-                        <div>
-                            <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-600 dark:text-slate-300">Dispositivos</p>
-                            <p class="mt-0.5 text-xl font-semibold text-slate-900 dark:text-slate-100">{{ row.total_devices }}</p>
-                        </div>
-                        <div class="grid grid-cols-3 gap-2 text-right">
-                            <div class="rounded-md bg-emerald-50 px-2 py-1 text-[11px] text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
-                                <span class="block font-semibold">{{ success_count }}</span>
-                                <span class="uppercase tracking-wide">Sucesso</span>
-                            </div>
-                            <div class="rounded-md bg-red-50 px-2 py-1 text-[11px] text-red-700 dark:bg-red-500/10 dark:text-red-300">
-                                <span class="block font-semibold">{{ failed_count }}</span>
-                                <span class="uppercase tracking-wide">Falha</span>
-                            </div>
-                            <div class="rounded-md bg-slate-100 px-2 py-1 text-[11px] text-slate-700 dark:bg-slate-700/40 dark:text-slate-200">
-                                <span class="block font-semibold">{{ unknown_count }}</span>
-                                <span class="uppercase tracking-wide">Sem status</span>
-                            </div>
-                        </div>
-                    </div>
-                    <p class="mt-2 text-[11px] text-slate-500 dark:text-slate-400">
-                        Baseado no ultimo backup por dispositivo.
-                    </p>
-                    {% if not row.is_active %}
-                    <p class="mt-2 text-[11px] font-medium text-slate-600 dark:text-slate-300">
-                        Grupo desativado: backups e execucoes manuais do grupo ficam bloqueados.
-                    </p>
-                    {% endif %}
-                </div>
+      <article class="ops-card {% if failed_count > 0 %}ops-has-fail{% endif %} {% if not row.is_active %}ops-inactive{% endif %}"
+               data-group-name="{{ row.name|lower }}"
+               data-group-active="{{ 1 if row.is_active else 0 }}"
+               data-group-vpn="{{ 1 if row.uses_vpn else 0 }}"
+               data-group-jump="{{ 1 if row.uses_jump_host else 0 }}"
+               data-group-no-vpn="{{ 0 if row.uses_vpn else 1 }}">
 
-                <div class="flex flex-wrap gap-2">
-                    {% if row.id %}
-                    <a
-                        href="{{ url_for('tenant_devices.list_devices', tenant_slug=tenant.slug, group_id=row.id) }}"
-                        class="inline-flex items-center rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-100 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
-                    >
-                        Ver dispositivos
-                    </a>
-                    {% if can_manage_admin and row.is_active %}
-                    <form id="form-run-connection-audit-group-{{ row.id }}"
-                        action="{{ url_for('tenant_devices.run_connection_audit_all', tenant_slug=tenant.slug) }}"
-                        method="POST" class="inline">
-                        {% include 'partials/csrf.html' %}
-                        <input type="hidden" name="group_id" value="{{ row.id }}">
-                        <button type="button" data-run-backup-live data-form-id="form-run-connection-audit-group-{{ row.id }}"
-                            class="inline-flex items-center rounded-lg border border-blue-300 bg-blue-50 px-3 py-1.5 text-xs font-medium text-blue-700 transition-colors hover:bg-blue-100 dark:border-blue-700 dark:bg-blue-500/10 dark:text-blue-300 dark:hover:bg-blue-500/20">
-                            Testar conexao
-                        </button>
-                    </form>
-                    {% endif %}
-                    {% if can_manage_admin and row.uses_vpn and row.is_active %}
-                    <form id="form-test-vpn-group-{{ row.id }}"
-                        action="{{ url_for('tenant_groups.test_group_vpn', tenant_slug=tenant.slug, group_id=row.id) }}"
-                        method="POST" class="inline">
-                        {% include 'partials/csrf.html' %}
-                        <button type="button" data-run-backup-live data-form-id="form-test-vpn-group-{{ row.id }}"
-                            class="inline-flex items-center rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-1.5 text-xs font-medium text-emerald-700 transition-colors hover:bg-emerald-100 dark:border-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300 dark:hover:bg-emerald-500/20">
-                            Testar VPN
-                        </button>
-                    </form>
-                    {% endif %}
-                    {% if can_manage_admin %}
-                    <form action="{{ url_for('tenant_groups.toggle_group_active', tenant_slug=tenant.slug, group_id=row.id) }}"
-                        method="POST" class="inline"
-                        onsubmit="return confirm('{% if row.is_active %}Desativar{% else %}Reativar{% endif %} o grupo {{ row.name }}?')">
-                        {% include 'partials/csrf.html' %}
-                        <input type="hidden" name="return_to" value="operations">
-                        <input type="hidden" name="action" value="{{ 'deactivate' if row.is_active else 'activate' }}">
-                        <button type="submit"
-                            class="inline-flex items-center rounded-lg px-3 py-1.5 text-xs font-medium transition-colors {% if row.is_active %}border border-amber-300 bg-amber-50 text-amber-700 hover:bg-amber-100 dark:border-amber-700 dark:bg-amber-500/10 dark:text-amber-300 dark:hover:bg-amber-500/20{% else %}border border-emerald-300 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:border-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300 dark:hover:bg-emerald-500/20{% endif %}">
-                            {{ 'Desativar grupo' if row.is_active else 'Reativar grupo' }}
-                        </button>
-                    </form>
-                    <a
-                        href="{{ url_for('tenant_groups.edit_group', tenant_slug=tenant.slug, group_id=row.id) }}"
-                        class="inline-flex items-center rounded-lg bg-brand-600 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-brand-700"
-                    >
-                        Editar grupo
-                    </a>
-                    {% endif %}
-                    {% else %}
-                    <a
-                        href="{{ url_for('tenant_devices.list_devices', tenant_slug=tenant.slug) }}"
-                        class="inline-flex items-center rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-100 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
-                    >
-                        Ver dispositivos
-                    </a>
-                    {% endif %}
-                </div>
+        <div class="ops-card-head">
+          <div class="ops-card-title-row">
+            <h3 class="ops-card-title">{{ row.name }}</h3>
+            {% if not row.is_active %}
+            <span class="ops-pill-inactive">Inativo</span>
+            {% endif %}
+          </div>
+
+          {% set type_class = 'vpn' if row.uses_vpn else ('jump' if row.uses_jump_host else '') %}
+          <span class="ops-type-pill {{ type_class }}">{{ 'Vpn' if row.uses_vpn else ('Jump Host' if row.uses_jump_host else 'Direct') }}</span>
+        </div>
+
+        <div class="ops-card-body">
+          <div class="ops-metrics">
+            <div class="ops-metric">
+              <span class="ops-metric-label">Total</span>
+              <span class="ops-metric-value">{{ row.total_devices }}</span>
             </div>
-        </article>
-        {% endfor %}
-    </section>
 
-    <div
-        id="groupFilterEmptyState"
-        class="hidden rounded-xl border border-amber-200 bg-amber-50 px-4 py-5 text-sm text-amber-700 dark:border-amber-900/40 dark:bg-amber-900/10 dark:text-amber-300"
-    >
-        Nenhum grupo corresponde à busca.
+            <div class="ops-metric ok">
+              <span class="ops-metric-label">Sucesso</span>
+              <span class="ops-metric-value">{{ success_count }}</span>
+            </div>
+
+            <div class="ops-metric fail {% if failed_count > 0 %}ops-has-fail{% endif %}">
+              <span class="ops-metric-label">Falha</span>
+              <span class="ops-metric-value">{{ failed_count }}</span>
+            </div>
+
+            <div class="ops-metric unknown">
+              <span class="ops-metric-label">S/ Status</span>
+              <span class="ops-metric-value">{{ unknown_count }}</span>
+            </div>
+          </div>
+
+          <p class="ops-card-note">
+            <i data-lucide="activity"></i>
+            Baseado no ultimo backup por dispositivo.
+          </p>
+        </div>
+
+        <div class="ops-card-foot">
+          {% if row.id %}
+          <a href="{{ url_for('tenant_devices.list_devices', tenant_slug=tenant.slug, group_id=row.id) }}" class="ops-btn">
+            <i data-lucide="monitor-smartphone"></i>
+            Dispositivos
+          </a>
+
+          {% if can_manage_admin and row.is_active %}
+          <form id="form-run-connection-audit-group-{{ row.id }}" action="{{ url_for('tenant_devices.run_connection_audit_all', tenant_slug=tenant.slug) }}" method="POST" style="display:inline;">
+            {% include 'partials/csrf.html' %}
+            <input type="hidden" name="group_id" value="{{ row.id }}">
+            <button type="button" data-run-backup-live data-form-id="form-run-connection-audit-group-{{ row.id }}" class="ops-btn ops-btn-indigo">
+              <i data-lucide="activity"></i>
+              Testar Conexao
+            </button>
+          </form>
+          {% endif %}
+
+          {% if can_manage_admin and row.uses_vpn and row.is_active %}
+          <form id="form-test-vpn-group-{{ row.id }}" action="{{ url_for('tenant_groups.test_group_vpn', tenant_slug=tenant.slug, group_id=row.id) }}" method="POST" style="display:inline;">
+            {% include 'partials/csrf.html' %}
+            <button type="button" data-run-backup-live data-form-id="form-test-vpn-group-{{ row.id }}" class="ops-btn ops-btn-emerald">
+              <i data-lucide="shield-check"></i>
+              Testar VPN
+            </button>
+          </form>
+          {% endif %}
+
+          <div class="ops-spacer"></div>
+
+          {% if can_manage_admin %}
+          <form action="{{ url_for('tenant_groups.toggle_group_active', tenant_slug=tenant.slug, group_id=row.id) }}" method="POST" style="display:inline;"
+                onsubmit="return confirm('{% if row.is_active %}Desativar{% else %}Reativar{% endif %} o grupo {{ row.name }}?')">
+            {% include 'partials/csrf.html' %}
+            <input type="hidden" name="return_to" value="operations">
+            <input type="hidden" name="action" value="{{ 'deactivate' if row.is_active else 'activate' }}">
+            <button type="submit" class="ops-icon-btn" title="{{ 'Desativar' if row.is_active else 'Reativar' }}">
+              {% if row.is_active %}
+              <i data-lucide="power-off" class="amber"></i>
+              {% else %}
+              <i data-lucide="power" class="emerald"></i>
+              {% endif %}
+            </button>
+          </form>
+
+          <a href="{{ url_for('tenant_groups.edit_group', tenant_slug=tenant.slug, group_id=row.id) }}" class="ops-icon-btn" title="Editar Grupo">
+            <i data-lucide="edit"></i>
+          </a>
+          {% endif %}
+
+          {% else %}
+          <a href="{{ url_for('tenant_devices.list_devices', tenant_slug=tenant.slug) }}" class="ops-btn">
+            <i data-lucide="monitor-smartphone"></i>
+            Dispositivos
+          </a>
+          {% endif %}
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+
+    <div id="groupFilterEmptyState" class="ops-empty ops-hidden">
+      <i data-lucide="search"></i>
+      <p>Nenhum grupo encontrado com os filtros atuais.</p>
+      <button id="clearGroupFiltersBtn" type="button" class="ops-clear">Limpar Filtros</button>
     </div>
     {% else %}
-    <div class="rounded-xl border border-green-200 bg-green-50 px-4 py-5 text-sm text-green-700 dark:border-green-900/40 dark:bg-green-900/10 dark:text-green-300">
-        Nenhum grupo cadastrado no momento.
+    <div class="ops-empty">
+      <i data-lucide="search"></i>
+      <p>Nenhum grupo cadastrado no momento.</p>
+      {% if can_manage_admin %}
+      <a href="{{ url_for('tenant_groups.add_group', tenant_slug=tenant.slug) }}" class="ops-btn ops-btn-primary" style="margin-top: 1rem;">
+        <i data-lucide="plus"></i>
+        Criar Primeiro Grupo
+      </a>
+      {% endif %}
     </div>
     {% endif %}
+  </div>
 </div>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const searchInput = document.getElementById('groupSearchInput');
-        const visibleCount = document.getElementById('groupVisibleCount');
-        const emptyState = document.getElementById('groupFilterEmptyState');
-        const items = Array.from(document.querySelectorAll('.group-item'));
+  document.addEventListener('DOMContentLoaded', function () {
+    const searchInput = document.getElementById('groupSearchInput');
+    const visibleCount = document.getElementById('groupVisibleCount');
+    const emptyState = document.getElementById('groupFilterEmptyState');
+    const clearFiltersBtn = document.getElementById('clearGroupFiltersBtn');
+    const items = Array.from(document.querySelectorAll('.ops-card[data-group-name]'));
+    const filterButtons = Array.from(document.querySelectorAll('.ops-filter-btn'));
 
-        if (!searchInput || items.length === 0) {
-            return;
-        }
+    if (!searchInput || items.length === 0 || filterButtons.length === 0) {
+      if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
+      return;
+    }
 
-        const normalize = (value) => (value || '').toString().toLowerCase().trim();
+    const mapServerFilterToClient = {
+      all: 'ALL',
+      vpn: 'VPN',
+      jump: 'JUMP_HOST',
+      no_vpn: 'NO_VPN'
+    };
 
-        function applySearchFilter() {
-            const term = normalize(searchInput.value);
-            let shown = 0;
+    let activeFilter = mapServerFilterToClient['{{ group_filter|default("all") }}'] || 'ALL';
 
-            items.forEach((item) => {
-                const groupName = normalize(item.dataset.groupName);
-                const isVisible = !term || groupName.includes(term);
-                item.style.display = isVisible ? '' : 'none';
-                if (isVisible) shown += 1;
-            });
+    function normalize(value) {
+      return (value || '').toString().toLowerCase().trim();
+    }
 
-            if (visibleCount) {
-                visibleCount.textContent = `${shown} de ${items.length} grupos`;
-            }
-            if (emptyState) {
-                emptyState.classList.toggle('hidden', shown !== 0);
-            }
-        }
+    function setButtonState(button, isActive) {
+      if (isActive) {
+        button.classList.add('is-active');
+      } else {
+        button.classList.remove('is-active');
+      }
+    }
 
-        searchInput.addEventListener('input', applySearchFilter);
-        applySearchFilter();
+    function matchesFilter(item, filter) {
+      switch (filter) {
+        case 'ACTIVE': return item.dataset.groupActive === '1';
+        case 'INACTIVE': return item.dataset.groupActive === '0';
+        case 'VPN': return item.dataset.groupVpn === '1';
+        case 'JUMP_HOST': return item.dataset.groupJump === '1';
+        case 'NO_VPN': return item.dataset.groupNoVpn === '1';
+        case 'ALL':
+        default: return true;
+      }
+    }
+
+    function applyFilters() {
+      const term = normalize(searchInput.value);
+      let shown = 0;
+
+      items.forEach(function (item) {
+        const groupName = normalize(item.dataset.groupName);
+        const searchMatch = !term || groupName.includes(term);
+        const typeMatch = matchesFilter(item, activeFilter);
+        const isVisible = searchMatch && typeMatch;
+
+        item.style.display = isVisible ? '' : 'none';
+        if (isVisible) shown += 1;
+      });
+
+      filterButtons.forEach(function (button) {
+        setButtonState(button, button.dataset.filter === activeFilter);
+      });
+
+      if (visibleCount) {
+        visibleCount.textContent = shown + ' de ' + items.length + ' grupos';
+      }
+
+      if (emptyState) {
+        emptyState.classList.toggle('ops-hidden', shown !== 0);
+      }
+
+      if (window.lucide && typeof window.lucide.createIcons === 'function') {
+        window.lucide.createIcons();
+      }
+    }
+
+    filterButtons.forEach(function (button) {
+      button.addEventListener('click', function () {
+        activeFilter = button.dataset.filter || 'ALL';
+        applyFilters();
+      });
     });
+
+    searchInput.addEventListener('input', applyFilters);
+
+    if (clearFiltersBtn) {
+      clearFiltersBtn.addEventListener('click', function () {
+        searchInput.value = '';
+        activeFilter = 'ALL';
+        applyFilters();
+      });
+    }
+
+    applyFilters();
+  });
 </script>
+
 {% include 'partials/backup_live_modal.html' %}
 {% endblock %}

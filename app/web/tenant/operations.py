@@ -302,7 +302,9 @@ def index(tenant_slug):
 
         group_rows = []
         for bucket in group_buckets.values():
-            if bucket["total_devices"] == 0 and bucket["is_active"]:
+            # Exibe grupos recem-criados mesmo sem dispositivos.
+            # Oculta apenas o pseudo-grupo "Sem grupo" quando ele estiver vazio.
+            if bucket["id"] is None and bucket["total_devices"] == 0:
                 continue
             if bucket["total_devices"] > 0:
                 bucket["coverage_pct"] = int(round((bucket["fully_configured"] / bucket["total_devices"]) * 100))
@@ -409,7 +411,12 @@ def index(tenant_slug):
         credential_risk_rows = credential_risk_rows[:20]
 
         if focus_mode:
-            group_rows = [row for row in all_group_rows if row["attention_score"] > 0]
+            # Mesmo no modo foco, manter grupos vazios visiveis para nao "sumirem"
+            # logo apos o cadastro (antes de ter dispositivos vinculados).
+            group_rows = [
+                row for row in all_group_rows
+                if row["attention_score"] > 0 or int(row.get("total_devices") or 0) == 0
+            ]
             attention_devices = all_attention_devices
         else:
             group_rows = all_group_rows

@@ -28,11 +28,32 @@ class DeviceService:
         if not limit_check.allowed:
             raise ValueError(limit_check.reason)
 
+        raw_group_id = data.get('group_id')
+        if not raw_group_id:
+            raise ValueError("Grupo e obrigatorio para cadastrar dispositivo.")
+
+        try:
+            group_uuid = raw_group_id if isinstance(raw_group_id, uuid.UUID) else uuid.UUID(str(raw_group_id))
+        except Exception as exc:
+            raise ValueError("Grupo invalido para cadastro de dispositivo.") from exc
+
+        group = (
+            db.query(DeviceGroup)
+            .filter(
+                DeviceGroup.id == group_uuid,
+                DeviceGroup.tenant_id == tenant_id,
+                DeviceGroup.is_active.is_(True),
+            )
+            .first()
+        )
+        if not group:
+            raise ValueError("Selecione um grupo ativo para cadastrar o dispositivo.")
+
         device = Device(
             tenant_id=tenant_id,
             name=data['name'],
             device_type_id=data.get('device_type_id'),
-            group_id=data.get('group_id'),
+            group_id=group_uuid,
             ip_address=data['ip_address'],
             port=data.get('port', 22),
             username=data['username'],
@@ -344,10 +365,22 @@ class DeviceGroupService:
     
     @staticmethod
     def create_group(db: Session, tenant_id: uuid.UUID, data: dict) -> DeviceGroup:
+        normalized_slug = str((data.get('slug') or '')).strip().lower()
+        if not normalized_slug:
+            raise ValueError("Slug do grupo invalido.")
+
+        existing = db.query(DeviceGroup).filter(
+            DeviceGroup.tenant_id == tenant_id,
+            DeviceGroup.slug == normalized_slug,
+            DeviceGroup.is_active == True
+        ).first()
+        if existing:
+            raise ValueError("Ja existe um grupo ativo com esse nome.")
+
         group = DeviceGroup(
             tenant_id=tenant_id,
-            name=data['name'],
-            slug=data['slug'],
+            name=str(data['name']).strip(),
+            slug=normalized_slug,
             description=data.get('description'),
             connection_type=data.get('connection_type', 'direct'),
             # VPN fields
@@ -399,6 +432,14 @@ class DeviceGroupService:
         group = db.query(DeviceGroup).filter(DeviceGroup.id == group_id).first()
         if not group:
             return False
-        group.is_active = False
+            
+        device_count = db.query(Device).filter(Device.group_id == group_id).count()
+        if device_count == 0:
+            from app.models.device_subgroup import DeviceSubgroup
+            db.query(DeviceSubgroup).filter(DeviceSubgroup.group_id == group_id).delete(synchronize_session=False)
+            db.delete(group)
+        else:
+            group.is_active = False
+            
         db.commit()
         return True

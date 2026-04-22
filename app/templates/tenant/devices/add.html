@@ -4,6 +4,7 @@
 
 {% block content %}
 {% include 'partials/breadcrumb.html' %}
+{% set has_groups = groups and (groups|length > 0) %}
 
 <div class="max-w-4xl mx-auto">
     <div class="flex items-center justify-between mb-6">
@@ -67,12 +68,14 @@
                 <div class="form-control">
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Grupo (Provedor)</label>
                     <select name="group_id"
-                        class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-brand-500 focus:border-brand-500">
-                        <option value="">Sem grupo</option>
+                        class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-brand-500 focus:border-brand-500"
+                        required>
+                        <option value="">Selecione um grupo...</option>
                         {% for group in groups %}
                         <option value="{{ group.id }}">{{ group.name }}</option>
                         {% endfor %}
                     </select>
+                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Regra: todo dispositivo deve pertencer a um grupo.</p>
                 </div>
             </div>
 
@@ -145,11 +148,24 @@
             <a href="{{ url_for('tenant_devices.list_devices', tenant_slug=tenant.slug) }}"
                 class="px-6 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-700">Cancelar</a>
             <button type="submit"
-                class="px-6 py-2.5 text-sm font-medium text-white bg-brand-600 rounded-lg hover:bg-brand-700 focus:ring-4 focus:ring-brand-500/20 shadow-lg shadow-brand-500/30 transition-all">
+                class="px-6 py-2.5 text-sm font-medium text-white bg-brand-600 rounded-lg hover:bg-brand-700 focus:ring-4 focus:ring-brand-500/20 shadow-lg shadow-brand-500/30 transition-all"
+                {% if not has_groups %}disabled title="Crie um grupo antes de cadastrar dispositivos"{% endif %}>
                 Salvar Dispositivo
             </button>
         </div>
     </form>
+
+    {% if not has_groups %}
+    <div class="mt-4 p-4 rounded-lg border border-amber-300/60 bg-amber-50 text-amber-800 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-200">
+        <p class="text-sm font-medium">Nenhum grupo ativo encontrado.</p>
+        <p class="text-xs mt-1">Crie um grupo primeiro para poder cadastrar dispositivos.</p>
+        <a href="{{ url_for('tenant_groups.add_group', tenant_slug=tenant.slug) }}"
+           class="inline-flex items-center gap-2 mt-3 px-3 py-2 text-xs font-semibold rounded-md bg-amber-500 text-white hover:bg-amber-600 transition-colors">
+            <i data-lucide="plus" class="w-4 h-4"></i>
+            Criar Grupo
+        </a>
+    </div>
+    {% endif %}
 </div>
 
 <script>

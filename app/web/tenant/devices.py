@@ -693,6 +693,11 @@ def add_device(tenant_slug):
     
     if request.method == 'POST':
         try:
+            raw_group_id = (request.form.get('group_id') or '').strip()
+            selected_group = _resolve_group_context(db, tenant.id, raw_group_id)
+            if not selected_group or not bool(getattr(selected_group, 'is_active', True)):
+                raise ValueError('Selecione um grupo ativo para cadastrar o dispositivo.')
+
             device_type_id = request.form.get('device_type_id') or None
             selected_type = None
             if device_type_id:
@@ -700,7 +705,7 @@ def add_device(tenant_slug):
             data = {
                 'name': request.form.get('name'),
                 'device_type_id': device_type_id,
-                'group_id': request.form.get('group_id') or None,
+                'group_id': selected_group.id,
                 'ip_address': request.form.get('ip_address'),
                 'port': int(request.form.get('port', 22)),
                 'username': request.form.get('username'),

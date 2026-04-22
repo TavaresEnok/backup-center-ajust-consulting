@@ -2562,10 +2562,13 @@ def run_scheduled_backups():
 def purge_expired_backups():
     """
     Remove backups expirados de acordo com a politica de retencao do plano.
+    Backups de dispositivos ou grupos inativos sao preservados indefinidamente.
     """
     from app.models.backup import Backup
     from app.models.device import Device
     from app.models.tenant import Tenant
+    from app.models.device_group import DeviceGroup
+    from sqlalchemy import or_
 
     db = SessionLocal()
 
@@ -2580,9 +2583,16 @@ def purge_expired_backups():
                 retention_days = tenant.plan.backup_retention_days
 
             cutoff = datetime.utcnow() - timedelta(days=retention_days)
-            expired = db.query(Backup).join(Device).filter(
+            
+            # Filtra apenas backups antigos de devices/grupos ATIVOS.
+            # Se o device ou o grupo dele for inativo, preserva infinitamente.
+            expired = db.query(Backup).join(Device).outerjoin(
+                DeviceGroup, Device.group_id == DeviceGroup.id
+            ).filter(
                 Device.tenant_id == tenant.id,
-                Backup.created_at < cutoff
+                Backup.created_at < cutoff,
+                Device.is_active == True,
+                or_(Device.group_id.is_(None), DeviceGroup.is_active == True)
             ).all()
 
             for backup in expired:

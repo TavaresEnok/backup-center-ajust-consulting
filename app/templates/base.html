@@ -16,7 +16,7 @@
     </script>
 
     <!-- Design System -->
-    <link href="{{ url_for('static', filename='css/output.css') }}?v=20260305-ops-dark-fix" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/output.css') }}?v=20260408-sidebar-v3" rel="stylesheet">
 
     <!-- Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -309,6 +309,176 @@
         .admin-toggle-card input[type="checkbox"],
         .admin-toggle-card input[type="radio"] {
             flex-shrink: 0;
+        }
+
+        /* ------------------------------------------------------------------
+           SIDEBAR V2 (Tenant)
+           ------------------------------------------------------------------ */
+        .bc-sidebar {
+            background: #0a0f18;
+            border-color: rgba(51, 65, 85, 0.55);
+            box-shadow: 4px 0 24px rgba(0, 0, 0, 0.2);
+        }
+
+        .bc-sidebar-header {
+            border-bottom: 1px solid rgba(51, 65, 85, 0.55);
+        }
+
+        .bc-brand-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 2rem;
+            height: 2rem;
+            border-radius: 0.6rem;
+            background: linear-gradient(135deg, #6366f1, #4338ca);
+            box-shadow: 0 10px 20px rgba(67, 56, 202, 0.35);
+        }
+
+        .bc-brand-title {
+            color: #ffffff;
+            font-size: 1.1rem;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+        }
+
+        .bc-section-title {
+            padding: 0 0.75rem;
+            margin-bottom: 0.7rem;
+            color: #64748b;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+        }
+
+        .bc-nav-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
+        }
+
+        .bc-nav-link {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            border-radius: 0.6rem;
+            border: 1px solid transparent;
+            padding: 0.62rem 0.75rem;
+            color: #94a3b8;
+            font-size: 0.835rem;
+            line-height: 1.2rem;
+            transition: all 0.18s ease;
+        }
+
+        .bc-nav-link:hover {
+            background: rgba(30, 41, 59, 0.5);
+            border-color: rgba(71, 85, 105, 0.5);
+            color: #e2e8f0;
+        }
+
+        .bc-nav-link.is-active {
+            background: rgba(79, 70, 229, 0.16);
+            border-color: rgba(99, 102, 241, 0.28);
+            color: #a5b4fc;
+        }
+
+        .bc-nav-icon {
+            width: 18px;
+            height: 18px;
+            flex-shrink: 0;
+            color: #64748b;
+            transition: color 0.18s ease;
+        }
+
+        .bc-nav-link:hover .bc-nav-icon {
+            color: #cbd5e1;
+        }
+
+        .bc-nav-link.is-active .bc-nav-icon {
+            color: #a5b4fc;
+        }
+
+        .bc-nav-label {
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .bc-submenu {
+            margin-top: 0.35rem;
+            margin-left: 2.25rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.2rem;
+        }
+
+        .bc-sub-link {
+            display: block;
+            border-radius: 0.5rem;
+            padding: 0.45rem 0.65rem;
+            color: #64748b;
+            font-size: 0.75rem;
+            font-weight: 500;
+            transition: all 0.18s ease;
+        }
+
+        .bc-sub-link:hover {
+            background: rgba(30, 41, 59, 0.45);
+            color: #e2e8f0;
+        }
+
+        .bc-sub-link.is-active {
+            background: rgba(79, 70, 229, 0.14);
+            color: #c7d2fe;
+        }
+
+        .bc-badge-danger {
+            border: 1px solid rgba(244, 63, 94, 0.22);
+            background: rgba(244, 63, 94, 0.12);
+            color: #fb7185;
+            border-radius: 999px;
+            padding: 0.1rem 0.45rem;
+            font-size: 10px;
+            font-weight: 700;
+        }
+
+        .bc-badge-success {
+            border: 1px solid rgba(16, 185, 129, 0.25);
+            background: rgba(16, 185, 129, 0.12);
+            color: #34d399;
+            border-radius: 0.35rem;
+            padding: 0.1rem 0.45rem;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .bc-sidebar-footer {
+            border-top: 1px solid rgba(51, 65, 85, 0.55);
+            background: #0a0f18;
+        }
+
+        .bc-sidebar-toggle {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            border-radius: 0.6rem;
+            border: 1px solid rgba(51, 65, 85, 0.7);
+            background: #111113;
+            padding: 0.62rem 0.8rem;
+            color: #94a3b8;
+            transition: all 0.18s ease;
+        }
+
+        .bc-sidebar-toggle:hover {
+            color: #ffffff;
+            border-color: rgba(71, 85, 105, 0.9);
+            background: #1e293b;
         }
     </style>
 </head>
