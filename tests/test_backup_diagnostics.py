@@ -122,7 +122,9 @@ class TestValidateBackupIntegrity:
             os.unlink(path)
 
     def test_few_lines_rejected(self):
-        path = self._write_temp("a\nb\nc\nd")
+        # Conteúdo >= 128 bytes para não cair na regra de tamanho mínimo antes da contagem de linhas.
+        chunk = "x" * 45
+        path = self._write_temp(f"{chunk}\n{chunk}\n{chunk}\n")
         try:
             result = validate_backup_integrity(path, "cisco", "cisco.py")
             assert result["ok"] is False

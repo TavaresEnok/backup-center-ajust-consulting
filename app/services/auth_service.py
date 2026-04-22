@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import text
+from app.core.database import is_sqlite_engine
 from app.models.user import User, UserRole
 from app.models.tenant import Tenant
 from app.models.plan import Plan
@@ -13,6 +14,8 @@ import uuid
 class AuthService:
     @staticmethod
     def ensure_schema(db: Session) -> None:
+        if is_sqlite_engine():
+            return
         db.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS must_change_password BOOLEAN NOT NULL DEFAULT FALSE"))
         db.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS password_changed_at TIMESTAMP NULL"))
         db.commit()

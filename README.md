@@ -1,63 +1,76 @@
 # Backup Center
 
-Sistema de gerenciamento de backups para provedores de internet (ISPs).
+Sistema de gerenciamento de backups de equipamentos de rede para provedores de internet (ISPs).
 
-## Stack Tecnológica
-- **Backend:** Python (Flask), SQLAlchemy, Celery
-- **Database:** PostgreSQL
-- **Cache/Broker:** Redis
-- **Frontend:** Jinja2 Templates + TailwindCSS
+## Stack tecnológica
 
-## Estrutura do Projeto
+- **Backend:** Python (FastAPI + Flask), SQLAlchemy, Celery
+- **Base de dados:** PostgreSQL
+- **Cache / broker:** Redis
+- **Frontend:** Jinja2 + TailwindCSS
+
+## Estrutura do projeto
+
 ```
-/home/backupp/backup_project/
+backup_center_new/
 ├── app/
 │   ├── core/          # Configurações, database, security
-│   ├── models/        # SQLAlchemy models
+│   ├── models/        # Modelos SQLAlchemy
 │   ├── services/      # Lógica de negócio
-│   ├── web/           # Rotas e controllers
+│   ├── web/           # Rotas Flask (UI)
+│   ├── api/           # Rotas FastAPI (health, API externa)
 │   ├── templates/     # Templates Jinja2
-│   └── scripts/       # Scripts de backup
-├── docs/              # Documentação
-│   └── HANDOVER_FOR_AI.md  # Contexto completo para AI
+│   └── scripts/       # Scripts de backup por fabricante
+├── docs/              # Documentação (incl. plano de melhoria em produção)
+├── HANDOVER_FOR_AI.md # Contexto operacional (sem credenciais)
+├── alembic/           # Migrações
 └── docker-compose.yml
 ```
 
-## Acessos
-| Serviço | URL/Host | Credenciais |
-|---------|----------|-------------|
-| SSH | 168.194.13.17 | backupp / asdSD@91582685 |
-| App (Tenant) | :8000 | audemario@ajustconsulting.com.br / 123456 |
-| App (Admin) | :8000 | admin@backupcenter.com / 123456 |
+## Configuração
 
-## Comandos Úteis
+1. Copie variáveis de ambiente: `cp .env.example .env` e preencha **todos** os valores (nunca commite `.env`).
+2. Em **produção**: use `APP_ENV=production`, `SECRET_KEY` e `ENCRYPTION_KEY` fortes e únicos, cookies seguros conforme `app/core/config.py`.
+
+**Não** documente passwords, chaves SSH ou IPs internos neste repositório.
+
+## Comandos úteis (Docker)
+
 ```bash
-# Ver logs da aplicação
+# Logs da aplicação
 docker logs -f backup_sys_app
 
 # Reiniciar aplicação
 docker restart backup_sys_app
 
-# Acessar shell do container
+# Shell no container
 docker exec -it backup_sys_app /bin/bash
 
-# Health checks
+# Health checks (ajuste host/porta conforme o seu deploy)
 curl -s http://127.0.0.1:8050/healthz
 curl -s http://127.0.0.1:8050/readyz
-
-# Auditoria de consistência (dashboard/dispositivos)
-docker run --rm --network backup_net \
-  -v /home/app/projects/backup_center:/work \
-  -w /work --env-file /home/app/projects/backup_center/.env \
-  python:3.11-slim bash -lc \
-  "pip install -q -r requirements.txt && PYTHONPATH=/work python scripts/audit_dashboard_data.py --tenant-slug ajust-consulting --output pretty"
 ```
 
-## Documentação Completa
-Veja `docs/HANDOVER_FOR_AI.md` para contexto detalhado sobre arquitetura, correções aplicadas e próximos passos.
+## Testes locais
+
+```bash
+pip install -r requirements.txt
+export APP_ENV=development
+export SECRET_KEY=dev-only
+export ENCRYPTION_KEY=FbfA95Ns7rrcSJHNpXGLSWNH1jFB1FU6Bxlk-UiWEyI=
+export DATABASE_URL=sqlite:///./local_test.db
+export REDIS_URL=redis://localhost:6379/0
+pytest -q
+```
+
+## Documentação
+
+- Plano de evolução segura em produção: `docs/PLANO_MELHORIA_PRODUCAO.md`
+- Contexto de sistema (sem segredos): `HANDOVER_FOR_AI.md`
 
 ## CI/CD
+
 - CI: `.github/workflows/ci.yml`
-- Deploy manual com aprovação: `.github/workflows/deploy.yml`
-- Rollback manual: `.github/workflows/rollback.yml`
-- Guia: `docs/DEPLOYMENT_AUTOMATION.md`
+- Deploy: `.github/workflows/deploy.yml`
+- Rollback: `.github/workflows/rollback.yml`
+- Guia (se existir): `docs/DEPLOYMENT_AUTOMATION.md`

@@ -7,7 +7,7 @@ from threading import Lock
 from sqlalchemy import func, text
 from sqlalchemy.orm import Session
 
-from app.core.database import engine
+from app.core.database import engine, is_sqlite_engine
 from app.models.backup import Backup
 from app.models.device import Device
 from app.models.plan import Plan
@@ -41,6 +41,9 @@ class PlanLimitsService:
             return
         with cls._schema_lock:
             if cls._schema_ready:
+                return
+            if is_sqlite_engine():
+                cls._schema_ready = True
                 return
             with engine.begin() as conn:
                 conn.execute(

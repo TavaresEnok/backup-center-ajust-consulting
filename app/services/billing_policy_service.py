@@ -7,7 +7,7 @@ from threading import Lock
 from sqlalchemy import text
 from sqlalchemy.orm import joinedload
 
-from app.core.database import SessionLocal, engine
+from app.core.database import SessionLocal, engine, is_sqlite_engine
 from app.models.plan import Plan
 from app.models.tenant import Tenant
 
@@ -35,6 +35,9 @@ class BillingPolicyService:
             return
         with cls._schema_lock:
             if cls._schema_ready:
+                return
+            if is_sqlite_engine():
+                cls._schema_ready = True
                 return
             with engine.begin() as conn:
                 conn.execute(

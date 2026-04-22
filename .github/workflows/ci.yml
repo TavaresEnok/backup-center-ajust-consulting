@@ -48,9 +48,9 @@ jobs:
           python -m py_compile app/web/tenant/schedules.py
           python -m py_compile app/web/billing/routes.py
 
-      - name: Run permission matrix tests
+      - name: Run test suite
         run: |
-          pytest -q tests/test_permissions_matrix.py
+          pytest -q
 
       - name: Start app for smoke checks
         run: |

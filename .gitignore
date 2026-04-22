@@ -22,6 +22,9 @@ db_backup_*/
 *.sql
 *.sqlite
 *.sqlite3
+ci_local_test.db
+ci_test.db
+test_system.db
 
 *.log
 validation.log

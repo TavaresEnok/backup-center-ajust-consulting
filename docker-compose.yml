@@ -1,3 +1,5 @@
+# Requer ficheiro .env (ver .env.example). Não commite segredos.
+# JUMP_HOST_SLOTS_OVERRIDES e FLOWER_BASIC_AUTH vêm do .env em produção.
 services:
   db:
     image: postgres:15-alpine
@@ -106,7 +108,7 @@ services:
       - APP_TIMEZONE=${APP_TIMEZONE:-America/Recife}
       - TZ=${APP_TIMEZONE:-America/Recife}
       - JUMP_HOST_MAX_SLOTS=10
-      - JUMP_HOST_SLOTS_OVERRIDES=default=10,45.224.115.188:22573=1,177.23.168.26:22=1,170.150.139.249:29679=2,170.79.171.238:24567=2,187.17.137.172:22=2,45.176.56.21:22567=2,160.19.44.62:26584=1,177.36.0.241:3034=1,45.187.169.250:2983=8
+      - JUMP_HOST_SLOTS_OVERRIDES=${JUMP_HOST_SLOTS_OVERRIDES:-default=10}
       - JUMP_HOST_SLOT_WAIT_SECONDS=240
       - JUMP_HOST_SLOT_WAIT_SECONDS_LARGE_BULK=120
       - JUMP_HOST_SLOT_TTL_SECONDS=${JUMP_HOST_SLOT_TTL_SECONDS:-1200}
@@ -167,7 +169,7 @@ services:
       - APP_TIMEZONE=${APP_TIMEZONE:-America/Recife}
       - TZ=${APP_TIMEZONE:-America/Recife}
       - JUMP_HOST_MAX_SLOTS=10
-      - JUMP_HOST_SLOTS_OVERRIDES=default=10,45.224.115.188:22573=1,177.23.168.26:22=1,170.150.139.249:29679=2,170.79.171.238:24567=2,187.17.137.172:22=2,45.176.56.21:22567=2,160.19.44.62:26584=1,177.36.0.241:3034=1,45.187.169.250:2983=8
+      - JUMP_HOST_SLOTS_OVERRIDES=${JUMP_HOST_SLOTS_OVERRIDES:-default=10}
       - JUMP_HOST_SLOT_WAIT_SECONDS=240
       - JUMP_HOST_SLOT_WAIT_SECONDS_LARGE_BULK=120
       - JUMP_HOST_SLOT_TTL_SECONDS=${JUMP_HOST_SLOT_TTL_SECONDS:-1200}
@@ -219,6 +221,8 @@ services:
   flower:
     build: .
     container_name: backup_sys_flower
+    env_file:
+      - .env
     command: celery -A app.celery_app flower --address=0.0.0.0 --port=5555 --persistent=False
     environment:
       - DATABASE_URL=postgresql://backup_user:${DB_PASSWORD_URLENC}@db:5432/backup_center
@@ -229,9 +233,13 @@ services:
       - TZ=${APP_TIMEZONE:-America/Recife}
       - BULK_ACTIVE_STALE_SECONDS=${BULK_ACTIVE_STALE_SECONDS:-21600}
       - CELERY_RESULT_EXPIRES_SECONDS=${CELERY_RESULT_EXPIRES_SECONDS:-86400}
-      - FLOWER_UNAUTHENTICATED_API=true
+      # API do Flower sem auth é perigosa em produção; use FLOWER_BASIC_AUTH no .env
+      - FLOWER_UNAUTHENTICATED_API=false
+      # Defina no .env; valor abaixo só para arranque local sem .env (troque em produção).
+      - FLOWER_BASIC_AUTH=${FLOWER_BASIC_AUTH:-local-dev:change-me}
     ports:
-      - "5555:5555"
+      # Liga só em localhost por defeito; use túnel SSH ou ajuste se precisar de acesso remoto.
+      - "127.0.0.1:5555:5555"
     volumes:
       - ./app:/app/app
     depends_on:

@@ -16,6 +16,12 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()
 
+
+def is_sqlite_engine() -> bool:
+    """True quando DATABASE_URL é SQLite (ex.: testes/CI). Patches SQL específicos de PostgreSQL devem ser ignorados."""
+    return engine.dialect.name == "sqlite"
+
+
 def get_db():
     db = SessionLocal()
     try:

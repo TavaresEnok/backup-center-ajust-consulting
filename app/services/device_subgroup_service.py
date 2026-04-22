@@ -6,7 +6,7 @@ from typing import Any
 from sqlalchemy import func, text
 from sqlalchemy.orm import Session
 
-from app.core.database import SessionLocal, engine
+from app.core.database import SessionLocal, engine, is_sqlite_engine
 from app.models.device import Device
 from app.models.device_subgroup import DeviceSubgroup
 
@@ -21,6 +21,9 @@ class DeviceSubgroupService:
             return
         with cls._schema_lock:
             if cls._schema_ready:
+                return
+            if is_sqlite_engine():
+                cls._schema_ready = True
                 return
 
             with engine.begin() as conn:

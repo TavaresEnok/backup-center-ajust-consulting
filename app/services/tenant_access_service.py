@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 
 from sqlalchemy import func, text
 
-from app.core.database import engine
+from app.core.database import engine, is_sqlite_engine
 from app.models.backup import Backup
 from app.models.device import Device
 from app.models.plan import Plan
@@ -18,6 +18,8 @@ class TenantAccessService:
 
     @classmethod
     def ensure_schema(cls) -> None:
+        if is_sqlite_engine():
+            return
         with engine.begin() as conn:
             conn.execute(
                 text(
