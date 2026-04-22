@@ -65,6 +65,7 @@ pytest -q
 
 ## Documentação
 
+- Git, SSH, GitHub e credenciais: `docs/GIT_E_CREDENCIAIS.md`
 - Plano de evolução segura em produção: `docs/PLANO_MELHORIA_PRODUCAO.md`
 - Contexto de sistema (sem segredos): `HANDOVER_FOR_AI.md`
 
