@@ -14,6 +14,8 @@ from app.models.tenant import Tenant
 from app.models.user import UserRole
 import uuid
 import re
+import json
+import secrets
 import logging
 
 bp = Blueprint('tenant_groups', __name__, url_prefix='/tenant/<tenant_slug>/groups')
@@ -615,3 +617,43 @@ def exec_jump_console(tenant_slug, group_id):
     return jsonify(result)
 
 
+@bp.route('/<group_id>/jump-console/ws-token', methods=['POST'])
+@login_required
+@tenant_operator_required
+def jump_console_ws_token(tenant_slug, group_id):
+    """Gera token one-time para abrir WebSocket do terminal interativo."""
+    db, tenant = get_db_and_tenant(tenant_slug)
+    if not tenant:
+        return jsonify({"ok": False, "error": "Tenant nao encontrado"}), 404
+
+    try:
+        group_uuid = uuid.UUID(group_id)
+    except ValueError:
+        db.close()
+        return jsonify({"ok": False, "error": "ID de grupo invalido"}), 400
+
+    group = DeviceGroupService.get_group(db, group_uuid)
+    if not group or str(group.tenant_id) != str(tenant.id):
+        db.close()
+        return jsonify({"ok": False, "error": "Grupo nao encontrado"}), 404
+
+    if not uses_jump_host(group):
+        db.close()
+        return jsonify({"ok": False, "error": "Grupo nao usa Jump Host"}), 400
+
+    from app.services.realtime_backup_logs import get_redis_client
+    redis_client = get_redis_client()
+    if not redis_client:
+        db.close()
+        return jsonify({"ok": False, "error": "Redis indisponivel"}), 503
+
+    token = secrets.token_urlsafe(32)
+    payload = {
+        "tenant_id": str(tenant.id),
+        "group_id": str(group.id),
+        "user_id": str(session.get("user_id", "")),
+    }
+    redis_client.setex(f"backup_center:wsconsole:{token}", 30, json.dumps(payload))
+    _log_activity_safe(db, tenant.id, "GROUP_JUMP_CONSOLE_WS_OPEN", f"Grupo={group.name}")
+    db.close()
+    return jsonify({"ok": True, "token": token})

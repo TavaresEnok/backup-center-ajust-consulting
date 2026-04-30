@@ -645,9 +645,9 @@
           <button type="button"
                   class="ops-btn ops-open-console"
                   data-group-name="{{ row.name }}"
-                  data-console-url="{{ url_for('tenant_groups.exec_jump_console', tenant_slug=tenant.slug, group_id=row.id) }}"
+                  data-ws-token-url="{{ url_for('tenant_groups.jump_console_ws_token', tenant_slug=tenant.slug, group_id=row.id) }}"
                   data-collect-url="{{ url_for('tenant_groups.collect_jump_diagnostics', tenant_slug=tenant.slug, group_id=row.id) }}"
-                  title="Abrir terminal Linux do Jump Host para diagnosticos">
+                  title="Abrir terminal interativo SSH no Jump Host">
             <i data-lucide="terminal"></i>
             Terminal Jump Host
           </button>
@@ -769,11 +769,119 @@
     const clearBtn = document.getElementById('opsClearTerminalBtn');
     const collectBtn = document.getElementById('opsCollectDiagnosticsBtn');
 
-    // ── xterm.js terminal ──────────────────────────────────────────────
-    let _term = null, _fit = null;
-    let _hist = [], _histIdx = -1;
-    let _inp = '', _busy = false;
-    let _consoleUrl = '', _collectUrl = '', _grpName = '';
+    // ── Terminal WebSocket interativo ───────────────────────────────────────────
+    let _term = null, _fit = null, _ws = null;
+    let _grpName = '', _collectUrl = '';
+
+    async function _openTerm(groupName, wsTokenUrl, collectUrl) {
+      _grpName = groupName || 'jump';
+      _collectUrl = collectUrl || '';
+
+      // Fecha WS e terminal anteriores
+      if (_ws) { try { _ws.close(); } catch(e){} _ws = null; }
+      if (_term) { _term.dispose(); _term = null; }
+
+      _term = new Terminal({
+        cursorBlink: true, cursorStyle: 'block',
+        theme: {
+          background: '#050816', foreground: '#cbd5e1',
+          cursor: '#38bdf8', cursorAccent: '#050816',
+          selectionBackground: 'rgba(56,189,248,.25)',
+          red: '#fb7185', green: '#34d399', yellow: '#fbbf24',
+          blue: '#60a5fa', magenta: '#a78bfa', cyan: '#38bdf8',
+          white: '#e2e8f0', brightWhite: '#f8fafc',
+          black: '#020617', brightBlack: '#475569',
+        },
+        fontFamily: "'JetBrains Mono','Fira Code',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace",
+        fontSize: 13, lineHeight: 1.45, scrollback: 5000,
+      });
+      _fit = new FitAddon.FitAddon();
+      _term.loadAddon(_fit);
+      const c = document.getElementById('opsTerminalContainer');
+      c.innerHTML = '';
+      _term.open(c);
+      _fit.fit();
+
+      _term.writeln('\x1b[36m\u250c' + '\u2500'.repeat(55) + '\u2510\x1b[0m');
+      _term.writeln('\x1b[36m\u2502\x1b[0m  \x1b[1m\x1b[97mTerminal Jump Host\x1b[0m \u2014 Backup Center              \x1b[36m\u2502\x1b[0m');
+      _term.writeln('\x1b[36m\u2502\x1b[0m  Grupo: \x1b[32m' + _grpName + '\x1b[0m' + ' '.repeat(Math.max(0, 49 - _grpName.length)) + '\x1b[36m\u2502\x1b[0m');
+      _term.writeln('\x1b[36m\u2514' + '\u2500'.repeat(55) + '\u2518\x1b[0m');
+      _term.write('\x1b[33mConectando ao Jump Host...\x1b[0m');
+
+      // 1. Pegar token one-time
+      let token;
+      try {
+        const r = await fetch(wsTokenUrl, {
+          method: 'POST',
+          headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json', 'X-CSRF-Token': csrfToken, 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+          body: '',
+        });
+        const d = await r.json();
+        if (!d.ok) throw new Error(d.error || 'Erro ao obter token');
+        token = d.token;
+      } catch(e) {
+        _term.writeln('\r\n\x1b[31mErro: ' + e.message + '\x1b[0m');
+        return;
+      }
+
+      // 2. Abrir WebSocket
+      const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+      _ws = new WebSocket(proto + '//' + location.host + '/ws/jump-console/' + token);
+      _ws.binaryType = 'arraybuffer';
+
+      _ws.onopen = function() {
+        _term.writeln('\r\n\x1b[32m\u2714 Conectado! Sessao SSH interativa ativa.\x1b[0m');
+        _term.writeln('\x1b[33m\u26a0  Sessao auditada \u2014 use \'exit\' para encerrar\x1b[0m\r\n');
+        // Envia tamanho inicial
+        _ws.send(JSON.stringify({ type: 'resize', cols: _term.cols, rows: _term.rows }));
+      };
+
+      _ws.onmessage = function(ev) {
+        if (ev.data instanceof ArrayBuffer) {
+          _term.write(new Uint8Array(ev.data));
+        } else {
+          _term.write(ev.data);
+        }
+      };
+
+      _ws.onerror = function() {
+        _term.writeln('\r\n\x1b[31mErro na conexao WebSocket.\x1b[0m');
+      };
+
+      _ws.onclose = function(ev) {
+        _term.writeln('\r\n\x1b[33mSessao encerrada.\x1b[0m');
+        _ws = null;
+      };
+
+      // 3. Encaminha teclas digitadas para SSH
+      _term.onData(function(data) {
+        if (_ws && _ws.readyState === WebSocket.OPEN) _ws.send(data);
+      });
+
+      // 4. Envia resize quando terminal redimensiona
+      _term.onResize(function(sz) {
+        if (_ws && _ws.readyState === WebSocket.OPEN)
+          _ws.send(JSON.stringify({ type: 'resize', cols: sz.cols, rows: sz.rows }));
+      });
+
+      window.addEventListener('resize', function() { if (_fit) _fit.fit(); });
+    }
+
+    async function _collect() {
+      if (!_collectUrl || !_term) return;
+      _term.writeln('\r\n\x1b[33mColetando diagnostico remoto...\x1b[0m');
+      try {
+        const body = new URLSearchParams();
+        const resp = await fetch(_collectUrl, {
+          method: 'POST',
+          headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json', 'X-CSRF-Token': csrfToken, 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+          body: body.toString(),
+        });
+        const data = await resp.json();
+        const out = (data.summary || data.error || JSON.stringify(data, null, 2)).replace(/\r?\n/g, '\r\n');
+        _term.writeln('\x1b[36m' + out + '\x1b[0m');
+      } catch(e) { _term.writeln('\x1b[31mErro: ' + e.message + '\x1b[0m'); }
+    }
 
     function _prompt() {
       return '\x1b[32m' + _grpName + '\x1b[0m:\x1b[34m~\x1b[0m\x1b[97m$\x1b[0m ';
@@ -1028,34 +1136,32 @@
       btn.addEventListener('click', function() {
         if (consoleTitle) consoleTitle.textContent = 'Terminal Jump Host \u2014 ' + (btn.dataset.groupName || 'Grupo');
         if (consoleModal) { consoleModal.classList.add('is-open'); consoleModal.setAttribute('aria-hidden','false'); }
-        _openTerm(btn.dataset.groupName || 'jump', btn.dataset.consoleUrl || '', btn.dataset.collectUrl || '');
+        _openTerm(btn.dataset.groupName || 'jump', btn.dataset.wsTokenUrl || '', btn.dataset.collectUrl || '');
         if (window.lucide) lucide.createIcons();
       });
     });
 
-    if (consoleClose && consoleModal) {
-      consoleClose.addEventListener('click', function() {
-        consoleModal.classList.remove('is-open'); consoleModal.setAttribute('aria-hidden','true');
-        if (_term) { _term.dispose(); _term = null; }
-      });
-      consoleModal.addEventListener('click', function(ev) {
-        if (ev.target === consoleModal) {
-          consoleModal.classList.remove('is-open'); consoleModal.setAttribute('aria-hidden','true');
-          if (_term) { _term.dispose(); _term = null; }
-        }
-      });
+    function _closeModal() {
+      if (consoleModal) { consoleModal.classList.remove('is-open'); consoleModal.setAttribute('aria-hidden','true'); }
+      if (_ws) { try { _ws.close(); } catch(e){} _ws = null; }
+      if (_term) { _term.dispose(); _term = null; }
     }
 
-    if (clearBtn) { clearBtn.addEventListener('click', function() { if (_term) { _term.clear(); _term.write(_prompt()); } }); }
+    if (consoleClose && consoleModal) {
+      consoleClose.addEventListener('click', _closeModal);
+      consoleModal.addEventListener('click', function(ev) { if (ev.target === consoleModal) _closeModal(); });
+    }
+
+    if (clearBtn) { clearBtn.addEventListener('click', function() { if (_term) _term.clear(); }); }
     if (collectBtn) { collectBtn.addEventListener('click', _collect); }
 
     document.querySelectorAll('.ops-console-preset').forEach(function(btn) {
       btn.addEventListener('click', function() {
         const cmd = (btn.dataset.command || '').trim();
-        if (!cmd || !_term || _busy) return;
-        _term.write('\b \b'.repeat(_inp.length));
-        _inp = cmd; _term.write(cmd);
-        setTimeout(function() { _key('', { key: 'Enter', ctrlKey: false, altKey: false, metaKey: false }); }, 60);
+        if (!cmd) return;
+        if (_ws && _ws.readyState === WebSocket.OPEN) {
+          _ws.send(cmd + '\r');
+        }
       });
     });
   });

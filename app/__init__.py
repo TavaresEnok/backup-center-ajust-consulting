@@ -489,6 +489,155 @@ def create_fastapi_app():
     from app.api.v1.external.routes import router as external_router
     app.include_router(external_router, prefix="/api/v1/external", tags=["external"])
 
+    # ── WebSocket: Terminal Interativo Jump Host ──────────────────────────
+    from fastapi import WebSocket, WebSocketDisconnect
+    import asyncio, json as _json, select as _select, uuid as _uuid, logging as _logging
+
+    _ws_log = _logging.getLogger("backup_center.ws_console")
+
+    @app.websocket("/ws/jump-console/{token}")
+    async def jump_console_ws(websocket: WebSocket, token: str):
+        from app.services.realtime_backup_logs import get_redis_client
+        from app.core.database import SessionLocal
+        from app.services.device_service import DeviceGroupService
+        from app.services.connection_test_service import connection_test_service as _cts
+
+        await websocket.accept()
+
+        redis_client = get_redis_client()
+        if not redis_client:
+            await websocket.close(code=1011, reason="Redis indisponivel")
+            return
+
+        raw = redis_client.get(f"backup_center:wsconsole:{token}")
+        if not raw:
+            await websocket.close(code=4401, reason="Token invalido ou expirado")
+            return
+        redis_client.delete(f"backup_center:wsconsole:{token}")
+
+        try:
+            payload = _json.loads(raw)
+        except Exception:
+            await websocket.close(code=1011, reason="Payload invalido")
+            return
+
+        group_id_str = payload.get("group_id", "")
+        tenant_id_str = payload.get("tenant_id", "")
+
+        db = SessionLocal()
+        ssh_client = None
+        channel = None
+        try:
+            group = DeviceGroupService.get_group(db, _uuid.UUID(group_id_str))
+            if not group or str(group.tenant_id) != tenant_id_str:
+                await websocket.close(code=4403, reason="Grupo nao encontrado")
+                return
+
+            jump_cfg = _cts._build_jump_host_config(group)
+            if not jump_cfg:
+                await websocket.send_bytes(b"\r\n\x1b[31mJump Host nao configurado.\x1b[0m\r\n")
+                await websocket.close(code=1000)
+                return
+
+            loop = asyncio.get_event_loop()
+
+            try:
+                ssh_client = await loop.run_in_executor(None, lambda: _cts._open_jump_client(jump_cfg, 12))
+            except Exception as e:
+                await websocket.send_bytes(f"\r\n\x1b[31mFalha ao conectar no Jump Host: {e}\x1b[0m\r\n".encode())
+                await websocket.close(code=1000)
+                return
+
+            try:
+                channel = await loop.run_in_executor(
+                    None,
+                    lambda: ssh_client.invoke_shell(term="xterm-256color", width=220, height=50)
+                )
+            except Exception as e:
+                await websocket.send_bytes(f"\r\n\x1b[31mFalha ao abrir shell: {e}\x1b[0m\r\n".encode())
+                await websocket.close(code=1000)
+                return
+
+            def _read_channel():
+                try:
+                    ready, _, _ = _select.select([channel], [], [], 0.1)
+                    if ready:
+                        data = channel.recv(8192)
+                        return data if data else None
+                    return b""
+                except Exception:
+                    return None
+
+            async def _send_output():
+                while True:
+                    data = await loop.run_in_executor(None, _read_channel)
+                    if data is None:
+                        try:
+                            await websocket.send_bytes(b"\r\n\x1b[33mSessao SSH encerrada.\x1b[0m\r\n")
+                            await websocket.close(code=1000)
+                        except Exception:
+                            pass
+                        break
+                    if data:
+                        try:
+                            await websocket.send_bytes(data)
+                        except Exception:
+                            break
+
+            async def _recv_input():
+                try:
+                    while True:
+                        msg = await websocket.receive()
+                        if msg["type"] == "websocket.disconnect":
+                            break
+                        data = msg.get("bytes") or (msg.get("text") or "").encode()
+                        if not data:
+                            continue
+                        try:
+                            parsed = _json.loads(data.decode("utf-8", errors="ignore"))
+                            if parsed.get("type") == "resize":
+                                channel.resize_pty(
+                                    width=max(1, int(parsed.get("cols", 80))),
+                                    height=max(1, int(parsed.get("rows", 24)))
+                                )
+                                continue
+                        except Exception:
+                            pass
+                        channel.send(data)
+                except WebSocketDisconnect:
+                    pass
+                except Exception:
+                    pass
+
+            send_task = asyncio.create_task(_send_output())
+            recv_task = asyncio.create_task(_recv_input())
+            done, pending = await asyncio.wait([send_task, recv_task], return_when=asyncio.FIRST_COMPLETED)
+            for task in pending:
+                task.cancel()
+                try:
+                    await task
+                except asyncio.CancelledError:
+                    pass
+
+        except Exception:
+            _ws_log.exception("Erro no WebSocket jump console")
+            try:
+                await websocket.close(code=1011)
+            except Exception:
+                pass
+        finally:
+            if channel is not None:
+                try:
+                    channel.close()
+                except Exception:
+                    pass
+            if ssh_client is not None:
+                try:
+                    ssh_client.close()
+                except Exception:
+                    pass
+            db.close()
+
     return app
 
 
