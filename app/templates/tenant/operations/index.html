@@ -710,7 +710,7 @@
 <script src="https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit@0.8.0/lib/xterm-addon-fit.js"></script>
 
-<div id="opsJumpConsoleModal" class="ops-console" aria-hidden="true">
+<div id="opsJumpConsoleModal" class="ops-console">
   <div class="ops-console-panel">
 
     <div class="ops-console-head">
@@ -994,14 +994,14 @@
     consoleButtons.forEach(function(btn) {
       btn.addEventListener('click', function() {
         if (consoleTitle) consoleTitle.textContent = 'Terminal Jump Host \u2014 ' + (btn.dataset.groupName || 'Grupo');
-        if (consoleModal) { consoleModal.classList.add('is-open'); consoleModal.setAttribute('aria-hidden','false'); }
+        if (consoleModal) { consoleModal.classList.add('is-open'); }
         _openTerm(btn.dataset.groupName || 'jump', btn.dataset.wsTokenUrl || '', btn.dataset.collectUrl || '');
         if (window.lucide) lucide.createIcons();
       });
     });
 
     function _closeModal() {
-      if (consoleModal) { consoleModal.classList.remove('is-open'); consoleModal.setAttribute('aria-hidden','true'); }
+      if (consoleModal) { consoleModal.classList.remove('is-open'); }
       if (_ws) { try { _ws.close(); } catch(e){} _ws = null; }
       if (_term) { _term.dispose(); _term = null; }
     }
