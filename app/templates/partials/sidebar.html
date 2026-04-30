@@ -86,6 +86,7 @@
                             <li><a href="{{ url_for('tenant_devices.list_devices', tenant_slug=tenant_id) }}" class="bc-sub-link {% if 'tenant_devices' in current_endpoint %}is-active{% endif %}">Todos os dispositivos</a></li>
                             <li><a href="{{ url_for('tenant_backups.list_backups', tenant_slug=tenant_id) }}" class="bc-sub-link {% if 'tenant_backups' in current_endpoint %}is-active{% endif %}">Histórico</a></li>
                             <li><a href="{{ url_for('tenant_backups.failed_devices', tenant_slug=tenant_id) }}" class="bc-sub-link {% if current_endpoint == 'tenant_backups.failed_devices' %}is-active{% endif %}">Falhas</a></li>
+                            <li><a href="{{ url_for('tenant_compare.select_device', tenant_slug=tenant_id) }}" class="bc-sub-link {% if 'tenant_compare' in current_endpoint %}is-active{% endif %}">Comparar versões</a></li>
                         </ul>
                     </li>
                 </ul>
