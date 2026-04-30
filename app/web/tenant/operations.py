@@ -14,6 +14,7 @@ from app.models.tenant import Tenant
 from app.models.user import UserRole
 from app.web.auth.decorators import login_required
 from app.services.backup_diagnostics import classify_failure
+from app.services.jump_host_service import jump_host_service
 from app.services.mass_backup_scope import resolve_mass_backup_excluded_type_ids
 
 bp = Blueprint("tenant_operations", __name__, url_prefix="/tenant/<tenant_slug>/operations")
@@ -67,6 +68,7 @@ def index(tenant_slug):
             .order_by(DeviceGroup.name.asc())
             .all()
         )
+        group_lookup = {str(group.id): group for group in groups}
 
         devices = (
             db.query(Device)
@@ -160,6 +162,12 @@ def index(tenant_slug):
                 "sla_delta_7d": 0.0,
                 "sla_target": 95.0,
                 "sla_below_target": False,
+                "jump_host_state": None,
+                "jump_host_access_failed": 0,
+                "jump_host_no_route": 0,
+                "device_auth_failed": 0,
+                "timeout": 0,
+                "connectivity_failed": 0,
             }
 
         group_buckets["__ungrouped__"] = {
@@ -191,6 +199,12 @@ def index(tenant_slug):
             "sla_delta_7d": 0.0,
             "sla_target": 95.0,
             "sla_below_target": False,
+            "jump_host_state": None,
+            "jump_host_access_failed": 0,
+            "jump_host_no_route": 0,
+            "device_auth_failed": 0,
+            "timeout": 0,
+            "connectivity_failed": 0,
         }
 
         sla_rows_7d = (
@@ -276,6 +290,10 @@ def index(tenant_slug):
                 bucket["last_backup_at"] = device_last_backup
 
             reasons = []
+            extra = device.extra_parameters or {}
+            failure_category = str(extra.get("connection_test_failure_category") or "").strip().lower()
+            if failure_category in {"jump_host_access_failed", "jump_host_no_route", "device_auth_failed", "timeout", "connectivity_failed"}:
+                bucket[failure_category] += 1
             if not has_auto:
                 reasons.append("auto_off")
             if has_auto and not has_active_schedule:
@@ -328,6 +346,17 @@ def index(tenant_slug):
                 bucket["sla_prev_rate_7d"] = 0.0
             bucket["sla_delta_7d"] = round(bucket["sla_rate_7d"] - bucket["sla_prev_rate_7d"], 1)
             bucket["sla_below_target"] = bool(sla_total > 0 and bucket["sla_rate_7d"] < bucket["sla_target"])
+            bucket["jump_issue_total"] = (
+                bucket["jump_host_access_failed"]
+                + bucket["jump_host_no_route"]
+                + bucket["device_auth_failed"]
+                + bucket["timeout"]
+                + bucket["connectivity_failed"]
+            )
+            if bucket["id"] and bucket["uses_jump_host"]:
+                group = group_lookup.get(str(bucket["id"]))
+                if group:
+                    bucket["jump_host_state"] = jump_host_service.get_group_state(str(tenant.id), group)
             group_rows.append(bucket)
 
         group_rows.sort(key=lambda row: (-row["attention_score"], row["name"].lower()))

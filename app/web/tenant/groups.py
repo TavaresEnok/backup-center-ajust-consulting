@@ -1,10 +1,15 @@
+from collections import Counter
+
 from flask import Blueprint, render_template, redirect, url_for, request, flash, session, abort, jsonify
-from app.web.auth.decorators import login_required, tenant_admin_required
+from app.web.auth.decorators import login_required, tenant_admin_required, tenant_operator_required
 from app.core.database import SessionLocal
 from app.services.device_service import DeviceGroupService, DeviceService
-from app.services.connection_mode import uses_vpn_tunnel
+from app.services.connection_mode import uses_jump_host, uses_vpn_tunnel
+from app.services.jump_host_service import jump_host_service, recommendation_for_category
 from app.services.realtime_backup_logs import register_task, append_task_log
-from app.tasks.monitoring import run_group_vpn_test_task
+from app.services.activity_service import ActivityService
+from app.tasks.monitoring import run_group_vpn_test_task, run_group_jump_host_diagnostic_task
+from app.models.device import Device
 from app.models.tenant import Tenant
 from app.models.user import UserRole
 import uuid
@@ -54,6 +59,46 @@ def slugify(text):
     slug = re.sub(r'[^\w\s-]', '', slug)
     slug = re.sub(r'[-\s]+', '-', slug)
     return slug
+
+
+def _build_jump_summary(devices):
+    counts = Counter()
+    last_recommendation = None
+    for device in devices or []:
+        extra = dict(getattr(device, 'extra_parameters', None) or {})
+        category = str(extra.get('connection_test_failure_category') or '').strip().lower()
+        if not category:
+            continue
+        counts[category] += 1
+        if not last_recommendation:
+            last_recommendation = str(extra.get('connection_test_recommendation') or '').strip() or None
+
+    return {
+        'device_auth_failed': counts.get('device_auth_failed', 0),
+        'jump_host_access_failed': counts.get('jump_host_access_failed', 0),
+        'jump_host_no_route': counts.get('jump_host_no_route', 0),
+        'timeout': counts.get('timeout', 0),
+        'connectivity_failed': counts.get('connectivity_failed', 0),
+        'total': sum(counts.values()),
+        'recommendation': last_recommendation,
+    }
+
+
+def _log_activity_safe(db, tenant_id, action, details=None):
+    user_id = session.get('user_id')
+    if not user_id:
+        return
+    try:
+        ActivityService.log_action(
+            db,
+            tenant_id=tenant_id,
+            user_id=user_id,
+            action=action,
+            details=details,
+            ip_address=request.headers.get('X-Forwarded-For', request.remote_addr),
+        )
+    except Exception:
+        logging.getLogger(__name__).exception('Falha ao registrar atividade %s', action)
 
 
 @bp.route('/')
@@ -183,16 +228,31 @@ def edit_group(tenant_slug, group_id):
                 data['jump_key'] = request.form.get('jump_key')
             
             DeviceGroupService.update_group(db, group_uuid, data)
+            if request.form.get('jump_password') or request.form.get('jump_key'):
+                jump_host_service.mark_credentials_rotated(str(tenant.id), group)
             flash('Grupo atualizado com sucesso!', 'success')
             return redirect(url_for('tenant_groups.list_groups', tenant_slug=tenant_slug))
         except Exception as e:
             flash(f'Erro ao atualizar grupo: {str(e)}', 'error')
-    
+
+    group_devices = (
+        db.query(Device)
+        .filter(Device.group_id == group.id, Device.tenant_id == tenant.id, Device.is_active == True)
+        .order_by(Device.name.asc())
+        .all()
+    )
+    jump_summary = _build_jump_summary(group_devices)
+    jump_state = jump_host_service.get_group_state(str(tenant.id), group)
+    sample_device = group_devices[0] if group_devices else None
     db.close()
     return render_template(
         'tenant/groups/edit.html',
         tenant=tenant,
-        group=group
+        group=group,
+        jump_summary=jump_summary,
+        jump_state=jump_state,
+        sample_device=sample_device,
+        recommendation_for_category=recommendation_for_category,
     )
 
 
@@ -419,5 +479,139 @@ def test_group_vpn(tenant_slug, group_id):
 
     flash(f"Teste VPN enfileirado com sucesso! Task: {task_id}", "success")
     return redirect(url_for('tenant_groups.edit_group', tenant_slug=tenant_slug, group_id=group_id))
+
+
+@bp.route('/<group_id>/diagnose-jump', methods=['POST'])
+@login_required
+@tenant_operator_required
+def diagnose_group_jump(tenant_slug, group_id):
+    db, tenant = get_db_and_tenant(tenant_slug)
+    if not tenant:
+        return "Tenant not found", 404
+
+    is_ajax = (
+        request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+        or 'application/json' in (request.headers.get('Accept') or '')
+    )
+
+    try:
+        group_uuid = uuid.UUID(group_id)
+    except ValueError:
+        db.close()
+        if is_ajax:
+            return jsonify({"ok": False, "error": "ID de grupo invalido."}), 400
+        flash("ID de grupo invalido.", "error")
+        return redirect(url_for('tenant_groups.edit_group', tenant_slug=tenant_slug, group_id=group_id))
+
+    group = DeviceGroupService.get_group(db, group_uuid)
+    if not group or str(group.tenant_id) != str(tenant.id):
+        db.close()
+        if is_ajax:
+            return jsonify({"ok": False, "error": "Grupo nao encontrado."}), 404
+        flash("Grupo nao encontrado.", "error")
+        return redirect(url_for('tenant_groups.list_groups', tenant_slug=tenant_slug))
+
+    if not uses_jump_host(group):
+        db.close()
+        if is_ajax:
+            return jsonify({"ok": False, "error": "Este grupo nao usa Jump Host."}), 400
+        flash("Este grupo nao usa Jump Host.", "warning")
+        return redirect(url_for('tenant_groups.edit_group', tenant_slug=tenant_slug, group_id=group_id))
+
+    device_id = (request.form.get('device_id') or '').strip() or None
+    task = run_group_jump_host_diagnostic_task.apply_async(args=[str(group.id), device_id], queue='vpn_queue')
+    task_id = str(task.id)
+    register_task(
+        task_id=task_id,
+        tenant_id=str(tenant.id),
+        device_name=f"Diagnostico Jump - {group.name}",
+        group_id=str(group.id),
+    )
+    append_task_log(
+        task_id,
+        group.name,
+        "Task de diagnostico criada. Validando jump host, rota e autenticacao.",
+        "info",
+    )
+    _log_activity_safe(db, tenant.id, "GROUP_JUMP_DIAG_START", f"Grupo={group.name}; device_id={device_id or '-'}; task={task_id}")
+    db.close()
+
+    if is_ajax:
+        return jsonify({
+            "ok": True,
+            "task_id": task_id,
+            "queue": "vpn_queue",
+            "device_name": f"Diagnostico Jump - {group.name}",
+            "status_url": url_for('tenant_backups.task_status', tenant_slug=tenant_slug, task_id=task_id),
+            "logs_url": url_for('tenant_backups.task_logs', tenant_slug=tenant_slug, task_id=task_id),
+        }), 202
+
+    flash(f"Diagnostico do Jump Host enfileirado com sucesso! Task: {task_id}", "success")
+    return redirect(url_for('tenant_groups.edit_group', tenant_slug=tenant_slug, group_id=group_id))
+
+
+@bp.route('/<group_id>/collect-jump-diagnostics', methods=['POST'])
+@login_required
+@tenant_operator_required
+def collect_jump_diagnostics(tenant_slug, group_id):
+    db, tenant = get_db_and_tenant(tenant_slug)
+    if not tenant:
+        return "Tenant not found", 404
+
+    try:
+        group_uuid = uuid.UUID(group_id)
+    except ValueError:
+        db.close()
+        return jsonify({"ok": False, "error": "ID de grupo invalido."}), 400
+
+    group = DeviceGroupService.get_group(db, group_uuid)
+    if not group or str(group.tenant_id) != str(tenant.id):
+        db.close()
+        return jsonify({"ok": False, "error": "Grupo nao encontrado."}), 404
+
+    device = None
+    raw_device_id = (request.form.get('device_id') or '').strip()
+    if raw_device_id:
+        try:
+            device_uuid = uuid.UUID(raw_device_id)
+            device = db.query(Device).filter(Device.id == device_uuid, Device.group_id == group.id).first()
+        except ValueError:
+            device = None
+
+    result = jump_host_service.collect_remote_diagnostics(str(tenant.id), group, device=device)
+    _log_activity_safe(db, tenant.id, "GROUP_JUMP_DIAG_COLLECT", f"Grupo={group.name}; device={getattr(device, 'name', '-')}")
+    db.close()
+    return jsonify(result)
+
+
+@bp.route('/<group_id>/jump-console/exec', methods=['POST'])
+@login_required
+@tenant_operator_required
+def exec_jump_console(tenant_slug, group_id):
+    db, tenant = get_db_and_tenant(tenant_slug)
+    if not tenant:
+        return "Tenant not found", 404
+
+    try:
+        group_uuid = uuid.UUID(group_id)
+    except ValueError:
+        db.close()
+        return jsonify({"ok": False, "error": "ID de grupo invalido."}), 400
+
+    group = DeviceGroupService.get_group(db, group_uuid)
+    if not group or str(group.tenant_id) != str(tenant.id):
+        db.close()
+        return jsonify({"ok": False, "error": "Grupo nao encontrado."}), 404
+
+    command = (request.form.get('command') or '').strip()
+    result = jump_host_service.exec_console_command(str(tenant.id), group, command)
+    _log_activity_safe(
+        db,
+        tenant.id,
+        "GROUP_JUMP_CONSOLE_EXEC",
+        f"Grupo={group.name}; comando={command[:160]}; ok={bool(result.get('ok'))}",
+    )
+    db.close()
+    return jsonify(result)
 
 
