@@ -857,19 +857,39 @@
     async function _exec(cmd) {
       _busy = true;
       _term.write('\x1b[2m\x1b[33mexecutando...\x1b[0m');
+
+      // Aviso para ping sem -c (sera normalizado pelo backend, mas informa o usuario)
+      if (/^ping\s+[^-]/.test(cmd) && !/-c\s*\d/.test(cmd)) {
+        _term.writeln('\r\n\x1b[33m⚠  ping sem -c detectado: limitando automaticamente a 5 pacotes (-c 5 -W 2)\x1b[0m');
+        _term.write('\x1b[2m\x1b[33mexecutando...\x1b[0m');
+      }
+
+      const controller = new AbortController();
+      const killTimer = setTimeout(function() { controller.abort(); }, 20000);
+
       try {
         const body = new URLSearchParams({ command: cmd });
         const resp = await fetch(_consoleUrl, {
           method: 'POST',
           headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json', 'X-CSRF-Token': csrfToken, 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
           body: body.toString(),
+          signal: controller.signal,
         });
+        clearTimeout(killTimer);
         const data = await resp.json();
         _term.write('\r\x1b[K');
         const out = (data.output || data.error || '(sem saida)').replace(/\r?\n/g, '\r\n');
         if (data.ok === false) { _term.writeln('\x1b[31m' + out + '\x1b[0m'); }
         else { _term.writeln(out); }
-      } catch(e) { _term.write('\r\x1b[K'); _term.writeln('\x1b[31mErro: ' + e.message + '\x1b[0m'); }
+      } catch(e) {
+        clearTimeout(killTimer);
+        _term.write('\r\x1b[K');
+        if (e.name === 'AbortError') {
+          _term.writeln('\x1b[31mTimeout: o comando excedeu 20 segundos. Use -c para limitar (ex: ping -c 4 IP)\x1b[0m');
+        } else {
+          _term.writeln('\x1b[31mErro: ' + e.message + '\x1b[0m');
+        }
+      }
       _busy = false; _term.write(_prompt());
     }
 

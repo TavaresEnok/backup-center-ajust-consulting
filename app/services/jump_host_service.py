@@ -328,11 +328,18 @@ class JumpHostService:
         if not jump_host:
             return {"ok": False, "error": "Jump Host nao configurado para este grupo."}
 
+        # Normaliza ping sem -c para evitar execucao infinita
+        safe_command = raw_command
+        if raw_command.lower().startswith("ping ") and "-c" not in raw_command:
+            safe_command = raw_command.replace("ping ", "ping -c 5 -W 2 ", 1)
+        # Envolve com timeout Linux: o servidor mata o processo apos 15s
+        exec_command = f"timeout 15 {safe_command}"
+
         started = time.monotonic()
         try:
             client = connection_test_service._open_jump_client(jump_host, timeout)
             try:
-                stdin, stdout, stderr = client.exec_command(raw_command, timeout=timeout)
+                stdin, stdout, stderr = client.exec_command(exec_command, timeout=timeout)
                 stdout.channel.settimeout(timeout)
                 stderr.channel.settimeout(timeout)
                 output = (stdout.read() or b"").decode(errors="ignore")
