@@ -144,13 +144,31 @@
     display: grid;
     grid-template-columns: 1fr;
     gap: 1.25rem;
+    align-items: start;
   }
   @media (min-width: 1024px) {
-    .ops-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .ops-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
   }
   @media (min-width: 1536px) {
-    .ops-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .ops-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: start; }
   }
+
+  .ops-conn-info {
+    margin-top: .8rem;
+    border: 1px solid #1e293b;
+    border-radius: .6rem;
+    background: #0a0f18;
+    padding: .65rem .85rem;
+    display: flex;
+    align-items: center;
+    gap: .55rem;
+    color: #475569;
+    font-size: .7rem;
+    font-weight: 600;
+  }
+  .ops-conn-info i { width: .85rem; height: .85rem; flex-shrink: 0; }
+  .ops-conn-info.direct { border-color: rgba(71,85,105,.3); }
+  .ops-conn-info.vpn { border-color: rgba(99,102,241,.2); color: rgba(129,140,248,.6); }
 
   .ops-card {
     background: #0f172a;
@@ -566,6 +584,16 @@
               </div>
             </div>
           </div>
+          {% elif row.uses_vpn %}
+          <div class="ops-conn-info vpn">
+            <i data-lucide="shield"></i>
+            Acesso via VPN — monitoramento direto pelo tunel
+          </div>
+          {% else %}
+          <div class="ops-conn-info direct">
+            <i data-lucide="cable"></i>
+            Acesso direto — sem intermediario Jump Host
+          </div>
           {% endif %}
         </div>
 
@@ -609,9 +637,10 @@
                   class="ops-btn ops-open-console"
                   data-group-name="{{ row.name }}"
                   data-console-url="{{ url_for('tenant_groups.exec_jump_console', tenant_slug=tenant.slug, group_id=row.id) }}"
-                  data-collect-url="{{ url_for('tenant_groups.collect_jump_diagnostics', tenant_slug=tenant.slug, group_id=row.id) }}">
-            <i data-lucide="terminal-square"></i>
-            Console Jump
+                  data-collect-url="{{ url_for('tenant_groups.collect_jump_diagnostics', tenant_slug=tenant.slug, group_id=row.id) }}"
+                  title="Abrir terminal Linux do Jump Host para diagnosticos">
+            <i data-lucide="terminal"></i>
+            Terminal Jump Host
           </button>
           {% endif %}
 
@@ -671,13 +700,25 @@
 <div id="opsJumpConsoleModal" class="ops-console" aria-hidden="true">
   <div class="ops-console-panel">
     <div class="ops-console-head">
-      <div>
-        <h3 id="opsJumpConsoleTitle" style="margin:0;color:#f8fafc;font-size:1rem;font-weight:800;">Console Jump</h3>
-        <p style="margin:.25rem 0 0;color:#94a3b8;font-size:12px;">Sessao operacional auditada, sem revelar credenciais do bastion.</p>
+      <div style="display:flex;align-items:center;gap:.75rem;">
+        <div style="display:flex;align-items:center;justify-content:center;width:2rem;height:2rem;border-radius:.45rem;background:rgba(14,165,233,.15);border:1px solid rgba(14,165,233,.25);flex-shrink:0;">
+          <i data-lucide="terminal" style="width:1rem;height:1rem;color:#38bdf8;"></i>
+        </div>
+        <div>
+          <h3 id="opsJumpConsoleTitle" style="margin:0;color:#f8fafc;font-size:1rem;font-weight:800;">Terminal Jump Host</h3>
+          <p style="margin:.2rem 0 0;color:#64748b;font-size:11px;display:flex;align-items:center;gap:.3rem;">
+            <i data-lucide="alert-triangle" style="width:.75rem;height:.75rem;color:#f59e0b;"></i>
+            Comandos executados no Linux do Jump Host — use para diagnostico e testes de conectividade
+          </p>
+        </div>
       </div>
       <button type="button" id="opsJumpConsoleClose" class="ops-btn">Fechar</button>
     </div>
     <div class="ops-console-body">
+      <div style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:.5rem;padding:.55rem .8rem;font-size:.72rem;color:#fbbf24;display:flex;align-items:center;gap:.45rem;">
+        <i data-lucide="info" style="width:.85rem;height:.85rem;flex-shrink:0;"></i>
+        Este terminal acessa o servidor Linux do Jump Host. Use para: ping, traceroute, teste de porta (nc), verificacao de rotas. Nao use para alterar configuracoes do servidor.
+      </div>
       <div class="ops-console-actions">
         <button type="button" class="ops-btn ops-console-preset" data-command="hostname">hostname</button>
         <button type="button" class="ops-btn ops-console-preset" data-command="uptime">uptime</button>
@@ -686,7 +727,7 @@
         <button type="button" id="opsCollectDiagnosticsBtn" class="ops-btn ops-btn-indigo">Coletar diagnostico</button>
       </div>
       <form id="opsJumpConsoleForm" style="display:flex;gap:.5rem;flex-wrap:wrap;">
-        <input id="opsJumpConsoleInput" type="text" class="ops-search" style="padding-left:.75rem;flex:1;min-width:240px;" placeholder="Ex: ping -c 2 -W 2 172.31.0.1">
+        <input id="opsJumpConsoleInput" type="text" class="ops-search" style="padding-left:.75rem;flex:1;min-width:240px;" placeholder="Ex: ping -c 3 192.168.1.1 | nc -zv 192.168.1.1 22">
         <button type="submit" class="ops-btn ops-btn-primary">Executar</button>
       </form>
       <div class="ops-console-output" id="opsJumpConsoleOutput">Aguardando comando...</div>

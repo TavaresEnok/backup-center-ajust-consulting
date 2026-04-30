@@ -1004,12 +1004,12 @@
                       <i data-lucide="play"></i>
                     </button>
 
-                    <a href="{{ url_for('tenant_devices.view_device', tenant_slug=tenant.slug, device_id=device.id, group_id=current_group.id if current_group else None) }}" class="dev-icon-btn terminal" title="Detalhes">
-                      <i data-lucide="terminal-square"></i>
+                    <a href="{{ url_for('tenant_devices.view_device', tenant_slug=tenant.slug, device_id=device.id, group_id=current_group.id if current_group else None) }}" class="dev-icon-btn terminal" title="Ver detalhes do dispositivo">
+                      <i data-lucide="info"></i>
                     </a>
 
-                    <a href="{{ url_for('tenant_compare.compare_backups', tenant_slug=tenant.slug, device_id=device.id) }}" class="dev-icon-btn logs" title="Comparar Backups">
-                      <i data-lucide="file-text"></i>
+                    <a href="{{ url_for('tenant_compare.compare_backups', tenant_slug=tenant.slug, device_id=device.id) }}" class="dev-icon-btn logs" title="Comparar versoes de backup">
+                      <i data-lucide="git-compare"></i>
                     </a>
 
                     {% if can_operator and device.group and device.group.uses_jump_host and device.group.is_active and device.is_active %}
@@ -1022,7 +1022,7 @@
                     </button>
                     <button type="button"
                             class="dev-icon-btn collect"
-                            title="Coletar diagnostico remoto"
+                            title="Coletar diagnostico remoto via Jump Host"
                             data-collect-diagnostics
                             data-device-name="{{ device.name }}"
                             data-device-ip="{{ device.ip_address }}"
@@ -1033,7 +1033,7 @@
                     </button>
                     <button type="button"
                             class="dev-icon-btn terminal"
-                            title="Acessar Linux Jump Host"
+                            title="Abrir Terminal Jump Host"
                             data-open-jump-console
                             data-group-name="{{ device.group.name }}"
                             data-device-name="{{ device.name }}"
@@ -1041,7 +1041,7 @@
                             data-device-id="{{ device.id }}"
                             data-console-url="{{ url_for('tenant_groups.exec_jump_console', tenant_slug=tenant.slug, group_id=device.group.id) }}"
                             data-collect-url="{{ url_for('tenant_groups.collect_jump_diagnostics', tenant_slug=tenant.slug, group_id=device.group.id) }}">
-                      <i data-lucide="terminal-square"></i>
+                      <i data-lucide="terminal"></i>
                     </button>
                     {% endif %}
 
