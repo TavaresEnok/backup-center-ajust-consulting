@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 JUMP_HOST_STATE_PREFIX = "backup_center:jump_host_state:"
 JUMP_HOST_TTL_SECONDS = 60 * 60 * 24 * 30
-SAFE_COMMAND_RE = re.compile(r"^[a-zA-Z0-9_./:@=,+% -]{1,240}$")
+SAFE_COMMAND_RE = re.compile(r'^[a-zA-Z0-9_./:@=,+% "\'-]{1,300}$')
 FORBIDDEN_COMMAND_TOKENS = {
     "sudo",
     "su ",
@@ -62,6 +62,7 @@ SAFE_COMMAND_PREFIXES = (
     "ping ",
     "nc ",
     "telnet ",
+    "ssh ",
 )
 
 
@@ -328,20 +329,40 @@ class JumpHostService:
         if not jump_host:
             return {"ok": False, "error": "Jump Host nao configurado para este grupo."}
 
-        # Normaliza ping sem -c para evitar execucao infinita
+        # Normaliza e protege o comando antes de executar
         safe_command = raw_command
-        if raw_command.lower().startswith("ping ") and "-c" not in raw_command:
+        cmd_lower = raw_command.lower()
+
+        if cmd_lower.startswith("ping ") and "-c" not in raw_command:
+            # Ping sem limite: adiciona -c 5 -W 2 automaticamente
             safe_command = raw_command.replace("ping ", "ping -c 5 -W 2 ", 1)
-        # Envolve com timeout Linux: o servidor mata o processo apos 15s
-        exec_command = f"timeout 15 {safe_command}"
+
+        elif cmd_lower.startswith("ssh "):
+            # SSH nao-interativo: injeta flags de seguranca obrigatorias
+            # BatchMode=yes: sem prompts de senha (nao bloqueia)
+            # StrictHostKeyChecking=no: nao trava em host desconhecido
+            # ConnectTimeout=8: timeout de conexao rapido
+            # NumberOfPasswordPrompts=0: garante sem prompt de senha
+            safe_flags = (
+                "-o BatchMode=yes "
+                "-o StrictHostKeyChecking=no "
+                "-o ConnectTimeout=8 "
+                "-o NumberOfPasswordPrompts=0 "
+            )
+            # Insere as flags logo apos 'ssh '
+            safe_command = "ssh " + safe_flags + raw_command[4:].lstrip()
+            timeout = 22  # SSH precisa de um pouco mais de tempo
+
+        # Envolve com timeout Linux para garantir que o processo morra
+        exec_command = f"timeout {timeout} {safe_command}"
 
         started = time.monotonic()
         try:
-            client = connection_test_service._open_jump_client(jump_host, timeout)
+            client = connection_test_service._open_jump_client(jump_host, timeout + 3)
             try:
-                stdin, stdout, stderr = client.exec_command(exec_command, timeout=timeout)
-                stdout.channel.settimeout(timeout)
-                stderr.channel.settimeout(timeout)
+                stdin, stdout, stderr = client.exec_command(exec_command, timeout=timeout + 3)
+                stdout.channel.settimeout(timeout + 3)
+                stderr.channel.settimeout(timeout + 3)
                 output = (stdout.read() or b"").decode(errors="ignore")
                 error = (stderr.read() or b"").decode(errors="ignore")
             finally:

@@ -829,11 +829,23 @@
         if (cmd === 'exit' || cmd === 'quit') { _term.writeln('\x1b[33mUse o botao Fechar para encerrar.\x1b[0m'); _term.write(_prompt()); return; }
         if (cmd === 'help') {
           _term.writeln('\x1b[1m\x1b[36mComandos uteis:\x1b[0m');
-          [['hostname','nome do servidor'],['uptime','tempo em atividade'],['ip route','tabela de rotas'],
-           ['ping -c 3 <IP>','testar conectividade'],['nc -zv <IP> <PORT>','testar porta TCP'],
-           ['ss -tunap','conexoes ativas'],['df -h','uso de disco'],['free -h','uso de memoria'],
-           ['clear','limpar terminal'],['\u2191 / \u2193','historico de comandos']
-          ].forEach(function(r){ _term.writeln('  \x1b[32m' + r[0].padEnd(24) + '\x1b[0m' + r[1]); });
+          [
+            ['hostname',                'nome do servidor'],
+            ['uptime',                  'tempo em atividade'],
+            ['ip route',               'tabela de rotas'],
+            ['ping -c 3 <IP>',         'testar conectividade'],
+            ['nc -zv <IP> <PORT>',     'testar porta TCP'],
+            ['ss -tunap',              'conexoes ativas'],
+            ['df -h',                  'uso de disco'],
+            ['free -h',               'uso de memoria'],
+            ['ssh user@<IP> <cmd>',    'rodar comando remoto no dispositivo (nao-interativo)'],
+            ['ssh user@<IP> "show version"', 'exemplo para Cisco/Huawei'],
+            ['clear',                  'limpar terminal'],
+            ['\u2191 / \u2193',       'historico de comandos'],
+          ].forEach(function(r){ _term.writeln('  \x1b[32m' + r[0].padEnd(30) + '\x1b[0m' + r[1]); });
+          _term.writeln('');
+          _term.writeln('\x1b[33m  Nota SSH:\x1b[0m modo nao-interativo. Use ssh user@IP comando');
+          _term.writeln('  (ex: ssh admin@192.168.1.1 "display version")');
           _term.write(_prompt()); return;
         }
         _exec(cmd); return;
@@ -858,14 +870,24 @@
       _busy = true;
       _term.write('\x1b[2m\x1b[33mexecutando...\x1b[0m');
 
-      // Aviso para ping sem -c (sera normalizado pelo backend, mas informa o usuario)
+      // Aviso para ping sem -c
       if (/^ping\s+[^-]/.test(cmd) && !/-c\s*\d/.test(cmd)) {
-        _term.writeln('\r\n\x1b[33m⚠  ping sem -c detectado: limitando automaticamente a 5 pacotes (-c 5 -W 2)\x1b[0m');
+        _term.writeln('\r\n\x1b[33m\u26a0  ping sem -c detectado: limitando automaticamente a 5 pacotes (-c 5 -W 2)\x1b[0m');
         _term.write('\x1b[2m\x1b[33mexecutando...\x1b[0m');
       }
 
+      // Aviso para SSH: modo nao-interativo
+      const isSSH = /^ssh\s/i.test(cmd);
+      if (isSSH) {
+        _term.writeln('\r\n\x1b[36m\u2139  SSH nao-interativo: flags de seguranca injetadas automaticamente\x1b[0m');
+        _term.writeln('\x1b[36m   BatchMode=yes | StrictHostKeyChecking=no | ConnectTimeout=8\x1b[0m');
+        _term.write('\x1b[2m\x1b[33mexecutando...\x1b[0m');
+      }
+
+      // Timeout dinamico: 25s para SSH, 20s para outros
+      const fetchTimeout = isSSH ? 25000 : 20000;
       const controller = new AbortController();
-      const killTimer = setTimeout(function() { controller.abort(); }, 20000);
+      const killTimer = setTimeout(function() { controller.abort(); }, fetchTimeout);
 
       try {
         const body = new URLSearchParams({ command: cmd });
@@ -885,7 +907,10 @@
         clearTimeout(killTimer);
         _term.write('\r\x1b[K');
         if (e.name === 'AbortError') {
-          _term.writeln('\x1b[31mTimeout: o comando excedeu 20 segundos. Use -c para limitar (ex: ping -c 4 IP)\x1b[0m');
+          const hint = isSSH
+            ? 'Timeout SSH. Verifique se o dispositivo esta acessivel a partir do Jump Host.'
+            : 'Timeout: o comando excedeu o limite. Use -c para limitar (ex: ping -c 4 IP)';
+          _term.writeln('\x1b[31m' + hint + '\x1b[0m');
         } else {
           _term.writeln('\x1b[31mErro: ' + e.message + '\x1b[0m');
         }
