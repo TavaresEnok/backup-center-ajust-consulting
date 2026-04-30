@@ -11,6 +11,7 @@ from app.core.database import SessionLocal
 from app.models.tenant import Tenant
 from app.services.connection_mode import uses_jump_host, uses_vpn_tunnel
 from app.services.monitor_service import MonitorService
+from app.services.jump_host_service import jump_host_service, recommendation_for_category
 import logging
 
 logger = logging.getLogger(__name__)
@@ -348,6 +349,158 @@ def run_group_vpn_test_task(self, group_id: str):
 
 
 @celery_app.task(bind=True, queue='vpn_queue')
+def run_group_jump_host_diagnostic_task(self, group_id: str, device_id: str | None = None):
+    from app.models.device import Device
+    from app.models.device_group import DeviceGroup
+    from app.services.connection_test_service import connection_test_service
+    from app.services.realtime_backup_logs import append_task_log, update_task_meta
+
+    task_id = str(self.request.id)
+    db = SessionLocal()
+    try:
+        group = db.query(DeviceGroup).filter(DeviceGroup.id == group_id).first()
+        if not group:
+            result = {"ok": False, "group_id": str(group_id), "message": f"Grupo {group_id} nao encontrado."}
+            update_task_meta(task_id, status="failed", progress=100, completed=True, message=result["message"], result=result)
+            append_task_log(task_id, "Diagnostico Jump Host", result["message"], "error")
+            return result
+
+        device = None
+        if device_id:
+            device = (
+                db.query(Device)
+                .filter(Device.id == device_id, Device.group_id == group.id, Device.is_active == True)
+                .first()
+            )
+        if device is None:
+            device = (
+                db.query(Device)
+                .filter(Device.group_id == group.id, Device.is_active == True)
+                .order_by(Device.updated_at.desc().nullslast(), Device.name.asc())
+                .first()
+            )
+
+        update_task_meta(
+            task_id,
+            status="running",
+            progress=15,
+            completed=False,
+            message="Validando reachability, login no Jump Host e rota ate o dispositivo...",
+        )
+        append_task_log(task_id, group.name or "Grupo", "Iniciando diagnostico do Jump Host.", "info")
+
+        health_state = jump_host_service.run_health_check(str(group.tenant_id), group)
+        append_task_log(
+            task_id,
+            group.name or "Grupo",
+            f"Status do Jump Host: {health_state.get('status')}.",
+            "success" if health_state.get("status") in {"healthy", "degraded"} else "warning",
+        )
+
+        if not device:
+            result = {
+                "ok": health_state.get("status") in {"healthy", "degraded"},
+                "group_id": str(group.id),
+                "device_id": None,
+                "message": "Grupo sem dispositivo ativo para validar a cadeia completa.",
+                "health_state": health_state,
+            }
+            update_task_meta(task_id, status="success", progress=100, completed=True, message=result["message"], result=result)
+            return result
+
+        update_task_meta(
+            task_id,
+            status="running",
+            progress=55,
+            completed=False,
+            message=f"Executando cadeia de acesso para {device.name}...",
+        )
+
+        diagnostic = connection_test_service.diagnose_access_chain(
+            device=device,
+            group=device.group,
+            manage_vpn=True,
+        )
+        for step in diagnostic.get("steps", []):
+            level = "success" if step.get("status") == "success" else "warning"
+            append_task_log(task_id, device.name, f"{step.get('title')}: {step.get('message')}", level)
+
+        category = str(diagnostic.get("category") or "")
+        recommendation = recommendation_for_category(category, getattr(device, "ip_address", None))
+        result = {
+            "ok": bool(diagnostic.get("ok")),
+            "group_id": str(group.id),
+            "device_id": str(device.id),
+            "device_name": device.name,
+            "category": category,
+            "recommendation": recommendation,
+            "message": diagnostic.get("message"),
+            "health_state": health_state,
+            "steps": diagnostic.get("steps") or [],
+        }
+        update_task_meta(
+            task_id,
+            status="success" if result["ok"] else "failed",
+            progress=100,
+            completed=True,
+            message=str(result["message"] or recommendation),
+            result=result,
+        )
+        append_task_log(
+            task_id,
+            device.name,
+            recommendation,
+            "success" if result["ok"] else "warning",
+        )
+        return result
+    except Exception as exc:
+        logger.exception("Erro ao diagnosticar Jump Host do grupo %s", group_id)
+        message = f"Erro ao diagnosticar Jump Host: {exc}"
+        update_task_meta(
+            task_id,
+            status="failed",
+            progress=100,
+            completed=True,
+            message=message,
+            result={"ok": False, "group_id": str(group_id), "message": message},
+        )
+        append_task_log(task_id, "Diagnostico Jump Host", message, "error")
+        return {"ok": False, "group_id": str(group_id), "message": message}
+    finally:
+        db.close()
+
+
+@celery_app.task
+def run_jump_host_health_checks_periodic():
+    from app.models.device_group import DeviceGroup
+
+    db = SessionLocal()
+    try:
+        groups = (
+            db.query(DeviceGroup)
+            .filter(
+                DeviceGroup.is_active == True,
+                DeviceGroup.uses_jump_host == True,
+            )
+            .all()
+        )
+        results = {}
+        for group in groups:
+            try:
+                state = jump_host_service.run_health_check(str(group.tenant_id), group)
+                results[str(group.id)] = {
+                    "status": state.get("status"),
+                    "last_failure_category": state.get("last_failure_category"),
+                }
+            except Exception as exc:
+                logger.exception("Falha no health check do Jump Host do grupo %s", group.id)
+                results[str(group.id)] = {"status": "error", "error": str(exc)}
+        return results
+    finally:
+        db.close()
+
+
+@celery_app.task(bind=True, queue='vpn_queue')
 def run_device_connection_audit_task(self, device_id: str, bulk_task_id: str = None):
     """
     Executa auditoria de acesso de 1 dispositivo:
@@ -498,17 +651,21 @@ def run_device_connection_audit_task(self, device_id: str, bulk_task_id: str = N
                 "warning",
             )
 
-        service_result = connection_test_service.test_device_connection(
+        service_result = connection_test_service.diagnose_access_chain(
             device=device,
             group=device.group,
             manage_vpn=False,
         )
         connection_result = {
-            "success": bool(service_result.success),
-            "message": service_result.message,
-            "protocol": service_result.protocol,
-            "elapsed_ms": int(service_result.elapsed_ms),
-            "tcp_ok": bool(getattr(service_result, "tcp_ok", False)),
+            "success": bool(service_result.get("ok")),
+            "message": service_result.get("message"),
+            "protocol": service_result.get("protocol"),
+            "elapsed_ms": int(service_result.get("elapsed_ms") or 0),
+            "tcp_ok": bool(service_result.get("tcp_ok")),
+            "jump_host_ok": bool(service_result.get("jump_host_ok")),
+            "route_ok": bool(service_result.get("route_ok")),
+            "failure_category": str(service_result.get("category") or ""),
+            "steps": service_result.get("steps") or [],
         }
         login_ok = bool(connection_result.get("success"))
         tcp_ok = bool(connection_result.get("tcp_ok"))
@@ -524,6 +681,14 @@ def run_device_connection_audit_task(self, device_id: str, bulk_task_id: str = N
         extra_params["connection_test_group"] = classification
         extra_params["connection_test_login_ok"] = login_ok
         extra_params["connection_test_tcp_ok"] = bool(tcp_ok)
+        extra_params["connection_test_jump_host_ok"] = bool(connection_result.get("jump_host_ok"))
+        extra_params["connection_test_route_ok"] = bool(connection_result.get("route_ok"))
+        extra_params["connection_test_failure_category"] = connection_result.get("failure_category")
+        extra_params["connection_test_steps"] = connection_result.get("steps")
+        extra_params["connection_test_recommendation"] = recommendation_for_category(
+            connection_result.get("failure_category"),
+            getattr(device, "ip_address", None),
+        )
         extra_params["connection_test_message"] = connection_result.get("message")
         extra_params["connection_test_elapsed_ms"] = int(connection_result.get("elapsed_ms") or 0)
         _persist_connection_audit_state(
@@ -542,6 +707,11 @@ def run_device_connection_audit_task(self, device_id: str, bulk_task_id: str = N
             "message": connection_result.get("message"),
             "protocol": connection_result.get("protocol") or protocol,
             "elapsed_ms": int(connection_result.get("elapsed_ms") or 0),
+            "failure_category": connection_result.get("failure_category"),
+            "jump_host_ok": bool(connection_result.get("jump_host_ok")),
+            "route_ok": bool(connection_result.get("route_ok")),
+            "steps": connection_result.get("steps") or [],
+            "recommendation": extra_params.get("connection_test_recommendation"),
         }
         if login_ok:
             update_task_meta(

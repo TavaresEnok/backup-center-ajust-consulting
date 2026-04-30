@@ -3,6 +3,8 @@
 {% block title %}{{ device.name }} | Dispositivos{% endblock %}
 
 {% block content %}
+{% set role = session.get('user_role') %}
+{% set can_operator = role in ['super_admin', 'tenant_owner', 'tenant_admin', 'tenant_technician'] %}
 {% include 'partials/breadcrumb.html' %}
 
 <div class="space-y-6">
@@ -45,6 +47,22 @@
                     <span data-test-loading class="hidden">Testando...</span>
                 </button>
             </form>
+            {% if can_operator and device.group and device.group.uses_jump_host and device.group.is_active and device.is_active %}
+            <form id="form-diagnose-jump-device-view-{{ device.id }}"
+                action="{{ url_for('tenant_groups.diagnose_group_jump', tenant_slug=tenant.slug, group_id=device.group.id) }}"
+                method="POST"
+                class="inline">
+                {% include 'partials/csrf.html' %}
+                <input type="hidden" name="device_id" value="{{ device.id }}">
+                <button type="button"
+                    data-run-backup-live
+                    data-form-id="form-diagnose-jump-device-view-{{ device.id }}"
+                    class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-50 border border-emerald-300 rounded-lg text-sm font-medium text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:border-emerald-700 dark:text-emerald-300 dark:hover:bg-emerald-900/40 transition-colors">
+                    <i data-lucide="stethoscope" class="w-4 h-4"></i>
+                    Diagnosticar Jump
+                </button>
+            </form>
+            {% endif %}
             <a href="{{ url_for('tenant_devices.edit_device', tenant_slug=tenant.slug, device_id=device.id) }}"
                 class="inline-flex items-center gap-2 px-4 py-2 bg-brand-600 text-white rounded-lg text-sm font-medium hover:bg-brand-700 shadow-lg shadow-brand-500/20 transition-colors">
                 <i data-lucide="edit" class="w-4 h-4"></i> Editar

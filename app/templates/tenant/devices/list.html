@@ -17,6 +17,7 @@
 {% set has_any_filter = arg_q or current_group or arg_connection or arg_auto or arg_result or arg_history or arg_audit or arg_due or arg_subgroup %}
 {% set role = session.get('user_role') %}
 {% set can_manage_admin = role in ['super_admin', 'tenant_owner', 'tenant_admin'] %}
+{% set can_operator = role in ['super_admin', 'tenant_owner', 'tenant_admin', 'tenant_technician'] %}
 
 <style>
   .dev-page {
@@ -495,6 +496,8 @@
   .dev-icon-btn.play:hover { color: #34d399; background: rgba(16,185,129,.12); }
   .dev-icon-btn.terminal:hover { color: #38bdf8; background: rgba(14,165,233,.12); }
   .dev-icon-btn.logs:hover { color: #818cf8; background: rgba(99,102,241,.12); }
+  .dev-icon-btn.diagnose:hover { color: #34d399; background: rgba(16,185,129,.12); }
+  .dev-icon-btn.collect:hover { color: #38bdf8; background: rgba(14,165,233,.12); }
   .dev-icon-sep { width: 1px; height: 1.2rem; background: #1e293b; margin: 0 .2rem; }
 
   .dev-pagination {
@@ -553,6 +556,120 @@
     border: 1px solid #475569;
     accent-color: #6366f1;
   }
+
+  .dev-diag-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 120;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: rgba(2, 6, 23, .75);
+    backdrop-filter: blur(5px);
+    padding: 1rem;
+  }
+  .dev-diag-modal.is-open { display: flex; }
+  .dev-diag-panel {
+    width: min(900px, 100%);
+    max-height: 88vh;
+    border-radius: .95rem;
+    border: 1px solid #1e293b;
+    background: #0b1120;
+    box-shadow: 0 24px 60px rgba(2, 6, 23, .55);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .dev-diag-head {
+    padding: .95rem 1rem;
+    border-bottom: 1px solid #1e293b;
+    background: #111827;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: .8rem;
+  }
+  .dev-diag-body {
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: .8rem;
+    min-height: 0;
+  }
+  .dev-diag-output {
+    min-height: 220px;
+    max-height: 52vh;
+    overflow: auto;
+    border: 1px solid #1e293b;
+    border-radius: .75rem;
+    background: #050816;
+    color: #cbd5e1;
+    font-size: 12px;
+    line-height: 1.45;
+    padding: .9rem;
+    white-space: pre-wrap;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  }
+
+  .dev-jump-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 130;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: rgba(2, 6, 23, .78);
+    backdrop-filter: blur(6px);
+    padding: 1rem;
+  }
+  .dev-jump-modal.is-open { display: flex; }
+  .dev-jump-panel {
+    width: min(920px, 100%);
+    max-height: 88vh;
+    border-radius: .95rem;
+    border: 1px solid #1e293b;
+    background: #0b1120;
+    box-shadow: 0 24px 60px rgba(2, 6, 23, .55);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .dev-jump-head {
+    padding: .95rem 1rem;
+    border-bottom: 1px solid #1e293b;
+    background: #111827;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .8rem;
+  }
+  .dev-jump-body {
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: .8rem;
+    min-height: 0;
+  }
+  .dev-jump-actions {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    flex-wrap: wrap;
+  }
+  .dev-jump-output {
+    min-height: 220px;
+    max-height: 48vh;
+    overflow: auto;
+    border: 1px solid #1e293b;
+    border-radius: .75rem;
+    background: #050816;
+    color: #cbd5e1;
+    font-size: 12px;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    padding: .9rem;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  }
 </style>
 
 <div class="dev-page">
@@ -604,6 +721,45 @@
               Testar Conexao
             </button>
           </form>
+          {% endif %}
+
+          {% if current_group and current_group.uses_jump_host and can_operator %}
+          <form id="form-diagnose-jump-current-group-header"
+                action="{{ url_for('tenant_groups.diagnose_group_jump', tenant_slug=tenant.slug, group_id=current_group.id) }}"
+                method="POST" class="inline">
+            {% include 'partials/csrf.html' %}
+            <button type="button" data-run-backup-live data-form-id="form-diagnose-jump-current-group-header" class="dev-btn" style="border-color:rgba(16,185,129,.35);background:rgba(16,185,129,.12);color:#34d399;">
+              <i data-lucide="stethoscope"></i>
+              Diagnosticar Jump
+            </button>
+          </form>
+          <button type="button"
+                  class="dev-btn"
+                  id="openJumpConsoleHeaderBtn"
+                  data-open-jump-console
+                  data-group-name="{{ current_group.name }}"
+                  data-console-url="{{ url_for('tenant_groups.exec_jump_console', tenant_slug=tenant.slug, group_id=current_group.id) }}"
+                  data-collect-url="{{ url_for('tenant_groups.collect_jump_diagnostics', tenant_slug=tenant.slug, group_id=current_group.id) }}"
+                  style="border-color:rgba(14,165,233,.35);background:rgba(14,165,233,.12);color:#38bdf8;">
+            <i data-lucide="terminal-square"></i>
+            Acessar Linux Jump
+          </button>
+          {% elif current_group and can_operator %}
+          <button type="button"
+                  class="dev-btn"
+                  disabled
+                  title="Este grupo nao usa Jump Host"
+                  style="opacity:.6;cursor:not-allowed;border-color:#334155;background:rgba(15,23,42,.35);color:#94a3b8;">
+            <i data-lucide="terminal-square"></i>
+            Sem Jump Host
+          </button>
+          {% elif can_operator %}
+          <a href="{{ url_for('tenant_groups.list_groups', tenant_slug=tenant.slug) }}"
+             class="dev-btn"
+             title="Selecione um grupo com tipo Jump Host para liberar o acesso Linux">
+            <i data-lucide="terminal-square"></i>
+            Acessar Linux Jump
+          </a>
           {% endif %}
 
           {% if current_group %}
@@ -856,6 +1012,39 @@
                       <i data-lucide="file-text"></i>
                     </a>
 
+                    {% if can_operator and device.group and device.group.uses_jump_host and device.group.is_active and device.is_active %}
+                    <button type="button"
+                            data-run-backup-live
+                            data-form-id="form-diagnose-jump-device-{{ device.id }}"
+                            class="dev-icon-btn diagnose"
+                            title="Diagnosticar acesso via Jump Host">
+                      <i data-lucide="stethoscope"></i>
+                    </button>
+                    <button type="button"
+                            class="dev-icon-btn collect"
+                            title="Coletar diagnostico remoto"
+                            data-collect-diagnostics
+                            data-device-name="{{ device.name }}"
+                            data-device-ip="{{ device.ip_address }}"
+                            data-device-id="{{ device.id }}"
+                            data-group-id="{{ device.group.id }}"
+                            data-collect-url="{{ url_for('tenant_groups.collect_jump_diagnostics', tenant_slug=tenant.slug, group_id=device.group.id) }}">
+                      <i data-lucide="clipboard-list"></i>
+                    </button>
+                    <button type="button"
+                            class="dev-icon-btn terminal"
+                            title="Acessar Linux Jump Host"
+                            data-open-jump-console
+                            data-group-name="{{ device.group.name }}"
+                            data-device-name="{{ device.name }}"
+                            data-device-ip="{{ device.ip_address }}"
+                            data-device-id="{{ device.id }}"
+                            data-console-url="{{ url_for('tenant_groups.exec_jump_console', tenant_slug=tenant.slug, group_id=device.group.id) }}"
+                            data-collect-url="{{ url_for('tenant_groups.collect_jump_diagnostics', tenant_slug=tenant.slug, group_id=device.group.id) }}">
+                      <i data-lucide="terminal-square"></i>
+                    </button>
+                    {% endif %}
+
                     <span class="dev-icon-sep"></span>
 
                     <a href="{{ url_for('tenant_devices.edit_device', tenant_slug=tenant.slug, device_id=device.id, group_id=current_group.id if current_group else None) }}" class="dev-icon-btn" title="Editar">
@@ -914,6 +1103,16 @@
       {% include 'partials/csrf.html' %}
       {% if current_group %}<input type="hidden" name="group_id" value="{{ current_group.id }}">{% endif %}
     </form>
+
+    {% if can_operator and device.group and device.group.uses_jump_host and device.group.is_active and device.is_active %}
+    <form id="form-diagnose-jump-device-{{ device.id }}"
+          action="{{ url_for('tenant_groups.diagnose_group_jump', tenant_slug=tenant.slug, group_id=device.group.id) }}"
+          method="POST"
+          class="hidden">
+      {% include 'partials/csrf.html' %}
+      <input type="hidden" name="device_id" value="{{ device.id }}">
+    </form>
+    {% endif %}
     {% endfor %}
 
     <form id="form-backup-all" action="{{ url_for('tenant_devices.run_backup_all', tenant_slug=tenant.slug) }}" method="POST" class="hidden"
@@ -1067,6 +1266,66 @@
 
 {% include 'partials/backup_live_modal.html' %}
 
+<div id="deviceDiagnosticModal" class="dev-diag-modal" aria-hidden="true">
+  <div class="dev-diag-panel">
+    <div class="dev-diag-head">
+      <div>
+        <h3 id="deviceDiagnosticTitle" style="margin:0;color:#f8fafc;font-size:1rem;font-weight:800;">Diagnostico remoto</h3>
+        <p id="deviceDiagnosticSubtitle" style="margin:.28rem 0 0;color:#94a3b8;font-size:12px;">Coleta operacional via Jump Host sem expor credenciais.</p>
+      </div>
+      <button type="button" id="deviceDiagnosticClose" class="dev-btn">Fechar</button>
+    </div>
+    <div class="dev-diag-body">
+      <div class="dev-bulk-actions">
+        <button type="button" id="deviceDiagnosticRunAgain" class="dev-btn dev-btn-indigo">
+          <i data-lucide="refresh-cw"></i>
+          Recoletar
+        </button>
+        <button type="button" id="deviceDiagnosticCopy" class="dev-btn">
+          <i data-lucide="copy"></i>
+          Copiar saida
+        </button>
+      </div>
+      <pre id="deviceDiagnosticOutput" class="dev-diag-output">Aguardando coleta...</pre>
+    </div>
+  </div>
+</div>
+
+<div id="jumpConsoleModalDevices" class="dev-jump-modal" aria-hidden="true">
+  <div class="dev-jump-panel">
+    <div class="dev-jump-head">
+      <div>
+        <h3 id="jumpConsoleDevicesTitle" style="margin:0;color:#f8fafc;font-size:1rem;font-weight:800;">Acesso Linux Jump Host</h3>
+        <p id="jumpConsoleDevicesSubtitle" style="margin:.28rem 0 0;color:#94a3b8;font-size:12px;">Console operacional auditado, sem expor credenciais.</p>
+      </div>
+      <button type="button" id="jumpConsoleDevicesClose" class="dev-btn">Fechar</button>
+    </div>
+    <div class="dev-jump-body">
+      <div class="dev-jump-actions">
+        <button type="button" class="dev-btn jump-console-preset-btn" data-command="hostname">hostname</button>
+        <button type="button" class="dev-btn jump-console-preset-btn" data-command="uptime">uptime</button>
+        <button type="button" class="dev-btn jump-console-preset-btn" data-command="ip route">ip route</button>
+        <button type="button" class="dev-btn jump-console-preset-btn" data-command="ss -tunap">ss -tunap</button>
+        <button type="button" id="jumpConsoleDevicesCollect" class="dev-btn dev-btn-indigo">
+          <i data-lucide="clipboard-list"></i>
+          Coletar diagnostico
+        </button>
+      </div>
+      <form id="jumpConsoleDevicesForm" style="display:flex;gap:.5rem;flex-wrap:wrap;">
+        <input id="jumpConsoleDevicesInput" type="text" class="dev-input" style="padding-left:.8rem;flex:1;min-width:260px;" placeholder="Ex: ping -c 2 -W 2 172.31.0.1">
+        <button type="submit" class="dev-btn dev-btn-primary">Executar</button>
+      </form>
+      <div class="dev-jump-actions">
+        <button type="button" id="jumpConsoleDevicesCopy" class="dev-btn">
+          <i data-lucide="copy"></i>
+          Copiar saida
+        </button>
+      </div>
+      <pre id="jumpConsoleDevicesOutput" class="dev-jump-output">Aguardando comando...</pre>
+    </div>
+  </div>
+</div>
+
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         lucide.createIcons();
@@ -1107,7 +1366,249 @@
         const subgroupNameInputHidden = document.getElementById('subgroupNameInputHidden');
         const createSubgroupAndAssignLabel = document.getElementById('createSubgroupAndAssignLabel');
         const activeSubgroupChip = document.querySelector('[data-subgroup-chip="1"][data-active="1"]');
+        const csrfTokenInput = document.querySelector('input[name="_csrf_token"]');
+        const collectButtons = document.querySelectorAll('[data-collect-diagnostics]');
+        const deviceDiagnosticModal = document.getElementById('deviceDiagnosticModal');
+        const deviceDiagnosticClose = document.getElementById('deviceDiagnosticClose');
+        const deviceDiagnosticRunAgain = document.getElementById('deviceDiagnosticRunAgain');
+        const deviceDiagnosticCopy = document.getElementById('deviceDiagnosticCopy');
+        const deviceDiagnosticOutput = document.getElementById('deviceDiagnosticOutput');
+        const deviceDiagnosticTitle = document.getElementById('deviceDiagnosticTitle');
+        const deviceDiagnosticSubtitle = document.getElementById('deviceDiagnosticSubtitle');
+        const openJumpConsoleButtons = document.querySelectorAll('[data-open-jump-console]');
+        const jumpConsoleModalDevices = document.getElementById('jumpConsoleModalDevices');
+        const jumpConsoleDevicesClose = document.getElementById('jumpConsoleDevicesClose');
+        const jumpConsoleDevicesTitle = document.getElementById('jumpConsoleDevicesTitle');
+        const jumpConsoleDevicesSubtitle = document.getElementById('jumpConsoleDevicesSubtitle');
+        const jumpConsoleDevicesOutput = document.getElementById('jumpConsoleDevicesOutput');
+        const jumpConsoleDevicesInput = document.getElementById('jumpConsoleDevicesInput');
+        const jumpConsoleDevicesForm = document.getElementById('jumpConsoleDevicesForm');
+        const jumpConsoleDevicesCopy = document.getElementById('jumpConsoleDevicesCopy');
+        const jumpConsoleDevicesCollect = document.getElementById('jumpConsoleDevicesCollect');
+        const jumpConsolePresetButtons = document.querySelectorAll('.jump-console-preset-btn');
+        let lastCollectContext = null;
+        let jumpConsoleContext = null;
         let subgroupModalMode = 'create';
+
+        async function postCollectDiagnostics(url, payload) {
+            const body = new URLSearchParams();
+            Object.entries(payload || {}).forEach(([key, value]) => {
+                if (value !== undefined && value !== null) {
+                    body.append(key, value);
+                }
+            });
+            if (csrfTokenInput && csrfTokenInput.value) {
+                body.append('_csrf_token', csrfTokenInput.value);
+            }
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json',
+                    'X-CSRF-Token': csrfTokenInput?.value || '',
+                    'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+                },
+                body: body.toString()
+            });
+            return response.json();
+        }
+
+        async function postJumpConsole(url, payload) {
+            const body = new URLSearchParams();
+            Object.entries(payload || {}).forEach(([key, value]) => {
+                if (value !== undefined && value !== null) {
+                    body.append(key, value);
+                }
+            });
+            if (csrfTokenInput && csrfTokenInput.value) {
+                body.append('_csrf_token', csrfTokenInput.value);
+            }
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json',
+                    'X-CSRF-Token': csrfTokenInput?.value || '',
+                    'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+                },
+                body: body.toString()
+            });
+            return response.json();
+        }
+
+        function openDeviceDiagnosticModal() {
+            if (!deviceDiagnosticModal) return;
+            deviceDiagnosticModal.classList.add('is-open');
+            deviceDiagnosticModal.setAttribute('aria-hidden', 'false');
+            if (window.lucide && typeof window.lucide.createIcons === 'function') {
+                window.lucide.createIcons();
+            }
+        }
+
+        function closeDeviceDiagnosticModal() {
+            if (!deviceDiagnosticModal) return;
+            deviceDiagnosticModal.classList.remove('is-open');
+            deviceDiagnosticModal.setAttribute('aria-hidden', 'true');
+        }
+
+        async function runDeviceCollect(context) {
+            if (!context || !context.url || !deviceDiagnosticOutput) return;
+            lastCollectContext = context;
+            deviceDiagnosticOutput.textContent = 'Coletando diagnostico remoto...';
+            if (deviceDiagnosticTitle) {
+                deviceDiagnosticTitle.textContent = `Diagnostico remoto • ${context.deviceName || 'Dispositivo'}`;
+            }
+            if (deviceDiagnosticSubtitle) {
+                deviceDiagnosticSubtitle.textContent = `${context.deviceIp || '-'} • via Jump Host do grupo`;
+            }
+            openDeviceDiagnosticModal();
+            try {
+                const payload = await postCollectDiagnostics(context.url, { device_id: context.deviceId });
+                deviceDiagnosticOutput.textContent = payload.summary || payload.error || 'Sem retorno da coleta.';
+            } catch (error) {
+                deviceDiagnosticOutput.textContent = 'Falha ao coletar diagnostico remoto para este dispositivo.';
+            }
+        }
+
+        collectButtons.forEach((btn) => {
+            btn.addEventListener('click', () => {
+                runDeviceCollect({
+                    url: btn.dataset.collectUrl || '',
+                    deviceId: btn.dataset.deviceId || '',
+                    deviceName: btn.dataset.deviceName || '',
+                    deviceIp: btn.dataset.deviceIp || '',
+                });
+            });
+        });
+
+        if (deviceDiagnosticClose) {
+            deviceDiagnosticClose.addEventListener('click', closeDeviceDiagnosticModal);
+        }
+        if (deviceDiagnosticModal) {
+            deviceDiagnosticModal.addEventListener('click', (event) => {
+                if (event.target === deviceDiagnosticModal) {
+                    closeDeviceDiagnosticModal();
+                }
+            });
+        }
+        if (deviceDiagnosticRunAgain) {
+            deviceDiagnosticRunAgain.addEventListener('click', () => {
+                if (lastCollectContext) runDeviceCollect(lastCollectContext);
+            });
+        }
+        if (deviceDiagnosticCopy && deviceDiagnosticOutput) {
+            deviceDiagnosticCopy.addEventListener('click', async () => {
+                try {
+                    await navigator.clipboard.writeText(deviceDiagnosticOutput.textContent || '');
+                } catch (error) {
+                    console.error('Falha ao copiar diagnostico', error);
+                }
+            });
+        }
+
+        function openJumpConsoleDevicesModal() {
+            if (!jumpConsoleModalDevices) return;
+            jumpConsoleModalDevices.classList.add('is-open');
+            jumpConsoleModalDevices.setAttribute('aria-hidden', 'false');
+            if (window.lucide && typeof window.lucide.createIcons === 'function') {
+                window.lucide.createIcons();
+            }
+        }
+
+        function closeJumpConsoleDevicesModal() {
+            if (!jumpConsoleModalDevices) return;
+            jumpConsoleModalDevices.classList.remove('is-open');
+            jumpConsoleModalDevices.setAttribute('aria-hidden', 'true');
+        }
+
+        async function runJumpConsoleCommand(command) {
+            if (!jumpConsoleContext || !jumpConsoleContext.consoleUrl || !jumpConsoleDevicesOutput) return;
+            jumpConsoleDevicesOutput.textContent = `$ ${command}\n\nExecutando...`;
+            try {
+                const payload = await postJumpConsole(jumpConsoleContext.consoleUrl, { command });
+                jumpConsoleDevicesOutput.textContent = `$ ${command}\n\n` + (payload.output || payload.error || 'Sem retorno.');
+            } catch (error) {
+                jumpConsoleDevicesOutput.textContent = `$ ${command}\n\nFalha ao executar comando no Jump Host.`;
+            }
+        }
+
+        openJumpConsoleButtons.forEach((button) => {
+            button.addEventListener('click', () => {
+                jumpConsoleContext = {
+                    consoleUrl: button.dataset.consoleUrl || '',
+                    collectUrl: button.dataset.collectUrl || '',
+                    groupName: button.dataset.groupName || '',
+                    deviceId: button.dataset.deviceId || '',
+                    deviceName: button.dataset.deviceName || '',
+                    deviceIp: button.dataset.deviceIp || '',
+                };
+                if (jumpConsoleDevicesTitle) {
+                    jumpConsoleDevicesTitle.textContent = `Acesso Linux Jump Host • ${jumpConsoleContext.groupName || 'Grupo'}`;
+                }
+                if (jumpConsoleDevicesSubtitle) {
+                    const deviceChunk = jumpConsoleContext.deviceName ? `Dispositivo: ${jumpConsoleContext.deviceName}` : 'Sem dispositivo especifico';
+                    const ipChunk = jumpConsoleContext.deviceIp ? ` (${jumpConsoleContext.deviceIp})` : '';
+                    jumpConsoleDevicesSubtitle.textContent = `${deviceChunk}${ipChunk}`;
+                }
+                if (jumpConsoleDevicesInput) jumpConsoleDevicesInput.value = '';
+                if (jumpConsoleDevicesOutput) jumpConsoleDevicesOutput.textContent = 'Aguardando comando...';
+                openJumpConsoleDevicesModal();
+            });
+        });
+
+        if (jumpConsoleDevicesClose) {
+            jumpConsoleDevicesClose.addEventListener('click', closeJumpConsoleDevicesModal);
+        }
+        if (jumpConsoleModalDevices) {
+            jumpConsoleModalDevices.addEventListener('click', (event) => {
+                if (event.target === jumpConsoleModalDevices) {
+                    closeJumpConsoleDevicesModal();
+                }
+            });
+        }
+
+        if (jumpConsoleDevicesForm) {
+            jumpConsoleDevicesForm.addEventListener('submit', (event) => {
+                event.preventDefault();
+                const command = (jumpConsoleDevicesInput && jumpConsoleDevicesInput.value ? jumpConsoleDevicesInput.value : '').trim();
+                if (!command) return;
+                runJumpConsoleCommand(command);
+            });
+        }
+
+        jumpConsolePresetButtons.forEach((button) => {
+            button.addEventListener('click', () => {
+                const command = (button.dataset.command || '').trim();
+                if (!command) return;
+                if (jumpConsoleDevicesInput) jumpConsoleDevicesInput.value = command;
+                runJumpConsoleCommand(command);
+            });
+        });
+
+        if (jumpConsoleDevicesCollect) {
+            jumpConsoleDevicesCollect.addEventListener('click', async () => {
+                if (!jumpConsoleContext || !jumpConsoleContext.collectUrl || !jumpConsoleDevicesOutput) return;
+                jumpConsoleDevicesOutput.textContent = 'Coletando diagnostico remoto...';
+                try {
+                    const payload = await postCollectDiagnostics(jumpConsoleContext.collectUrl, {
+                        device_id: jumpConsoleContext.deviceId || '',
+                    });
+                    jumpConsoleDevicesOutput.textContent = payload.summary || payload.error || 'Sem retorno da coleta.';
+                } catch (error) {
+                    jumpConsoleDevicesOutput.textContent = 'Falha ao coletar diagnostico remoto.';
+                }
+            });
+        }
+
+        if (jumpConsoleDevicesCopy && jumpConsoleDevicesOutput) {
+            jumpConsoleDevicesCopy.addEventListener('click', async () => {
+                try {
+                    await navigator.clipboard.writeText(jumpConsoleDevicesOutput.textContent || '');
+                } catch (error) {
+                    console.error('Falha ao copiar saida do console jump', error);
+                }
+            });
+        }
 
         function refreshSelectedCount() {
             const checked = [...rowChecks].filter(cb => cb.checked).length;

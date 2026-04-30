@@ -25,6 +25,25 @@ def tenant_admin_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+
+def tenant_operator_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'user_id' not in session:
+            return redirect(url_for('auth.login', next=request.url))
+
+        role = session.get('user_role')
+        if role not in [
+            UserRole.SUPER_ADMIN.value,
+            UserRole.TENANT_OWNER.value,
+            UserRole.TENANT_ADMIN.value,
+            UserRole.TENANT_TECHNICIAN.value,
+        ]:
+            flash('Você não tem permissão para executar esta operação.', 'error')
+            return redirect(url_for('tenant.dashboard', tenant_slug=kwargs.get('tenant_slug')))
+        return f(*args, **kwargs)
+    return decorated_function
+
 def super_admin_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):

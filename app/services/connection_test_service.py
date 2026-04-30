@@ -4,7 +4,7 @@ import socket
 import time
 from dataclasses import dataclass
 from io import StringIO
-from typing import Optional, List, Tuple
+from typing import Any, Dict, Optional, List, Tuple
 
 import paramiko
 import pexpect
@@ -39,6 +39,48 @@ class ConnectionTestResult:
 
 class ConnectionTestService:
     DEFAULT_TIMEOUT = 8
+
+    def _message_has_auth_failure(self, message: str) -> bool:
+        text = str(message or "").strip().lower()
+        return any(token in text for token in [
+            "auth",
+            "authentication",
+            "permission denied",
+            "access denied",
+            "invalid credentials",
+            "login failed",
+            "senha",
+            "password",
+            "credencia",
+        ])
+
+    def _message_has_timeout(self, message: str) -> bool:
+        text = str(message or "").strip().lower()
+        return any(token in text for token in ["timeout", "timed out", "banner", "timeoutexception"])
+
+    def _message_has_route_failure(self, message: str) -> bool:
+        text = str(message or "").strip().lower()
+        return any(token in text for token in [
+            "no route to host",
+            "network is unreachable",
+            "host unreachable",
+            "connection refused",
+            "unable to connect",
+            "tcp",
+            "port",
+            "refused",
+            "unreachable",
+        ])
+
+    def _append_step(self, steps: List[Dict[str, Any]], key: str, title: str, status: str, message: str) -> None:
+        steps.append(
+            {
+                "key": key,
+                "title": title,
+                "status": status,
+                "message": str(message or "").strip(),
+            }
+        )
 
     def _script_name(self, device: Device) -> str:
         return str(getattr(getattr(device, "type", None), "script_name", "") or "").strip().lower()
@@ -405,6 +447,204 @@ class ConnectionTestService:
         finally:
             if session.isalive():
                 session.close(force=True)
+
+    def diagnose_access_chain(
+        self,
+        device: Device,
+        group: Optional[DeviceGroup] = None,
+        manage_vpn: bool = True,
+        timeout: Optional[int] = None,
+    ) -> Dict[str, Any]:
+        timeout = int(timeout or self._recommended_timeout(device, group))
+        logger = BackupLogger(device.name, verbose=False)
+        password = decrypt_password(device.password_encrypted)
+        protocol = "telnet" if device.use_telnet else "ssh"
+        started = time.monotonic()
+        steps: List[Dict[str, Any]] = []
+        tcp_ok = False
+        jump_host_ok = False
+        route_ok = False
+        jump_host = self._build_jump_host_config(group, device=device)
+        if self._should_bypass_jump_host(device, jump_host):
+            jump_host = None
+
+        def _result(ok: bool, category: str, message: str) -> Dict[str, Any]:
+            return {
+                "ok": bool(ok),
+                "category": category,
+                "message": str(message or "").strip(),
+                "protocol": protocol,
+                "elapsed_ms": int((time.monotonic() - started) * 1000),
+                "tcp_ok": bool(tcp_ok),
+                "jump_host_ok": bool(jump_host_ok),
+                "route_ok": bool(route_ok),
+                "steps": steps,
+            }
+
+        def _run() -> Dict[str, Any]:
+            nonlocal tcp_ok, jump_host_ok, route_ok
+            jump_client = None
+            try:
+                if jump_host:
+                    try:
+                        sock = socket.create_connection(
+                            (jump_host["host"], int(jump_host.get("port") or 22)),
+                            timeout=timeout,
+                        )
+                        sock.close()
+                        self._append_step(
+                            steps,
+                            "jump_reachability",
+                            "Jump Host alcançável",
+                            "success",
+                            f"TCP {jump_host['host']}:{int(jump_host.get('port') or 22)} respondeu.",
+                        )
+                    except Exception as exc:
+                        self._append_step(
+                            steps,
+                            "jump_reachability",
+                            "Jump Host alcançável",
+                            "error",
+                            str(exc),
+                        )
+                        category = "timeout" if self._message_has_timeout(str(exc)) else "jump_host_access_failed"
+                        return _result(False, category, f"Falha de acesso ao Jump Host: {exc}")
+
+                    try:
+                        jump_client = self._open_jump_client(jump_host, timeout)
+                        jump_host_ok = True
+                        self._append_step(
+                            steps,
+                            "jump_login",
+                            "Login no Jump Host",
+                            "success",
+                            f"SSH autenticado com {jump_host.get('username')}@{jump_host.get('host')}.",
+                        )
+                    except Exception as exc:
+                        self._append_step(
+                            steps,
+                            "jump_login",
+                            "Login no Jump Host",
+                            "error",
+                            str(exc),
+                        )
+                        category = "timeout" if self._message_has_timeout(str(exc)) else "jump_host_access_failed"
+                        return _result(False, category, f"Falha de acesso ao Jump Host: {exc}")
+
+                    try:
+                        channel = self._open_jump_channel(
+                            jump_client,
+                            device.ip_address,
+                            int(device.port or (23 if device.use_telnet else 22)),
+                            timeout,
+                        )
+                        channel.close()
+                        route_ok = True
+                        tcp_ok = True
+                        self._append_step(
+                            steps,
+                            "route_to_device",
+                            "Rota até dispositivo",
+                            "success",
+                            f"Jump Host abriu canal para {device.ip_address}:{int(device.port or (23 if device.use_telnet else 22))}.",
+                        )
+                    except Exception as exc:
+                        self._append_step(
+                            steps,
+                            "route_to_device",
+                            "Rota até dispositivo",
+                            "error",
+                            str(exc),
+                        )
+                        category = "timeout" if self._message_has_timeout(str(exc)) else "jump_host_no_route"
+                        return _result(False, category, f"Jump Host online, mas sem rota para o dispositivo: {exc}")
+                else:
+                    try:
+                        self._test_tcp_port(
+                            device.ip_address,
+                            int(device.port or (23 if device.use_telnet else 22)),
+                            timeout,
+                            jump_host=None,
+                        )
+                        route_ok = True
+                        tcp_ok = True
+                        self._append_step(
+                            steps,
+                            "direct_tcp",
+                            "Porta do dispositivo",
+                            "success",
+                            f"TCP {device.ip_address}:{int(device.port or (23 if device.use_telnet else 22))} respondeu.",
+                        )
+                    except Exception as exc:
+                        self._append_step(
+                            steps,
+                            "direct_tcp",
+                            "Porta do dispositivo",
+                            "error",
+                            str(exc),
+                        )
+                        category = "timeout" if self._message_has_timeout(str(exc)) else "connectivity_failed"
+                        return _result(False, category, f"Falha de conectividade com o dispositivo: {exc}")
+
+                ok, netmiko_info = self._test_netmiko(device, password, timeout, jump_host=jump_host)
+                if ok:
+                    self._append_step(
+                        steps,
+                        "device_auth",
+                        "Autenticação no dispositivo",
+                        "success",
+                        f"Login validado com Netmiko ({netmiko_info}).",
+                    )
+                    return _result(True, "ok", "Acesso completo validado com sucesso.")
+
+                try:
+                    if device.use_telnet:
+                        self._test_telnet(device, password, timeout)
+                    else:
+                        self._test_ssh(device, password, timeout, jump_host=jump_host)
+                    self._append_step(
+                        steps,
+                        "device_auth",
+                        "Autenticação no dispositivo",
+                        "success",
+                        "Login validado com fallback nativo.",
+                    )
+                    return _result(True, "ok", "Acesso completo validado com sucesso.")
+                except Exception as exc:
+                    self._append_step(
+                        steps,
+                        "device_auth",
+                        "Autenticação no dispositivo",
+                        "error",
+                        str(exc),
+                    )
+                    if self._message_has_timeout(str(exc)):
+                        return _result(False, "timeout", f"Timeout durante autenticacao no dispositivo: {exc}")
+                    if self._message_has_auth_failure(str(exc)) or self._message_has_auth_failure(netmiko_info):
+                        return _result(False, "device_auth_failed", f"Credencial do dispositivo invalida: {exc}")
+                    if jump_host and self._message_has_route_failure(str(exc)):
+                        return _result(False, "jump_host_no_route", f"Jump Host acessivel, mas sem rota/porta ate o dispositivo: {exc}")
+                    return _result(False, "connectivity_failed", f"Falha de conectividade no dispositivo: {exc}")
+            finally:
+                if jump_client is not None:
+                    try:
+                        jump_client.close()
+                    except Exception:
+                        pass
+
+        try:
+            if group and uses_vpn_tunnel(group, device=device) and manage_vpn:
+                with vpn_service.vpn_session(group, logger=logger):
+                    return _run()
+            return _run()
+        except VpnError as exc:
+            self._append_step(steps, "vpn", "Preparação de VPN", "error", str(exc))
+            return _result(False, "vpn_failed", f"Falha ao preparar VPN: {exc}")
+        except Exception as exc:
+            self._append_step(steps, "diagnostic", "Diagnóstico", "error", str(exc))
+            if self._message_has_timeout(str(exc)):
+                return _result(False, "timeout", str(exc))
+            return _result(False, "connectivity_failed", str(exc) or "Falha de conexao.")
 
     def test_device_connection(
         self,

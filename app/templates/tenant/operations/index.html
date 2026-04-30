@@ -5,6 +5,7 @@
 {% block content %}
 {% set role = session.get('user_role') %}
 {% set can_manage_admin = role in ['super_admin', 'tenant_owner', 'tenant_admin'] %}
+{% set can_operator = role in ['super_admin', 'tenant_owner', 'tenant_admin', 'tenant_technician'] %}
 
 <style>
   .ops-page {
@@ -232,6 +233,72 @@
   }
   .ops-card-note i { width: .9rem; height: .9rem; }
 
+  .ops-jump-strip {
+    margin-top: .8rem;
+    border: 1px solid #1e293b;
+    border-radius: .6rem;
+    background: #0a0f18;
+    padding: .7rem;
+    display: grid;
+    gap: .55rem;
+  }
+
+  .ops-jump-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .75rem;
+    flex-wrap: wrap;
+  }
+
+  .ops-jump-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: .3rem;
+    border-radius: 9999px;
+    border: 1px solid #334155;
+    padding: .22rem .48rem;
+    font-size: .62rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    color: #cbd5e1;
+    background: #0f172a;
+  }
+  .ops-jump-chip.good { border-color: rgba(16,185,129,.35); background: rgba(16,185,129,.12); color: #34d399; }
+  .ops-jump-chip.warn { border-color: rgba(245,158,11,.35); background: rgba(245,158,11,.12); color: #fbbf24; }
+  .ops-jump-chip.bad { border-color: rgba(244,63,94,.35); background: rgba(244,63,94,.12); color: #fb7185; }
+
+  .ops-jump-stats {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: .45rem;
+  }
+
+  .ops-jump-stat {
+    border: 1px solid #1e293b;
+    border-radius: .55rem;
+    padding: .42rem .48rem;
+    background: #020617;
+  }
+
+  .ops-jump-stat-label {
+    display: block;
+    color: #64748b;
+    font-size: .55rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+  }
+
+  .ops-jump-stat-value {
+    display: block;
+    margin-top: .18rem;
+    color: #f8fafc;
+    font-size: .9rem;
+    font-weight: 800;
+  }
+
   .ops-card-foot {
     padding: .75rem 1.25rem;
     border-top: 1px solid #1e293b;
@@ -304,6 +371,60 @@
   .ops-empty .ops-clear:hover { background: #334155; color: #fff; }
 
   .ops-hidden { display: none !important; }
+
+  .ops-console {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    background: rgba(2, 6, 23, .75);
+    backdrop-filter: blur(4px);
+  }
+  .ops-console.is-open { display: flex; }
+  .ops-console-panel {
+    width: min(860px, 100%);
+    max-height: 88vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border-radius: .95rem;
+    border: 1px solid #1e293b;
+    background: #0b1120;
+    box-shadow: 0 24px 60px rgba(2, 6, 23, .55);
+  }
+  .ops-console-head {
+    padding: .95rem 1rem;
+    border-bottom: 1px solid #1e293b;
+    background: #111827;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .8rem;
+  }
+  .ops-console-body {
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: .8rem;
+  }
+  .ops-console-actions { display: flex; gap: .5rem; flex-wrap: wrap; }
+  .ops-console-output {
+    min-height: 220px;
+    max-height: 46vh;
+    overflow: auto;
+    border: 1px solid #1e293b;
+    border-radius: .75rem;
+    background: #050816;
+    padding: .9rem;
+    color: #cbd5e1;
+    font-size: 12px;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  }
 </style>
 
 <div class="ops-page">
@@ -411,6 +532,41 @@
             <i data-lucide="activity"></i>
             Baseado no ultimo backup por dispositivo.
           </p>
+
+          {% if row.uses_jump_host %}
+          {% set jump_state = row.jump_host_state or {} %}
+          {% set jump_status = jump_state.get('status', 'unknown') %}
+          <div class="ops-jump-strip">
+            <div class="ops-jump-row">
+              <div style="display:flex;align-items:center;gap:.45rem;flex-wrap:wrap;">
+                <span class="ops-jump-chip {% if jump_status == 'healthy' %}good{% elif jump_status == 'degraded' %}warn{% else %}bad{% endif %}">
+                  <i data-lucide="network"></i>
+                  Jump {{ jump_status|replace('_', ' ') }}
+                </span>
+                <span class="ops-jump-chip">{{ jump_state.get('jump_host') or '-' }}</span>
+              </div>
+              <span style="font-size:.64rem;color:#64748b;">Ultimo teste: {{ jump_state.get('last_checked_at') or 'nunca' }}</span>
+            </div>
+            <div class="ops-jump-stats">
+              <div class="ops-jump-stat">
+                <span class="ops-jump-stat-label">Auth final</span>
+                <span class="ops-jump-stat-value">{{ row.device_auth_failed }}</span>
+              </div>
+              <div class="ops-jump-stat">
+                <span class="ops-jump-stat-label">Acesso Jump</span>
+                <span class="ops-jump-stat-value">{{ row.jump_host_access_failed }}</span>
+              </div>
+              <div class="ops-jump-stat">
+                <span class="ops-jump-stat-label">Sem rota</span>
+                <span class="ops-jump-stat-value">{{ row.jump_host_no_route }}</span>
+              </div>
+              <div class="ops-jump-stat">
+                <span class="ops-jump-stat-label">Timeout</span>
+                <span class="ops-jump-stat-value">{{ row.timeout }}</span>
+              </div>
+            </div>
+          </div>
+          {% endif %}
         </div>
 
         <div class="ops-card-foot">
@@ -439,6 +595,24 @@
               Testar VPN
             </button>
           </form>
+          {% endif %}
+
+          {% if can_operator and row.uses_jump_host and row.is_active %}
+          <form id="form-diagnose-jump-group-{{ row.id }}" action="{{ url_for('tenant_groups.diagnose_group_jump', tenant_slug=tenant.slug, group_id=row.id) }}" method="POST" style="display:inline;">
+            {% include 'partials/csrf.html' %}
+            <button type="button" data-run-backup-live data-form-id="form-diagnose-jump-group-{{ row.id }}" class="ops-btn ops-btn-emerald">
+              <i data-lucide="stethoscope"></i>
+              Diagnosticar
+            </button>
+          </form>
+          <button type="button"
+                  class="ops-btn ops-open-console"
+                  data-group-name="{{ row.name }}"
+                  data-console-url="{{ url_for('tenant_groups.exec_jump_console', tenant_slug=tenant.slug, group_id=row.id) }}"
+                  data-collect-url="{{ url_for('tenant_groups.collect_jump_diagnostics', tenant_slug=tenant.slug, group_id=row.id) }}">
+            <i data-lucide="terminal-square"></i>
+            Console Jump
+          </button>
           {% endif %}
 
           <div class="ops-spacer"></div>
@@ -494,14 +668,52 @@
   </div>
 </div>
 
+<div id="opsJumpConsoleModal" class="ops-console" aria-hidden="true">
+  <div class="ops-console-panel">
+    <div class="ops-console-head">
+      <div>
+        <h3 id="opsJumpConsoleTitle" style="margin:0;color:#f8fafc;font-size:1rem;font-weight:800;">Console Jump</h3>
+        <p style="margin:.25rem 0 0;color:#94a3b8;font-size:12px;">Sessao operacional auditada, sem revelar credenciais do bastion.</p>
+      </div>
+      <button type="button" id="opsJumpConsoleClose" class="ops-btn">Fechar</button>
+    </div>
+    <div class="ops-console-body">
+      <div class="ops-console-actions">
+        <button type="button" class="ops-btn ops-console-preset" data-command="hostname">hostname</button>
+        <button type="button" class="ops-btn ops-console-preset" data-command="uptime">uptime</button>
+        <button type="button" class="ops-btn ops-console-preset" data-command="ip route">ip route</button>
+        <button type="button" class="ops-btn ops-console-preset" data-command="ss -tunap">ss -tunap</button>
+        <button type="button" id="opsCollectDiagnosticsBtn" class="ops-btn ops-btn-indigo">Coletar diagnostico</button>
+      </div>
+      <form id="opsJumpConsoleForm" style="display:flex;gap:.5rem;flex-wrap:wrap;">
+        <input id="opsJumpConsoleInput" type="text" class="ops-search" style="padding-left:.75rem;flex:1;min-width:240px;" placeholder="Ex: ping -c 2 -W 2 172.31.0.1">
+        <button type="submit" class="ops-btn ops-btn-primary">Executar</button>
+      </form>
+      <div class="ops-console-output" id="opsJumpConsoleOutput">Aguardando comando...</div>
+    </div>
+  </div>
+</div>
+
 <script>
   document.addEventListener('DOMContentLoaded', function () {
     const searchInput = document.getElementById('groupSearchInput');
     const visibleCount = document.getElementById('groupVisibleCount');
     const emptyState = document.getElementById('groupFilterEmptyState');
     const clearFiltersBtn = document.getElementById('clearGroupFiltersBtn');
+    const csrfInput = document.querySelector('input[name="_csrf_token"]');
+    const csrfToken = csrfInput ? csrfInput.value : '';
     const items = Array.from(document.querySelectorAll('.ops-card[data-group-name]'));
     const filterButtons = Array.from(document.querySelectorAll('.ops-filter-btn'));
+    const consoleButtons = Array.from(document.querySelectorAll('.ops-open-console'));
+    const consoleModal = document.getElementById('opsJumpConsoleModal');
+    const consoleClose = document.getElementById('opsJumpConsoleClose');
+    const consoleTitle = document.getElementById('opsJumpConsoleTitle');
+    const consoleInput = document.getElementById('opsJumpConsoleInput');
+    const consoleOutput = document.getElementById('opsJumpConsoleOutput');
+    const consoleForm = document.getElementById('opsJumpConsoleForm');
+    const consolePresetButtons = Array.from(document.querySelectorAll('.ops-console-preset'));
+    const collectDiagnosticsBtn = document.getElementById('opsCollectDiagnosticsBtn');
+    let activeConsoleUrls = { consoleUrl: '', collectUrl: '' };
 
     if (!searchInput || items.length === 0 || filterButtons.length === 0) {
       if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
@@ -590,6 +802,79 @@
     }
 
     applyFilters();
+
+    async function postForm(url, payload) {
+      const body = new URLSearchParams();
+      Object.entries(payload || {}).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) body.append(key, value);
+      });
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest',
+          'Accept': 'application/json',
+          'X-CSRF-Token': csrfToken,
+          'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+        },
+        body: body.toString()
+      });
+      return response.json();
+    }
+
+    async function runConsoleCommand(command) {
+      if (!activeConsoleUrls.consoleUrl || !consoleOutput) return;
+      consoleOutput.textContent = '$ ' + command + '\n\nExecutando...';
+      const payload = await postForm(activeConsoleUrls.consoleUrl, { command });
+      consoleOutput.textContent = '$ ' + command + '\n\n' + (payload.output || payload.error || 'Sem saida.');
+    }
+
+    consoleButtons.forEach(function (button) {
+      button.addEventListener('click', function () {
+        activeConsoleUrls.consoleUrl = button.dataset.consoleUrl || '';
+        activeConsoleUrls.collectUrl = button.dataset.collectUrl || '';
+        if (consoleTitle) consoleTitle.textContent = 'Console Jump • ' + (button.dataset.groupName || 'Grupo');
+        if (consoleOutput) consoleOutput.textContent = 'Aguardando comando...';
+        if (consoleInput) consoleInput.value = '';
+        if (consoleModal) consoleModal.classList.add('is-open');
+      });
+    });
+
+    if (consoleClose && consoleModal) {
+      consoleClose.addEventListener('click', function () {
+        consoleModal.classList.remove('is-open');
+      });
+      consoleModal.addEventListener('click', function (event) {
+        if (event.target === consoleModal) {
+          consoleModal.classList.remove('is-open');
+        }
+      });
+    }
+
+    consolePresetButtons.forEach(function (button) {
+      button.addEventListener('click', function () {
+        const command = button.dataset.command || '';
+        if (consoleInput) consoleInput.value = command;
+        runConsoleCommand(command);
+      });
+    });
+
+    if (consoleForm) {
+      consoleForm.addEventListener('submit', function (event) {
+        event.preventDefault();
+        const command = (consoleInput && consoleInput.value ? consoleInput.value : '').trim();
+        if (!command) return;
+        runConsoleCommand(command);
+      });
+    }
+
+    if (collectDiagnosticsBtn) {
+      collectDiagnosticsBtn.addEventListener('click', async function () {
+        if (!activeConsoleUrls.collectUrl || !consoleOutput) return;
+        consoleOutput.textContent = 'Coletando diagnostico remoto...';
+        const payload = await postForm(activeConsoleUrls.collectUrl, {});
+        consoleOutput.textContent = payload.summary || payload.error || 'Sem retorno.';
+      });
+    }
   });
 </script>
 

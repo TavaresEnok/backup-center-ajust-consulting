@@ -99,6 +99,11 @@ celery_app.conf.beat_schedule = {
         'task': 'app.tasks.monitoring.ping_all_devices_periodic',
         'schedule': crontab(minute='*/5'),
     },
+    # Saude dos Jump Hosts a cada 10 minutos
+    'check-jump-host-health-every-10-min': {
+        'task': 'app.tasks.monitoring.run_jump_host_health_checks_periodic',
+        'schedule': crontab(minute='*/10'),
+    },
     # Enviar relatÃ³rios diÃ¡rios Ã s 8h
     'send-daily-reports': {
         'task': 'app.tasks.reports.send_scheduled_reports',
