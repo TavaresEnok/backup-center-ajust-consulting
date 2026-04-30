@@ -645,7 +645,7 @@
           <button type="button"
                   class="ops-btn ops-open-console"
                   data-group-name="{{ row.name }}"
-                  data-ws-token-url="{{ url_for('tenant_groups.jump_console_ws_token', tenant_slug=tenant.slug, group_id=row.id) }}"
+                  data-ws-token-url="/tenant/{{ tenant.slug }}/groups/{{ row.id }}/jump-console/ws-token"
                   data-collect-url="{{ url_for('tenant_groups.collect_jump_diagnostics', tenant_slug=tenant.slug, group_id=row.id) }}"
                   title="Abrir terminal interativo SSH no Jump Host">
             <i data-lucide="terminal"></i>
