@@ -144,13 +144,12 @@
     display: grid;
     grid-template-columns: 1fr;
     gap: 1.25rem;
-    align-items: start;
   }
   @media (min-width: 1024px) {
-    .ops-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
+    .ops-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   }
   @media (min-width: 1536px) {
-    .ops-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: start; }
+    .ops-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   }
 
   .ops-conn-info {
@@ -158,17 +157,20 @@
     border: 1px solid #1e293b;
     border-radius: .6rem;
     background: #0a0f18;
-    padding: .65rem .85rem;
+    padding: .85rem;
     display: flex;
+    flex: 1;
     align-items: center;
+    justify-content: center;
     gap: .55rem;
     color: #475569;
-    font-size: .7rem;
+    font-size: .72rem;
     font-weight: 600;
+    text-align: center;
   }
-  .ops-conn-info i { width: .85rem; height: .85rem; flex-shrink: 0; }
-  .ops-conn-info.direct { border-color: rgba(71,85,105,.3); }
-  .ops-conn-info.vpn { border-color: rgba(99,102,241,.2); color: rgba(129,140,248,.6); }
+  .ops-conn-info i { width: .9rem; height: .9rem; flex-shrink: 0; }
+  .ops-conn-info.direct { border-color: rgba(71,85,105,.3); border-style: dashed; }
+  .ops-conn-info.vpn { border-color: rgba(99,102,241,.2); border-style: dashed; color: rgba(129,140,248,.6); }
 
   .ops-card {
     background: #0f172a;
@@ -217,7 +219,7 @@
   .ops-type-pill.vpn { border-color: rgba(99,102,241,.28); background: rgba(99,102,241,.12); color: #818cf8; }
   .ops-type-pill.jump { border-color: rgba(14,165,233,.28); background: rgba(14,165,233,.12); color: #38bdf8; }
 
-  .ops-card-body { padding: 1.25rem; flex: 1; }
+  .ops-card-body { padding: 1.25rem; flex: 1; display: flex; flex-direction: column; }
   .ops-metrics {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -259,6 +261,7 @@
     padding: .7rem;
     display: grid;
     gap: .55rem;
+    flex: 1;
   }
 
   .ops-jump-row {
@@ -398,51 +401,57 @@
     align-items: center;
     justify-content: center;
     padding: 1rem;
-    background: rgba(2, 6, 23, .75);
-    backdrop-filter: blur(4px);
+    background: rgba(2, 6, 23, .82);
+    backdrop-filter: blur(6px);
   }
   .ops-console.is-open { display: flex; }
   .ops-console-panel {
-    width: min(860px, 100%);
-    max-height: 88vh;
+    width: min(1020px, 100%);
+    height: min(88vh, 720px);
     display: flex;
     flex-direction: column;
     overflow: hidden;
     border-radius: .95rem;
     border: 1px solid #1e293b;
-    background: #0b1120;
-    box-shadow: 0 24px 60px rgba(2, 6, 23, .55);
+    background: #050816;
+    box-shadow: 0 24px 80px rgba(2, 6, 23, .7);
   }
   .ops-console-head {
-    padding: .95rem 1rem;
+    padding: .75rem 1rem;
     border-bottom: 1px solid #1e293b;
-    background: #111827;
+    background: #0b1120;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: .8rem;
+    flex-shrink: 0;
   }
-  .ops-console-body {
-    padding: 1rem;
+  .ops-console-presets {
+    padding: .45rem .85rem;
+    background: #0b1120;
+    border-bottom: 1px solid rgba(30,41,59,.7);
     display: flex;
-    flex-direction: column;
-    gap: .8rem;
+    align-items: center;
+    gap: .35rem;
+    flex-wrap: wrap;
+    flex-shrink: 0;
   }
-  .ops-console-actions { display: flex; gap: .5rem; flex-wrap: wrap; }
-  .ops-console-output {
-    min-height: 220px;
-    max-height: 46vh;
-    overflow: auto;
-    border: 1px solid #1e293b;
-    border-radius: .75rem;
+  .ops-console-preset-label {
+    font-size: .6rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .07em;
+    color: #334155;
+    margin-right: .2rem;
+  }
+  .ops-term-wrap {
+    flex: 1;
+    min-height: 0;
     background: #050816;
-    padding: .9rem;
-    color: #cbd5e1;
-    font-size: 12px;
-    line-height: 1.5;
-    white-space: pre-wrap;
-    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    padding: .5rem .5rem .25rem;
+    overflow: hidden;
   }
+  #opsTerminalContainer { width: 100%; height: 100%; }
 </style>
 
 <div class="ops-page">
@@ -697,41 +706,49 @@
   </div>
 </div>
 
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.3.0/css/xterm.css">
+<script src="https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit@0.8.0/lib/xterm-addon-fit.js"></script>
+
 <div id="opsJumpConsoleModal" class="ops-console" aria-hidden="true">
   <div class="ops-console-panel">
+
     <div class="ops-console-head">
-      <div style="display:flex;align-items:center;gap:.75rem;">
-        <div style="display:flex;align-items:center;justify-content:center;width:2rem;height:2rem;border-radius:.45rem;background:rgba(14,165,233,.15);border:1px solid rgba(14,165,233,.25);flex-shrink:0;">
-          <i data-lucide="terminal" style="width:1rem;height:1rem;color:#38bdf8;"></i>
+      <div style="display:flex;align-items:center;gap:.7rem;">
+        <div style="display:flex;align-items:center;justify-content:center;width:2.1rem;height:2.1rem;border-radius:.45rem;background:rgba(14,165,233,.15);border:1px solid rgba(14,165,233,.3);flex-shrink:0;">
+          <i data-lucide="terminal" style="width:1.1rem;height:1.1rem;color:#38bdf8;"></i>
         </div>
         <div>
-          <h3 id="opsJumpConsoleTitle" style="margin:0;color:#f8fafc;font-size:1rem;font-weight:800;">Terminal Jump Host</h3>
-          <p style="margin:.2rem 0 0;color:#64748b;font-size:11px;display:flex;align-items:center;gap:.3rem;">
-            <i data-lucide="alert-triangle" style="width:.75rem;height:.75rem;color:#f59e0b;"></i>
-            Comandos executados no Linux do Jump Host — use para diagnostico e testes de conectividade
-          </p>
+          <h3 id="opsJumpConsoleTitle" style="margin:0;color:#f8fafc;font-size:.95rem;font-weight:800;font-family:ui-monospace,monospace;">Terminal Jump Host</h3>
+          <p id="opsJumpConsoleSubtitle" style="margin:.1rem 0 0;color:#475569;font-size:11px;">Sessao operacional auditada — servidor Linux do Jump Host</p>
         </div>
       </div>
-      <button type="button" id="opsJumpConsoleClose" class="ops-btn">Fechar</button>
-    </div>
-    <div class="ops-console-body">
-      <div style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:.5rem;padding:.55rem .8rem;font-size:.72rem;color:#fbbf24;display:flex;align-items:center;gap:.45rem;">
-        <i data-lucide="info" style="width:.85rem;height:.85rem;flex-shrink:0;"></i>
-        Este terminal acessa o servidor Linux do Jump Host. Use para: ping, traceroute, teste de porta (nc), verificacao de rotas. Nao use para alterar configuracoes do servidor.
+      <div style="display:flex;align-items:center;gap:.4rem;">
+        <button type="button" id="opsClearTerminalBtn" class="ops-btn" title="Limpar tela (Ctrl+L)">
+          <i data-lucide="trash-2"></i> Limpar
+        </button>
+        <button type="button" id="opsCollectDiagnosticsBtn" class="ops-btn ops-btn-indigo" title="Coletar diagnostico automatico">
+          <i data-lucide="clipboard-list"></i> Diagnostico
+        </button>
+        <button type="button" id="opsJumpConsoleClose" class="ops-btn">Fechar</button>
       </div>
-      <div class="ops-console-actions">
-        <button type="button" class="ops-btn ops-console-preset" data-command="hostname">hostname</button>
-        <button type="button" class="ops-btn ops-console-preset" data-command="uptime">uptime</button>
-        <button type="button" class="ops-btn ops-console-preset" data-command="ip route">ip route</button>
-        <button type="button" class="ops-btn ops-console-preset" data-command="ss -tunap">ss -tunap</button>
-        <button type="button" id="opsCollectDiagnosticsBtn" class="ops-btn ops-btn-indigo">Coletar diagnostico</button>
-      </div>
-      <form id="opsJumpConsoleForm" style="display:flex;gap:.5rem;flex-wrap:wrap;">
-        <input id="opsJumpConsoleInput" type="text" class="ops-search" style="padding-left:.75rem;flex:1;min-width:240px;" placeholder="Ex: ping -c 3 192.168.1.1 | nc -zv 192.168.1.1 22">
-        <button type="submit" class="ops-btn ops-btn-primary">Executar</button>
-      </form>
-      <div class="ops-console-output" id="opsJumpConsoleOutput">Aguardando comando...</div>
     </div>
+
+    <div class="ops-console-presets">
+      <span class="ops-console-preset-label">Atalhos:</span>
+      <button type="button" class="ops-btn ops-console-preset" data-command="hostname" style="padding:.2rem .5rem;font-size:.69rem;font-family:ui-monospace,monospace;">hostname</button>
+      <button type="button" class="ops-btn ops-console-preset" data-command="uptime" style="padding:.2rem .5rem;font-size:.69rem;font-family:ui-monospace,monospace;">uptime</button>
+      <button type="button" class="ops-btn ops-console-preset" data-command="ip route" style="padding:.2rem .5rem;font-size:.69rem;font-family:ui-monospace,monospace;">ip route</button>
+      <button type="button" class="ops-btn ops-console-preset" data-command="ss -tunap" style="padding:.2rem .5rem;font-size:.69rem;font-family:ui-monospace,monospace;">ss -tunap</button>
+      <button type="button" class="ops-btn ops-console-preset" data-command="df -h" style="padding:.2rem .5rem;font-size:.69rem;font-family:ui-monospace,monospace;">df -h</button>
+      <button type="button" class="ops-btn ops-console-preset" data-command="free -h" style="padding:.2rem .5rem;font-size:.69rem;font-family:ui-monospace,monospace;">free -h</button>
+      <button type="button" class="ops-btn ops-console-preset" data-command="help" style="padding:.2rem .5rem;font-size:.69rem;font-family:ui-monospace,monospace;">help</button>
+    </div>
+
+    <div class="ops-term-wrap">
+      <div id="opsTerminalContainer"></div>
+    </div>
+
   </div>
 </div>
 
@@ -749,12 +766,129 @@
     const consoleModal = document.getElementById('opsJumpConsoleModal');
     const consoleClose = document.getElementById('opsJumpConsoleClose');
     const consoleTitle = document.getElementById('opsJumpConsoleTitle');
-    const consoleInput = document.getElementById('opsJumpConsoleInput');
-    const consoleOutput = document.getElementById('opsJumpConsoleOutput');
-    const consoleForm = document.getElementById('opsJumpConsoleForm');
-    const consolePresetButtons = Array.from(document.querySelectorAll('.ops-console-preset'));
-    const collectDiagnosticsBtn = document.getElementById('opsCollectDiagnosticsBtn');
-    let activeConsoleUrls = { consoleUrl: '', collectUrl: '' };
+    const clearBtn = document.getElementById('opsClearTerminalBtn');
+    const collectBtn = document.getElementById('opsCollectDiagnosticsBtn');
+
+    // ── xterm.js terminal ──────────────────────────────────────────────
+    let _term = null, _fit = null;
+    let _hist = [], _histIdx = -1;
+    let _inp = '', _busy = false;
+    let _consoleUrl = '', _collectUrl = '', _grpName = '';
+
+    function _prompt() {
+      return '\x1b[32m' + _grpName + '\x1b[0m:\x1b[34m~\x1b[0m\x1b[97m$\x1b[0m ';
+    }
+
+    function _openTerm(groupName, consoleUrl, collectUrl) {
+      _grpName = groupName || 'jump';
+      _consoleUrl = consoleUrl || '';
+      _collectUrl = collectUrl || '';
+      if (_term) { _term.dispose(); _term = null; }
+
+      _term = new Terminal({
+        cursorBlink: true, cursorStyle: 'block',
+        theme: {
+          background: '#050816', foreground: '#cbd5e1',
+          cursor: '#38bdf8', cursorAccent: '#050816',
+          selectionBackground: 'rgba(56,189,248,.25)',
+          red: '#fb7185', green: '#34d399', yellow: '#fbbf24',
+          blue: '#60a5fa', magenta: '#a78bfa', cyan: '#38bdf8',
+          white: '#e2e8f0', brightWhite: '#f8fafc',
+          black: '#020617', brightBlack: '#475569',
+        },
+        fontFamily: "'JetBrains Mono','Fira Code',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace",
+        fontSize: 13, lineHeight: 1.45, scrollback: 2000,
+      });
+      _fit = new FitAddon.FitAddon();
+      _term.loadAddon(_fit);
+      const c = document.getElementById('opsTerminalContainer');
+      c.innerHTML = '';
+      _term.open(c);
+      _fit.fit();
+
+      _term.writeln('\x1b[36m\u250c' + '\u2500'.repeat(55) + '\u2510\x1b[0m');
+      _term.writeln('\x1b[36m\u2502\x1b[0m  \x1b[1m\x1b[97mTerminal Jump Host\x1b[0m \u2014 Backup Center              \x1b[36m\u2502\x1b[0m');
+      _term.writeln('\x1b[36m\u2502\x1b[0m  Grupo: \x1b[32m' + _grpName + '\x1b[0m' + ' '.repeat(Math.max(0, 49 - _grpName.length)) + '\x1b[36m\u2502\x1b[0m');
+      _term.writeln('\x1b[36m\u2514' + '\u2500'.repeat(55) + '\u2518\x1b[0m');
+      _term.writeln('\x1b[33m\u26a0  Comandos executados no Linux do Jump Host\x1b[0m');
+      _term.writeln('   Digite \x1b[32mhelp\x1b[0m para atalhos | \x1b[32mclear\x1b[0m para limpar | \x1b[32m\u2191\u2193\x1b[0m historico');
+      _term.write('\r\n' + _prompt());
+      _inp = ''; _histIdx = -1; _busy = false;
+
+      _term.onKey(function({ key, domEvent }) { _key(key, domEvent); });
+      window.addEventListener('resize', function() { if (_fit) _fit.fit(); });
+    }
+
+    function _key(key, ev) {
+      if (_busy) { if (ev.ctrlKey && ev.key === 'c') { _term.writeln('\r\n\x1b[31m^C\x1b[0m'); } return; }
+      if (ev.key === 'Enter') {
+        const cmd = _inp.trim(); _inp = ''; _histIdx = -1; _term.write('\r\n');
+        if (!cmd) { _term.write(_prompt()); return; }
+        _hist.unshift(cmd); if (_hist.length > 200) _hist.pop();
+        if (cmd === 'clear') { _term.clear(); _term.write(_prompt()); return; }
+        if (cmd === 'exit' || cmd === 'quit') { _term.writeln('\x1b[33mUse o botao Fechar para encerrar.\x1b[0m'); _term.write(_prompt()); return; }
+        if (cmd === 'help') {
+          _term.writeln('\x1b[1m\x1b[36mComandos uteis:\x1b[0m');
+          [['hostname','nome do servidor'],['uptime','tempo em atividade'],['ip route','tabela de rotas'],
+           ['ping -c 3 <IP>','testar conectividade'],['nc -zv <IP> <PORT>','testar porta TCP'],
+           ['ss -tunap','conexoes ativas'],['df -h','uso de disco'],['free -h','uso de memoria'],
+           ['clear','limpar terminal'],['\u2191 / \u2193','historico de comandos']
+          ].forEach(function(r){ _term.writeln('  \x1b[32m' + r[0].padEnd(24) + '\x1b[0m' + r[1]); });
+          _term.write(_prompt()); return;
+        }
+        _exec(cmd); return;
+      }
+      if (ev.key === 'Backspace') { if (_inp.length > 0) { _inp = _inp.slice(0, -1); _term.write('\b \b'); } return; }
+      if (ev.key === 'ArrowUp') {
+        ev.preventDefault();
+        if (_histIdx < _hist.length - 1) { _histIdx++; _term.write('\b \b'.repeat(_inp.length)); _inp = _hist[_histIdx]; _term.write(_inp); } return;
+      }
+      if (ev.key === 'ArrowDown') {
+        ev.preventDefault();
+        if (_histIdx > 0) { _histIdx--; _term.write('\b \b'.repeat(_inp.length)); _inp = _hist[_histIdx]; _term.write(_inp); }
+        else if (_histIdx === 0) { _histIdx = -1; _term.write('\b \b'.repeat(_inp.length)); _inp = ''; }
+        return;
+      }
+      if (ev.ctrlKey && ev.key === 'c') { _term.write('\r\n\x1b[31m^C\x1b[0m'); _inp = ''; _histIdx = -1; _term.write(_prompt()); return; }
+      if (ev.ctrlKey && ev.key === 'l') { _term.clear(); _term.write(_prompt()); return; }
+      if (key.length === 1 && !ev.ctrlKey && !ev.altKey && !ev.metaKey) { _inp += key; _term.write(key); }
+    }
+
+    async function _exec(cmd) {
+      _busy = true;
+      _term.write('\x1b[2m\x1b[33mexecutando...\x1b[0m');
+      try {
+        const body = new URLSearchParams({ command: cmd });
+        const resp = await fetch(_consoleUrl, {
+          method: 'POST',
+          headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json', 'X-CSRF-Token': csrfToken, 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+          body: body.toString(),
+        });
+        const data = await resp.json();
+        _term.write('\r\x1b[K');
+        const out = (data.output || data.error || '(sem saida)').replace(/\r?\n/g, '\r\n');
+        if (data.ok === false) { _term.writeln('\x1b[31m' + out + '\x1b[0m'); }
+        else { _term.writeln(out); }
+      } catch(e) { _term.write('\r\x1b[K'); _term.writeln('\x1b[31mErro: ' + e.message + '\x1b[0m'); }
+      _busy = false; _term.write(_prompt());
+    }
+
+    async function _collect() {
+      if (!_collectUrl || !_term) return;
+      _term.writeln('\r\n\x1b[33mColetando diagnostico remoto...\x1b[0m');
+      try {
+        const body = new URLSearchParams();
+        const resp = await fetch(_collectUrl, {
+          method: 'POST',
+          headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json', 'X-CSRF-Token': csrfToken, 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+          body: body.toString(),
+        });
+        const data = await resp.json();
+        const out = (data.summary || data.error || JSON.stringify(data, null, 2)).replace(/\r?\n/g, '\r\n');
+        _term.writeln('\x1b[36m' + out + '\x1b[0m');
+      } catch(e) { _term.writeln('\x1b[31mErro: ' + e.message + '\x1b[0m'); }
+      _term.write(_prompt());
+    }
 
     if (!searchInput || items.length === 0 || filterButtons.length === 0) {
       if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
@@ -844,78 +978,41 @@
 
     applyFilters();
 
-    async function postForm(url, payload) {
-      const body = new URLSearchParams();
-      Object.entries(payload || {}).forEach(([key, value]) => {
-        if (value !== undefined && value !== null) body.append(key, value);
-      });
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'X-Requested-With': 'XMLHttpRequest',
-          'Accept': 'application/json',
-          'X-CSRF-Token': csrfToken,
-          'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
-        },
-        body: body.toString()
-      });
-      return response.json();
-    }
-
-    async function runConsoleCommand(command) {
-      if (!activeConsoleUrls.consoleUrl || !consoleOutput) return;
-      consoleOutput.textContent = '$ ' + command + '\n\nExecutando...';
-      const payload = await postForm(activeConsoleUrls.consoleUrl, { command });
-      consoleOutput.textContent = '$ ' + command + '\n\n' + (payload.output || payload.error || 'Sem saida.');
-    }
-
-    consoleButtons.forEach(function (button) {
-      button.addEventListener('click', function () {
-        activeConsoleUrls.consoleUrl = button.dataset.consoleUrl || '';
-        activeConsoleUrls.collectUrl = button.dataset.collectUrl || '';
-        if (consoleTitle) consoleTitle.textContent = 'Console Jump • ' + (button.dataset.groupName || 'Grupo');
-        if (consoleOutput) consoleOutput.textContent = 'Aguardando comando...';
-        if (consoleInput) consoleInput.value = '';
-        if (consoleModal) consoleModal.classList.add('is-open');
+    // ── abrir/fechar modal ────────────────────────────────────────────
+    consoleButtons.forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        if (consoleTitle) consoleTitle.textContent = 'Terminal Jump Host \u2014 ' + (btn.dataset.groupName || 'Grupo');
+        if (consoleModal) { consoleModal.classList.add('is-open'); consoleModal.setAttribute('aria-hidden','false'); }
+        _openTerm(btn.dataset.groupName || 'jump', btn.dataset.consoleUrl || '', btn.dataset.collectUrl || '');
+        if (window.lucide) lucide.createIcons();
       });
     });
 
     if (consoleClose && consoleModal) {
-      consoleClose.addEventListener('click', function () {
-        consoleModal.classList.remove('is-open');
+      consoleClose.addEventListener('click', function() {
+        consoleModal.classList.remove('is-open'); consoleModal.setAttribute('aria-hidden','true');
+        if (_term) { _term.dispose(); _term = null; }
       });
-      consoleModal.addEventListener('click', function (event) {
-        if (event.target === consoleModal) {
-          consoleModal.classList.remove('is-open');
+      consoleModal.addEventListener('click', function(ev) {
+        if (ev.target === consoleModal) {
+          consoleModal.classList.remove('is-open'); consoleModal.setAttribute('aria-hidden','true');
+          if (_term) { _term.dispose(); _term = null; }
         }
       });
     }
 
-    consolePresetButtons.forEach(function (button) {
-      button.addEventListener('click', function () {
-        const command = button.dataset.command || '';
-        if (consoleInput) consoleInput.value = command;
-        runConsoleCommand(command);
+    if (clearBtn) { clearBtn.addEventListener('click', function() { if (_term) { _term.clear(); _term.write(_prompt()); } }); }
+    if (collectBtn) { collectBtn.addEventListener('click', _collect); }
+
+    document.querySelectorAll('.ops-console-preset').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        const cmd = (btn.dataset.command || '').trim();
+        if (!cmd || !_term || _busy) return;
+        _term.write('\b \b'.repeat(_inp.length));
+        _inp = cmd; _term.write(cmd);
+        setTimeout(function() { _key('', { key: 'Enter', ctrlKey: false, altKey: false, metaKey: false }); }, 60);
       });
     });
-
-    if (consoleForm) {
-      consoleForm.addEventListener('submit', function (event) {
-        event.preventDefault();
-        const command = (consoleInput && consoleInput.value ? consoleInput.value : '').trim();
-        if (!command) return;
-        runConsoleCommand(command);
-      });
-    }
-
-    if (collectDiagnosticsBtn) {
-      collectDiagnosticsBtn.addEventListener('click', async function () {
-        if (!activeConsoleUrls.collectUrl || !consoleOutput) return;
-        consoleOutput.textContent = 'Coletando diagnostico remoto...';
-        const payload = await postForm(activeConsoleUrls.collectUrl, {});
-        consoleOutput.textContent = payload.summary || payload.error || 'Sem retorno.';
-      });
-    }
   });
 </script>
 
