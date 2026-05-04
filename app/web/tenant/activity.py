@@ -1,4 +1,5 @@
 import uuid
+import logging
 
 from flask import Blueprint, render_template, request, abort, session
 from app.web.auth.decorators import login_required
@@ -11,6 +12,7 @@ from sqlalchemy.orm import joinedload
 from sqlalchemy import or_
 
 bp = Blueprint('tenant_activity', __name__, url_prefix='/tenant/<tenant_slug>/activity')
+logger = logging.getLogger(__name__)
 
 
 def _parse_uuid(raw):
@@ -112,5 +114,22 @@ def list_activity(tenant_slug):
             prev_page=page - 1 if page > 1 else 1,
             next_page=page + 1 if page < total_pages else total_pages,
         )
+    except Exception:
+        logger.exception("failed loading tenant activity page tenant_slug=%s", tenant_slug)
+        return render_template(
+            'tenant/activity/list.html',
+            tenant=tenant,
+            logs=[],
+            view_mode='logs',
+            live_mode=False,
+            page=1,
+            per_page=50,
+            total_logs=0,
+            total_pages=1,
+            has_prev=False,
+            has_next=False,
+            prev_page=1,
+            next_page=1,
+        ), 200
     finally:
         db.close()

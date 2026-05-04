@@ -171,27 +171,28 @@ def create_flask_app():
     def _audit_user_requests(resp):
         from app.services.activity_service import ActivityService
 
-        if not settings.AUDIT_AUTO_LOG_REQUESTS_ENABLED:
-            return resp
-        if request.path.startswith("/static/"):
-            return resp
-        if request.path.startswith("/healthz") or request.path.startswith("/readyz"):
-            return resp
-        if request.path.startswith("/internal/metrics/"):
-            return resp
-        if request.path.startswith("/webhooks/"):
-            return resp
-
-        user_id = session.get("user_id")
-        if not user_id:
-            return resp
-
-        action = f"HTTP_{request.method.upper()}"
-        if request.path.startswith("/tenant/") and request.path.endswith("/activity/"):
-            action = "VIEW_ACTIVITY_LOGS"
-
-        db = SessionLocal()
+        db = None
         try:
+            if not settings.AUDIT_AUTO_LOG_REQUESTS_ENABLED:
+                return resp
+            if request.path.startswith("/static/"):
+                return resp
+            if request.path.startswith("/healthz") or request.path.startswith("/readyz"):
+                return resp
+            if request.path.startswith("/internal/metrics/"):
+                return resp
+            if request.path.startswith("/webhooks/"):
+                return resp
+
+            user_id = session.get("user_id")
+            if not user_id:
+                return resp
+
+            action = f"HTTP_{request.method.upper()}"
+            if request.path.startswith("/tenant/") and request.path.endswith("/activity/"):
+                action = "VIEW_ACTIVITY_LOGS"
+
+            db = SessionLocal()
             tenant_id = None
             tenant_slug = (request.view_args or {}).get("tenant_slug") or session.get("tenant_slug")
             if tenant_slug and tenant_slug != "admin":
@@ -215,9 +216,18 @@ def create_flask_app():
                 ip_address=request.remote_addr,
             )
         except Exception:
-            db.rollback()
+            if db is not None:
+                try:
+                    db.rollback()
+                except Exception:
+                    pass
+            logging.getLogger(__name__).exception("failed to write automatic activity audit")
         finally:
-            db.close()
+            if db is not None:
+                try:
+                    db.close()
+                except Exception:
+                    pass
         return resp
 
     @app.after_request
