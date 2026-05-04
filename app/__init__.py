@@ -1,4 +1,4 @@
-from flask import Flask, session, request, abort, jsonify, flash, redirect, url_for
+from flask import Flask, session, request, abort, jsonify, flash, redirect, url_for, g
 from datetime import timedelta, datetime
 from fastapi import FastAPI
 from zoneinfo import ZoneInfo
@@ -63,6 +63,11 @@ def create_flask_app():
         if not parsed.path.startswith("/admin/"):
             return None
         return urlunsplit(("", "", parsed.path, parsed.query, ""))
+
+    @app.before_request
+    def _attach_request_id():
+        header_rid = (request.headers.get("X-Request-ID") or "").strip()
+        g.request_id = header_rid or str(uuid.uuid4())
 
     @app.before_request
     def _csrf_protect():
@@ -164,6 +169,7 @@ def create_flask_app():
 
     @app.after_request
     def _set_security_headers(resp):
+        resp.headers.setdefault("X-Request-ID", getattr(g, "request_id", ""))
         proto = request.headers.get("X-Forwarded-Proto", "http").lower()
         is_secure = request.is_secure or proto == "https"
         csp = (
