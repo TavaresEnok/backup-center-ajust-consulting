@@ -454,7 +454,7 @@
       </div>
     </div>
     <div id="global-live-log-stream" class="act-terminal" role="log" aria-live="polite">
-      <div class="act-terminal-line"><span style="color:#64748b;">[{{ (logs[0].created_at|localtime).strftime('%Y-%m-%d %H:%M:%S') if logs else '--:--:--' }}]</span> aguardando novos eventos...</div>
+      <div class="act-terminal-line"><span style="color:#64748b;">[{{ (logs[0].created_at|localtime).strftime('%Y-%m-%d %H:%M:%S') if logs and logs[0].created_at else '--:--:--' }}]</span> aguardando novos eventos...</div>
     </div>
   </section>
   {% endif %}
@@ -528,13 +528,13 @@
             {% set action_style = 'info' %}
           {% endif %}
           <tr class="act-log-row"
-              data-created="{{ (log.created_at|localtime).strftime('%Y-%m-%d %H:%M:%S') }}"
+              data-created="{{ (log.created_at|localtime).strftime('%Y-%m-%d %H:%M:%S') if log.created_at else '' }}"
               data-search="{{ (user_name ~ ' ' ~ (log.action or '') ~ ' ' ~ (log.details or '') ~ ' ' ~ (log.ip_address or '127.0.0.1'))|lower }}"
               data-category="{{ action_category }}"
               data-ip="{{ log.ip_address or '127.0.0.1' }}">
             <td>
               <span style="font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace; color:#94a3b8; font-size:11px;">
-                {{ (log.created_at|localtime).strftime('%Y-%m-%d %H:%M:%S') }}
+                {{ (log.created_at|localtime).strftime('%Y-%m-%d %H:%M:%S') if log.created_at else '-' }}
               </span>
             </td>
             <td>
