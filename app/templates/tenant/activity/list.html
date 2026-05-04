@@ -574,16 +574,28 @@
     <div class="act-pager">
       {% set page_start = ((page - 1) * per_page) + 1 if total_logs > 0 else 0 %}
       {% set page_end = ((page - 1) * per_page) + (logs|length) if total_logs > 0 else 0 %}
+      {% set user_filter = request.args.get('user_id') %}
+      {% set block_size = 8 %}
+      {% set block_index = ((page - 1) // block_size) %}
+      {% set page_first = (block_index * block_size) + 1 %}
+      {% set page_last = page_first + block_size - 1 %}
+      {% if page_last > total_pages %}{% set page_last = total_pages %}{% endif %}
       <span id="pagerInfo" class="act-pager-info">Mostrando {{ page_start }}-{{ page_end }} de {{ total_logs }} registros</span>
       <div id="pagerLinks" class="act-pager-links">
         {% if has_prev %}
-          <a class="act-page-btn" href="{{ url_for('tenant_activity.list_activity', tenant_slug=tenant.slug, page=prev_page, per_page=per_page, live=1 if live_mode else None, view=view_mode) }}">Anterior</a>
+          <a class="act-page-btn" href="{{ url_for('tenant_activity.list_activity', tenant_slug=tenant.slug, page=prev_page, per_page=per_page, live=1 if live_mode else None, view=view_mode, user_id=user_filter) }}">Anterior</a>
         {% else %}
           <button type="button" class="act-page-btn" disabled style="opacity:.55;">Anterior</button>
         {% endif %}
-        <span class="act-page-btn active">Pagina {{ page }} de {{ total_pages }}</span>
+        {% for p in range(page_first, page_last + 1) %}
+          {% if p == page %}
+            <span class="act-page-btn active">{{ p }}</span>
+          {% else %}
+            <a class="act-page-btn" href="{{ url_for('tenant_activity.list_activity', tenant_slug=tenant.slug, page=p, per_page=per_page, live=1 if live_mode else None, view=view_mode, user_id=user_filter) }}">{{ p }}</a>
+          {% endif %}
+        {% endfor %}
         {% if has_next %}
-          <a class="act-page-btn" href="{{ url_for('tenant_activity.list_activity', tenant_slug=tenant.slug, page=next_page, per_page=per_page, live=1 if live_mode else None, view=view_mode) }}">Proximo</a>
+          <a class="act-page-btn" href="{{ url_for('tenant_activity.list_activity', tenant_slug=tenant.slug, page=next_page, per_page=per_page, live=1 if live_mode else None, view=view_mode, user_id=user_filter) }}">Proximo</a>
         {% else %}
           <button type="button" class="act-page-btn" disabled style="opacity:.55;">Proximo</button>
         {% endif %}
@@ -663,16 +675,10 @@
       pagerInfo.textContent = `Mostrando ${from}-${to} de ${filteredRows.length} registros`;
     }
 
-    renderPager(totalPages);
   }
 
-  function renderPager(totalPages) {
-    if (!pagerLinks) return;
-    // A navegacao principal agora e server-side para manter desempenho com alto volume.
-    const active = pagerLinks.querySelector('.act-page-btn.active');
-    if (active) {
-      active.textContent = `Pagina {{ page }} de {{ total_pages }}${filteredRows.length !== rows.length ? ` | filtro: ${filteredRows.length}` : ''}`;
-    }
+  function renderPager(_totalPages) {
+    // Paginacao principal permanece server-side (links 1..N + proximo/anterior).
   }
 
   if (searchInput) {
