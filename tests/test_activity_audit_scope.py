@@ -130,6 +130,21 @@ def test_activity_scope_master_can_filter_other_user_logs():
         settings.AUDIT_USER_SCOPING_ENABLED = False
 
 
+def test_activity_scope_master_without_filter_can_see_other_users_logs():
+    client = _build_client()
+    slug = f"tenant-activity-owner-all-{uuid.uuid4().hex[:8]}"
+    tenant_slug, owner_id, _, _ = _seed_scope_data(slug)
+    settings.AUDIT_USER_SCOPING_ENABLED = True
+    try:
+        _login_session(client, UserRole.TENANT_OWNER, tenant_slug, owner_id)
+        response = client.get(f"/tenant/{tenant_slug}/activity/", follow_redirects=False)
+        body = response.get_data(as_text=True)
+        assert response.status_code == 200
+        assert "OTHER_USER_ACTION" in body
+    finally:
+        settings.AUDIT_USER_SCOPING_ENABLED = False
+
+
 def test_activity_pagination_server_side_changes_records_between_pages():
     client = _build_client()
     slug = f"tenant-activity-page-{uuid.uuid4().hex[:8]}"

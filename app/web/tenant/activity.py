@@ -5,7 +5,6 @@ from app.web.auth.decorators import login_required
 from app.core.database import SessionLocal
 from app.core.config import settings
 from app.models.tenant import Tenant
-from app.services.activity_service import ActivityService
 from app.models.activity_log import ActivityLog
 from app.models.user import UserRole
 from sqlalchemy.orm import joinedload
@@ -71,11 +70,12 @@ def list_activity(tenant_slug):
 
             if _can_view_other_users_logs():
                 requested_user_id = _parse_uuid(request.args.get("user_id"))
-                selected_user_id = requested_user_id or current_user_id
+                selected_user_id = requested_user_id
             else:
                 selected_user_id = current_user_id
 
-            query = query.filter(ActivityLog.user_id == selected_user_id)
+            if selected_user_id:
+                query = query.filter(ActivityLog.user_id == selected_user_id)
 
         if action_filter:
             query = query.filter(ActivityLog.action == action_filter)
@@ -96,29 +96,6 @@ def list_activity(tenant_slug):
             page = total_pages
         offset = (page - 1) * per_page
         logs = query.order_by(ActivityLog.created_at.desc()).offset(offset).limit(per_page).all()
-
-        if settings.AUDIT_USER_SCOPING_ENABLED:
-            try:
-                filter_meta = {
-                    "view_mode": view_mode,
-                    "action": action_filter or "",
-                    "live_mode": live_mode,
-                    "log_count": len(logs),
-                    "page": page,
-                    "per_page": per_page,
-                    "total_logs": total_logs,
-                    "selected_user_id": str(selected_user_id) if selected_user_id else "",
-                }
-                ActivityService.log_action(
-                    db=db,
-                    tenant_id=tenant.id,
-                    user_id=session.get("user_id"),
-                    action="VIEW_ACTIVITY_LOGS",
-                    details=str(filter_meta),
-                    ip_address=request.remote_addr,
-                )
-            except Exception:
-                db.rollback()
 
         return render_template(
             'tenant/activity/list.html',

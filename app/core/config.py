@@ -14,7 +14,8 @@ class Settings(BaseSettings):
     SESSION_COOKIE_SECURE: bool = False
     SESSION_COOKIE_SAMESITE: str = "Lax"
     LOG_FORMAT: str = "json"
-    AUDIT_USER_SCOPING_ENABLED: bool = False
+    AUDIT_USER_SCOPING_ENABLED: bool = True
+    AUDIT_AUTO_LOG_REQUESTS_ENABLED: bool = True
     
     # Auth
     ALGORITHM: str = "HS256"

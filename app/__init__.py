@@ -168,6 +168,59 @@ def create_flask_app():
         return redirect(url, code=301)
 
     @app.after_request
+    def _audit_user_requests(resp):
+        from app.services.activity_service import ActivityService
+
+        if not settings.AUDIT_AUTO_LOG_REQUESTS_ENABLED:
+            return resp
+        if request.path.startswith("/static/"):
+            return resp
+        if request.path.startswith("/healthz") or request.path.startswith("/readyz"):
+            return resp
+        if request.path.startswith("/internal/metrics/"):
+            return resp
+        if request.path.startswith("/webhooks/"):
+            return resp
+
+        user_id = session.get("user_id")
+        if not user_id:
+            return resp
+
+        action = f"HTTP_{request.method.upper()}"
+        if request.path.startswith("/tenant/") and request.path.endswith("/activity/"):
+            action = "VIEW_ACTIVITY_LOGS"
+
+        db = SessionLocal()
+        try:
+            tenant_id = None
+            tenant_slug = (request.view_args or {}).get("tenant_slug") or session.get("tenant_slug")
+            if tenant_slug and tenant_slug != "admin":
+                tenant = db.query(Tenant).filter(Tenant.slug == tenant_slug).first()
+                tenant_id = tenant.id if tenant else None
+
+            details = {
+                "resource_type": "http_request",
+                "resource_id": request.path,
+                "result": "success" if 200 <= resp.status_code < 400 else "error",
+                "message": f"{request.method} {request.path} -> {resp.status_code}",
+                "status_code": resp.status_code,
+                "endpoint": request.endpoint or "",
+            }
+            ActivityService.log_action(
+                db=db,
+                tenant_id=tenant_id,
+                user_id=user_id,
+                action=action,
+                details=details,
+                ip_address=request.remote_addr,
+            )
+        except Exception:
+            db.rollback()
+        finally:
+            db.close()
+        return resp
+
+    @app.after_request
     def _set_security_headers(resp):
         resp.headers.setdefault("X-Request-ID", getattr(g, "request_id", ""))
         proto = request.headers.get("X-Forwarded-Proto", "http").lower()
