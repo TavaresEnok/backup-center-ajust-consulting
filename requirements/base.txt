@@ -22,3 +22,5 @@ cryptography
 alembic
 pytest
 netmiko
+pexpect
+requests
