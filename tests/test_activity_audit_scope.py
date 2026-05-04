@@ -128,3 +128,47 @@ def test_activity_scope_master_can_filter_other_user_logs():
         assert "OTHER_USER_ACTION" in body
     finally:
         settings.AUDIT_USER_SCOPING_ENABLED = False
+
+
+def test_activity_pagination_server_side_changes_records_between_pages():
+    client = _build_client()
+    slug = f"tenant-activity-page-{uuid.uuid4().hex[:8]}"
+    tenant_slug, owner_id, _, _ = _seed_scope_data(slug)
+    settings.AUDIT_USER_SCOPING_ENABLED = False
+
+    db = SessionLocal()
+    try:
+        tenant = db.query(Tenant).filter(Tenant.slug == tenant_slug).first()
+        owner_uuid = uuid.UUID(owner_id)
+        db.add_all(
+            [
+                ActivityLog(
+                    tenant_id=tenant.id,
+                    user_id=owner_uuid,
+                    action="PAGE_1_ONLY",
+                    details="first-page",
+                    ip_address="127.0.0.1",
+                ),
+                ActivityLog(
+                    tenant_id=tenant.id,
+                    user_id=owner_uuid,
+                    action="PAGE_2_ONLY",
+                    details="second-page",
+                    ip_address="127.0.0.1",
+                ),
+            ]
+        )
+        db.commit()
+    finally:
+        db.close()
+
+    _login_session(client, UserRole.TENANT_OWNER, tenant_slug, owner_id)
+    page1 = client.get(f"/tenant/{tenant_slug}/activity/?page=1&per_page=1", follow_redirects=False)
+    page2 = client.get(f"/tenant/{tenant_slug}/activity/?page=2&per_page=1", follow_redirects=False)
+
+    body1 = page1.get_data(as_text=True)
+    body2 = page2.get_data(as_text=True)
+    assert page1.status_code == 200
+    assert page2.status_code == 200
+    assert "PAGE_1_ONLY" in body1 or "PAGE_2_ONLY" in body1
+    assert body1 != body2

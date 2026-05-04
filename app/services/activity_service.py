@@ -2,6 +2,7 @@ from sqlalchemy.orm import Session
 from app.models.activity_log import ActivityLog
 from typing import Optional, Dict, Any
 import json
+from datetime import datetime, timedelta
 from flask import has_request_context, request, g
 
 class ActivityService:
@@ -79,3 +80,15 @@ class ActivityService:
         return db.query(ActivityLog).filter(
             ActivityLog.tenant_id == tenant_id
         ).order_by(ActivityLog.created_at.desc()).limit(limit).all()
+
+    @staticmethod
+    def prune_old_logs(db: Session, retention_days: int, dry_run: bool = True) -> int:
+        retention_days = max(int(retention_days or 0), 1)
+        cutoff = datetime.utcnow() - timedelta(days=retention_days)
+        query = db.query(ActivityLog).filter(ActivityLog.created_at < cutoff)
+        total = query.count()
+        if dry_run or total == 0:
+            return total
+        query.delete(synchronize_session=False)
+        db.commit()
+        return total

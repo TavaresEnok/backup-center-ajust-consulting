@@ -464,7 +464,7 @@
       <h2 class="act-section-title">Registro de Atividades</h2>
       <p class="act-section-sub">Historico completo de auditoria do sistema.</p>
     </div>
-    <span id="totalLogsCount" class="act-count">{{ logs|length }} registros carregados</span>
+    <span id="totalLogsCount" class="act-count">{{ total_logs }} registros no total</span>
   </div>
 
   <section class="act-card act-filters">
@@ -572,8 +572,22 @@
     </div>
 
     <div class="act-pager">
-      <span id="pagerInfo" class="act-pager-info">Mostrando 0-0 de 0 registros</span>
-      <div id="pagerLinks" class="act-pager-links"></div>
+      {% set page_start = ((page - 1) * per_page) + 1 if total_logs > 0 else 0 %}
+      {% set page_end = ((page - 1) * per_page) + (logs|length) if total_logs > 0 else 0 %}
+      <span id="pagerInfo" class="act-pager-info">Mostrando {{ page_start }}-{{ page_end }} de {{ total_logs }} registros</span>
+      <div id="pagerLinks" class="act-pager-links">
+        {% if has_prev %}
+          <a class="act-page-btn" href="{{ url_for('tenant_activity.list_activity', tenant_slug=tenant.slug, page=prev_page, per_page=per_page, live=1 if live_mode else None, view=view_mode) }}">Anterior</a>
+        {% else %}
+          <button type="button" class="act-page-btn" disabled style="opacity:.55;">Anterior</button>
+        {% endif %}
+        <span class="act-page-btn active">Pagina {{ page }} de {{ total_pages }}</span>
+        {% if has_next %}
+          <a class="act-page-btn" href="{{ url_for('tenant_activity.list_activity', tenant_slug=tenant.slug, page=next_page, per_page=per_page, live=1 if live_mode else None, view=view_mode) }}">Proximo</a>
+        {% else %}
+          <button type="button" class="act-page-btn" disabled style="opacity:.55;">Proximo</button>
+        {% endif %}
+      </div>
     </div>
   </section>
 </div>
@@ -591,7 +605,7 @@
   const totalLogsCount = document.getElementById('totalLogsCount');
   const exportCsvBtn = document.getElementById('exportCsvBtn');
 
-  const perPage = 12;
+  const perPage = rows.length || 1;
   let currentPage = 1;
   let filteredRows = rows.slice();
 
@@ -627,7 +641,7 @@
     });
 
     if (totalLogsCount) {
-      totalLogsCount.textContent = `${filteredRows.length} registros encontrados`;
+      totalLogsCount.textContent = `${filteredRows.length} registros nesta pagina`;
     }
 
     const totalPages = Math.max(1, Math.ceil(filteredRows.length / perPage));
@@ -654,35 +668,11 @@
 
   function renderPager(totalPages) {
     if (!pagerLinks) return;
-    pagerLinks.innerHTML = '';
-
-    function makeBtn(label, page, active) {
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = `act-page-btn${active ? ' active' : ''}`;
-      btn.textContent = label;
-      if (!active) {
-        btn.addEventListener('click', () => {
-          currentPage = page;
-          applyFilters();
-        });
-      }
-      return btn;
+    // A navegacao principal agora e server-side para manter desempenho com alto volume.
+    const active = pagerLinks.querySelector('.act-page-btn.active');
+    if (active) {
+      active.textContent = `Pagina {{ page }} de {{ total_pages }}${filteredRows.length !== rows.length ? ` | filtro: ${filteredRows.length}` : ''}`;
     }
-
-    const prevBtn = makeBtn('Anterior', Math.max(1, currentPage - 1), false);
-    prevBtn.disabled = currentPage <= 1;
-    if (prevBtn.disabled) prevBtn.style.opacity = '0.55';
-    pagerLinks.appendChild(prevBtn);
-
-    for (let page = 1; page <= totalPages; page += 1) {
-      pagerLinks.appendChild(makeBtn(String(page), page, page === currentPage));
-    }
-
-    const nextBtn = makeBtn('Proximo', Math.min(totalPages, currentPage + 1), false);
-    nextBtn.disabled = currentPage >= totalPages;
-    if (nextBtn.disabled) nextBtn.style.opacity = '0.55';
-    pagerLinks.appendChild(nextBtn);
   }
 
   if (searchInput) {

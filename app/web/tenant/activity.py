@@ -25,6 +25,14 @@ def _can_view_other_users_logs() -> bool:
     role = session.get('user_role')
     return role in {UserRole.SUPER_ADMIN.value, UserRole.TENANT_OWNER.value}
 
+
+def _parse_positive_int(raw, default: int) -> int:
+    try:
+        value = int(raw)
+    except Exception:
+        return default
+    return value if value > 0 else default
+
 def get_db_and_tenant(tenant_slug):
     # Cross-tenant check
     if session.get('user_role') != UserRole.SUPER_ADMIN.value and session.get('tenant_slug') != tenant_slug:
@@ -48,6 +56,8 @@ def list_activity(tenant_slug):
         action_filter = request.args.get('action')
         view_mode = (request.args.get('view') or 'logs').strip().lower()
         live_mode = request.args.get('live') == '1'
+        page = _parse_positive_int(request.args.get("page"), 1)
+        per_page = min(_parse_positive_int(request.args.get("per_page"), 50), 100)
         if view_mode not in {'logs', 'alerts'}:
             view_mode = 'logs'
 
@@ -80,8 +90,12 @@ def list_activity(tenant_slug):
                 )
             )
 
-        # Paginação simples
-        logs = query.order_by(ActivityLog.created_at.desc()).limit(100).all()
+        total_logs = query.count()
+        total_pages = max((total_logs + per_page - 1) // per_page, 1)
+        if page > total_pages:
+            page = total_pages
+        offset = (page - 1) * per_page
+        logs = query.order_by(ActivityLog.created_at.desc()).offset(offset).limit(per_page).all()
 
         if settings.AUDIT_USER_SCOPING_ENABLED:
             try:
@@ -90,6 +104,9 @@ def list_activity(tenant_slug):
                     "action": action_filter or "",
                     "live_mode": live_mode,
                     "log_count": len(logs),
+                    "page": page,
+                    "per_page": per_page,
+                    "total_logs": total_logs,
                     "selected_user_id": str(selected_user_id) if selected_user_id else "",
                 }
                 ActivityService.log_action(
@@ -109,6 +126,14 @@ def list_activity(tenant_slug):
             logs=logs,
             view_mode=view_mode,
             live_mode=live_mode,
+            page=page,
+            per_page=per_page,
+            total_logs=total_logs,
+            total_pages=total_pages,
+            has_prev=page > 1,
+            has_next=page < total_pages,
+            prev_page=page - 1 if page > 1 else 1,
+            next_page=page + 1 if page < total_pages else total_pages,
         )
     finally:
         db.close()
