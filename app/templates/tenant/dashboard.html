@@ -487,6 +487,38 @@
     border-color: rgba(99, 102, 241, .3);
     color: #a5b4fc;
   }
+
+  @media (max-width: 640px) {
+    .dash-clock-wrap {
+      width: 100%;
+      margin-left: 0;
+      justify-content: space-between;
+    }
+
+    .dash-clock {
+      font-size: 1.45rem;
+    }
+
+    .dash-refresh {
+      width: 40px;
+      height: 40px;
+    }
+
+    .dash-legend {
+      width: 100%;
+      flex-wrap: wrap;
+      gap: .45rem .8rem;
+    }
+
+    .dash-chart-body {
+      min-height: 220px;
+      padding: .8rem;
+    }
+
+    .dash-table {
+      min-width: 760px;
+    }
+  }
 </style>
 
 <div class="dash-page">

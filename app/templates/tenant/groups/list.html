@@ -173,6 +173,17 @@
         border-color: #3b82f6;
         outline: none;
     }
+
+    @media (max-width: 640px) {
+        .groups-header-actions {
+            width: 100%;
+        }
+
+        .groups-header-actions > a {
+            width: 100%;
+            justify-content: center;
+        }
+    }
 </style>
 
 <div class="space-y-6 pb-4">
@@ -182,7 +193,7 @@
             <h1 class="text-3xl font-bold text-[var(--text-main)]">Grupos / Provedores</h1>
             <p class="text-[var(--text-muted)] text-sm mt-1">Organize seus dispositivos por provedor ou localização</p>
         </div>
-        <div class="flex gap-3">
+        <div class="groups-header-actions flex flex-wrap gap-3">
             <a href="{{ url_for('tenant_devices.list_devices', tenant_slug=tenant.slug) }}"
                 class="px-4 py-2.5 rounded-lg bg-[var(--card-bg)] border border-[var(--card-border)] text-[var(--text-main)] flex items-center gap-2 hover:border-slate-400 dark:hover:border-slate-600 transition text-sm">
                 <i data-lucide="server" class="w-4 h-4"></i>

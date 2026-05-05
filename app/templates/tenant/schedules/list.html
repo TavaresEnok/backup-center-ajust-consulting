@@ -719,6 +719,33 @@
     gap: .3rem;
     flex-wrap: wrap;
   }
+
+  @media (max-width: 768px) {
+    .sch-head-actions {
+      width: 100%;
+      overflow-x: auto;
+      flex-wrap: nowrap;
+      padding-bottom: .2rem;
+    }
+
+    .sch-head-actions > * {
+      flex: 0 0 auto;
+    }
+
+    .sch-opbar {
+      overflow-x: auto;
+      flex-wrap: nowrap;
+      white-space: nowrap;
+    }
+
+    .sch-opbar > * {
+      flex: 0 0 auto;
+    }
+
+    .sch-mini-grid {
+      grid-template-columns: 1fr;
+    }
+  }
 </style>
 
 <div class="sch-page">

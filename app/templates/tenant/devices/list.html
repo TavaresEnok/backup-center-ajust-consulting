@@ -670,6 +670,43 @@
     padding: .9rem;
     font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   }
+
+  @media (max-width: 768px) {
+    .dev-top-actions {
+      width: 100%;
+      overflow-x: auto;
+      flex-wrap: nowrap;
+      padding-bottom: .2rem;
+    }
+
+    .dev-top-actions > * {
+      flex: 0 0 auto;
+    }
+
+    .dev-selects {
+      grid-template-columns: 1fr;
+    }
+
+    .dev-bulk-left,
+    .dev-bulk-actions {
+      width: 100%;
+    }
+
+    .dev-bulk-actions > * {
+      flex: 1 1 auto;
+      justify-content: center;
+    }
+
+    .dev-floating-bulk {
+      width: min(94vw, 560px);
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .dev-floating-bulk .dev-bulk-actions {
+      width: 100%;
+    }
+  }
 </style>
 
 <div class="dev-page">

@@ -253,6 +253,19 @@
   }
   .ops-card-note i { width: .9rem; height: .9rem; }
 
+  @media (max-width: 768px) {
+    .ops-top-actions {
+      width: 100%;
+      overflow-x: auto;
+      flex-wrap: nowrap;
+      padding-bottom: .2rem;
+    }
+
+    .ops-top-actions > * {
+      flex: 0 0 auto;
+    }
+  }
+
   .ops-jump-strip {
     margin-top: .8rem;
     border: 1px solid #1e293b;
