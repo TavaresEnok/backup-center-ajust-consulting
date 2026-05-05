@@ -590,10 +590,14 @@ def download_backup(tenant_slug, backup_id):
 
     db.commit()
 
-    # Gera nome de download amigável
+    # Gera nome de download amigável preservando a extensao real do arquivo
     device_name = backup.device.name.replace(' ', '_')
     timestamp = backup.created_at.strftime('%Y%m%d_%H%M%S') if backup.created_at else 'unknown'
-    download_name = f"{device_name}_{timestamp}.rsc"
+    _, source_ext = os.path.splitext(absolute_path or "")
+    source_ext = (source_ext or "").strip().lower()
+    if not source_ext:
+        source_ext = ".rsc"
+    download_name = f"{device_name}_{timestamp}{source_ext}"
     download_rate_mbps = int(getattr(getattr(tenant, "plan", None), "max_download_rate_mbps", 0) or 0)
 
     db.close()
