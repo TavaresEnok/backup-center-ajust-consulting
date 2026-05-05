@@ -480,6 +480,43 @@
             border-color: rgba(71, 85, 105, 0.9);
             background: #1e293b;
         }
+
+        .bc-table-scroll {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .bc-table-scroll>table {
+            min-width: max-content;
+        }
+
+        @media (max-width: 768px) {
+            .admin-page {
+                gap: 1rem;
+            }
+
+            .admin-page-title {
+                font-size: 1.5rem;
+            }
+
+            .admin-page-header-actions {
+                width: 100%;
+                justify-content: flex-start;
+            }
+
+            .admin-form-card {
+                padding: 1rem;
+            }
+
+            .admin-form-actions {
+                justify-content: stretch;
+            }
+
+            .admin-form-actions>* {
+                width: 100%;
+            }
+        }
     </style>
 </head>
 
@@ -702,6 +739,23 @@
                     event.stopPropagation();
                 }
             }, true);
+
+            const alreadyResponsiveSelector = '.overflow-x-auto, .act-table-wrap, .dash-table-wrap, .dev-table-wrap, .sch-table-wrap, .bc-table-scroll';
+            const contentTables = document.querySelectorAll('main table');
+
+            contentTables.forEach((table) => {
+                if (table.closest(alreadyResponsiveSelector)) {
+                    return;
+                }
+                const parent = table.parentElement;
+                if (!parent) {
+                    return;
+                }
+                const wrapper = document.createElement('div');
+                wrapper.className = 'bc-table-scroll';
+                parent.insertBefore(wrapper, table);
+                wrapper.appendChild(table);
+            });
         });
     </script>
 </body>

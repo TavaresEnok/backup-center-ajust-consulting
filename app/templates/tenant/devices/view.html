@@ -7,6 +7,25 @@
 {% set can_operator = role in ['super_admin', 'tenant_owner', 'tenant_admin', 'tenant_technician'] %}
 {% include 'partials/breadcrumb.html' %}
 
+<style>
+@media (max-width: 768px) {
+    .device-view-actions {
+        width: 100%;
+    }
+
+    .device-view-actions > form,
+    .device-view-actions > a {
+        width: 100%;
+    }
+
+    .device-view-actions form button,
+    .device-view-actions > a {
+        width: 100%;
+        justify-content: center;
+    }
+}
+</style>
+
 <div class="space-y-6">
 
     <!-- Header -->
@@ -23,7 +42,7 @@
             <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ device.ip_address }}:{{ device.port }} • {{
                 device.description or 'Sem descrição' }}</p>
         </div>
-        <div class="flex gap-3">
+        <div class="device-view-actions flex flex-wrap gap-3">
             <form id="form-backup-{{ device.id }}" action="{{ url_for('tenant_devices.run_backup', tenant_slug=tenant.slug, device_id=device.id) }}"
                 method="POST" class="inline">
             {% include 'partials/csrf.html' %}
@@ -140,55 +159,57 @@
 
     <!-- Histórico -->
     <div class="bg-white border border-gray-200 rounded-xl overflow-hidden dark:bg-gray-800 dark:border-gray-700">
-        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex flex-wrap justify-between items-center gap-2">
             <h3 class="font-semibold text-gray-900 dark:text-white">Histórico de Backups</h3>
             <a href="{{ url_for('tenant_backups.list_backups', tenant_slug=tenant.slug) }}?device_id={{ device.id }}"
                 class="text-sm text-brand-600 hover:text-brand-500 hover:underline">Ver todos</a>
         </div>
-        <table class="w-full text-left text-sm">
-            <thead class="bg-gray-50 dark:bg-gray-700/50">
-                <tr>
-                    <th class="px-6 py-3 font-medium text-gray-500 dark:text-gray-400">Data</th>
-                    <th class="px-6 py-3 font-medium text-gray-500 dark:text-gray-400">Status</th>
-                    <th class="px-6 py-3 font-medium text-gray-500 dark:text-gray-400">Arquivo</th>
-                    <th class="px-6 py-3 font-medium text-gray-500 dark:text-gray-400 text-right">Ações</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-                {% for backup in backups %}
-                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                    <td class="px-6 py-3 text-gray-900 dark:text-white">{{ (backup.created_at|localtime).strftime('%d/%m/%Y
-                        %H:%M:%S') }}</td>
-                    <td class="px-6 py-3">
-                        {% set status_val = backup.status_value or backup.status %}
-                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium capitalize
-                            {% if status_val == 'success' %}bg-success-50 text-success-700 dark:bg-success-900/30 dark:text-success-400
-                            {% elif status_val == 'failed' %}bg-error-50 text-error-700 dark:bg-error-900/30 dark:text-error-400
-                            {% else %}bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300{% endif %}">
-                            {{ status_val }}
-                        </span>
-                    </td>
-                    <td class="px-6 py-3 text-gray-500 font-mono text-xs">{{ backup.file_path or '-' }}</td>
-                    <td class="px-6 py-3 text-right space-x-2">
-                        {% if backup.file_path %}
-                        <a href="{{ url_for('tenant_backups.download_backup', tenant_slug=tenant.slug, backup_id=backup.id) }}"
-                            class="text-brand-600 hover:text-brand-800" title="Baixar">
-                            <i data-lucide="download" class="w-4 h-4 inline"></i>
-                        </a>
-                        {% endif %}
-                        <a href="{{ url_for('tenant_backups.view_backup', tenant_slug=tenant.slug, backup_id=backup.id) }}"
-                            class="text-gray-400 hover:text-gray-600" title="Detalhes">
-                            <i data-lucide="eye" class="w-4 h-4 inline"></i>
-                        </a>
-                    </td>
-                </tr>
-                {% else %}
-                <tr>
-                    <td colspan="4" class="px-6 py-8 text-center text-gray-500">Nenhum backup registrado.</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <div class="overflow-x-auto">
+            <table class="w-full min-w-[760px] text-left text-sm">
+                <thead class="bg-gray-50 dark:bg-gray-700/50">
+                    <tr>
+                        <th class="px-6 py-3 font-medium text-gray-500 dark:text-gray-400">Data</th>
+                        <th class="px-6 py-3 font-medium text-gray-500 dark:text-gray-400">Status</th>
+                        <th class="px-6 py-3 font-medium text-gray-500 dark:text-gray-400">Arquivo</th>
+                        <th class="px-6 py-3 font-medium text-gray-500 dark:text-gray-400 text-right">Ações</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                    {% for backup in backups %}
+                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                        <td class="px-6 py-3 text-gray-900 dark:text-white">{{ (backup.created_at|localtime).strftime('%d/%m/%Y
+                            %H:%M:%S') }}</td>
+                        <td class="px-6 py-3">
+                            {% set status_val = backup.status_value or backup.status %}
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium capitalize
+                                {% if status_val == 'success' %}bg-success-50 text-success-700 dark:bg-success-900/30 dark:text-success-400
+                                {% elif status_val == 'failed' %}bg-error-50 text-error-700 dark:bg-error-900/30 dark:text-error-400
+                                {% else %}bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300{% endif %}">
+                                {{ status_val }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-3 text-gray-500 font-mono text-xs">{{ backup.file_path or '-' }}</td>
+                        <td class="px-6 py-3 text-right space-x-2">
+                            {% if backup.file_path %}
+                            <a href="{{ url_for('tenant_backups.download_backup', tenant_slug=tenant.slug, backup_id=backup.id) }}"
+                                class="text-brand-600 hover:text-brand-800" title="Baixar">
+                                <i data-lucide="download" class="w-4 h-4 inline"></i>
+                            </a>
+                            {% endif %}
+                            <a href="{{ url_for('tenant_backups.view_backup', tenant_slug=tenant.slug, backup_id=backup.id) }}"
+                                class="text-gray-400 hover:text-gray-600" title="Detalhes">
+                                <i data-lucide="eye" class="w-4 h-4 inline"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="4" class="px-6 py-8 text-center text-gray-500">Nenhum backup registrado.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
 
 </div>
