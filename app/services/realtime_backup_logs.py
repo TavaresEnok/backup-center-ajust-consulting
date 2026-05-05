@@ -1,6 +1,6 @@
 import json
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
 
 import redis
@@ -16,9 +16,14 @@ TASK_LOG_SEQ_PREFIX = "backup_center:task_logs_seq:"
 TASK_META_PREFIX = "backup_center:task_meta:"
 GLOBAL_LOG_KEY = "backup_center:global_logs"
 GLOBAL_LOG_SEQ_KEY = "backup_center:global_logs_seq"
-TTL_SECONDS = 60 * 60 * 48  # 48h
-TASK_LOG_MAX_ENTRIES = 300
-GLOBAL_LOG_MAX_ENTRIES = 600
+def _retention_seconds() -> int:
+    days = max(int(getattr(settings, "REALTIME_LOG_RETENTION_DAYS", 90) or 90), 1)
+    return days * 24 * 60 * 60
+
+
+TTL_SECONDS = _retention_seconds()
+TASK_LOG_MAX_ENTRIES = 5000
+GLOBAL_LOG_MAX_ENTRIES = 200000
 
 
 def _now_iso() -> str:
@@ -142,6 +147,7 @@ def append_task_log(
             "message": message,
             "level": level,
             "timestamp": timestamp,
+            "timestamp_iso": _now_iso(),
         }
         global_seq = int(client.incr(GLOBAL_LOG_SEQ_KEY))
         entry["global_seq"] = global_seq
@@ -154,11 +160,89 @@ def append_task_log(
         client.expire(_task_log_seq_key(task_id), TTL_SECONDS)
 
         client.rpush(GLOBAL_LOG_KEY, serialized)
+        _prune_global_logs_by_age(client)
         client.ltrim(GLOBAL_LOG_KEY, -GLOBAL_LOG_MAX_ENTRIES, -1)
         client.expire(GLOBAL_LOG_KEY, TTL_SECONDS)
         client.expire(GLOBAL_LOG_SEQ_KEY, TTL_SECONDS)
     except Exception:
         logger.exception("Falha ao gravar log realtime task=%s", task_id)
+
+
+def _parse_iso_timestamp(raw: str) -> Optional[datetime]:
+    if not raw:
+        return None
+    try:
+        value = str(raw).strip()
+        if value.endswith("Z"):
+            value = value[:-1] + "+00:00"
+        return datetime.fromisoformat(value)
+    except Exception:
+        return None
+
+
+def _prune_global_logs_by_age(client) -> int:
+    removed = 0
+    cutoff = datetime.utcnow() - timedelta(days=max(int(getattr(settings, "REALTIME_LOG_RETENTION_DAYS", 90) or 90), 1))
+
+    while True:
+        raw = client.lindex(GLOBAL_LOG_KEY, 0)
+        if not raw:
+            break
+        try:
+            item = json.loads(raw)
+        except Exception:
+            client.lpop(GLOBAL_LOG_KEY)
+            removed += 1
+            continue
+
+        ts = _parse_iso_timestamp(item.get("created_at") or item.get("timestamp_iso"))
+        if ts is None:
+            # Entradas antigas sem timestamp ISO nao podem ser mantidas sob regra de 90 dias.
+            client.lpop(GLOBAL_LOG_KEY)
+            removed += 1
+            continue
+        if ts >= cutoff:
+            break
+        client.lpop(GLOBAL_LOG_KEY)
+        removed += 1
+    return removed
+
+
+def prune_global_logs(retention_days: int = 90, dry_run: bool = True) -> int:
+    client = get_redis_client()
+    if not client:
+        return 0
+    retention_days = max(int(retention_days or 0), 1)
+    cutoff = datetime.utcnow() - timedelta(days=retention_days)
+
+    raw_entries = client.lrange(GLOBAL_LOG_KEY, 0, -1) or []
+    if not raw_entries:
+        return 0
+
+    keep = []
+    removed = 0
+    for raw in raw_entries:
+        try:
+            item = json.loads(raw)
+        except Exception:
+            removed += 1
+            continue
+        ts = _parse_iso_timestamp(item.get("created_at") or item.get("timestamp_iso"))
+        if ts is None or ts < cutoff:
+            removed += 1
+            continue
+        keep.append(raw)
+
+    if dry_run:
+        return removed
+
+    pipe = client.pipeline()
+    pipe.delete(GLOBAL_LOG_KEY)
+    if keep:
+        pipe.rpush(GLOBAL_LOG_KEY, *keep)
+    pipe.expire(GLOBAL_LOG_KEY, _retention_seconds())
+    pipe.execute()
+    return removed
 
 
 def get_task_logs(task_id: str, after_seq: int = 0, limit: int = 200) -> Dict[str, Any]:

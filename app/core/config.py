@@ -28,7 +28,8 @@ class Settings(BaseSettings):
     REDIS_URL: str = "redis://localhost:6379/0"
 
     # Backup retention
-    DEFAULT_RETENTION_DAYS: int = 30
+    DEFAULT_RETENTION_DAYS: int = 90
+    REALTIME_LOG_RETENTION_DAYS: int = 90
 
     # Billing / Payments
     APP_PUBLIC_URL: Optional[str] = None
