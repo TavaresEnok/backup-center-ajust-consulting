@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from threading import Lock
 
-from sqlalchemy import text
+from sqlalchemy import inspect, text
 from sqlalchemy.orm import joinedload
 
 from app.core.database import SessionLocal, engine, is_sqlite_engine
@@ -39,7 +39,19 @@ class BillingPolicyService:
             if is_sqlite_engine():
                 cls._schema_ready = True
                 return
+
+            inspector = inspect(engine)
+            plan_columns = {col["name"] for col in inspector.get_columns("plans")}
+            tenant_columns = {col["name"] for col in inspector.get_columns("tenants")}
+            if {
+                "billing_period_days",
+                "payment_grace_days",
+            }.issubset(plan_columns) and "billing_blocked_at" in tenant_columns:
+                cls._schema_ready = True
+                return
+
             with engine.begin() as conn:
+                conn.execute(text("SET LOCAL lock_timeout = '3s'"))
                 conn.execute(
                     text(
                         "ALTER TABLE plans "

@@ -15,7 +15,11 @@
             --bg-b: #11273f;
             --shell: rgba(8, 20, 37, 0.78);
             --shell-border: rgba(148, 163, 184, 0.24);
-            --text-main: #e2e8f0;
+            /* Auth pages always have a dark background — override theme vars */
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            --bg-app: #06111f;
+            --card-border: rgba(148, 163, 184, 0.25);
         }
 
         body {
@@ -42,8 +46,8 @@
         <div class="auth-shell w-full max-w-md rounded-3xl overflow-hidden p-7 sm:p-9 lg:p-10">
             <header>
                 <p class="text-xs uppercase tracking-[0.2em] text-cyan-300/90">Seguranca adicional</p>
-                <h1 class="mt-2 text-2xl font-bold text-slate-100">Validar codigo 2FA</h1>
-                <p class="mt-2 text-sm text-slate-300/90">Conta: <span class="font-semibold">{{ email }}</span></p>
+                <h1 class="mt-2 text-2xl font-bold text-[var(--text-main)]">Validar codigo 2FA</h1>
+                <p class="mt-2 text-sm text-[var(--text-main)]/90">Conta: <span class="font-semibold">{{ email }}</span></p>
             </header>
 
             {% with messages = get_flashed_messages(with_categories=true) %}
@@ -61,9 +65,9 @@
             <form action="{{ url_for('auth.two_factor_verify') }}" method="POST" class="mt-6 space-y-4">
                 {% include 'partials/csrf.html' %}
                 <div class="space-y-1.5">
-                    <label for="code" class="text-sm font-medium text-slate-200">Codigo do autenticador</label>
+                    <label for="code" class="text-sm font-medium text-[var(--text-main)]">Codigo do autenticador</label>
                     <input id="code" name="code" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" required autofocus
-                        class="w-full h-12 px-4 rounded-xl bg-slate-950/55 border border-slate-700 text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-400/40 focus:border-cyan-300 transition"
+                        class="w-full h-12 px-4 rounded-xl border border-slate-600/60 bg-slate-800/80 text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-400/40 focus:border-cyan-300 transition"
                         placeholder="000000" />
                 </div>
 
@@ -76,7 +80,7 @@
             <form action="{{ url_for('auth.two_factor_cancel') }}" method="POST" class="mt-3">
                 {% include 'partials/csrf.html' %}
                 <button type="submit"
-                    class="w-full h-11 rounded-xl border border-slate-600 text-slate-300 hover:bg-slate-800/60 transition">Cancelar e voltar ao login</button>
+                    class="w-full h-11 rounded-xl border border-slate-600 text-[var(--text-main)] hover:bg-[var(--card-bg)]/60 transition">Cancelar e voltar ao login</button>
             </form>
         </div>
     </main>

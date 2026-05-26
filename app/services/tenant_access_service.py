@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 from datetime import datetime, timedelta
+from threading import Lock
 
-from sqlalchemy import func, text
+from sqlalchemy import func, inspect, text
 
 from app.core.database import engine, is_sqlite_engine
 from app.models.backup import Backup
@@ -15,48 +16,73 @@ from app.models.user import User
 class TenantAccessService:
     UNLIMITED_DEFAULT_SLUGS = {"ajust-consulting"}
     PROTECTED_DEFAULT_SLUGS = {"ajust-consulting"}
+    _schema_lock = Lock()
+    _schema_ready = False
 
     @classmethod
     def ensure_schema(cls) -> None:
-        if is_sqlite_engine():
+        if cls._schema_ready:
             return
-        with engine.begin() as conn:
-            conn.execute(
-                text(
-                    "ALTER TABLE tenants "
-                    "ADD COLUMN IF NOT EXISTS access_unlimited BOOLEAN NOT NULL DEFAULT FALSE"
+        with cls._schema_lock:
+            if cls._schema_ready:
+                return
+            if is_sqlite_engine():
+                cls._schema_ready = True
+                return
+
+            inspector = inspect(engine)
+            tenant_columns = {col["name"] for col in inspector.get_columns("tenants")}
+            required = {
+                "access_unlimited",
+                "protected_system_tenant",
+                "deleted_at",
+                "deleted_by",
+                "delete_reason",
+                "deleted_was_active",
+            }
+            if required.issubset(tenant_columns):
+                cls._schema_ready = True
+                return
+
+            with engine.begin() as conn:
+                conn.execute(text("SET LOCAL lock_timeout = '3s'"))
+                conn.execute(
+                    text(
+                        "ALTER TABLE tenants "
+                        "ADD COLUMN IF NOT EXISTS access_unlimited BOOLEAN NOT NULL DEFAULT FALSE"
+                    )
                 )
-            )
-            conn.execute(
-                text(
-                    "ALTER TABLE tenants "
-                    "ADD COLUMN IF NOT EXISTS protected_system_tenant BOOLEAN NOT NULL DEFAULT FALSE"
+                conn.execute(
+                    text(
+                        "ALTER TABLE tenants "
+                        "ADD COLUMN IF NOT EXISTS protected_system_tenant BOOLEAN NOT NULL DEFAULT FALSE"
+                    )
                 )
-            )
-            conn.execute(
-                text(
-                    "ALTER TABLE tenants "
-                    "ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP NULL"
+                conn.execute(
+                    text(
+                        "ALTER TABLE tenants "
+                        "ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP NULL"
+                    )
                 )
-            )
-            conn.execute(
-                text(
-                    "ALTER TABLE tenants "
-                    "ADD COLUMN IF NOT EXISTS deleted_by UUID NULL"
+                conn.execute(
+                    text(
+                        "ALTER TABLE tenants "
+                        "ADD COLUMN IF NOT EXISTS deleted_by UUID NULL"
+                    )
                 )
-            )
-            conn.execute(
-                text(
-                    "ALTER TABLE tenants "
-                    "ADD COLUMN IF NOT EXISTS delete_reason TEXT NULL"
+                conn.execute(
+                    text(
+                        "ALTER TABLE tenants "
+                        "ADD COLUMN IF NOT EXISTS delete_reason TEXT NULL"
+                    )
                 )
-            )
-            conn.execute(
-                text(
-                    "ALTER TABLE tenants "
-                    "ADD COLUMN IF NOT EXISTS deleted_was_active BOOLEAN NOT NULL DEFAULT FALSE"
+                conn.execute(
+                    text(
+                        "ALTER TABLE tenants "
+                        "ADD COLUMN IF NOT EXISTS deleted_was_active BOOLEAN NOT NULL DEFAULT FALSE"
+                    )
                 )
-            )
+            cls._schema_ready = True
 
     @classmethod
     def apply_builtin_overrides(cls) -> None:

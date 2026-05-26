@@ -23,6 +23,30 @@ def _as_utc_aware(value: datetime | None) -> datetime:
     return value.astimezone(timezone.utc)
 
 
+def sanitize_daily_time(time_str: str | None, default: str = "02:00") -> str:
+    raw = str(time_str or "").strip()
+    try:
+        hh, mm = map(int, raw.split(":"))
+    except Exception:
+        return default
+    if 0 <= hh <= 23 and 0 <= mm <= 59:
+        return f"{hh:02d}:{mm:02d}"
+    return default
+
+
+def compute_next_daily_run_at(
+    time_str: str,
+    reference_utc: datetime | None = None,
+) -> datetime:
+    local_tz = app_timezone()
+    reference_local = _as_utc_aware(reference_utc).astimezone(local_tz)
+    hh, mm = map(int, sanitize_daily_time(time_str).split(":"))
+    candidate_local = reference_local.replace(hour=hh, minute=mm, second=0, microsecond=0)
+    if candidate_local <= reference_local:
+        candidate_local += timedelta(days=1)
+    return candidate_local.astimezone(timezone.utc).replace(tzinfo=None)
+
+
 def compute_next_run_at(
     time_str: str,
     frequency: str = "daily",
@@ -30,9 +54,12 @@ def compute_next_run_at(
     day_of_month: int | None = None,
     reference_utc: datetime | None = None,
 ) -> datetime:
+    # Compatibilidade: o runtime atual de backup automatico opera apenas com
+    # rotina diaria global por tenant. Os ramos weekly/monthly permanecem como
+    # fallback para eventuais dados legados ainda nao normalizados.
     local_tz = app_timezone()
     reference_local = _as_utc_aware(reference_utc).astimezone(local_tz)
-    hh, mm = map(int, (time_str or "00:00").split(":"))
+    hh, mm = map(int, sanitize_daily_time(time_str, default="00:00").split(":"))
     frequency = str(frequency or "daily").strip().lower()
 
     if frequency == "weekly":
@@ -60,7 +87,4 @@ def compute_next_run_at(
             candidate_local = datetime(year, month, min(target_day, last_day), hh, mm, tzinfo=local_tz)
         return candidate_local.astimezone(timezone.utc).replace(tzinfo=None)
 
-    candidate_local = reference_local.replace(hour=hh, minute=mm, second=0, microsecond=0)
-    if candidate_local <= reference_local:
-        candidate_local += timedelta(days=1)
-    return candidate_local.astimezone(timezone.utc).replace(tzinfo=None)
+    return compute_next_daily_run_at(f"{hh:02d}:{mm:02d}", reference_utc=reference_utc)

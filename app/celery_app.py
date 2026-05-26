@@ -13,6 +13,7 @@ from celery.signals import worker_process_init, worker_process_shutdown
 from celery.schedules import crontab
 from kombu import Queue
 import os
+from datetime import timedelta
 from app.core.logging_config import setup_logging
 from app.services.billing_policy_service import BillingPolicyService
 from app.services.device_subgroup_service import DeviceSubgroupService
@@ -35,6 +36,26 @@ TASK_TIME_LIMIT = int(_task_time_limit_env) if _task_time_limit_env.isdigit() el
 TASK_SOFT_TIME_LIMIT = int(_task_soft_time_limit_env) if _task_soft_time_limit_env.isdigit() else None
 RESULT_EXPIRES = int(_result_expires_env) if _result_expires_env.isdigit() else 86400
 
+
+def _env_int(name: str, default: int, *, minimum: int = 1, maximum: int | None = None) -> int:
+    raw = str(os.environ.get(name, default)).strip()
+    try:
+        value = int(raw)
+    except Exception:
+        value = int(default)
+    if value < minimum:
+        value = minimum
+    if maximum is not None and value > maximum:
+        value = maximum
+    return value
+
+
+SCHEDULED_BACKUPS_INTERVAL_SECONDS = _env_int(
+    "CELERY_BEAT_SCHEDULED_BACKUPS_SECONDS",
+    60,
+    minimum=30,
+    maximum=3600,
+)
 # Cria instÃ¢ncia do Celery
 celery_app = Celery(
     'backup_center',
@@ -58,6 +79,7 @@ celery_app.conf.update(
     task_default_queue='celery',
     task_queues=(
         Queue('celery'),
+        Queue('jump_queue'),
         Queue('vpn_queue'),
     ),
     task_routes={
@@ -89,20 +111,10 @@ def _dispose_db_pool_on_worker_shutdown(**_kwargs):
 
 # Tarefas periÃ³dicas (Celery Beat)
 celery_app.conf.beat_schedule = {
-    # Executa backups agendados (por horario de cada dispositivo)
-    'run-scheduled-backups-every-minute': {
+    # Executa a varredura da janela global diaria por tenant.
+    'run-scheduled-backups-periodic': {
         'task': 'app.tasks.backups.run_scheduled_backups',
-        'schedule': crontab(minute='*'),
-    },
-    # Ping de todos os dispositivos a cada 5 minutos
-    'ping-all-devices-every-5-min': {
-        'task': 'app.tasks.monitoring.ping_all_devices_periodic',
-        'schedule': crontab(minute='*/5'),
-    },
-    # Saude dos Jump Hosts a cada 10 minutos
-    'check-jump-host-health-every-10-min': {
-        'task': 'app.tasks.monitoring.run_jump_host_health_checks_periodic',
-        'schedule': crontab(minute='*/10'),
+        'schedule': timedelta(seconds=SCHEDULED_BACKUPS_INTERVAL_SECONDS),
     },
     # Enviar relatÃ³rios diÃ¡rios Ã s 8h
     'send-daily-reports': {
@@ -120,6 +132,16 @@ celery_app.conf.beat_schedule = {
     'purge-expired-backups': {
         'task': 'app.tasks.backups.purge_expired_backups',
         'schedule': crontab(hour=2, minute=30),
+    },
+    # Limpeza automatica de backups com falha (a cada 3 dias)
+    'purge-failed-backups-every-3-days': {
+        'task': 'app.tasks.backups.purge_failed_backups_periodic',
+        'schedule': timedelta(days=3),
+    },
+    # Limpeza automatica de logs de atividade (diariamente 03:00)
+    'purge-activity-logs-daily': {
+        'task': 'app.tasks.backups.purge_activity_logs_periodic',
+        'schedule': crontab(hour=3, minute=0),
     },
     # Politica de cobranca/acesso (a cada hora)
     'enforce-tenant-billing-access-hourly': {

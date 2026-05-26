@@ -96,10 +96,46 @@
                         required />
                 </div>
                 <div class="form-control">
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Senha SSH (Deixe em
-                        branco para manter)</label>
-                    <input type="password" name="password" placeholder="••••••••"
-                        class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-brand-500 focus:border-brand-500" />
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Senha SSH</label>
+
+                    {% if can_view_saved_credentials and device_current_password %}
+                    <div class="mb-2 flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                        <span>Senha atual salva:</span>
+                        <span id="device_password_current_display" class="font-mono tracking-widest">••••••••</span>
+                        <button type="button"
+                            onclick="toggleCurrentPasswordDisplay()"
+                            class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                            aria-label="Mostrar ou ocultar senha SSH atual">
+                            <i id="eye-icon-current" data-lucide="eye" class="w-3.5 h-3.5 inline"></i>
+                        </button>
+                    </div>
+                    <script>
+                        var _currentPwd = {{ device_current_password | tojson }};
+                        var _showingPwd = false;
+                        function toggleCurrentPasswordDisplay() {
+                            _showingPwd = !_showingPwd;
+                            var el = document.getElementById('device_password_current_display');
+                            var icon = document.getElementById('eye-icon-current');
+                            el.textContent = _showingPwd ? _currentPwd : '\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022';
+                            icon.setAttribute('data-lucide', _showingPwd ? 'eye-off' : 'eye');
+                            if (window.lucide) window.lucide.createIcons();
+                        }
+                    </script>
+                    {% endif %}
+
+                    <div class="relative">
+                        <input type="password" id="device_password" name="password"
+                            value=""
+                            placeholder="Deixe em branco para manter a senha atual"
+                            class="w-full rounded-lg border-gray-300 pr-10 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-brand-500 focus:border-brand-500" />
+                        <button type="button"
+                            onclick="toggleSensitiveField('device_password', this)"
+                            class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                            aria-label="Mostrar ou ocultar nova senha SSH">
+                            <i data-lucide="eye" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Digite uma nova senha para substituir. Deixe em branco para não alterar.</p>
                 </div>
             </div>
 
@@ -139,27 +175,10 @@
                     Automático</label>
             </div>
 
-            <!-- Campos de Frequencia (Adicionados agora) -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6"
-                x-data="{ enabled: {{ 'true' if device.backup_scheduled else 'false' }} }" x-show="enabled"
-                x-transition>
-                <div class="form-control">
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Frequência</label>
-                    <select name="schedule_frequency"
-                        class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-brand-500 focus:border-brand-500">
-                        <option value="daily" selected>Diário</option>
-                        <option value="weekly">Semanal</option>
-                        <option value="monthly">Mensal</option>
-                    </select>
-                </div>
-                <div class="form-control">
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Horário
-                        (HH:MM)</label>
-                    <input type="time" name="schedule_time" value="00:00"
-                        class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-brand-500 focus:border-brand-500" />
-                </div>
-            </div>
-            <p class="text-xs text-gray-500 mt-2">* A configuração detalhada de agendamento será salva.</p>
+            <p class="text-sm text-gray-600 dark:text-gray-300">
+                Este dispositivo participa da janela automática global do tenant quando a fila estiver ativa.
+                O horário diário é definido em <strong>Agendamentos</strong>.
+            </p>
         </div>
 
         <div class="flex justify-end gap-3">
@@ -175,6 +194,21 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+        window.toggleSensitiveField = function (inputId, button) {
+            const input = document.getElementById(inputId);
+            if (!input) {
+                return;
+            }
+            input.type = input.type === 'password' ? 'text' : 'password';
+            const icon = button ? button.querySelector('i[data-lucide]') : null;
+            if (icon) {
+                icon.setAttribute('data-lucide', input.type === 'password' ? 'eye' : 'eye-off');
+                if (window.lucide && window.lucide.createIcons) {
+                    window.lucide.createIcons();
+                }
+            }
+        };
+
         const typeSelect = document.getElementById('device_type_id');
         const portInput = document.getElementById('port');
         const telnetCheckbox = document.getElementById('use_telnet');
@@ -183,6 +217,8 @@
         const extraFields = document.getElementById('extra-parameters-fields');
         const typeMetadata = {{ type_metadata|tojson }};
         const existingExtras = {{ device_extra_parameters|tojson }};
+        const zabbixScriptName = "zabbix_backup.py";
+        const zabbixDefaultExclude = "history,history_uint,history_str,history_log,history_text,trends,trends_uint";
 
         function prettifyLabel(name) {
             return (name || '')
@@ -197,7 +233,12 @@
         function renderExtraParameters(typeId) {
             extraFields.innerHTML = '';
             const metadata = typeMetadata[typeId] || {};
+            const scriptName = String(metadata.script_name || '').toLowerCase();
+            const isZabbix = scriptName === zabbixScriptName;
             const params = (metadata.required_parameters || []).filter((item) => {
+                if (isZabbix && item === 'db_type') {
+                    return false;
+                }
                 return !['username', 'password', 'ip_address', 'host', 'hostname', 'port', 'use_telnet'].includes(item);
             });
 
@@ -221,6 +262,8 @@
                 input.id = `extra__${paramName}`;
                 input.className = 'w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-brand-500 focus:border-brand-500';
                 input.autocomplete = 'off';
+                input.dataset.extraParamName = paramName;
+                wrapper.dataset.extraParamName = paramName;
 
                 if (isSensitiveParameter(paramName)) {
                     input.placeholder = existingExtras[paramName]
@@ -229,6 +272,9 @@
                 } else {
                     input.value = existingExtras[paramName] || '';
                     input.placeholder = `Valor de ${prettifyLabel(paramName)}`;
+                }
+                if (paramName === 'exclude_tables' && !input.value) {
+                    input.value = zabbixDefaultExclude;
                 }
 
                 const help = document.createElement('p');
@@ -243,7 +289,127 @@
                 extraFields.appendChild(wrapper);
             });
 
+            if (isZabbix) {
+                const normalizedModeFromExtra = String(existingExtras.db_credentials_mode || '').toLowerCase();
+                const hasStoredDbCredentials = Boolean(
+                    String(existingExtras.db_name || '').trim()
+                    || String(existingExtras.db_user || '').trim()
+                    || String(existingExtras.db_password || '').trim()
+                );
+                const defaultDbMode = hasStoredDbCredentials
+                    ? 'manual'
+                    : (normalizedModeFromExtra === 'manual' || normalizedModeFromExtra === 'automatic'
+                        ? normalizedModeFromExtra
+                        : 'automatic');
+                const automaticChecked = defaultDbMode === 'automatic' ? 'checked' : '';
+                const manualChecked = defaultDbMode === 'automatic' ? '' : 'checked';
+                const normalizedDbType = String(existingExtras.db_type || '').toLowerCase();
+                const mariaChecked = normalizedDbType === 'mariadb' || normalizedDbType === 'mysql';
+                const postgresChecked = mariaChecked ? '' : 'checked';
+                const mariadbChecked = mariaChecked ? 'checked' : '';
+                const modeBox = document.createElement('div');
+                modeBox.className = 'md:col-span-2 rounded-lg border border-indigo-200 bg-indigo-50/70 p-4 dark:border-indigo-500/30 dark:bg-indigo-500/10';
+                modeBox.innerHTML = `
+                    <div class="flex flex-col gap-3">
+                        <div>
+                            <p class="text-sm font-semibold text-indigo-900 dark:text-indigo-200">Credenciais do Banco Zabbix</p>
+                            <p class="text-xs text-indigo-700 dark:text-indigo-300">No modo automático, DBName/DBUser/DBPassword serão obtidos no momento do backup via zabbix_server.conf.</p>
+                        </div>
+                        <div class="flex flex-col gap-2">
+                            <p class="text-xs font-semibold uppercase tracking-wide text-indigo-800 dark:text-indigo-200">Banco de dados</p>
+                            <div class="inline-flex w-fit overflow-hidden rounded-lg border border-indigo-300 dark:border-indigo-500/40">
+                                <label class="cursor-pointer">
+                                    <input type="radio" name="extra__db_type" value="postgres" ${postgresChecked} class="peer sr-only">
+                                    <span class="block px-4 py-2 text-sm font-semibold text-indigo-900 peer-checked:bg-indigo-600 peer-checked:text-white dark:text-indigo-100">
+                                        PostgreSQL
+                                    </span>
+                                </label>
+                                <label class="cursor-pointer border-l border-indigo-300 dark:border-indigo-500/40">
+                                    <input type="radio" name="extra__db_type" value="mariadb" ${mariadbChecked} class="peer sr-only">
+                                    <span class="block px-4 py-2 text-sm font-semibold text-indigo-900 peer-checked:bg-indigo-600 peer-checked:text-white dark:text-indigo-100">
+                                        MariaDB
+                                    </span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-4 text-sm">
+                            <label class="inline-flex items-center gap-2 text-indigo-900 dark:text-indigo-200">
+                                <input type="radio" name="extra__db_credentials_mode" value="automatic" ${automaticChecked}
+                                    class="text-indigo-600 focus:ring-indigo-500">
+                                Automático
+                            </label>
+                            <label class="inline-flex items-center gap-2 text-indigo-900 dark:text-indigo-200">
+                                <input type="radio" name="extra__db_credentials_mode" value="manual" ${manualChecked}
+                                    class="text-indigo-600 focus:ring-indigo-500">
+                                Manual
+                            </label>
+                        </div>
+                        <p id="zabbix-autodiscovery-status" class="text-xs text-indigo-800 dark:text-indigo-200">
+                            No modo automático, os campos de credenciais ficam ocultos e a descoberta ocorre em tempo de execução.
+                        </p>
+                    </div>
+                `;
+                extraFields.prepend(modeBox);
+            }
+
             extraPanel.classList.remove('hidden');
+            if (window.lucide && window.lucide.createIcons) {
+                window.lucide.createIcons();
+            }
+            if (isZabbix) {
+                setupZabbixControls();
+            }
+        }
+
+        function zabbixField(paramName) {
+            return document.querySelector(`#extra-parameters-fields input[name="extra__${paramName}"]`);
+        }
+
+        function setupZabbixControls() {
+            const statusEl = document.getElementById('zabbix-autodiscovery-status');
+            const modeInputs = document.querySelectorAll('input[name="extra__db_credentials_mode"]');
+            const dbFieldNames = ['db_name', 'db_user', 'db_password'];
+
+            function currentMode() {
+                const checked = document.querySelector('input[name="extra__db_credentials_mode"]:checked');
+                if (checked) {
+                    return checked.value;
+                }
+                const hasStoredDbCredentials = Boolean(
+                    String(existingExtras.db_name || '').trim()
+                    || String(existingExtras.db_user || '').trim()
+                    || String(existingExtras.db_password || '').trim()
+                );
+                return hasStoredDbCredentials ? 'manual' : 'automatic';
+            }
+
+            function updateModeUi() {
+                const automatic = currentMode() === 'automatic';
+                dbFieldNames.forEach((name) => {
+                    const input = zabbixField(name);
+                    if (!input) return;
+                    const wrapper = input.closest('.form-control');
+                    if (wrapper) {
+                        wrapper.classList.toggle('hidden', automatic);
+                    }
+                    input.disabled = automatic;
+                    if (automatic) {
+                        input.placeholder = '';
+                    } else if (!input.value) {
+                        input.placeholder = name === 'db_password'
+                            ? 'Informe Db Password'
+                            : `Valor de ${prettifyLabel(name)}`;
+                    }
+                });
+                if (statusEl) {
+                    statusEl.textContent = automatic
+                        ? 'No modo automático, os campos de credenciais ficam ocultos e a descoberta ocorre em tempo de execução.'
+                        : 'Modo manual ativo: informe DBName/DBUser/DBPassword para usar no backup.';
+                }
+            }
+
+            modeInputs.forEach((el) => el.addEventListener('change', updateModeUi));
+            updateModeUi();
         }
 
         function refreshTypeUi(options = {}) {

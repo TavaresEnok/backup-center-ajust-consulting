@@ -1,6 +1,7 @@
 from flask import Flask, session, request, abort, jsonify, flash, redirect, url_for, g
 from datetime import timedelta, datetime
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, HTTPException
+from starlette.responses import Response
 from zoneinfo import ZoneInfo
 from fastapi.middleware.wsgi import WSGIMiddleware
 from app.core.config import settings, validate_settings
@@ -18,6 +19,7 @@ from werkzeug.exceptions import HTTPException
 from urllib.parse import urlsplit, urlunsplit
 from starlette.middleware.base import BaseHTTPMiddleware
 from sqlalchemy.orm import joinedload
+from sqlalchemy.exc import SQLAlchemyError
 
 def create_flask_app():
     app = Flask(__name__)
@@ -298,6 +300,13 @@ def create_flask_app():
                 "tenant_billing_alert": alert,
                 "tenant_billing_url": url_for("billing.dashboard", tenant_slug=tenant_slug),
             }
+        except SQLAlchemyError as exc:
+            db.rollback()
+            app.logger.warning(
+                "Ignorando alerta de billing por falha temporaria no banco: %s",
+                exc.__class__.__name__,
+            )
+            return {}
         finally:
             db.close()
     
@@ -429,8 +438,40 @@ def create_flask_app():
     return app
 
 
+api_description = """
+<div style="font-family: sans-serif;">
+    <h2 style="color: #2563eb;">📚 Bem-vindo à Documentação Interativa da API (Backup Center)</h2>
+    <p>Esta página serve para você <strong>entender e testar</strong> como integrar outra aplicação com o Backup Center.</p>
+    
+    <div style="background-color: #f3f4f6; padding: 15px; border-left: 4px solid #3b82f6; border-radius: 4px; margin-bottom: 20px;">
+        <strong>🔑 Como Autenticar:</strong><br/>
+        Clique no botão verde <b>"Authorize"</b> no canto superior direito.<br/>
+        No campo <i>"Value"</i>, cole o Token da sua API (ex: <code>bc_ABC123...</code>) e clique em <i>Authorize</i>.<br/>
+        <i>Nota: Não precisa escrever "Bearer ", o sistema já faz isso sozinho aqui nessa tela de teste.</i>
+    </div>
+
+    <h3>🚀 Fluxo de Trabalho Passo a Passo</h3>
+    <ol style="line-height: 1.8;">
+        <li><strong>Passo 1: Encontrar os Grupos</strong><br/> 
+        Abra a rota <code style="background:#e5e7eb; padding:2px 6px; border-radius:4px;">GET /api/v1/external/groups</code>, clique em <i>"Try it out"</i> e em <i>"Execute"</i>. A resposta te dará o <b>id</b> do grupo.</li>
+        
+        <li><strong>Passo 2: Ver Backups de um Grupo</strong><br/> 
+        Pegue o <b>id</b> do passo anterior. Abra <code style="background:#e5e7eb; padding:2px 6px; border-radius:4px;">GET /api/v1/external/groups/{group_id}/backups</code>, clique em <i>"Try it out"</i>, preencha o campo <code>group_id</code> e clique em <i>"Execute"</i>. Extraia o <b>id do backup</b> que deseja.</li>
+        
+        <li><strong>Passo 3: Download</strong><br/> 
+        Abra <code style="background:#e5e7eb; padding:2px 6px; border-radius:4px;">GET /api/v1/external/backups/{backup_id}/download</code> e preencha com o ID do backup para baixar o arquivo.</li>
+    </ol>
+</div>
+"""
+
 def create_fastapi_app():
-    app = FastAPI(title=settings.APP_NAME)
+    app = FastAPI(
+        title=f"{settings.APP_NAME} - API",
+        version="1.0.0",
+        docs_url=None,  # Desabilita o Swagger padrão
+        redoc_url=None,  # Desabilita o ReDoc
+        openapi_url=None  # Desabilita OpenAPI JSON
+    )
 
     @app.middleware("http")
     async def add_security_headers(request, call_next):
@@ -494,161 +535,76 @@ def create_fastapi_app():
     async def api_favicon():
         return {}, 204
 
+    @app.api_route("/internal/olt-upload/{token}/{filename:path}", methods=["PUT", "POST"])
+    async def olt_config_upload(token: str, filename: str, req: Request):
+        from app.services.realtime_backup_logs import get_redis_client
+        import json
+        import os
+
+        client = get_redis_client()
+        if not client:
+            raise HTTPException(status_code=503, detail="upload receiver unavailable")
+
+        key = f"backup_center:olt_upload:{token}"
+        raw_meta = client.get(key)
+        if not raw_meta:
+            raise HTTPException(status_code=404, detail="upload token not found")
+
+        try:
+            meta = json.loads(raw_meta)
+        except Exception:
+            client.delete(key)
+            raise HTTPException(status_code=400, detail="invalid upload token")
+
+        target_path = os.path.abspath(str(meta.get("path") or ""))
+        storage_root = os.path.abspath(os.path.join(os.getcwd(), "storage", "backups"))
+        if not target_path.startswith(storage_root + os.sep):
+            client.delete(key)
+            raise HTTPException(status_code=400, detail="invalid upload target")
+
+        payload = await req.body()
+        max_bytes = int(meta.get("max_bytes") or 20 * 1024 * 1024)
+        if not payload:
+            raise HTTPException(status_code=400, detail="empty upload")
+        if len(payload) > max_bytes:
+            raise HTTPException(status_code=413, detail="upload too large")
+
+        os.makedirs(os.path.dirname(target_path), exist_ok=True)
+        with open(target_path, "wb") as fp:
+            fp.write(payload)
+        client.delete(key)
+        return {"status": "ok", "filename": filename, "bytes": len(payload)}
+
+    @app.get("/docs", include_in_schema=False, response_class=Response)
+    @app.get("/api/docs", include_in_schema=False, response_class=Response)
+    async def custom_api_documentation_route(req: Request):
+        """Página de documentação customizada e amigável da API"""
+        from fastapi.responses import HTMLResponse
+        cache_headers = {
+            "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
+            "Pragma": "no-cache",
+            "Expires": "0",
+        }
+        try:
+            from app.api.v1.external.documentation import API_DOCUMENTATION_HTML
+            return HTMLResponse(
+                content=API_DOCUMENTATION_HTML,
+                status_code=200,
+                headers=cache_headers,
+            )
+        except Exception as e:
+            return HTMLResponse(
+                content=f"<h1>ERROR loading docs</h1><p>{str(e)}</p>",
+                status_code=500,
+                headers=cache_headers,
+            )
+
     # Include Routers
     from app.api.v1.auth import router as auth_v1_router
     app.include_router(auth_v1_router, prefix="/api/v1/auth", tags=["auth"])
 
     from app.api.v1.external.routes import router as external_router
     app.include_router(external_router, prefix="/api/v1/external", tags=["external"])
-
-    # ── WebSocket: Terminal Interativo Jump Host ──────────────────────────
-    from fastapi import WebSocket, WebSocketDisconnect
-    import asyncio, json as _json, select as _select, uuid as _uuid, logging as _logging
-
-    _ws_log = _logging.getLogger("backup_center.ws_console")
-
-    @app.websocket("/ws/jump-console/{token}")
-    async def jump_console_ws(websocket: WebSocket, token: str):
-        from app.services.realtime_backup_logs import get_redis_client
-        from app.core.database import SessionLocal
-        from app.services.device_service import DeviceGroupService
-        from app.services.connection_test_service import connection_test_service as _cts
-
-        await websocket.accept()
-
-        redis_client = get_redis_client()
-        if not redis_client:
-            await websocket.close(code=1011, reason="Redis indisponivel")
-            return
-
-        raw = redis_client.get(f"backup_center:wsconsole:{token}")
-        if not raw:
-            await websocket.close(code=4401, reason="Token invalido ou expirado")
-            return
-        redis_client.delete(f"backup_center:wsconsole:{token}")
-
-        try:
-            payload = _json.loads(raw)
-        except Exception:
-            await websocket.close(code=1011, reason="Payload invalido")
-            return
-
-        group_id_str = payload.get("group_id", "")
-        tenant_id_str = payload.get("tenant_id", "")
-
-        db = SessionLocal()
-        ssh_client = None
-        channel = None
-        try:
-            group = DeviceGroupService.get_group(db, _uuid.UUID(group_id_str))
-            if not group or str(group.tenant_id) != tenant_id_str:
-                await websocket.close(code=4403, reason="Grupo nao encontrado")
-                return
-
-            jump_cfg = _cts._build_jump_host_config(group)
-            if not jump_cfg:
-                await websocket.send_bytes(b"\r\n\x1b[31mJump Host nao configurado.\x1b[0m\r\n")
-                await websocket.close(code=1000)
-                return
-
-            loop = asyncio.get_event_loop()
-
-            try:
-                ssh_client = await loop.run_in_executor(None, lambda: _cts._open_jump_client(jump_cfg, 12))
-            except Exception as e:
-                await websocket.send_bytes(f"\r\n\x1b[31mFalha ao conectar no Jump Host: {e}\x1b[0m\r\n".encode())
-                await websocket.close(code=1000)
-                return
-
-            try:
-                channel = await loop.run_in_executor(
-                    None,
-                    lambda: ssh_client.invoke_shell(term="xterm-256color", width=220, height=50)
-                )
-            except Exception as e:
-                await websocket.send_bytes(f"\r\n\x1b[31mFalha ao abrir shell: {e}\x1b[0m\r\n".encode())
-                await websocket.close(code=1000)
-                return
-
-            def _read_channel():
-                try:
-                    ready, _, _ = _select.select([channel], [], [], 0.1)
-                    if ready:
-                        data = channel.recv(8192)
-                        return data if data else None
-                    return b""
-                except Exception:
-                    return None
-
-            async def _send_output():
-                while True:
-                    data = await loop.run_in_executor(None, _read_channel)
-                    if data is None:
-                        try:
-                            await websocket.send_bytes(b"\r\n\x1b[33mSessao SSH encerrada.\x1b[0m\r\n")
-                            await websocket.close(code=1000)
-                        except Exception:
-                            pass
-                        break
-                    if data:
-                        try:
-                            await websocket.send_bytes(data)
-                        except Exception:
-                            break
-
-            async def _recv_input():
-                try:
-                    while True:
-                        msg = await websocket.receive()
-                        if msg["type"] == "websocket.disconnect":
-                            break
-                        data = msg.get("bytes") or (msg.get("text") or "").encode()
-                        if not data:
-                            continue
-                        try:
-                            parsed = _json.loads(data.decode("utf-8", errors="ignore"))
-                            if parsed.get("type") == "resize":
-                                channel.resize_pty(
-                                    width=max(1, int(parsed.get("cols", 80))),
-                                    height=max(1, int(parsed.get("rows", 24)))
-                                )
-                                continue
-                        except Exception:
-                            pass
-                        channel.send(data)
-                except WebSocketDisconnect:
-                    pass
-                except Exception:
-                    pass
-
-            send_task = asyncio.create_task(_send_output())
-            recv_task = asyncio.create_task(_recv_input())
-            done, pending = await asyncio.wait([send_task, recv_task], return_when=asyncio.FIRST_COMPLETED)
-            for task in pending:
-                task.cancel()
-                try:
-                    await task
-                except asyncio.CancelledError:
-                    pass
-
-        except Exception:
-            _ws_log.exception("Erro no WebSocket jump console")
-            try:
-                await websocket.close(code=1011)
-            except Exception:
-                pass
-        finally:
-            if channel is not None:
-                try:
-                    channel.close()
-                except Exception:
-                    pass
-            if ssh_client is not None:
-                try:
-                    ssh_client.close()
-                except Exception:
-                    pass
-            db.close()
 
     return app
 
@@ -658,8 +614,8 @@ def create_main_app():
     fastapi_app = create_fastapi_app()
     flask_app = create_flask_app()
 
-    # Mount Flask to handle SSR pages
-    # FastAPI routes take priority, Flask handles everything else.
+    # Mount Flask to handle SSR pages ONLY
+    # FastAPI routes like /docs, /api/* take priority and are matched first
     fastapi_app.mount("/", WSGIMiddleware(flask_app))
 
     return fastapi_app

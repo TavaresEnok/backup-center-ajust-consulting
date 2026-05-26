@@ -33,11 +33,6 @@
         <div>
             <div class="flex items-center gap-3">
                 <h1 class="text-3xl font-bold text-gray-900 dark:text-white">{{ device.name }}</h1>
-                <span
-                    class="px-2.5 py-0.5 rounded-full text-xs font-medium 
-                    {% if device.is_active %}bg-success-100 text-success-800 dark:bg-success-900/30 dark:text-success-400{% else %}bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400{% endif %}">
-                    {{ 'Ativo' if device.is_active else 'Inativo' }}
-                </span>
             </div>
             <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ device.ip_address }}:{{ device.port }} • {{
                 device.description or 'Sem descrição' }}</p>
@@ -66,19 +61,14 @@
                     <span data-test-loading class="hidden">Testando...</span>
                 </button>
             </form>
-            {% if can_operator and device.group and device.group.uses_jump_host and device.group.is_active and device.is_active %}
-            <form id="form-diagnose-jump-device-view-{{ device.id }}"
-                action="{{ url_for('tenant_groups.diagnose_group_jump', tenant_slug=tenant.slug, group_id=device.group.id) }}"
-                method="POST"
-                class="inline">
+            {% if device.last_backup_status == 'failure' %}
+            <form action="{{ url_for('tenant_devices.clear_backup_error', tenant_slug=tenant.slug, device_id=device.id) }}"
+                method="POST" class="inline">
                 {% include 'partials/csrf.html' %}
-                <input type="hidden" name="device_id" value="{{ device.id }}">
-                <button type="button"
-                    data-run-backup-live
-                    data-form-id="form-diagnose-jump-device-view-{{ device.id }}"
-                    class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-50 border border-emerald-300 rounded-lg text-sm font-medium text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:border-emerald-700 dark:text-emerald-300 dark:hover:bg-emerald-900/40 transition-colors">
-                    <i data-lucide="stethoscope" class="w-4 h-4"></i>
-                    Diagnosticar Jump
+                {% if return_group %}<input type="hidden" name="return_group_id" value="{{ return_group.id }}">{% endif %}
+                <button type="submit"
+                    class="inline-flex items-center gap-2 px-4 py-2 bg-rose-50 border border-rose-300 rounded-lg text-sm font-medium text-rose-700 hover:bg-rose-100 dark:bg-rose-900/20 dark:border-rose-700 dark:text-rose-300 dark:hover:bg-rose-900/40 transition-colors">
+                    <i data-lucide="eraser" class="w-4 h-4"></i> Apagar Erro
                 </button>
             </form>
             {% endif %}
@@ -158,7 +148,7 @@
     </div>
 
     <!-- Histórico -->
-    <div class="bg-white border border-gray-200 rounded-xl overflow-hidden dark:bg-gray-800 dark:border-gray-700">
+    <div data-backup-auto-refresh class="bg-white border border-gray-200 rounded-xl overflow-hidden dark:bg-gray-800 dark:border-gray-700">
         <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex flex-wrap justify-between items-center gap-2">
             <h3 class="font-semibold text-gray-900 dark:text-white">Histórico de Backups</h3>
             <a href="{{ url_for('tenant_backups.list_backups', tenant_slug=tenant.slug) }}?device_id={{ device.id }}"
@@ -210,6 +200,41 @@
                 </tbody>
             </table>
         </div>
+        {% if backup_total_pages > 1 %}
+        <div class="px-6 py-3 border-t border-gray-200 dark:border-gray-700 flex flex-wrap items-center justify-between gap-2">
+            <span class="text-xs text-gray-500 dark:text-gray-400">
+                Página {{ backup_page }} de {{ backup_total_pages }} · {{ backups_total }} backup(s)
+            </span>
+            <div class="flex items-center gap-2">
+                {% if backup_page > 1 %}
+                <a href="{{ url_for('tenant_devices.view_device', tenant_slug=tenant.slug, device_id=device.id, group_id=return_group.id if return_group else None, backup_page=backup_page-1) }}"
+                    class="px-2.5 py-1.5 rounded-lg border border-gray-300 text-xs text-gray-600 hover:bg-gray-100 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700">
+                    Anterior
+                </a>
+                {% endif %}
+
+                {% set p_start = [1, backup_page - 2]|max %}
+                {% set p_end = [backup_total_pages, backup_page + 2]|min %}
+                {% for p in range(p_start, p_end + 1) %}
+                    {% if p == backup_page %}
+                    <span class="px-2.5 py-1.5 rounded-lg bg-brand-600 text-xs text-white">{{ p }}</span>
+                    {% else %}
+                    <a href="{{ url_for('tenant_devices.view_device', tenant_slug=tenant.slug, device_id=device.id, group_id=return_group.id if return_group else None, backup_page=p) }}"
+                        class="px-2.5 py-1.5 rounded-lg border border-gray-300 text-xs text-gray-600 hover:bg-gray-100 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700">
+                        {{ p }}
+                    </a>
+                    {% endif %}
+                {% endfor %}
+
+                {% if backup_page < backup_total_pages %}
+                <a href="{{ url_for('tenant_devices.view_device', tenant_slug=tenant.slug, device_id=device.id, group_id=return_group.id if return_group else None, backup_page=backup_page+1) }}"
+                    class="px-2.5 py-1.5 rounded-lg border border-gray-300 text-xs text-gray-600 hover:bg-gray-100 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700">
+                    Próxima
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
     </div>
 
 </div>

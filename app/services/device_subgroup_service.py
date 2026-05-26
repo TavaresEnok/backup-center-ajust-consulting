@@ -3,7 +3,7 @@ from __future__ import annotations
 from threading import Lock
 from typing import Any
 
-from sqlalchemy import func, text
+from sqlalchemy import func, inspect, text
 from sqlalchemy.orm import Session
 
 from app.core.database import SessionLocal, engine, is_sqlite_engine
@@ -26,7 +26,20 @@ class DeviceSubgroupService:
                 cls._schema_ready = True
                 return
 
+            inspector = inspect(engine)
+            has_subgroups_table = inspector.has_table("device_subgroups")
+            device_columns = {col["name"] for col in inspector.get_columns("devices")}
+            device_fk_names = {fk.get("name") for fk in inspector.get_foreign_keys("devices")}
+            if (
+                has_subgroups_table
+                and "subgroup_id" in device_columns
+                and "fk_devices_subgroup_id" in device_fk_names
+            ):
+                cls._schema_ready = True
+                return
+
             with engine.begin() as conn:
+                conn.execute(text("SET LOCAL lock_timeout = '3s'"))
                 conn.execute(
                     text(
                         """
@@ -159,4 +172,3 @@ def ensure_device_subgroup_schema_now() -> None:
     DeviceSubgroupService.ensure_schema()
     db = SessionLocal()
     db.close()
-

@@ -13,11 +13,13 @@ import logging
 import os
 import json
 from datetime import datetime, timedelta
-from collections import defaultdict
+from collections import Counter, defaultdict
 import time
 from contextlib import contextmanager
 from celery.exceptions import Retry
-from app.services.schedule_utils import compute_next_run_at, utc_now_naive
+from app.services.schedule_utils import compute_next_daily_run_at, sanitize_daily_time, utc_now_naive
+from app.services.mass_backup_scope import resolve_mass_backup_excluded_type_ids
+from app.services.activity_service import ActivityService
 
 logger = logging.getLogger(__name__)
 LARGE_BULK_FAIL_FAST_THRESHOLD = 8
@@ -277,22 +279,28 @@ def _has_active_bulk_operation() -> bool:
 
     now_utc = datetime.utcnow()
     try:
-        for key in client.scan_iter("backup_center:task_meta:*"):
-            raw = client.get(key)
+        for key in client.scan_iter("backup_center:tenant_active_bulk:*"):
+            task_id = client.get(key)
+            if not task_id:
+                client.delete(key)
+                continue
+            raw = client.get(f"backup_center:task_meta:{task_id}")
             if not raw:
+                client.delete(key)
                 continue
             try:
                 meta = json.loads(raw)
             except Exception:
+                client.delete(key)
                 continue
             if not isinstance(meta, dict):
+                client.delete(key)
                 continue
             if not bool(meta.get("is_bulk")) or bool(meta.get("completed")):
+                client.delete(key)
                 continue
             operation_kind = str(meta.get("operation_kind") or "backup_bulk").strip().lower()
             if operation_kind not in {"backup_bulk", "backup_reprocess"}:
-                continue
-            if bool(meta.get("cancel_requested")) and bool(meta.get("completed")):
                 continue
 
             # Usa o timestamp mais recente de atividade conhecida do lote para evitar
@@ -314,6 +322,7 @@ def _has_active_bulk_operation() -> bool:
                     latest_activity = parsed
             if latest_activity is not None:
                 if (now_utc - latest_activity).total_seconds() > BULK_ACTIVE_STALE_SECONDS:
+                    client.delete(key)
                     continue
             return True
     except Exception:
@@ -543,6 +552,10 @@ def _should_retry_transient_failure(
             "network is unreachable",
             "unable to connect to remote host",
             "unable to connect to port",
+            "timeout opening channel",
+            "administratively prohibited",
+            "jump host nao conseguiu abrir canal tcp",
+            "jump host não conseguiu abrir canal tcp",
             "authentication failed",
             "invalid username",
             "invalid password",
@@ -1038,7 +1051,7 @@ from celery.exceptions import SoftTimeLimitExceeded
 
 @celery_app.task(
     bind=True,
-    max_retries=1,
+    max_retries=0,
     time_limit=BACKUP_TASK_TIME_LIMIT_SECONDS,
     soft_time_limit=BACKUP_TASK_SOFT_TIME_LIMIT_SECONDS,
 )
@@ -1219,37 +1232,6 @@ def _internal_run_backup_task(self, device_id: str, bulk_task_id: str = None):
         if cb_jump_label != "direct":
             cb_open, cb_reason, cb_retry_after = _check_jump_host_circuit_breaker(cb_jump_label)
             if cb_open:
-                if (
-                    not _should_stop_now(bulk_task_id)
-                    and self.request.retries < CB_OPEN_MAX_RETRIES
-                ):
-                    retry_no = self.request.retries + 1
-                    delay = max(
-                        5,
-                        min(
-                            120,
-                            int(cb_retry_after or CIRCUIT_BREAKER_OPEN_SECONDS) + int(CB_OPEN_RETRY_BUFFER_SECONDS),
-                        ),
-                    )
-                    retry_msg = (
-                        f"{cb_reason} Retentando automaticamente em {delay}s "
-                        f"(tentativa {retry_no}/{CB_OPEN_MAX_RETRIES})."
-                    )
-                    update_task_meta(
-                        task_id,
-                        status="retry",
-                        progress=95,
-                        message=retry_msg,
-                        completed=False,
-                    )
-                    append_task_log(task_id, "Sistema", retry_msg, "warning")
-                    _track_attempt_outcome(
-                        outcome="retry_scheduled",
-                        category="circuit_breaker",
-                        message=cb_reason,
-                        retry_scheduled=True,
-                    )
-                    raise self.retry(exc=RuntimeError(cb_reason), countdown=delay)
                 cb_result = {
                     'device_id': device_id,
                     'success': False,
@@ -1273,8 +1255,6 @@ def _internal_run_backup_task(self, device_id: str, bulk_task_id: str = None):
         if not success and not message:
             message = "Falha sem mensagem retornada pelo executor."
         failure_category = classify_failure(message) if not success else None
-        max_transient_retries = _max_transient_retries_for_bulk(bulk_task_id)
-        is_large_bulk = _is_large_bulk_operation(bulk_task_id)
         
         result = {
             'device_id': device_id,
@@ -1296,7 +1276,7 @@ def _internal_run_backup_task(self, device_id: str, bulk_task_id: str = None):
                 completed=True,
                 result=result,
             )
-            append_task_log(task_id, "Sistema", message or "Backup concluido com sucesso.", "success")
+            append_task_log(task_id, "Sistema", "Backup finalizado com sucesso.", "success")
             _track_attempt_outcome(
                 outcome="success",
                 category="none",
@@ -1312,47 +1292,6 @@ def _internal_run_backup_task(self, device_id: str, bulk_task_id: str = None):
                     _record_jump_host_outcome(cb_jump_label, True)
                 elif failure_category in CB_FAILURE_CATEGORIES:
                     _record_jump_host_outcome(cb_jump_label, False)
-            effective_max_retries = max_transient_retries
-            if (
-                not _should_stop_now(bulk_task_id)
-                and failure_category
-                and _should_retry_transient_failure(
-                    failure_category,
-                    message,
-                    device_name=device_name_hint,
-                    device_id=device_id,
-                )
-                and self.request.retries < effective_max_retries
-            ):
-                retry_no = self.request.retries + 1
-                delay_base = 20
-                if failure_category == "jump_session_closed":
-                    delay_base = 10 if is_large_bulk else 25
-                elif _message_indicates_jump_host_saturation(message):
-                    delay_base = 8 if is_large_bulk else 12
-                elif is_large_bulk:
-                    delay_base = 12
-                delay = min(120, delay_base * (2 ** self.request.retries))
-                retry_msg = (
-                    f"Falha transitória detectada ({failure_category}). "
-                    f"Retentando automaticamente em {delay}s (tentativa {retry_no}/{effective_max_retries})."
-                )
-                update_task_meta(
-                    task_id,
-                    status="retry",
-                    progress=95,
-                    message=retry_msg,
-                    completed=False,
-                    result=result,
-                )
-                append_task_log(task_id, "Sistema", retry_msg, "warning")
-                _track_attempt_outcome(
-                    outcome="retry_scheduled",
-                    category=failure_category or "transient",
-                    message=message or retry_msg,
-                    retry_scheduled=True,
-                )
-                raise self.retry(exc=RuntimeError(message or "Falha transitória"), countdown=delay)
 
             logger.warning(f"Backup falhou: {device_id} - {message}")
             update_task_meta(
@@ -1363,7 +1302,7 @@ def _internal_run_backup_task(self, device_id: str, bulk_task_id: str = None):
                 completed=True,
                 result=result,
             )
-            append_task_log(task_id, "Sistema", message or "Backup finalizado com falha.", "error")
+            append_task_log(task_id, "Sistema", "Backup finalizado com falha.", "error")
             _track_attempt_outcome(
                 outcome="failed",
                 category=failure_category or "failure",
@@ -1401,45 +1340,6 @@ def _internal_run_backup_task(self, device_id: str, bulk_task_id: str = None):
         if not lock_info:
             lock_info = _resolve_jump_host_lock(device_id)
         _adapt_jump_host_slots(lock_info, False, str(e))
-        max_transient_retries = _max_transient_retries_for_bulk(bulk_task_id)
-        is_large_bulk = _is_large_bulk_operation(bulk_task_id)
-        # Lotes grandes priorizam vazao: evita filas longas em hosts congestionados.
-        effective_max_retries = max_transient_retries
-        if (
-            not _should_stop_now(bulk_task_id)
-            and self.request.retries < effective_max_retries
-        ):
-            retry_no = self.request.retries + 1
-            delay_base = 10 if is_large_bulk else 20
-            delay_cap = 90 if is_large_bulk else 120
-            delay = min(delay_cap, delay_base * (2 ** self.request.retries))
-            retry_msg = (
-                "Falha transitória detectada (jump_host_slot_timeout). "
-                f"Retentando automaticamente em {delay}s "
-                f"(tentativa {retry_no}/{effective_max_retries})."
-            )
-            result = {
-                'device_id': device_id,
-                'success': False,
-                'message': str(e),
-                'failure_category': 'jump_host_slot_timeout',
-            }
-            update_task_meta(
-                task_id,
-                status="retry",
-                progress=95,
-                message=retry_msg,
-                completed=False,
-                result=result,
-            )
-            append_task_log(task_id, "Sistema", retry_msg, "warning")
-            _track_attempt_outcome(
-                outcome="retry_scheduled",
-                category="jump_host_slot_timeout",
-                message=str(e),
-                retry_scheduled=True,
-            )
-            raise self.retry(exc=RuntimeError(str(e)), countdown=delay)
         result = {
             'device_id': device_id,
             'success': False,
@@ -1469,61 +1369,21 @@ def _internal_run_backup_task(self, device_id: str, bulk_task_id: str = None):
         _adapt_jump_host_slots(lock_info, False, error_text)
         failure_category = classify_failure(error_text) or "task_exception"
 
-        # Verificar se o erro é permanente — se sim, falhar sem retry
-        if not _should_retry_transient_failure(
-            failure_category,
-            str(e),
-            device_name=device_name_hint,
-            device_id=device_id,
-        ):
-            perm_result = {
-                'device_id': device_id,
-                'success': False,
-                'message': f"Erro na task (permanente, sem retry): {error_text}",
-                'failure_category': failure_category,
-            }
-            update_task_meta(
-                task_id, status="failed", progress=100,
-                message=f"Erro na task: {error_text}", completed=True, result=perm_result,
-            )
-            append_task_log(task_id, "Sistema", f"Erro permanente na task ({failure_category}): {error_text}", "error")
-            _track_attempt_outcome(
-                outcome="failed", category=failure_category, message=error_text,
-            )
-            return perm_result
-
-        # Erro transiente — retry com backoff, respeitando o cap
-        max_transient_retries = _max_transient_retries_for_bulk(bulk_task_id)
-        if self.request.retries >= max_transient_retries:
-            cap_result = {
-                'device_id': device_id,
-                'success': False,
-                'message': f"Erro na task apos {self.request.retries} retries: {error_text}",
-                'failure_category': failure_category,
-            }
-            update_task_meta(
-                task_id, status="failed", progress=100,
-                message=f"Erro na task (limite de retries): {error_text}", completed=True, result=cap_result,
-            )
-            append_task_log(task_id, "Sistema", f"Erro na task ({failure_category}), limite de retries atingido: {error_text}", "error")
-            _track_attempt_outcome(
-                outcome="failed", category=failure_category, message=error_text,
-            )
-            return cap_result
-
-        retry_delay_base = 12 if _is_large_bulk_operation(bulk_task_id) else 20
-        retry_delay = min(120, retry_delay_base * (2 ** self.request.retries))
+        task_error_result = {
+            'device_id': device_id,
+            'success': False,
+            'message': f"Erro na task: {error_text}",
+            'failure_category': failure_category,
+        }
         update_task_meta(
-            task_id, status="retry", progress=100,
-            message=f"Erro transitorio na task: {error_text}. Retry em {retry_delay}s.",
-            completed=False, error=error_text,
+            task_id, status="failed", progress=100,
+            message=f"Erro na task: {error_text}", completed=True, result=task_error_result,
         )
-        append_task_log(task_id, "Sistema", f"Erro transitorio na task ({failure_category}): {error_text}. Retry em {retry_delay}s.", "error")
+        append_task_log(task_id, "Sistema", f"Erro na task ({failure_category}): {error_text}", "error")
         _track_attempt_outcome(
-            outcome="retry_scheduled", category=failure_category,
-            message=error_text, retry_scheduled=True,
+            outcome="failed", category=failure_category, message=error_text,
         )
-        raise self.retry(exc=e, countdown=retry_delay)
+        return task_error_result
 
 
 @celery_app.task(bind=True)
@@ -1596,7 +1456,7 @@ def enqueue_jump_and_vpn_after_direct_phase_task(
             jump_args.append(bulk_task_id)
         sig = run_vpn_group_backups_task.s(*jump_args).set(
             task_id=jump_task_id,
-            queue="celery",
+            queue="jump_queue",
             countdown=max(0, (group_idx - 1) * JUMP_PHASE_GROUP_STAGGER_SECONDS),
         )
         jump_signatures.append(sig)
@@ -1666,7 +1526,7 @@ def enqueue_jump_and_vpn_after_direct_phase_task(
             tenant_id,
             vpn_groups_payload,
             bulk_task_id,
-        ).set(queue="celery")
+        ).set(queue="jump_queue")
         chord(jump_signatures)(callback_sig)
     else:
         for sig in jump_signatures:
@@ -1885,8 +1745,16 @@ def run_backup_group_task(self, group_id: str, tenant_id: str):
             return results
 
         for device in scheduled_devices:
-            # Roteia por dispositivo para evitar que backups VPN caiam em worker sem NetworkManager.
-            target_queue = 'vpn_queue' if uses_vpn_tunnel(group, device=device) else 'celery'
+            # Roteia por tipo de conexao para isolar concorrencia:
+            # - VPN -> vpn_queue
+            # - Jump Host -> jump_queue
+            # - Direto -> celery
+            if uses_vpn_tunnel(group, device=device):
+                target_queue = 'vpn_queue'
+            elif uses_jump_host(group, device=device):
+                target_queue = 'jump_queue'
+            else:
+                target_queue = 'celery'
             task = run_backup_task.apply_async(args=[str(device.id)], queue=target_queue)
             results['details'].append({
                 'device_id': str(device.id),
@@ -1925,6 +1793,8 @@ def run_vpn_group_backups_task(
     from app.services.backup_diagnostics import classify_failure
     import uuid
 
+    from sqlalchemy.orm import joinedload
+
     db = SessionLocal()
     device_ids = device_ids or []
     task_id = self.request.id
@@ -1959,7 +1829,11 @@ def run_vpn_group_backups_task(
             append_task_log(task_id, group.name, inactive_msg, "warning")
             return {'error': inactive_msg, 'group_id': group_id}
 
-        query = db.query(Device).filter(
+        query = db.query(Device).options(
+            joinedload(Device.group),
+            joinedload(Device.subgroup),
+            joinedload(Device.type),
+        ).filter(
             Device.tenant_id == tenant_id,
             Device.group_id == group_uuid,
             Device.is_active == True,
@@ -1968,6 +1842,26 @@ def run_vpn_group_backups_task(
         if device_ids:
             query = query.filter(Device.id.in_(device_ids))
         devices = query.all()
+        
+        # Touch relationships to ensure they are cached locally on the object,
+        # especially for None values which might otherwise trigger lazy loads.
+        # Tambem cacheia o modo de conexao efetivo por dispositivo antes de
+        # desanexar a sessao (evita qualquer lazy-load posterior de subgroup).
+        device_connection_flags = {}
+        for d in devices:
+            _ = d.group
+            _ = d.subgroup
+            _ = d.type
+            device_connection_flags[str(d.id)] = {
+                "vpn": bool(uses_vpn_tunnel(group, device=d)),
+                "jump": bool(uses_jump_host(group, device=d)),
+            }
+
+        # Evita manter conexao/transacao de DB aberta durante tentativas longas de VPN/L2TP.
+        # expunge_all() desanexa os objetos da sessao, mantendo os atributos eager-loaded
+        # (group, subgroup, type) acessiveis em memoria sem tentar lazy load.
+        db.expunge_all()
+        db.close()
 
         result = {
             'group_id': group_id,
@@ -2029,17 +1923,42 @@ def run_vpn_group_backups_task(
             append_task_log(task_id, group.name, "Modo VPN forçado por subgrupo de conexão.", "info")
         _touch_bulk_activity(bulk_task_id)
 
-        use_vpn_mode = bool(force_vpn) or uses_vpn_tunnel(group)
+        vpn_required_devices = []
+        if force_vpn:
+            vpn_required_devices = list(devices)
+        else:
+            vpn_required_devices = [
+                device
+                for device in devices
+                if bool((device_connection_flags.get(str(device.id)) or {}).get("vpn"))
+            ]
+        use_vpn_mode = bool(vpn_required_devices)
+        if force_vpn:
+            append_task_log(
+                task_id,
+                group.name,
+                f"VPN exigida para {len(vpn_required_devices)}/{len(devices)} dispositivo(s) (modo forçado).",
+                "info",
+            )
+        else:
+            append_task_log(
+                task_id,
+                group.name,
+                f"VPN exigida para {len(vpn_required_devices)}/{len(devices)} dispositivo(s) deste lote.",
+                "info",
+            )
 
         def _execute_device_with_guards(device_obj, *, manage_vpn_flag: bool):
             """Executa 1 dispositivo com lock/circuit-breaker de Jump Host também no fluxo por grupo."""
             local_lock_info = None
             cb_jump_label = "direct"
             cb_retry_after = 0
+            conn_flags = device_connection_flags.get(str(device_obj.id)) or {}
+            use_jump_for_device = bool(conn_flags.get("jump"))
 
             if (
                 getattr(device_obj, "group", None)
-                and uses_jump_host(device_obj.group, device=device_obj)
+                and use_jump_for_device
                 and getattr(device_obj.group, "jump_host", None)
             ):
                 cb_jump_label = f"{device_obj.group.jump_host}:{int(getattr(device_obj.group, 'jump_port', 22) or 22)}"
@@ -2090,77 +2009,10 @@ def run_vpn_group_backups_task(
                         "message": f"Interrompido por parada forçada com {processed}/{len(devices)} processados."
                     })
                     break
-                attempts = 0
-                success = False
-                message = ""
-                failure_category = None
-                cb_retry_after = 0
-                max_attempts = 2
-                while attempts < max_attempts:
-                    success, message, failure_category, cb_retry_after = _execute_device_with_guards(
-                        device,
-                        manage_vpn_flag=True,
-                    )
-                    if success:
-                        break
-                    if (
-                        _should_stop_now(bulk_task_id)
-                        or (
-                            failure_category != "circuit_breaker"
-                            and not _should_retry_transient_failure(
-                                failure_category,
-                                message,
-                                device_name=getattr(device, "name", ""),
-                                device_id=str(getattr(device, "id", "")),
-                            )
-                        )
-                        or attempts >= (max_attempts - 1)
-                    ):
-                        break
-                    if failure_category == "circuit_breaker":
-                        retry_delay = max(
-                            5,
-                            min(
-                                120,
-                                int(cb_retry_after or CIRCUIT_BREAKER_OPEN_SECONDS) + int(CB_OPEN_RETRY_BUFFER_SECONDS),
-                            ),
-                        )
-                    elif failure_category == "jump_session_closed":
-                        retry_delay = 20 * (2 ** attempts)
-                    elif _message_indicates_jump_host_saturation(message):
-                        retry_delay = 12 * (2 ** attempts)
-                    else:
-                        retry_delay = 5 * (2 ** attempts)
-                    append_task_log(
-                        task_id,
-                        device.name,
-                        (
-                            f"Falha transitória ({failure_category}). "
-                            f"Nova tentativa em {retry_delay}s ({attempts + 1}/{max_attempts - 1})."
-                        ),
-                        "warning",
-                    )
-                    if _sleep_with_stop_poll(retry_delay, bulk_task_id):
-                        cancelled = True
-                        remaining = len(devices) - processed
-                        result["failed"] += max(0, remaining)
-                        result["details"].append({
-                            "device_id": None,
-                            "device_name": "Lote",
-                            "success": False,
-                            "message": (
-                                f"Interrompido por parada forçada durante espera de retentativa "
-                                f"com {processed}/{len(devices)} processados."
-                            ),
-                        })
-                        append_task_log(
-                            task_id,
-                            group.name,
-                            "Parada forçada solicitada durante espera de retentativa.",
-                            "warning",
-                        )
-                        break
-                    attempts += 1
+                success, message, failure_category, cb_retry_after = _execute_device_with_guards(
+                    device,
+                    manage_vpn_flag=False,
+                )
                 if cancelled:
                     break
                 if success:
@@ -2254,96 +2106,10 @@ def run_vpn_group_backups_task(
                     current_device_index=processed + 1,
                     current_device_fraction=0.2,
                 )
-                attempts = 0
-                success = False
-                message = ""
-                failure_category = None
-                cb_retry_after = 0
-                max_attempts = 2
-                while attempts < max_attempts:
-                    success, message, failure_category, cb_retry_after = _execute_device_with_guards(
-                        device,
-                        manage_vpn_flag=False,
-                    )
-                    if success:
-                        break
-                    if (
-                        _should_stop_now(bulk_task_id)
-                        or (bulk_fail_fast and failure_category != "circuit_breaker")
-                        or (
-                            failure_category != "circuit_breaker"
-                            and not _should_retry_transient_failure(
-                                failure_category,
-                                message,
-                                device_name=getattr(device, "name", ""),
-                                device_id=str(getattr(device, "id", "")),
-                            )
-                        )
-                        or attempts >= (max_attempts - 1)
-                    ):
-                        break
-                    if failure_category == "circuit_breaker":
-                        retry_delay = max(
-                            5,
-                            min(
-                                120,
-                                int(cb_retry_after or CIRCUIT_BREAKER_OPEN_SECONDS) + int(CB_OPEN_RETRY_BUFFER_SECONDS),
-                            ),
-                        )
-                    elif failure_category == "jump_session_closed":
-                        retry_delay = 20 * (2 ** attempts)
-                    elif _message_indicates_jump_host_saturation(message):
-                        retry_delay = 12 * (2 ** attempts)
-                    else:
-                        retry_delay = 5 * (2 ** attempts)
-                    update_task_meta(
-                        task_id,
-                        status="retry",
-                        progress=_multi_device_progress(len(devices), processed, 0.65),
-                        message=(
-                            f"Retentativa em {retry_delay}s para {device.name} "
-                            f"({processed + 1}/{len(devices)})."
-                        ),
-                        completed=False,
-                        total_devices=len(devices),
-                        processed_devices=processed,
-                        done_devices=processed,
-                        success_devices=result["success"],
-                        failed_devices=result["failed"],
-                        current_device_name=device.name,
-                        current_device_index=processed + 1,
-                        current_device_fraction=0.65,
-                    )
-                    append_task_log(
-                        task_id,
-                        device.name,
-                        (
-                            f"Falha transitória ({failure_category}). "
-                            f"Nova tentativa em {retry_delay}s ({attempts + 1}/{max_attempts - 1})."
-                        ),
-                        "warning",
-                    )
-                    if _sleep_with_stop_poll(retry_delay, bulk_task_id):
-                        cancelled = True
-                        remaining = len(devices) - processed
-                        result["failed"] += max(0, remaining)
-                        result["details"].append({
-                            "device_id": None,
-                            "device_name": "Lote",
-                            "success": False,
-                            "message": (
-                                f"Interrompido por parada forçada durante espera de retentativa "
-                                f"com {processed}/{len(devices)} processados."
-                            ),
-                        })
-                        append_task_log(
-                            task_id,
-                            group.name,
-                            "Parada forçada solicitada durante espera de retentativa.",
-                            "warning",
-                        )
-                        break
-                    attempts += 1
+                success, message, failure_category, cb_retry_after = _execute_device_with_guards(
+                    device,
+                    manage_vpn_flag=False,
+                )
                 if cancelled:
                     break
                 if success:
@@ -2434,7 +2200,11 @@ def run_vpn_group_backups_task(
         append_task_log(task_id, "Sistema", f"Erro no backup do grupo: {e}", "error")
         return {'error': str(e), 'group_id': group_id}
     finally:
-        db.close()
+        try:
+            db.close()
+        except Exception:
+            # Falha no close nao deve mascarar o erro real do backup (ex.: VPN/PPP).
+            pass
 
 
 @celery_app.task
@@ -2445,7 +2215,7 @@ def run_scheduled_backups():
     Esta task é executada pelo Celery Beat conforme agendamento.
     """
     from app.models.device import Device
-    from app.models.schedule import Schedule
+    from app.models.schedule import Schedule, ScheduleFrequency
     from app.models.device_group import DeviceGroup
     from sqlalchemy.orm import joinedload
     from sqlalchemy import or_
@@ -2478,78 +2248,178 @@ def run_scheduled_backups():
     
     try:
         now = utc_now_naive()
-        schedules = db.query(Schedule).join(Device).options(
-            joinedload(Schedule.device).joinedload(Device.group)
-        ).outerjoin(
-            DeviceGroup,
-            Device.group_id == DeviceGroup.id,
-        ).filter(
-            Schedule.is_active == True,
+        active_device_filters = [
             Device.is_active == True,
             Device.backup_scheduled == True,
             or_(Device.group_id.is_(None), DeviceGroup.is_active.is_(True)),
-        ).all()
+        ]
 
-        def _frequency_value(schedule):
-            value = schedule.frequency
-            return value.value if hasattr(value, "value") else str(value)
+        schedule_rows = (
+            db.query(Schedule)
+            .join(Device)
+            .outerjoin(DeviceGroup, Device.group_id == DeviceGroup.id)
+            .options(joinedload(Schedule.device).joinedload(Device.group))
+            .filter(Schedule.is_active == True, *active_device_filters)
+            .all()
+        )
 
-        def _next_run(schedule, reference):
-            return compute_next_run_at(
-                time_str=schedule.time or "00:00",
-                frequency=_frequency_value(schedule),
-                day_of_week=schedule.day_of_week,
-                day_of_month=schedule.day_of_month,
-                reference_utc=reference,
+        def _tenant_daily_time(tenant_id) -> str:
+            tenant_times = [
+                sanitize_daily_time(row.time)
+                for row in schedule_rows
+                if row.device and str(row.device.tenant_id) == str(tenant_id) and row.time
+            ]
+            if tenant_times:
+                return Counter(tenant_times).most_common(1)[0][0]
+            return "02:00"
+
+        initialized = 0
+        scheduled_device_ids = {str(row.device_id) for row in schedule_rows}
+        backup_enabled_devices = (
+            db.query(Device)
+            .outerjoin(DeviceGroup, Device.group_id == DeviceGroup.id)
+            .filter(*active_device_filters)
+            .all()
+        )
+
+        for device in backup_enabled_devices:
+            if str(device.id) in scheduled_device_ids:
+                continue
+            schedule_time = _tenant_daily_time(device.tenant_id)
+            db.add(
+                Schedule(
+                    device_id=device.id,
+                    frequency=ScheduleFrequency.DAILY,
+                    time=schedule_time,
+                    is_active=True,
+                    next_run_at=compute_next_daily_run_at(time_str=schedule_time, reference_utc=now),
+                )
+            )
+            initialized += 1
+
+        if initialized:
+            db.flush()
+            schedule_rows = (
+                db.query(Schedule)
+                .join(Device)
+                .outerjoin(DeviceGroup, Device.group_id == DeviceGroup.id)
+                .options(joinedload(Schedule.device).joinedload(Device.group))
+                .filter(Schedule.is_active == True, *active_device_filters)
+                .all()
             )
 
-        queued = 0
-        queued_direct = 0
-        queued_vpn_groups = 0
-        initialized = 0
-        due_direct_devices = []
-        due_vpn_by_group = defaultdict(lambda: {'tenant_id': None, 'device_ids': []})
-
-        for schedule in schedules:
+        due_tenant_ids = set()
+        for schedule in schedule_rows:
+            schedule.frequency = ScheduleFrequency.DAILY
+            schedule.day_of_week = None
+            schedule.day_of_month = None
+            if not schedule.time:
+                schedule.time = _tenant_daily_time(schedule.device.tenant_id if schedule.device else None)
+            else:
+                schedule.time = sanitize_daily_time(schedule.time)
             if not schedule.next_run_at:
-                schedule.next_run_at = _next_run(schedule, now)
+                schedule.next_run_at = compute_next_daily_run_at(
+                    time_str=schedule.time or "02:00",
+                    reference_utc=now,
+                )
                 initialized += 1
                 continue
+            if schedule.next_run_at <= now and schedule.device:
+                due_tenant_ids.add(str(schedule.device.tenant_id))
 
-            if schedule.next_run_at <= now:
-                device = schedule.device
-                if device and device.group and uses_vpn_tunnel(device.group, device=device):
-                    entry = due_vpn_by_group[str(device.group_id)]
-                    entry['tenant_id'] = str(device.tenant_id)
-                    entry['device_ids'].append(str(device.id))
-                else:
-                    due_direct_devices.append(str(schedule.device_id))
-                schedule.last_run_at = now
-                schedule.next_run_at = _next_run(schedule, now + timedelta(seconds=1))
-                queued += 1
+        excluded_type_ids = resolve_mass_backup_excluded_type_ids(db)
+        queued_devices = 0
+        queued_direct = 0
+        queued_jump = 0
+        queued_vpn_groups = 0
+        tenant_batches = 0
 
-        for device_id in due_direct_devices:
-            run_backup_task.delay(device_id)
-            queued_direct += 1
-
-        for group_id, data in due_vpn_by_group.items():
-            unique_device_ids = sorted(set(data['device_ids']))
-            run_vpn_group_backups_task.apply_async(
-                args=[group_id, data['tenant_id'], unique_device_ids],
-                queue='vpn_queue'
+        for tenant_id in sorted(due_tenant_ids):
+            tenant_uuid = tenant_id
+            try:
+                import uuid as _uuid
+                tenant_uuid = _uuid.UUID(str(tenant_id))
+            except Exception:
+                tenant_uuid = tenant_id
+            tenant_schedule_rows = [
+                row for row in schedule_rows
+                if row.device and str(row.device.tenant_id) == tenant_id
+            ]
+            tenant_time = _tenant_daily_time(tenant_id)
+            tenant_devices = (
+                db.query(Device)
+                .options(joinedload(Device.group))
+                .outerjoin(DeviceGroup, Device.group_id == DeviceGroup.id)
+                .filter(Device.tenant_id == tenant_uuid, *active_device_filters)
+                .all()
             )
-            queued_vpn_groups += 1
+
+            eligible_devices = []
+            for device in tenant_devices:
+                if excluded_type_ids and getattr(device, "device_type_id", None) in excluded_type_ids:
+                    continue
+                eligible_devices.append(device)
+
+            due_vpn_by_group = defaultdict(lambda: {"tenant_id": tenant_id, "device_ids": []})
+            due_jump_devices = []
+            due_direct_devices = []
+
+            for device in eligible_devices:
+                if device.group and uses_vpn_tunnel(device.group, device=device):
+                    entry = due_vpn_by_group[str(device.group_id)]
+                    entry["tenant_id"] = tenant_id
+                    entry["device_ids"].append(str(device.id))
+                elif device.group and uses_jump_host(device.group, device=device):
+                    due_jump_devices.append(str(device.id))
+                else:
+                    due_direct_devices.append(str(device.id))
+
+            for device_id in due_direct_devices:
+                run_backup_task.delay(device_id)
+                queued_direct += 1
+
+            for device_id in due_jump_devices:
+                run_backup_task.apply_async(args=[device_id], queue="jump_queue")
+                queued_jump += 1
+
+            for group_id, data in due_vpn_by_group.items():
+                unique_device_ids = sorted(set(data["device_ids"]))
+                if not unique_device_ids:
+                    continue
+                run_vpn_group_backups_task.apply_async(
+                    args=[group_id, data["tenant_id"], unique_device_ids],
+                    queue="vpn_queue",
+                )
+                queued_vpn_groups += 1
+
+            queued_devices += len(eligible_devices)
+            tenant_batches += 1
+
+            next_run = compute_next_daily_run_at(time_str=tenant_time, reference_utc=now + timedelta(seconds=1))
+            for schedule in tenant_schedule_rows:
+                schedule.frequency = ScheduleFrequency.DAILY
+                schedule.time = tenant_time
+                schedule.day_of_week = None
+                schedule.day_of_month = None
+                schedule.last_run_at = now
+                schedule.next_run_at = next_run
 
         db.commit()
 
-        if queued > 0 or initialized > 0:
+        if queued_devices > 0 or initialized > 0:
             logger.info(
-                f"Agendamentos processados: {len(schedules)} | enfileirados={queued} | inicializados={initialized}"
+                "Agendamento automatico por tenant: schedules=%s tenants_due=%s dispositivos=%s inicializados=%s",
+                len(schedule_rows),
+                len(due_tenant_ids),
+                queued_devices,
+                initialized,
             )
         return {
-            'schedules_checked': len(schedules),
-            'devices_queued': queued,
+            'schedules_checked': len(schedule_rows),
+            'tenant_batches_queued': tenant_batches,
+            'devices_queued': queued_devices,
             'direct_devices_queued': queued_direct,
+            'jump_devices_queued': queued_jump,
             'vpn_groups_queued': queued_vpn_groups,
             'initialized_next_run': initialized,
             'skipped_not_ready': 0,
@@ -2609,5 +2479,77 @@ def purge_expired_backups():
 
         logger.info(f"Retencao aplicada: {total_deleted} backups removidos, {total_files_removed} arquivos deletados.")
         return {'deleted': total_deleted, 'files_removed': total_files_removed}
+    finally:
+        db.close()
+
+
+@celery_app.task
+def purge_failed_backups_periodic():
+    """
+    Limpeza periódica de backups com status failed.
+    Remove registros com mais de 3 dias para reduzir volume operacional.
+    """
+    from app.models.backup import Backup, BackupStatus
+    from app.models.device import Device
+
+    db = SessionLocal()
+    cutoff = datetime.utcnow() - timedelta(days=3)
+    storage_base = '/app/storage/backups'
+    deleted = 0
+    files_removed = 0
+
+    try:
+        failed_backups = (
+            db.query(Backup)
+            .join(Device)
+            .filter(
+                Backup.status == BackupStatus.FAILED,
+                Backup.created_at < cutoff,
+            )
+            .all()
+        )
+
+        for backup in failed_backups:
+            file_path = (backup.file_path or "").strip()
+            absolute_path = None
+            if file_path:
+                absolute_path = file_path if os.path.isabs(file_path) else os.path.join(storage_base, file_path)
+            if absolute_path and os.path.exists(absolute_path):
+                try:
+                    os.remove(absolute_path)
+                    files_removed += 1
+                except OSError:
+                    logger.warning("Falha ao remover arquivo de backup failed (periodico): %s", absolute_path)
+            db.delete(backup)
+            deleted += 1
+
+        db.commit()
+        logger.info(
+            "Limpeza periodica de backups failed concluida: removidos=%s arquivos=%s cutoff=%s",
+            deleted,
+            files_removed,
+            cutoff.isoformat(),
+        )
+        return {"deleted": deleted, "files_removed": files_removed}
+    finally:
+        db.close()
+
+
+@celery_app.task
+def purge_activity_logs_periodic():
+    """
+    Limpeza periódica de logs de atividade (auditoria).
+    Retenção padrão: 7 dias (configurável por ACTIVITY_LOG_RETENTION_DAYS).
+    """
+    db = SessionLocal()
+    retention_days = max(int(getattr(settings, "ACTIVITY_LOG_RETENTION_DAYS", 7) or 7), 1)
+    try:
+        removed = ActivityService.prune_old_logs(db, retention_days=retention_days, dry_run=False)
+        logger.info(
+            "Limpeza periodica de activity logs concluida: removidos=%s retention_days=%s",
+            removed,
+            retention_days,
+        )
+        return {"removed": int(removed or 0), "retention_days": retention_days}
     finally:
         db.close()

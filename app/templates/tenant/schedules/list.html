@@ -6,6 +6,7 @@
 {% set weekday_labels = ['Segunda', 'Terca', 'Quarta', 'Quinta', 'Sexta', 'Sabado', 'Domingo'] %}
 {% set role = session.get('user_role') %}
 {% set can_manage_admin = role in ['super_admin', 'tenant_owner', 'tenant_admin'] %}
+{% set can_operator = role in ['super_admin', 'tenant_owner', 'tenant_admin', 'tenant_technician'] %}
 
 {% set counters = namespace(all=0, active=0, paused=0, failed=0) %}
 {% for group in group_overview %}
@@ -23,8 +24,8 @@
   .sch-page {
     margin: -1rem;
     min-height: 100vh;
-    background: #020617;
-    color: #e2e8f0;
+    background: var(--bg-app);
+    color: var(--text-main);
     padding: 1rem;
   }
   @media (min-width: 768px) {
@@ -51,9 +52,9 @@
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: .08em;
-    color: #64748b;
+    color: var(--text-muted);
   }
-  .sch-breadcrumb a { color: #64748b; text-decoration: none; }
+  .sch-breadcrumb a { color: var(--text-muted); text-decoration: none; }
   .sch-breadcrumb a:hover { color: #818cf8; }
 
   .sch-head {
@@ -79,8 +80,8 @@
     display: none;
     padding: .62rem;
     border-radius: .5rem;
-    border: 1px solid #1e293b;
-    background: #0f172a;
+    border: 1px solid var(--card-bg);
+    background: var(--card-bg);
   }
   .sch-title-icon i,
   .sch-title-icon svg { width: 1.25rem; height: 1.25rem; color: #818cf8; }
@@ -90,14 +91,14 @@
     margin: 0;
     font-size: 1.6rem;
     font-weight: 800;
-    color: #fff;
+    color: var(--text-main);
     letter-spacing: -0.02em;
   }
 
   .sch-subtitle {
     margin: .45rem 0 0;
     font-size: .92rem;
-    color: #94a3b8;
+    color: var(--text-muted);
     max-width: 60rem;
   }
 
@@ -113,16 +114,16 @@
     align-items: center;
     gap: .35rem;
     border-radius: .5rem;
-    border: 1px solid #334155;
-    background: rgba(15, 23, 42, .5);
-    color: #cbd5e1;
+    border: 1px solid var(--card-border);
+    background: var(--card-bg);
+    color: var(--text-main);
     font-size: .75rem;
     font-weight: 700;
     padding: .5rem .9rem;
     text-decoration: none;
     transition: all .15s ease;
   }
-  .sch-btn:hover { background: #1e293b; color: #fff; }
+  .sch-btn:hover { background: var(--card-bg); color: var(--text-main); }
   .sch-btn i,
   .sch-btn svg { width: .9rem; height: .9rem; }
 
@@ -135,8 +136,8 @@
   .sch-btn-primary:hover { background: #6366f1; border-color: #6366f1; }
 
   .sch-opbar {
-    background: #0f172a;
-    border: 1px solid #1e293b;
+    background: var(--card-bg);
+    border: 1px solid var(--card-bg);
     border-radius: .85rem;
     padding: .5rem;
     display: flex;
@@ -156,14 +157,14 @@
     font-weight: 700;
     letter-spacing: .06em;
     text-transform: uppercase;
-    color: #94a3b8;
+    color: var(--text-muted);
     background: transparent;
     transition: all .15s ease;
   }
   .sch-opbtn:hover {
-    background: #1e293b;
-    color: #e2e8f0;
-    border-color: #334155;
+    background: var(--card-bg);
+    color: var(--text-main);
+    border-color: var(--card-border);
   }
   .sch-opbtn i,
   .sch-opbtn svg { width: .9rem; height: .9rem; }
@@ -171,8 +172,8 @@
   .sch-opbtn.danger:hover { background: rgba(244,63,94,.1); border-color: rgba(244,63,94,.25); color: #fb7185; }
 
   .sch-global {
-    background: #0f172a;
-    border: 1px solid #1e293b;
+    background: var(--card-bg);
+    border: 1px solid var(--card-bg);
     border-radius: .95rem;
     padding: 1.25rem;
     box-shadow: 0 8px 20px rgba(0,0,0,.24);
@@ -205,14 +206,14 @@
     margin: .35rem 0 .3rem;
     font-size: 1.25rem;
     font-weight: 800;
-    color: #fff;
+    color: var(--text-main);
     letter-spacing: -0.015em;
   }
 
   .sch-global-subtitle {
     margin: 0;
     font-size: .88rem;
-    color: #94a3b8;
+    color: var(--text-muted);
     max-width: 42rem;
   }
 
@@ -228,14 +229,14 @@
     align-items: center;
     gap: .35rem;
     border-radius: .45rem;
-    border: 1px solid #1e293b;
-    background: #020617;
-    color: #94a3b8;
+    border: 1px solid var(--card-bg);
+    background: var(--bg-app);
+    color: var(--text-muted);
     font-size: 11px;
     font-weight: 700;
     padding: .38rem .58rem;
   }
-  .sch-badge strong { color: #f8fafc; font-weight: 700; }
+  .sch-badge strong { color: var(--text-main); font-weight: 700; }
   .sch-badge.ok strong { color: #34d399; }
   .sch-badge.warn strong { color: #fbbf24; }
   .sch-badge.err strong { color: #fb7185; }
@@ -248,8 +249,8 @@
 
   .sch-box {
     border-radius: .75rem;
-    border: 1px solid #1e293b;
-    background: #020617;
+    border: 1px solid var(--card-bg);
+    background: var(--bg-app);
     padding: .95rem;
   }
 
@@ -265,7 +266,7 @@
   .sch-label {
     display: block;
     margin-bottom: .35rem;
-    color: #64748b;
+    color: var(--text-muted);
     font-size: 10px;
     font-weight: 800;
     text-transform: uppercase;
@@ -275,9 +276,9 @@
   .sch-input,
   .sch-select {
     width: 100%;
-    border: 1px solid #334155;
-    background: #0f172a;
-    color: #e2e8f0;
+    border: 1px solid var(--card-border);
+    background: var(--card-bg);
+    color: var(--text-main);
     border-radius: .5rem;
     font-size: .82rem;
     min-height: 2.35rem;
@@ -302,7 +303,7 @@
 
   .sch-help {
     margin: 0;
-    color: #64748b;
+    color: var(--text-muted);
     font-size: 11px;
   }
 
@@ -317,20 +318,20 @@
 
   .sch-cards-title {
     margin: 0;
-    color: #f8fafc;
+    color: var(--text-main);
     font-size: 1.1rem;
     font-weight: 700;
   }
 
   .sch-cards-sub {
     margin: .2rem 0 0;
-    color: #94a3b8;
+    color: var(--text-muted);
     font-size: .8rem;
   }
 
   .sch-filters {
-    background: #0f172a;
-    border: 1px solid #1e293b;
+    background: var(--card-bg);
+    border: 1px solid var(--card-bg);
     border-radius: .85rem;
     padding: .9rem;
     display: flex;
@@ -360,14 +361,14 @@
     transform: translateY(-50%);
     width: 1rem;
     height: 1rem;
-    color: #64748b;
+    color: var(--text-muted);
   }
 
   .sch-search {
     width: 100%;
-    border: 1px solid #1e293b;
-    background: #020617;
-    color: #e2e8f0;
+    border: 1px solid var(--card-bg);
+    background: var(--bg-app);
+    color: var(--text-main);
     border-radius: .55rem;
     min-height: 2.35rem;
     padding: .56rem .75rem .56rem 2.2rem;
@@ -392,14 +393,14 @@
     border: 1px solid transparent;
     border-radius: .45rem;
     background: transparent;
-    color: #94a3b8;
+    color: var(--text-muted);
     font-size: .74rem;
     font-weight: 700;
     padding: .43rem .62rem;
     transition: all .15s ease;
   }
-  .sch-filter-btn:hover { background: #1e293b; color: #f1f5f9; }
-  .sch-filter-btn.is-active { background: #334155; color: #fff; border-color: #475569; }
+  .sch-filter-btn:hover { background: var(--card-bg); color: #f1f5f9; }
+  .sch-filter-btn.is-active { background: var(--card-border); color: var(--text-main); border-color: var(--card-border); }
   .sch-filter-btn.is-active.ok { background: rgba(16,185,129,.13); border-color: rgba(16,185,129,.3); color: #34d399; }
   .sch-filter-btn.is-active.err { background: rgba(244,63,94,.13); border-color: rgba(244,63,94,.3); color: #fb7185; }
 
@@ -411,7 +412,7 @@
     gap: .75rem;
     border-radius: .85rem;
     border: 1px solid rgba(99,102,241,.35);
-    background: rgba(15,23,42,.8);
+    background: var(--card-bg);
     padding: .8rem .95rem;
   }
   .sch-batch.is-visible { display: flex; }
@@ -449,26 +450,26 @@
   @media (min-width: 1450px) { .sch-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 
   .sch-card {
-    border: 1px solid #1e293b;
+    border: 1px solid var(--card-bg);
     border-radius: .85rem;
-    background: #0f172a;
+    background: var(--card-bg);
     overflow: hidden;
     display: flex;
     flex-direction: column;
     transition: border-color .16s ease, transform .16s ease;
   }
-  .sch-card:hover { border-color: #334155; transform: translateY(-1px); }
+  .sch-card:hover { border-color: var(--card-border); transform: translateY(-1px); }
   .sch-card.state-active { border-color: rgba(16,185,129,.35); }
   .sch-card.state-failed { border-color: rgba(244,63,94,.35); }
   .sch-card.state-paused { opacity: .76; }
 
   .sch-card-head {
     padding: .82rem .9rem;
-    border-bottom: 1px solid #1e293b;
+    border-bottom: 1px solid var(--card-bg);
     display: flex;
     align-items: start;
     gap: .6rem;
-    background: rgba(2,6,23,.45);
+    background: var(--bg-app);
   }
 
   .sch-check {
@@ -476,7 +477,7 @@
     height: 1rem;
     margin-top: .14rem;
     border-radius: .2rem;
-    border: 1px solid #475569;
+    border: 1px solid var(--card-border);
     accent-color: #6366f1;
   }
 
@@ -484,7 +485,7 @@
     margin: 0;
     font-size: .97rem;
     font-weight: 700;
-    color: #f8fafc;
+    color: var(--text-main);
     line-height: 1.2;
     word-break: break-word;
   }
@@ -493,9 +494,9 @@
     display: inline-flex;
     align-items: center;
     border-radius: .35rem;
-    border: 1px solid #334155;
-    background: #1e293b;
-    color: #94a3b8;
+    border: 1px solid var(--card-border);
+    background: var(--card-bg);
+    color: var(--text-muted);
     font-size: 9px;
     font-weight: 800;
     text-transform: uppercase;
@@ -513,7 +514,7 @@
     width: 100%;
     border-radius: 999px;
     overflow: hidden;
-    background: #1e293b;
+    background: var(--card-bg);
   }
   .sch-prog {
     height: 100%;
@@ -529,18 +530,18 @@
 
   .sch-metric {
     border-radius: .45rem;
-    border: 1px solid #1e293b;
-    background: #020617;
+    border: 1px solid var(--card-bg);
+    background: var(--bg-app);
     padding: .4rem .45rem;
     font-size: 10px;
-    color: #94a3b8;
+    color: var(--text-muted);
   }
-  .sch-metric strong { display: block; color: #f8fafc; font-size: .9rem; line-height: 1.1; }
+  .sch-metric strong { display: block; color: var(--text-main); font-size: .9rem; line-height: 1.1; }
   .sch-metric.ok strong { color: #34d399; }
   .sch-metric.warn strong { color: #fbbf24; }
 
   .sch-mini-form {
-    border-top: 1px solid #1e293b;
+    border-top: 1px solid var(--card-bg);
     margin-top: .1rem;
     padding-top: .72rem;
     display: flex;
@@ -557,9 +558,9 @@
   .sch-mini-input,
   .sch-mini-select {
     width: 100%;
-    border: 1px solid #334155;
-    background: #020617;
-    color: #e2e8f0;
+    border: 1px solid var(--card-border);
+    background: var(--bg-app);
+    color: var(--text-main);
     border-radius: .45rem;
     font-size: .73rem;
     min-height: 1.95rem;
@@ -569,12 +570,12 @@
 
   .sch-card-foot {
     padding: .7rem .9rem;
-    border-top: 1px solid #1e293b;
+    border-top: 1px solid var(--card-bg);
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: .5rem;
-    background: rgba(2,6,23,.45);
+    background: var(--bg-app);
   }
 
   .sch-link-btn {
@@ -582,43 +583,43 @@
     align-items: center;
     gap: .3rem;
     border-radius: .45rem;
-    border: 1px solid #334155;
-    background: #1e293b;
-    color: #cbd5e1;
+    border: 1px solid var(--card-border);
+    background: var(--card-bg);
+    color: var(--text-main);
     font-size: .72rem;
     font-weight: 700;
     padding: .33rem .56rem;
     text-decoration: none;
     transition: all .15s ease;
   }
-  .sch-link-btn:hover { background: #334155; color: #fff; }
+  .sch-link-btn:hover { background: var(--card-border); color: var(--text-main); }
 
   .sch-empty {
-    border: 1px dashed #334155;
+    border: 1px dashed var(--card-border);
     border-radius: .85rem;
-    background: rgba(15,23,42,.55);
+    background: var(--card-bg);
     text-align: center;
     padding: 2.6rem 1rem;
-    color: #94a3b8;
+    color: var(--text-muted);
   }
   .sch-empty i,
   .sch-empty svg {
     width: 2rem;
     height: 2rem;
-    color: #475569;
+    color: var(--card-border);
     margin: 0 auto .7rem;
     display: block;
   }
 
   .sch-table-card {
-    border: 1px solid #1e293b;
+    border: 1px solid var(--card-bg);
     border-radius: .9rem;
     overflow: hidden;
-    background: #0f172a;
+    background: var(--card-bg);
   }
 
   .sch-table-head {
-    border-bottom: 1px solid #1e293b;
+    border-bottom: 1px solid var(--card-bg);
     padding: .9rem 1rem;
     display: flex;
     align-items: center;
@@ -636,34 +637,34 @@
   }
 
   .sch-table thead th {
-    background: rgba(2,6,23,.48);
-    color: #64748b;
+    background: var(--bg-app);
+    color: var(--text-muted);
     font-size: 10px;
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: .08em;
     padding: .85rem .85rem;
     text-align: left;
-    border-bottom: 1px solid #1e293b;
+    border-bottom: 1px solid var(--card-bg);
   }
 
   .sch-table tbody td {
     border-bottom: 1px solid rgba(30,41,59,.65);
     padding: .82rem .85rem;
     font-size: .82rem;
-    color: #cbd5e1;
+    color: var(--text-main);
     vertical-align: top;
   }
 
-  .sch-table tbody tr:hover { background: rgba(30,41,59,.45); }
+  .sch-table tbody tr:hover { background: var(--bg-app); }
 
   .sch-chip {
     display: inline-flex;
     align-items: center;
     border-radius: .35rem;
-    border: 1px solid #334155;
-    background: #1e293b;
-    color: #cbd5e1;
+    border: 1px solid var(--card-border);
+    background: var(--card-bg);
+    color: var(--text-main);
     font-size: 10px;
     font-weight: 700;
     text-transform: uppercase;
@@ -671,11 +672,11 @@
     padding: .18rem .42rem;
   }
   .sch-chip.ok { border-color: rgba(16,185,129,.35); background: rgba(16,185,129,.12); color: #34d399; }
-  .sch-chip.pause { border-color: rgba(148,163,184,.4); background: rgba(148,163,184,.12); color: #cbd5e1; }
+  .sch-chip.pause { border-color: rgba(148,163,184,.4); background: rgba(148,163,184,.12); color: var(--text-main); }
 
   .sch-pager {
-    border-top: 1px solid #1e293b;
-    background: rgba(2,6,23,.38);
+    border-top: 1px solid var(--card-bg);
+    background: var(--bg-app);
     padding: .8rem 1rem;
     display: flex;
     align-items: center;
@@ -683,23 +684,23 @@
     gap: .6rem;
     flex-wrap: wrap;
     font-size: 12px;
-    color: #94a3b8;
+    color: var(--text-muted);
   }
 
   .sch-page-links { display: flex; align-items: center; gap: .3rem; flex-wrap: wrap; }
 
   .sch-page-btn {
-    border: 1px solid #334155;
+    border: 1px solid var(--card-border);
     border-radius: .45rem;
-    background: #1e293b;
-    color: #94a3b8;
+    background: var(--card-bg);
+    color: var(--text-muted);
     font-size: 11px;
     font-weight: 700;
     padding: .35rem .62rem;
     text-decoration: none;
     transition: all .15s ease;
   }
-  .sch-page-btn:hover { background: #334155; color: #fff; }
+  .sch-page-btn:hover { background: var(--card-border); color: var(--text-main); }
   .sch-page-btn.active { background: #4f46e5; border-color: #4f46e5; color: #fff; }
 
   .sch-group-pager {
@@ -710,7 +711,7 @@
     gap: .7rem;
     flex-wrap: wrap;
     font-size: 12px;
-    color: #94a3b8;
+    color: var(--text-muted);
   }
 
   .sch-group-pager-links {
@@ -754,7 +755,7 @@
       <div class="sch-breadcrumb">
         <a href="{{ url_for('tenant.dashboard', tenant_slug=tenant.slug) }}">Home</a>
         <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
-        <span style="color:#cbd5e1;">Agendamentos de Backup</span>
+        <span style="color:var(--text-main);">Agendamentos de Backup</span>
       </div>
 
       <div class="sch-head">
@@ -763,7 +764,7 @@
             <span class="sch-title-icon"><i data-lucide="calendar-clock"></i></span>
             <h1 class="sch-title">Rotinas de Backup</h1>
           </div>
-          <p class="sch-subtitle">Defina um horario global em um unico passo ou ajuste a cobertura por grupo/provedor.</p>
+          <p class="sch-subtitle">Defina uma janela diaria unica para o tenant inteiro e use os grupos apenas para acompanhar cobertura e diagnostico.</p>
         </div>
 
         <div class="sch-head-actions">
@@ -808,7 +809,7 @@
         {% include 'partials/csrf.html' %}
         <button type="button" data-run-backup-live data-form-id="form-run-connection-audit-mass-schedules" class="sch-opbtn">
           <i data-lucide="wifi"></i>
-          Ping/Login
+          Validar conectividade
         </button>
       </form>
 
@@ -832,6 +833,24 @@
         </button>
       </form>
 
+      <form method="POST" action="{{ url_for('tenant_activity.clear_live_alerts', tenant_slug=tenant.slug) }}" class="inline" onsubmit="return confirm('Apagar alertas de tempo real e alertas de atividade deste tenant?');">
+        {% include 'partials/csrf.html' %}
+        <input type="hidden" name="return_to" value="schedules">
+        <button type="submit" class="sch-opbtn danger">
+          <i data-lucide="bell-off"></i>
+          Limpar tempo real/alertas
+        </button>
+      </form>
+
+      <form method="POST" action="{{ url_for('tenant_backups.clear_failed_backups', tenant_slug=tenant.slug) }}" class="inline" onsubmit="return confirm('Apagar todos os backups com status failed agora?');">
+        {% include 'partials/csrf.html' %}
+        <input type="hidden" name="return_to" value="schedules">
+        <button type="submit" class="sch-opbtn danger">
+          <i data-lucide="trash-2"></i>
+          Limpar backups failed
+        </button>
+      </form>
+
       <span style="flex:1;"></span>
 
       <form method="POST" action="{{ url_for('tenant_schedules.stop_all_backups', tenant_slug=tenant.slug) }}" class="inline" onsubmit="return confirm('Parar TODOS os backups em execucao e remover da fila agora?');">
@@ -851,7 +870,7 @@
           Configuracao Global
         </span>
         <h2 class="sch-global-title">Horario unico de backup diario</h2>
-        <p class="sch-global-subtitle">Use o modo recomendado para preencher apenas dispositivos sem rotina ativa.</p>
+        <p class="sch-global-subtitle">Quando a janela disparar, o lote automatico executara todos os dispositivos ativos com backup automatico habilitado.</p>
 
         <div class="sch-badges">
           <span class="sch-badge"><strong>{{ schedule_overview.total_active_devices }}</strong> ativos</span>
@@ -868,7 +887,7 @@
           <input type="hidden" name="return_to" value="schedules">
           <div class="sch-form-grid">
             <div>
-              <label for="daily_time" class="sch-label">Horario (UTC)</label>
+              <label for="daily_time" class="sch-label">Horario global (UTC)</label>
               <input id="daily_time" name="daily_time" type="time" value="{{ schedule_overview.default_daily_time }}" required class="sch-input">
             </div>
             <div>
@@ -880,7 +899,7 @@
             </div>
           </div>
           <div class="sch-inline">
-            <p class="sch-help">Exemplo: 02:00 executa diariamente as 02:00 UTC.</p>
+            <p class="sch-help">Exemplo: 02:00 executa um lote diario com todos os dispositivos ativos marcados para backup automatico.</p>
             <button type="submit" onclick="return confirm('Aplicar agendamento diario conforme o modo selecionado?')" class="sch-btn sch-btn-primary">
               <i data-lucide="clock-3"></i>
               Aplicar
@@ -893,8 +912,8 @@
           <input type="hidden" name="return_to" value="schedules">
           <div class="sch-inline" style="margin-top:0;">
             <div>
-              <p style="margin:0;color:#e2e8f0;font-size:.88rem;font-weight:700;">Ativacao da Fila</p>
-              <p style="margin:.2rem 0 0;color:#64748b;font-size:.75rem;">
+              <p style="margin:0;color:var(--text-main);font-size:.88rem;font-weight:700;">Ativacao da Fila</p>
+              <p style="margin:.2rem 0 0;color:var(--text-muted);font-size:.75rem;">
                 {% if schedule_overview.get('queue_disabled', 0) > 0 %}
                   Habilita backup automatico para dispositivos pendentes.
                 {% else %}
@@ -911,7 +930,7 @@
           </div>
         </form>
         {% else %}
-        <div class="sch-box" style="color:#94a3b8;font-size:.85rem;">
+        <div class="sch-box" style="color:var(--text-muted);font-size:.85rem;">
           Apenas administradores podem alterar as rotinas de agendamento.
         </div>
         {% endif %}
@@ -991,8 +1010,8 @@
 
             <div class="sch-card-body">
               <div style="display:flex;align-items:center;justify-content:space-between;gap:.6rem;">
-                <span style="font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#64748b;">Cobertura</span>
-                <span style="font-size:.72rem;color:#94a3b8;">{{ connection_labels.get(group.connection_type, group.connection_type|capitalize) }}</span>
+                <span style="font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);">Cobertura</span>
+                <span style="font-size:.72rem;color:var(--text-muted);">{{ connection_labels.get(group.connection_type, group.connection_type|capitalize) }}</span>
               </div>
               <div class="sch-prog-wrap"><div class="sch-prog" style="width: {{ group.coverage_pct }}%;"></div></div>
 
@@ -1002,24 +1021,12 @@
                 <div class="sch-metric warn"><strong>{{ group.without_schedule }}</strong>Pendentes</div>
               </div>
 
-              {% if can_manage_admin and group.group_id %}
-              <form method="POST" action="{{ url_for('tenant_schedules.apply_daily_schedule_for_group', tenant_slug=tenant.slug) }}" class="sch-mini-form">
-                {% include 'partials/csrf.html' %}
-                <input type="hidden" name="return_to" value="schedules">
-                <input type="hidden" name="group_id" value="{{ group.group_id }}">
+              <div class="sch-mini-form">
                 <div class="sch-mini-grid">
-                  <input type="time" name="daily_time" value="{{ schedule_overview.default_daily_time }}" class="sch-mini-input" required>
-                  <select name="apply_scope" class="sch-mini-select">
-                    <option value="missing" selected>Somente pendentes</option>
-                    <option value="all">Sobrescrever grupo</option>
-                  </select>
+                  <div class="sch-mini-input" style="display:flex;align-items:center;">Janela global: {{ schedule_overview.default_daily_time }}</div>
+                  <div class="sch-mini-select" style="display:flex;align-items:center;">Participam apenas dispositivos com fila automatica ativa</div>
                 </div>
-                <button type="submit" class="sch-btn" style="justify-content:center;">
-                  <i data-lucide="clock-3"></i>
-                  Aplicar neste grupo
-                </button>
-              </form>
-              {% endif %}
+              </div>
             </div>
 
             <footer class="sch-card-foot">
@@ -1028,13 +1035,22 @@
                 <i data-lucide="folder-tree"></i>
                 Dispositivos
               </a>
+              {% if can_operator and group.uses_jump_host and group.is_active %}
+              <form id="form-diagnose-jump-schedules-{{ group.group_id }}" action="{{ url_for('tenant_groups.diagnose_group_jump', tenant_slug=tenant.slug, group_id=group.group_id) }}" method="POST" class="inline">
+                {% include 'partials/csrf.html' %}
+                <button type="button" data-run-backup-live data-form-id="form-diagnose-jump-schedules-{{ group.group_id }}" class="sch-link-btn">
+                  <i data-lucide="stethoscope"></i>
+                  Diagnosticar Jump
+                </button>
+              </form>
+              {% endif %}
               {% else %}
               <a href="{{ url_for('tenant_devices.list_devices', tenant_slug=tenant.slug) }}" class="sch-link-btn">
                 <i data-lucide="folder-tree"></i>
                 Dispositivos
               </a>
               {% endif %}
-              <span style="font-size:11px;color:#64748b;">{{ group.coverage_pct }}% cobertura</span>
+              <span style="font-size:11px;color:var(--text-muted);">{{ group.coverage_pct }}% cobertura</span>
             </footer>
           </article>
         {% endfor %}
@@ -1054,8 +1070,8 @@
     <section class="sch-table-card">
       <div class="sch-table-head">
         <div>
-          <p style="margin:0;font-size:.9rem;font-weight:700;color:#f8fafc;">Dispositivos sem backup automatico</p>
-          <p style="margin:.2rem 0 0;font-size:.75rem;color:#94a3b8;">Esses dispositivos nao executam rotina automatica ate serem ativados.</p>
+          <p style="margin:0;font-size:.9rem;font-weight:700;color:var(--text-main);">Dispositivos sem backup automatico</p>
+          <p style="margin:.2rem 0 0;font-size:.75rem;color:var(--text-muted);">Esses dispositivos nao executam rotina automatica ate serem ativados.</p>
         </div>
         <span class="sch-pill err">{{ missing_auto_total }} pendentes</span>
       </div>
@@ -1084,7 +1100,7 @@
                   Ativar backup
                 </a>
                 {% else %}
-                <span style="font-size:11px;color:#64748b;">Sem permissao</span>
+                <span style="font-size:11px;color:var(--text-muted);">Sem permissao</span>
                 {% endif %}
               </td>
             </tr>
@@ -1120,13 +1136,6 @@
       {% endif %}
     </section>
 
-    <div style="display:grid;grid-template-columns:repeat(1,minmax(0,1fr));gap:.75rem;">
-      <div class="sch-box" style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.65rem;">
-        <div class="sch-metric"><strong>{{ schedule_stats.total }}</strong>Total agendamentos</div>
-        <div class="sch-metric ok"><strong>{{ schedule_stats.active }}</strong>Ativos</div>
-        <div class="sch-metric"><strong>{{ schedule_stats.paused }}</strong>Pausados</div>
-      </div>
-    </div>
   </div>
 </div>
 

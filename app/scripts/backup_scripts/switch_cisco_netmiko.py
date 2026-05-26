@@ -1,9 +1,10 @@
 from typing import List, Tuple
+import re
 
 import pexpect
 from netmiko import ConnectHandler
 
-from script_helpers import BackupLogger, prepare_backup_path
+from script_helpers import BackupLogger, friendly_failure_message, friendly_unexpected_error, prepare_backup_path
 
 
 ERROR_MARKERS = (
@@ -12,8 +13,23 @@ ERROR_MARKERS = (
     "unrecognized",
     "incomplete command",
     "error:",
+    "% invalid",
+    "% incomplete",
+    "% ambiguous",
 )
 PAGER_MARKERS = ("--More--", "Press any key", "---- More ----", "[More]")
+CONFIG_MARKERS = (
+    "version ",
+    "hostname ",
+    "interface ",
+    "vlan ",
+    "ip address",
+    "ip route",
+    "spanning-tree",
+    "router ",
+    "line vty",
+    "end",
+)
 NETWORK_ERROR_MARKERS = (
     "timeout",
     "timed out",
@@ -38,6 +54,30 @@ AUTH_ERROR_MARKERS = (
 def _invalid(output: str) -> bool:
     text = (output or "").lower()
     return any(marker in text for marker in ERROR_MARKERS)
+
+
+def _looks_like_config(output: str) -> bool:
+    text = (output or "").strip()
+    if len(text) < 80:
+        return False
+    if _invalid(text):
+        return False
+    lowered = text.lower()
+    marker_count = sum(1 for marker in CONFIG_MARKERS if marker in lowered)
+    if marker_count >= 2:
+        return True
+    lines = [line for line in text.splitlines() if line.strip()]
+    if len(lines) >= 20 and marker_count >= 1:
+        return True
+    if len(text) >= 2500 and any(marker in lowered for marker in ("interface ", "vlan ", "hostname ")):
+        return True
+    return False
+
+
+def _diagnostic_preview(output: str, limit: int = 160) -> str:
+    text = re.sub(r"(?i)(password|secret|community)\s+\S+", r"\1 ***", output or "")
+    text = re.sub(r"\s+", " ", text).strip()
+    return (text[:limit].rstrip() + "...") if len(text) > limit else text
 
 
 def _classify_connection_failure(detail: str) -> str:
@@ -75,9 +115,10 @@ def _send_maybe_paged(conn, command: str, read_timeout: int = 300) -> str:
     return output
 
 
-def _collect_telnet_pexpect(ip: str, porta: int, usuario: str, password: str, logger: BackupLogger) -> str:
+def _collect_telnet_pexpect(ip: str, porta: int, usuario: str, password: str, logger: BackupLogger, enable_password: str = None) -> str:
     session = pexpect.spawn(f"telnet {ip} {int(porta)}", timeout=35, encoding="utf-8", codec_errors="ignore")
-    prompt = r"(?:<[^>]+>|\S+[>#])\s*$"
+    prompt_host = r"[A-Za-z0-9][A-Za-z0-9_.:/_-]*"
+    prompt = rf"(?m)^(?:<{prompt_host}>|{prompt_host}(?:\([^\r\n)]*\))?[>#])\s*$"
     try:
         for _ in range(12):
             idx = session.expect([
@@ -106,7 +147,21 @@ def _collect_telnet_pexpect(ip: str, porta: int, usuario: str, password: str, lo
         else:
             raise RuntimeError("Falha no fluxo de login Telnet.")
 
-        for cmd in ("terminal length 0", "screen-length 0 temporary", "no page", "paginate false"):
+        session.sendline("enable")
+        idx = session.expect([r"(?i)password[: ]", prompt, pexpect.TIMEOUT, pexpect.EOF], timeout=10)
+        if idx == 0:
+            for secret in (enable_password, password, usuario):
+                if not secret:
+                    continue
+                session.sendline(secret)
+                j = session.expect([prompt, r"(?i)password[: ]", pexpect.TIMEOUT, pexpect.EOF], timeout=10)
+                if j == 0:
+                    break
+                if j == 1:
+                    continue
+                break
+
+        for cmd in ("terminal length 0", "terminal width 511", "no page", "screen-length 0 temporary", "paginate false"):
             session.sendline(cmd)
             session.expect([prompt, r":", pexpect.TIMEOUT], timeout=12)
             if session.after == ":":
@@ -114,7 +169,8 @@ def _collect_telnet_pexpect(ip: str, porta: int, usuario: str, password: str, lo
                 session.expect(prompt, timeout=12)
 
         best = ""
-        for cmd in ("show running-config", "show configuration", "display current-configuration"):
+        best_cmd = None
+        for cmd in ("show running-config", "show startup-config", "show run", "show configuration", "display current-configuration"):
             session.sendline(cmd)
             chunks = []
             safety = 0
@@ -141,15 +197,22 @@ def _collect_telnet_pexpect(ip: str, porta: int, usuario: str, password: str, lo
                 if idx in (3, 4):
                     break
             text = "".join(chunks)
+            logger.emit(
+                f"Diagnostico Telnet comando '{cmd}': len={len(text.strip())} "
+                f"invalid={_invalid(text)} meaningful={_looks_like_config(text)}"
+            )
             if text and not _invalid(text) and len(text.strip()) > len(best.strip()):
                 best = text
-            if text and not _invalid(text) and len(text.strip()) > 80:
+                best_cmd = cmd
+            if text and _looks_like_config(text):
                 break
 
-        if not best or _invalid(best) or len(best.strip()) < 80:
-            raise RuntimeError("O dispositivo nao retornou configuracao valida via Telnet fallback.")
+        if not _looks_like_config(best):
+            preview = _diagnostic_preview(best)
+            detail = f" Preview: {preview}" if preview else ""
+            raise RuntimeError(f"O dispositivo nao retornou configuracao valida via Telnet fallback.{detail}")
 
-        logger.emit("Coleta realizada via fallback Telnet (pexpect).", "warning")
+        logger.emit(f"Coleta realizada via fallback Telnet (pexpect) com '{best_cmd}'.", "warning")
         return best
     finally:
         if session.isalive():
@@ -179,6 +242,7 @@ def realizar_backup(
         return (False, msg, None, "CONFIGURACAO")
 
     use_telnet = bool(parametros.get("use_telnet") or kwargs.get("use_telnet") or kwargs.get("usar_telnet"))
+    enable_password = parametros.get("enable_password")
     candidates = _device_candidates(use_telnet)
 
     logger.emit("Etapa 1/3: Testando conexao e autenticacao...")
@@ -207,7 +271,7 @@ def realizar_backup(
     # Fallback direto para Telnet pexpect quando Netmiko nao autentica no equipamento.
     if not selected_type and use_telnet:
         try:
-            output = _collect_telnet_pexpect(ip, int(porta), usuario, password, logger)
+            output = _collect_telnet_pexpect(ip, int(porta), usuario, password, logger, enable_password=enable_password)
             with open(caminho_local, "w", encoding="utf-8") as fp:
                 fp.write(output)
             msg = "Backup concluido com sucesso via fallback Telnet."
@@ -219,12 +283,7 @@ def realizar_backup(
     if not selected_type:
         detail = "; ".join(errors[:3])
         category = _classify_connection_failure(detail)
-        if category == "CONEXAO":
-            msg = "Falha de conectividade com o dispositivo."
-        else:
-            msg = "A conexao foi fechada, recusada ou as credenciais estao incorretas."
-        if detail:
-            msg = f"{msg} Detalhes: {detail}"
+        msg = friendly_failure_message(category, detail)
         logger.emit(msg, "error")
         return (False, msg, None, category)
 
@@ -241,7 +300,16 @@ def realizar_backup(
             auth_timeout=25,
             fast_cli=False,
         ) as net_connect:
-            for cmd in ("terminal length 0", "no page", "screen-length 0 temporary", "paginate false"):
+            try:
+                prompt = net_connect.find_prompt().strip()
+                if prompt.endswith(">"):
+                    out = net_connect.send_command_timing("enable", read_timeout=20, strip_command=False, strip_prompt=False)
+                    if "password" in (out or "").lower():
+                        net_connect.send_command_timing(enable_password or password or "", read_timeout=20, strip_command=False, strip_prompt=False)
+            except Exception:
+                pass
+
+            for cmd in ("terminal length 0", "terminal width 511", "no page", "screen-length 0 temporary", "paginate false"):
                 try:
                     out = net_connect.send_command_timing(cmd, read_timeout=20)
                     if not _invalid(out):
@@ -251,19 +319,28 @@ def realizar_backup(
 
             output = ""
             used_cmd = None
-            for cmd in ("show running-config", "show configuration", "display current-configuration"):
+            best_valid = False
+            for cmd in ("show running-config", "show startup-config", "show run", "show configuration", "display current-configuration"):
                 try:
                     out = _send_maybe_paged(net_connect, cmd, read_timeout=300)
+                    meaningful = _looks_like_config(out)
+                    logger.emit(
+                        f"Diagnostico comando '{cmd}': len={len((out or '').strip())} "
+                        f"invalid={_invalid(out)} meaningful={meaningful}"
+                    )
                     if out and not _invalid(out) and len(out.strip()) > len(output.strip()):
                         output = out
                         used_cmd = cmd
-                    if out and not _invalid(out) and len(out.strip()) > 80:
+                        best_valid = meaningful
+                    if out and meaningful:
                         break
                 except Exception:
                     continue
 
-            if not output or _invalid(output) or len(output.strip()) < 80:
-                raise RuntimeError("O dispositivo nao retornou uma configuracao valida.")
+            if not best_valid:
+                preview = _diagnostic_preview(output)
+                detail = f" Preview: {preview}" if preview else ""
+                raise RuntimeError(f"O dispositivo nao retornou uma configuracao valida.{detail}")
 
         logger.emit("Etapa 3/3: Salvando arquivo de backup...")
         with open(caminho_local, "w", encoding="utf-8") as fp:
@@ -278,7 +355,7 @@ def realizar_backup(
         # Ultima tentativa em Telnet bruto se o fluxo Netmiko quebrar no meio.
         if use_telnet:
             try:
-                output = _collect_telnet_pexpect(ip, int(porta), usuario, password, logger)
+                output = _collect_telnet_pexpect(ip, int(porta), usuario, password, logger, enable_password=enable_password)
                 with open(caminho_local, "w", encoding="utf-8") as fp:
                     fp.write(output)
                 msg = "Backup concluido com sucesso via fallback Telnet."
@@ -287,6 +364,6 @@ def realizar_backup(
             except Exception:
                 pass
 
-        msg = f"Erro iteragindo com o equipamento: {exc}"
+        msg = friendly_unexpected_error(exc)
         logger.emit(msg, "error")
         return (False, msg, None, "SCRIPT")

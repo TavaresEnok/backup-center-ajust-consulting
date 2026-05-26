@@ -35,15 +35,15 @@
                 </p>
             </div>
             <div class="users-toolbar flex items-center gap-2 flex-wrap md:flex-nowrap">
-                <a href="{{ url_for('tenant_users.list_users', tenant_slug=tenant.slug, status='active') }}"
+                <a href="{{ url_for('tenant_users.list_users', tenant_slug=tenant.slug, status='active', q=search_query or None) }}"
                     class="inline-flex items-center rounded-lg px-3 py-2 text-xs font-semibold {% if status_filter == 'active' %}bg-brand-600 text-white{% else %}border border-gray-300 text-gray-700 dark:border-gray-700 dark:text-gray-300{% endif %}">
                     Ativos
                 </a>
-                <a href="{{ url_for('tenant_users.list_users', tenant_slug=tenant.slug, status='all') }}"
+                <a href="{{ url_for('tenant_users.list_users', tenant_slug=tenant.slug, status='all', q=search_query or None) }}"
                     class="inline-flex items-center rounded-lg px-3 py-2 text-xs font-semibold {% if status_filter == 'all' %}bg-brand-600 text-white{% else %}border border-gray-300 text-gray-700 dark:border-gray-700 dark:text-gray-300{% endif %}">
                     Todos
                 </a>
-                <a href="{{ url_for('tenant_users.list_users', tenant_slug=tenant.slug, status='inactive') }}"
+                <a href="{{ url_for('tenant_users.list_users', tenant_slug=tenant.slug, status='inactive', q=search_query or None) }}"
                     class="inline-flex items-center rounded-lg px-3 py-2 text-xs font-semibold {% if status_filter == 'inactive' %}bg-brand-600 text-white{% else %}border border-gray-300 text-gray-700 dark:border-gray-700 dark:text-gray-300{% endif %}">
                     Inativos
                 </a>

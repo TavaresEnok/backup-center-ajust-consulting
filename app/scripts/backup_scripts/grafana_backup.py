@@ -8,7 +8,7 @@ import shutil
 import tempfile
 import time
 from typing import Tuple
-from script_helpers import BackupLogger, sanitize_path_component
+from script_helpers import BackupLogger, friendly_failure_message, friendly_unexpected_error, sanitize_path_component
 
 def realizar_backup(ip: str, usuario: str, porta: int, nome_provedor: str, nome_tipo_equip: str,
                       nome_dispositivo: str, parametros: dict = None, task_id: str = None, 
@@ -35,8 +35,8 @@ def realizar_backup(ip: str, usuario: str, porta: int, nome_provedor: str, nome_
         test_response.raise_for_status() # Lança erro para status HTTP 4xx/5xx
         logger.emit(f"Teste de conexão bem-sucedido. (Organização: {test_response.json().get('name')})", 'success')
     except Exception as e:
-        msg = "A conexão foi fechada ou as credenciais (API Key) estão incorretas."
-        logger.emit(f"{msg} (Erro original: {e})", 'error')
+        msg = friendly_failure_message("AUTENTICACAO", str(e))
+        logger.emit(msg, 'error')
         return (False, msg, None, "AUTENTICACAO")
 
     # --- PASSO 2: EXECUÇÃO DO BACKUP ---
@@ -88,6 +88,6 @@ def realizar_backup(ip: str, usuario: str, porta: int, nome_provedor: str, nome_
             return (True, msg, caminho_completo_zip)
             
     except Exception as e:
-        msg = f"Ocorreu um erro inesperado durante o backup: {e}"
+        msg = friendly_unexpected_error(e)
         logger.emit(msg, 'error')
         return (False, msg, None, "SCRIPT")

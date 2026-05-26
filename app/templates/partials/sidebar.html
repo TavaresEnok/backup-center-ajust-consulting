@@ -21,7 +21,7 @@
             <span class="bc-brand-title" x-show="mobileSidebarOpen || sidebarExpanded || sidebarHovered">Backup Center</span>
         </a>
 
-        <button class="block text-slate-400 transition-colors hover:text-white lg:hidden" @click="mobileSidebarOpen = !mobileSidebarOpen">
+        <button class="block text-[var(--text-muted)] transition-colors hover:text-white lg:hidden" @click="mobileSidebarOpen = !mobileSidebarOpen">
             <i data-lucide="x" class="h-6 w-6"></i>
         </button>
     </div>
@@ -80,7 +80,7 @@
                         <button @click="open = !open" class="bc-nav-link w-full" :class="[(mobileSidebarOpen || sidebarExpanded || sidebarHovered) ? '' : 'justify-center', {% if is_devices_backups %}'is-active'{% else %}''{% endif %}]">
                             <i data-lucide="hard-drive-download" class="bc-nav-icon"></i>
                             <span class="bc-nav-label" x-show="mobileSidebarOpen || sidebarExpanded || sidebarHovered">Dispositivos e Backups</span>
-                            <i data-lucide="chevron-down" class="ml-auto h-4 w-4 text-slate-500 transition-transform" :class="open ? 'rotate-180' : ''" x-show="mobileSidebarOpen || sidebarExpanded || sidebarHovered"></i>
+                            <i data-lucide="chevron-down" class="ml-auto h-4 w-4 text-[var(--text-muted)] transition-transform" :class="open ? 'rotate-180' : ''" x-show="mobileSidebarOpen || sidebarExpanded || sidebarHovered"></i>
                         </button>
                         <ul x-show="open && (mobileSidebarOpen || sidebarExpanded || sidebarHovered)" x-cloak class="bc-submenu">
                             <li><a href="{{ url_for('tenant_devices.list_devices', tenant_slug=tenant_id) }}" class="bc-sub-link {% if 'tenant_devices' in current_endpoint %}is-active{% endif %}">Todos os dispositivos</a></li>
@@ -101,16 +101,13 @@
                                 <i data-lucide="activity" class="bc-nav-icon"></i>
                                 <span class="bc-nav-label" x-show="mobileSidebarOpen || sidebarExpanded || sidebarHovered">Tempo real e alertas</span>
                             </div>
-                            {% if notifications_count|default(0) > 0 %}
-                            <span class="bc-badge-danger" x-show="mobileSidebarOpen || sidebarExpanded || sidebarHovered">{{ notifications_count }}</span>
-                            {% endif %}
                         </a>
                     </li>
                     <li x-data="{ open: {{ 'true' if is_reports else 'false' }} }">
                         <button @click="open = !open" class="bc-nav-link w-full" :class="[(mobileSidebarOpen || sidebarExpanded || sidebarHovered) ? '' : 'justify-center', {% if is_reports %}'is-active'{% else %}''{% endif %}]">
                             <i data-lucide="file-bar-chart" class="bc-nav-icon"></i>
                             <span class="bc-nav-label" x-show="mobileSidebarOpen || sidebarExpanded || sidebarHovered">Relatórios</span>
-                            <i data-lucide="chevron-down" class="ml-auto h-4 w-4 text-slate-500 transition-transform" :class="open ? 'rotate-180' : ''" x-show="mobileSidebarOpen || sidebarExpanded || sidebarHovered"></i>
+                            <i data-lucide="chevron-down" class="ml-auto h-4 w-4 text-[var(--text-muted)] transition-transform" :class="open ? 'rotate-180' : ''" x-show="mobileSidebarOpen || sidebarExpanded || sidebarHovered"></i>
                         </button>
                         <ul x-show="open && (mobileSidebarOpen || sidebarExpanded || sidebarHovered)" x-cloak class="bc-submenu">
                             <li><a href="{{ url_for('tenant_reports.daily', tenant_slug=tenant_id) }}" class="bc-sub-link {% if current_endpoint == 'tenant_reports.daily' %}is-active{% endif %}">Diário</a></li>
@@ -128,7 +125,7 @@
                         <button @click="open = !open" class="bc-nav-link w-full" :class="[(mobileSidebarOpen || sidebarExpanded || sidebarHovered) ? '' : 'justify-center', {% if is_settings %}'is-active'{% else %}''{% endif %}]">
                             <i data-lucide="settings" class="bc-nav-icon"></i>
                             <span class="bc-nav-label" x-show="mobileSidebarOpen || sidebarExpanded || sidebarHovered">Configurações</span>
-                            <i data-lucide="chevron-down" class="ml-auto h-4 w-4 text-slate-500 transition-transform" :class="open ? 'rotate-180' : ''" x-show="mobileSidebarOpen || sidebarExpanded || sidebarHovered"></i>
+                            <i data-lucide="chevron-down" class="ml-auto h-4 w-4 text-[var(--text-muted)] transition-transform" :class="open ? 'rotate-180' : ''" x-show="mobileSidebarOpen || sidebarExpanded || sidebarHovered"></i>
                         </button>
                         <ul x-show="open && (mobileSidebarOpen || sidebarExpanded || sidebarHovered)" x-cloak class="bc-submenu">
                             {% if is_admin_role %}

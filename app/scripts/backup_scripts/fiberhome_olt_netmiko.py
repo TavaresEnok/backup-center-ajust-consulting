@@ -6,7 +6,7 @@ from typing import Tuple
 from netmiko import ConnectHandler
 import pexpect
 
-from script_helpers import BackupLogger, prepare_backup_path
+from script_helpers import BackupLogger, friendly_failure_message, prepare_backup_path
 
 
 ERROR_MARKERS = (
@@ -17,6 +17,23 @@ ERROR_MARKERS = (
     "error:",
 )
 
+AUTH_FAILURE_MARKERS = (
+    "bad username",
+    "bad password",
+    "bad username or bad password",
+    "login failed",
+    "authentication failed",
+    "permission denied",
+)
+
+SESSION_START_MARKERS = (
+    "nao foi possivel iniciar sessao telnet",
+    "não foi possivel iniciar sessao telnet",
+    "nao foi possivel concluir autenticacao telnet",
+    "não foi possivel concluir autenticacao telnet",
+    "falha no fluxo de autenticacao telnet",
+)
+
 TELNET_COLLECT_TIMEOUT_SECONDS = 60
 TELNET_MAX_COLLECT_DURATION_SECONDS = 1800
 TELNET_MAX_PAGER_PAGES = 100000
@@ -25,6 +42,42 @@ TELNET_MAX_PAGER_PAGES = 100000
 def _looks_invalid(output: str) -> bool:
     text = (output or "").lower()
     return any(marker in text for marker in ERROR_MARKERS)
+
+
+def _classify_failure(exc: Exception) -> str:
+    text = str(exc or "").lower()
+    if any(marker in text for marker in AUTH_FAILURE_MARKERS):
+        return "AUTENTICACAO"
+    return "SCRIPT"
+
+
+def _is_auth_failure_text(text: str) -> bool:
+    low = (text or "").lower()
+    return any(marker in low for marker in AUTH_FAILURE_MARKERS)
+
+
+def _clean_error_detail(text: str) -> str:
+    cleaned = _clean_telnet_output(str(text or ""))
+    cleaned = re.sub(r"\*{3,}", "", cleaned)
+    cleaned = re.sub(r"\s+", " ", cleaned).strip()
+    return cleaned
+
+
+def _human_failure_message(exc: Exception) -> str:
+    text = _clean_error_detail(str(exc or ""))
+    low = text.lower()
+    if any(marker in low for marker in AUTH_FAILURE_MARKERS):
+        return (
+            "Falha de autenticacao na OLT FiberHome. "
+            f"Detalhe: {text}"
+        )
+    if any(marker in low for marker in SESSION_START_MARKERS):
+        return (
+            "Nao foi possivel iniciar a sessao de coleta Telnet. "
+            "A porta respondeu no precheck, mas a nova sessao nao apresentou login/banner a tempo. "
+            f"Detalhe: {text}"
+        )
+    return f"Falha durante a coleta do backup FiberHome. Detalhe: {text}"
 
 
 def _pick_device_types(use_telnet: bool):
@@ -70,6 +123,7 @@ def _collect_config(conn):
 def _clean_telnet_output(output: str) -> str:
     text = output or ""
     text = text.replace("\x00", "")
+    text = re.sub(r"\x1B\[[0-9;?]*[A-Za-z]", "", text)
     # Remove "char + backspace" sequencias comuns em paginas telnet.
     while "\x08" in text:
         text = re.sub(r".\x08", "", text)
@@ -181,13 +235,19 @@ def _collect_telnet_with_pexpect(
     enable_password: str,
     logger=None,
 ) -> Tuple[str, str]:
-    login_prompt = r"(?i)login[: ]|username[: ]|user[: ]"
-    pass_prompt = r"(?i)password[: ]"
-    user_prompt = r">\s*$"
-    privileged_prompt = r"#\s*$"
+    login_prompt = r"(?i)(?:login|username|user\s*name|user|usuario|usu.rio)\s*[:> ]+"
+    pass_prompt = r"(?i)(?:password|passwd|senha)\s*[:> ]+"
+    user_prompt = r"(?m)^[^\r\n#>]{0,80}>\s*$"
+    privileged_prompt = r"(?m)^[^\r\n#>]{0,80}#\s*$"
     pager_prompt = r"--Press any key to continue Ctrl\+c to stop--"
 
-    session = pexpect.spawn(f"telnet {ip} {int(porta)}", timeout=25, encoding="utf-8")
+    session = pexpect.spawn(f"telnet {ip} {int(porta)}", timeout=25, encoding="utf-8", codec_errors="ignore")
+    def _session_tail() -> str:
+        before = session.before if isinstance(session.before, str) else str(session.before or "")
+        after = session.after if isinstance(session.after, str) else str(session.after or "")
+        tail = _clean_telnet_output(before + after)[-240:]
+        return tail.replace("\n", " ").replace("\r", " ").strip()
+
     try:
         first = session.expect([login_prompt, pass_prompt, user_prompt, privileged_prompt, pexpect.TIMEOUT, pexpect.EOF])
         if first == 0:
@@ -197,20 +257,23 @@ def _collect_telnet_with_pexpect(
                 session.sendline(password or "")
                 third = session.expect([user_prompt, privileged_prompt, pass_prompt, pexpect.TIMEOUT, pexpect.EOF])
                 if third == 2:
-                    raise RuntimeError("Falha na autenticacao Telnet.")
+                    raise RuntimeError(f"Falha na autenticacao Telnet. Resposta: {_session_tail()}")
                 if third not in (0, 1):
-                    raise RuntimeError("Nao foi possivel concluir autenticacao Telnet.")
+                    raise RuntimeError(f"Nao foi possivel concluir autenticacao Telnet. Resposta: {_session_tail()}")
             elif second not in (1, 2):
-                raise RuntimeError("Falha no fluxo de autenticacao Telnet.")
+                raise RuntimeError(f"Falha no fluxo de autenticacao Telnet. Resposta: {_session_tail()}")
         elif first == 1:
             session.sendline(password or "")
             second = session.expect([user_prompt, privileged_prompt, pass_prompt, pexpect.TIMEOUT, pexpect.EOF])
             if second == 2:
-                raise RuntimeError("Falha na autenticacao Telnet.")
+                raise RuntimeError(f"Falha na autenticacao Telnet. Resposta: {_session_tail()}")
             if second not in (0, 1):
-                raise RuntimeError("Nao foi possivel concluir autenticacao Telnet.")
+                raise RuntimeError(f"Nao foi possivel concluir autenticacao Telnet. Resposta: {_session_tail()}")
         elif first not in (2, 3):
-            raise RuntimeError("Nao foi possivel iniciar sessao Telnet.")
+            raise RuntimeError(f"Nao foi possivel iniciar sessao Telnet. Resposta: {_session_tail()}")
+
+        if logger:
+            logger.emit("Etapa 1.3/4: Sessao Telnet interativa autenticada.")
 
         # Garante modo privilegiado.
         candidate_enable_passwords = []
@@ -219,6 +282,8 @@ def _collect_telnet_with_pexpect(
             if val and val not in candidate_enable_passwords:
                 candidate_enable_passwords.append(val)
 
+        if logger:
+            logger.emit("Etapa 2/4: Entrando em modo privilegiado...")
         session.sendline("enable")
         enable_step = session.expect([pass_prompt, privileged_prompt, user_prompt, pexpect.TIMEOUT, pexpect.EOF])
         if enable_step == 0:
@@ -244,10 +309,14 @@ def _collect_telnet_with_pexpect(
             raise RuntimeError("Sessao Telnet encerrada durante enable.")
 
         # Padrao do guia Intelbras: evitar paginação.
+        if logger:
+            logger.emit("Etapa 3/4: Preparando terminal...")
         session.sendline("terminal length 0")
         session.expect([privileged_prompt, user_prompt, pexpect.TIMEOUT, pexpect.EOF], timeout=15)
 
         # Ordem priorizada: running-config (estado atual) e fallback startup-config.
+        if logger:
+            logger.emit("Etapa 4/4: Coletando configuração...")
         for cmd in ("show running-config", "show startup-config"):
             output = _collect_telnet_command_with_pager(
                 session=session,
@@ -292,18 +361,19 @@ def realizar_backup(
     use_telnet = bool(parametros.get("use_telnet") or kwargs.get("use_telnet") or kwargs.get("usar_telnet"))
     candidates = _pick_device_types(use_telnet)
 
-    logger.emit("Etapa 1/4: Testando conexão (timeout de 25s)...")
+    logger.emit("Etapa 1/4: Testando porta e acesso inicial (timeout de 25s)...")
     selected_type = None
     connection_errors = []
     if use_telnet:
         try:
             _test_tcp_connect(ip, porta or 23, timeout=12)
             selected_type = "telnet_pexpect"
+            logger.emit("Etapa 1.1/4: Porta Telnet acessivel; login ainda sera validado.")
         except Exception as exc:
             detail = f"tcp:{type(exc).__name__}: {exc}"
-            msg = f"A conexão foi fechada, recusada ou indisponível. Detalhes: {detail}"
+            msg = friendly_failure_message("CONEXAO", detail)
             logger.emit(msg, "error")
-            return False, msg, None, "AUTENTICACAO"
+            return False, msg, None, "CONEXAO"
     else:
         for device_type in candidates:
             cfg = _build_conn_params(device_type, ip, porta, usuario, password, enable_password)
@@ -317,40 +387,60 @@ def realizar_backup(
 
         if not selected_type:
             detail = "; ".join(connection_errors[:3]).strip()
-            msg = "A conexão foi fechada, recusada ou as credenciais estão incorretas."
-            if detail:
-                msg = f"{msg} Detalhes: {detail}"
+            msg = friendly_failure_message("AUTENTICACAO", detail)
             logger.emit(msg, "error")
             return False, msg, None, "AUTENTICACAO"
 
-    logger.emit(f"Teste de conexão bem-sucedido usando '{selected_type}'.", "success")
+    logger.emit(f"Etapa 1/4 concluida: acesso inicial validado usando '{selected_type}'.", "success")
 
     caminho_local_completo = prepare_backup_path(
         backup_base_path, nome_provedor, nome_tipo_equip, nome_dispositivo, "cfg"
     )
 
     try:
-        logger.emit("Etapa 2/4: Reconectando para realizar o backup...")
         if use_telnet:
-            logger.emit("Etapa 3/4: Entrando em modo privilegiado...")
-            logger.emit("Etapa 4/4: Coletando configuração...")
-            output, used_cmd = _collect_telnet_with_pexpect(
-                ip,
-                porta,
-                usuario,
-                password,
-                enable_password,
-                logger=logger,
-            )
-            logger.emit(f"Coleta concluída com '{used_cmd}'.")
+            try:
+                logger.emit("Etapa 1.2/4: Abrindo sessao de backup e autenticando...")
+                cfg = _build_conn_params("cisco_ios_telnet", ip, porta, usuario, password, enable_password)
+                with ConnectHandler(**cfg) as conn:
+                    logger.emit("Etapa 1.2/4: Sessao de backup autenticada.")
+                    logger.emit("Etapa 2/4: Entrando em modo privilegiado...")
+                    if not conn.check_enable_mode():
+                        conn.enable()
+
+                    logger.emit("Etapa 3/4: Coletando configuração...")
+                    output, used_cmd = _collect_config(conn)
+                    if not output:
+                        raise ValueError("O dispositivo não retornou configuração válida para backup via Netmiko Telnet.")
+                    logger.emit(f"Coleta concluída com '{used_cmd}' via Netmiko Telnet.")
+            except Exception as netmiko_exc:
+                netmiko_detail = f"{type(netmiko_exc).__name__}: {netmiko_exc}"
+                if _is_auth_failure_text(netmiko_detail):
+                    raise RuntimeError(netmiko_detail) from netmiko_exc
+                logger.emit(
+                    f"Etapa 1.3/4: Sessao Netmiko falhou; tentando Telnet interativo. "
+                    f"Detalhe: {netmiko_detail[:180]}",
+                    "warning",
+                )
+                output, used_cmd = _collect_telnet_with_pexpect(
+                    ip,
+                    porta,
+                    usuario,
+                    password,
+                    enable_password,
+                    logger=logger,
+                )
+                logger.emit(f"Coleta concluída com '{used_cmd}' via Telnet interativo.")
         else:
+            logger.emit("Etapa 1.2/4: Abrindo sessao de backup e autenticando...")
             cfg = _build_conn_params(selected_type, ip, porta, usuario, password, enable_password)
             with ConnectHandler(**cfg) as conn:
-                logger.emit("Etapa 3/4: Entrando em modo privilegiado...")
+                logger.emit("Etapa 1.2/4: Sessao de backup autenticada.")
+                logger.emit("Etapa 2/4: Entrando em modo privilegiado...")
                 if not conn.check_enable_mode():
                     conn.enable()
 
-                logger.emit("Etapa 4/4: Coletando configuração...")
+                logger.emit("Etapa 3/4: Coletando configuração...")
                 output, used_cmd = _collect_config(conn)
                 if not output:
                     raise ValueError("O dispositivo não retornou configuração válida para backup.")
@@ -366,6 +456,7 @@ def realizar_backup(
         logger.emit(msg, "success")
         return True, msg, caminho_local_completo
     except Exception as e:
-        error_msg = f"Falha inesperada durante o backup: {e}"
+        error_msg = _human_failure_message(e)
         logger.emit(error_msg, "error")
-        return False, error_msg, None, "SCRIPT"
+        category = _classify_failure(e)
+        return False, error_msg, None, category

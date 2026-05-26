@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from threading import Lock
 
-from sqlalchemy import func, text
+from sqlalchemy import func, inspect, text
 from sqlalchemy.orm import Session
 
 from app.core.database import engine, is_sqlite_engine
@@ -45,7 +45,21 @@ class PlanLimitsService:
             if is_sqlite_engine():
                 cls._schema_ready = True
                 return
+
+            inspector = inspect(engine)
+            plan_columns = {col["name"] for col in inspector.get_columns("plans")}
+            usage_table_ok = inspector.has_table("tenant_usage_metrics")
+            required_plan_columns = {
+                "storage_quota_gb",
+                "download_quota_gb_month",
+                "max_download_rate_mbps",
+            }
+            if usage_table_ok and required_plan_columns.issubset(plan_columns):
+                cls._schema_ready = True
+                return
+
             with engine.begin() as conn:
+                conn.execute(text("SET LOCAL lock_timeout = '3s'"))
                 conn.execute(
                     text(
                         "ALTER TABLE plans "

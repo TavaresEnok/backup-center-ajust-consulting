@@ -7,6 +7,7 @@ from app.core.security import get_password_hash, validate_password_strength
 from app.services.plan_limits_service import PlanLimitsService
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload
+from sqlalchemy import or_
 import uuid
 
 bp = Blueprint('tenant_users', __name__, url_prefix='/tenant/<tenant_slug>/users')
@@ -20,6 +21,8 @@ def get_db_and_tenant(tenant_slug):
     db = SessionLocal()
     PlanLimitsService.ensure_schema()
     tenant = db.query(Tenant).options(joinedload(Tenant.plan)).filter(Tenant.slug == tenant_slug).first()
+    if not tenant:
+        db.close()
     return db, tenant
 
 
@@ -32,12 +35,23 @@ def list_users(tenant_slug):
         return "Tenant not found", 404
     
     status_filter = (request.args.get('status') or 'active').strip().lower()
+    search_query = (request.args.get('q') or '').strip()
     users_query = db.query(User).filter(User.tenant_id == tenant.id)
     if status_filter == 'inactive':
         users_query = users_query.filter(User.is_active == False)
     elif status_filter != 'all':
         status_filter = 'active'
         users_query = users_query.filter(User.is_active == True)
+
+    if search_query:
+        like_query = f"%{search_query}%"
+        users_query = users_query.filter(
+            or_(
+                User.full_name.ilike(like_query),
+                User.email.ilike(like_query),
+            )
+        )
+
     users = users_query.order_by(User.full_name).all()
 
     users_all = db.query(User).filter(User.tenant_id == tenant.id).all()
@@ -60,6 +74,7 @@ def list_users(tenant_slug):
         stats=stats,
         UserRole=UserRole,
         status_filter=status_filter,
+        search_query=search_query,
     )
 
 

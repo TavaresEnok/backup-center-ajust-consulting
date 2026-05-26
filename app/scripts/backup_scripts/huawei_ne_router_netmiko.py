@@ -6,7 +6,12 @@ from typing import List, Tuple
 
 from netmiko import ConnectHandler
 
-from script_helpers import BackupLogger, sanitize_path_component
+from script_helpers import (
+    BackupLogger,
+    friendly_failure_message,
+    friendly_unexpected_error,
+    sanitize_path_component,
+)
 
 
 PAGER_MARKERS = ("--More--", "---- More ----", "[More]", "<--- More --->", "Press any key")
@@ -258,10 +263,7 @@ def realizar_backup(
     if last_conn_exc is not None:
         detail = _safe_exc_text(last_conn_exc)
         category = _classify_connection_failure(detail)
-        if category == "CONEXAO":
-            msg = f"Falha de conectividade com o dispositivo. Detalhe: {detail}"
-        else:
-            msg = f"A conexao foi fechada, recusada ou as credenciais estao incorretas. Detalhe: {detail}"
+        msg = friendly_failure_message(category, detail)
         logger.emit(msg, "error")
         return (False, msg, None, category)
 
@@ -306,7 +308,7 @@ def realizar_backup(
             if admin_cmd:
                 logger.emit(f"Admin-VS coletado com comando '{admin_cmd}'.")
     except Exception as exc:
-        msg = f"Falha na Etapa 2 (Admin-VS): {_safe_exc_text(exc)}"
+        msg = friendly_unexpected_error(_safe_exc_text(exc), operation="coleta do Admin-VS")
         logger.emit(msg, "error")
         return (False, msg, None, "SCRIPT")
 
@@ -370,6 +372,6 @@ def realizar_backup(
         logger.emit(msg, "success")
         return (True, msg, caminho_zip)
     except Exception as exc:
-        error_msg = f"Falha critica na finalizacao: {_safe_exc_text(exc)}"
+        error_msg = friendly_unexpected_error(_safe_exc_text(exc), operation="finalizacao do backup")
         logger.emit(error_msg, "error")
         return (False, error_msg, None, "SCRIPT")

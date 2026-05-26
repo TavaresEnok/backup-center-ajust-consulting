@@ -30,6 +30,7 @@ class Settings(BaseSettings):
     # Backup retention
     DEFAULT_RETENTION_DAYS: int = 90
     REALTIME_LOG_RETENTION_DAYS: int = 90
+    ACTIVITY_LOG_RETENTION_DAYS: int = 7
 
     # Billing / Payments
     APP_PUBLIC_URL: Optional[str] = None

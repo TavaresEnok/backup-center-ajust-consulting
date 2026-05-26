@@ -17,17 +17,17 @@
         --secondary: #8b5cf6;
         --accent: #06b6d4;
         --success: #10b981;
-        --dark-900: #020617;
-        --dark-800: #0f172a;
-        --dark-700: #1e293b;
-        --dark-600: #334155;
+        --dark-900: var(--bg-app);
+        --dark-800: var(--card-bg);
+        --dark-700: var(--card-bg);
+        --dark-600: var(--card-border);
         --glass: rgba(255, 255, 255, 0.03);
         --glass-border: rgba(255, 255, 255, 0.08);
     }
 
     .landing-wrapper {
         background: var(--dark-900);
-        color: #e2e8f0;
+        color: var(--text-main);
         font-family: 'Inter', -apple-system, sans-serif;
         overflow-x: hidden;
     }
@@ -164,7 +164,7 @@
     }
 
     .nav-link {
-        color: #94a3b8;
+        color: var(--text-muted);
         text-decoration: none;
         font-size: 0.95rem;
         font-weight: 500;
@@ -227,7 +227,7 @@
     .btn-glass {
         background: var(--glass);
         border: 1px solid var(--glass-border);
-        color: #e2e8f0;
+        color: var(--text-main);
         backdrop-filter: blur(10px);
     }
 
@@ -348,7 +348,7 @@
 
     .hero-subtitle {
         font-size: 1.25rem;
-        color: #94a3b8;
+        color: var(--text-muted);
         max-width: 600px;
         margin: 0 auto 2.5rem;
         line-height: 1.8;
@@ -384,7 +384,7 @@
 
     .trust-label {
         font-size: 0.75rem;
-        color: #475569;
+        color: var(--card-border);
         text-transform: uppercase;
         letter-spacing: 3px;
         margin-bottom: 1.5rem;
@@ -401,7 +401,7 @@
     .trust-logo {
         font-size: 1.1rem;
         font-weight: 700;
-        color: #475569;
+        color: var(--card-border);
         letter-spacing: 2px;
         opacity: 0.7;
         transition: all 0.3s;
@@ -409,7 +409,7 @@
 
     .trust-logo:hover {
         opacity: 1;
-        color: #64748b;
+        color: var(--text-muted);
     }
 
     /* Hero Mockup */
@@ -525,7 +525,7 @@
     }
 
     .stat-label {
-        color: #64748b;
+        color: var(--text-muted);
         font-size: 0.9rem;
         margin-top: 0.5rem;
     }
@@ -568,7 +568,7 @@
     }
 
     .section-subtitle {
-        color: #94a3b8;
+        color: var(--text-muted);
         font-size: 1.1rem;
         line-height: 1.7;
     }
@@ -674,7 +674,7 @@
     }
 
     .feature-description {
-        color: #94a3b8;
+        color: var(--text-muted);
         font-size: 0.95rem;
         line-height: 1.7;
     }
@@ -757,7 +757,7 @@
     }
 
     .step-description {
-        color: #64748b;
+        color: var(--text-muted);
         font-size: 0.9rem;
         line-height: 1.6;
     }
@@ -801,7 +801,7 @@
     }
 
     .testimonial-text {
-        color: #cbd5e1;
+        color: var(--text-main);
         font-size: 1rem;
         line-height: 1.8;
         margin-bottom: 1.5rem;
@@ -836,7 +836,7 @@
 
     .author-role {
         font-size: 0.85rem;
-        color: #64748b;
+        color: var(--text-muted);
     }
 
     /* ========== PRICING ========== */
@@ -861,7 +861,7 @@
         transition: all 0.3s;
         border: none;
         background: transparent;
-        color: #64748b;
+        color: var(--text-muted);
     }
 
     .toggle-btn.active {
@@ -926,7 +926,7 @@
     }
 
     .pricing-description {
-        color: #64748b;
+        color: var(--text-muted);
         font-size: 0.9rem;
         margin-bottom: 2rem;
     }
@@ -944,7 +944,7 @@
     }
 
     .price-period {
-        color: #64748b;
+        color: var(--text-muted);
         font-size: 0.9rem;
     }
 
@@ -959,7 +959,7 @@
         align-items: center;
         gap: 0.75rem;
         padding: 0.85rem 0;
-        color: #94a3b8;
+        color: var(--text-muted);
         border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     }
 
@@ -1025,7 +1025,7 @@
     }
 
     .cta-subtitle {
-        color: #94a3b8;
+        color: var(--text-muted);
         font-size: 1.1rem;
         margin-bottom: 2.5rem;
         max-width: 600px;
@@ -1050,7 +1050,7 @@
     }
 
     .footer-copyright {
-        color: #475569;
+        color: var(--card-border);
         font-size: 0.9rem;
     }
 
@@ -1060,7 +1060,7 @@
     }
 
     .footer-links a {
-        color: #64748b;
+        color: var(--text-muted);
         text-decoration: none;
         font-size: 0.9rem;
         transition: color 0.3s;

@@ -1,24 +1,74 @@
-from collections import Counter
-
 from flask import Blueprint, render_template, redirect, url_for, request, flash, session, abort, jsonify
 from app.web.auth.decorators import login_required, tenant_admin_required, tenant_operator_required
 from app.core.database import SessionLocal
 from app.services.device_service import DeviceGroupService, DeviceService
 from app.services.connection_mode import uses_jump_host, uses_vpn_tunnel
-from app.services.jump_host_service import jump_host_service, recommendation_for_category
+from app.services.jump_host_service import jump_host_service
 from app.services.realtime_backup_logs import register_task, append_task_log
 from app.services.activity_service import ActivityService
 from app.tasks.monitoring import run_group_vpn_test_task, run_group_jump_host_diagnostic_task
 from app.models.device import Device
 from app.models.tenant import Tenant
-from app.models.user import UserRole
+from app.models.user import User, UserRole
+from app.core.security import decrypt_password
 import uuid
 import re
-import json
-import secrets
 import logging
 
 bp = Blueprint('tenant_groups', __name__, url_prefix='/tenant/<tenant_slug>/groups')
+
+
+def _can_view_saved_credentials(db=None) -> bool:
+    role = session.get('user_role')
+    if role == UserRole.TENANT_OWNER.value:
+        return True
+
+    if db is None:
+        return False
+
+    raw_user_id = session.get('user_id')
+    if not raw_user_id:
+        return False
+
+    try:
+        user_uuid = uuid.UUID(str(raw_user_id))
+    except (TypeError, ValueError):
+        return False
+
+    user = db.query(User).filter(User.id == user_uuid, User.is_active.is_(True)).first()
+    if not user:
+        return False
+
+    current_role = getattr(user.role, 'value', user.role)
+    if current_role and current_role != role:
+        session['user_role'] = current_role
+
+    return current_role == UserRole.TENANT_OWNER.value
+
+
+def _safe_decrypt_secret(encrypted_value, *, context_label: str, entity_id) -> str | None:
+    if not encrypted_value:
+        return None
+    try:
+        return decrypt_password(encrypted_value)
+    except Exception:
+        logging.getLogger(__name__).warning(
+            'Falha ao descriptografar segredo salvo em %s para entidade %s',
+            context_label,
+            entity_id,
+            exc_info=True,
+        )
+        return None
+
+
+def _current_saved_secret_if_owner(db, encrypted_value, *, context_label: str, entity_id) -> str | None:
+    if not _can_view_saved_credentials(db):
+        return None
+    return _safe_decrypt_secret(
+        encrypted_value,
+        context_label=context_label,
+        entity_id=entity_id,
+    )
 
 
 def get_db_and_tenant(tenant_slug):
@@ -28,6 +78,8 @@ def get_db_and_tenant(tenant_slug):
         
     db = SessionLocal()
     tenant = db.query(Tenant).filter(Tenant.slug == tenant_slug).first()
+    if not tenant:
+        db.close()
     return db, tenant
 
 
@@ -61,29 +113,6 @@ def slugify(text):
     slug = re.sub(r'[^\w\s-]', '', slug)
     slug = re.sub(r'[-\s]+', '-', slug)
     return slug
-
-
-def _build_jump_summary(devices):
-    counts = Counter()
-    last_recommendation = None
-    for device in devices or []:
-        extra = dict(getattr(device, 'extra_parameters', None) or {})
-        category = str(extra.get('connection_test_failure_category') or '').strip().lower()
-        if not category:
-            continue
-        counts[category] += 1
-        if not last_recommendation:
-            last_recommendation = str(extra.get('connection_test_recommendation') or '').strip() or None
-
-    return {
-        'device_auth_failed': counts.get('device_auth_failed', 0),
-        'jump_host_access_failed': counts.get('jump_host_access_failed', 0),
-        'jump_host_no_route': counts.get('jump_host_no_route', 0),
-        'timeout': counts.get('timeout', 0),
-        'connectivity_failed': counts.get('connectivity_failed', 0),
-        'total': sum(counts.values()),
-        'recommendation': last_recommendation,
-    }
 
 
 def _log_activity_safe(db, tenant_id, action, details=None):
@@ -202,6 +231,30 @@ def edit_group(tenant_slug, group_id):
     if request.method == 'POST':
         try:
             connection_type = request.form.get('connection_type', 'direct')
+            current_vpn_password = _current_saved_secret_if_owner(
+                db,
+                getattr(group, 'vpn_password_encrypted', None),
+                context_label='tenant_groups.edit_group.vpn_password',
+                entity_id=group.id,
+            )
+            current_vpn_ipsec_secret = _current_saved_secret_if_owner(
+                db,
+                getattr(group, 'vpn_ipsec_secret_encrypted', None),
+                context_label='tenant_groups.edit_group.vpn_ipsec_secret',
+                entity_id=group.id,
+            )
+            current_jump_password = _current_saved_secret_if_owner(
+                db,
+                getattr(group, 'jump_password_encrypted', None),
+                context_label='tenant_groups.edit_group.jump_password',
+                entity_id=group.id,
+            )
+            current_jump_key = _current_saved_secret_if_owner(
+                db,
+                getattr(group, 'jump_key_encrypted', None),
+                context_label='tenant_groups.edit_group.jump_key',
+                entity_id=group.id,
+            )
             
             data = {
                 'name': request.form.get('name'),
@@ -220,17 +273,17 @@ def edit_group(tenant_slug, group_id):
             }
             
             # Só atualiza senhas se foram fornecidas
-            if request.form.get('vpn_password'):
+            if request.form.get('vpn_password') and request.form.get('vpn_password') != current_vpn_password:
                 data['vpn_password'] = request.form.get('vpn_password')
-            if request.form.get('vpn_ipsec_secret'):
+            if request.form.get('vpn_ipsec_secret') and request.form.get('vpn_ipsec_secret') != current_vpn_ipsec_secret:
                 data['vpn_ipsec_secret'] = request.form.get('vpn_ipsec_secret')
-            if request.form.get('jump_password'):
+            if request.form.get('jump_password') and request.form.get('jump_password') != current_jump_password:
                 data['jump_password'] = request.form.get('jump_password')
-            if request.form.get('jump_key'):
+            if request.form.get('jump_key') and request.form.get('jump_key') != current_jump_key:
                 data['jump_key'] = request.form.get('jump_key')
             
             DeviceGroupService.update_group(db, group_uuid, data)
-            if request.form.get('jump_password') or request.form.get('jump_key'):
+            if ('jump_password' in data) or ('jump_key' in data):
                 jump_host_service.mark_credentials_rotated(str(tenant.id), group)
             flash('Grupo atualizado com sucesso!', 'success')
             return redirect(url_for('tenant_groups.list_groups', tenant_slug=tenant_slug))
@@ -243,18 +296,44 @@ def edit_group(tenant_slug, group_id):
         .order_by(Device.name.asc())
         .all()
     )
-    jump_summary = _build_jump_summary(group_devices)
-    jump_state = jump_host_service.get_group_state(str(tenant.id), group)
     sample_device = group_devices[0] if group_devices else None
+    can_view_saved_credentials = _can_view_saved_credentials(db)
+    group_current_vpn_password = None
+    group_current_vpn_ipsec_secret = None
+    group_current_jump_password = None
+    group_current_jump_key = None
+    if can_view_saved_credentials:
+        group_current_vpn_password = _safe_decrypt_secret(
+            getattr(group, 'vpn_password_encrypted', None),
+            context_label='tenant_groups.edit_group.vpn_password',
+            entity_id=group.id,
+        )
+        group_current_vpn_ipsec_secret = _safe_decrypt_secret(
+            getattr(group, 'vpn_ipsec_secret_encrypted', None),
+            context_label='tenant_groups.edit_group.vpn_ipsec_secret',
+            entity_id=group.id,
+        )
+        group_current_jump_password = _safe_decrypt_secret(
+            getattr(group, 'jump_password_encrypted', None),
+            context_label='tenant_groups.edit_group.jump_password',
+            entity_id=group.id,
+        )
+        group_current_jump_key = _safe_decrypt_secret(
+            getattr(group, 'jump_key_encrypted', None),
+            context_label='tenant_groups.edit_group.jump_key',
+            entity_id=group.id,
+        )
     db.close()
     return render_template(
         'tenant/groups/edit.html',
         tenant=tenant,
         group=group,
-        jump_summary=jump_summary,
-        jump_state=jump_state,
         sample_device=sample_device,
-        recommendation_for_category=recommendation_for_category,
+        can_view_saved_credentials=can_view_saved_credentials,
+        group_current_vpn_password=group_current_vpn_password,
+        group_current_vpn_ipsec_secret=group_current_vpn_ipsec_secret,
+        group_current_jump_password=group_current_jump_password,
+        group_current_jump_key=group_current_jump_key,
     )
 
 
@@ -585,75 +664,3 @@ def collect_jump_diagnostics(tenant_slug, group_id):
     db.close()
     return jsonify(result)
 
-
-@bp.route('/<group_id>/jump-console/exec', methods=['POST'])
-@login_required
-@tenant_operator_required
-def exec_jump_console(tenant_slug, group_id):
-    db, tenant = get_db_and_tenant(tenant_slug)
-    if not tenant:
-        return "Tenant not found", 404
-
-    try:
-        group_uuid = uuid.UUID(group_id)
-    except ValueError:
-        db.close()
-        return jsonify({"ok": False, "error": "ID de grupo invalido."}), 400
-
-    group = DeviceGroupService.get_group(db, group_uuid)
-    if not group or str(group.tenant_id) != str(tenant.id):
-        db.close()
-        return jsonify({"ok": False, "error": "Grupo nao encontrado."}), 404
-
-    command = (request.form.get('command') or '').strip()
-    result = jump_host_service.exec_console_command(str(tenant.id), group, command)
-    _log_activity_safe(
-        db,
-        tenant.id,
-        "GROUP_JUMP_CONSOLE_EXEC",
-        f"Grupo={group.name}; comando={command[:160]}; ok={bool(result.get('ok'))}",
-    )
-    db.close()
-    return jsonify(result)
-
-
-@bp.route('/<group_id>/jump-console/ws-token', methods=['POST'])
-@login_required
-@tenant_operator_required
-def jump_console_ws_token(tenant_slug, group_id):
-    """Gera token one-time para abrir WebSocket do terminal interativo."""
-    db, tenant = get_db_and_tenant(tenant_slug)
-    if not tenant:
-        return jsonify({"ok": False, "error": "Tenant nao encontrado"}), 404
-
-    try:
-        group_uuid = uuid.UUID(group_id)
-    except ValueError:
-        db.close()
-        return jsonify({"ok": False, "error": "ID de grupo invalido"}), 400
-
-    group = DeviceGroupService.get_group(db, group_uuid)
-    if not group or str(group.tenant_id) != str(tenant.id):
-        db.close()
-        return jsonify({"ok": False, "error": "Grupo nao encontrado"}), 404
-
-    if not uses_jump_host(group):
-        db.close()
-        return jsonify({"ok": False, "error": "Grupo nao usa Jump Host"}), 400
-
-    from app.services.realtime_backup_logs import get_redis_client
-    redis_client = get_redis_client()
-    if not redis_client:
-        db.close()
-        return jsonify({"ok": False, "error": "Redis indisponivel"}), 503
-
-    token = secrets.token_urlsafe(32)
-    payload = {
-        "tenant_id": str(tenant.id),
-        "group_id": str(group.id),
-        "user_id": str(session.get("user_id", "")),
-    }
-    redis_client.setex(f"backup_center:wsconsole:{token}", 30, json.dumps(payload))
-    _log_activity_safe(db, tenant.id, "GROUP_JUMP_CONSOLE_WS_OPEN", f"Grupo={group.name}")
-    db.close()
-    return jsonify({"ok": True, "token": token})

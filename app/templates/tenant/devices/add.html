@@ -126,22 +126,10 @@
                 <label for="backup_scheduled" class="text-sm font-medium text-gray-900 dark:text-white">Ativar backup automático</label>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="form-control">
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Frequência</label>
-                    <select name="schedule_frequency"
-                        class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-brand-500 focus:border-brand-500">
-                        <option value="daily" selected>Diário</option>
-                        <option value="weekly">Semanal</option>
-                        <option value="monthly">Mensal</option>
-                    </select>
-                </div>
-                <div class="form-control">
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Horário (HH:MM)</label>
-                    <input type="time" name="schedule_time" value="00:00"
-                        class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-brand-500 focus:border-brand-500" />
-                </div>
-            </div>
+            <p class="text-sm text-gray-600 dark:text-gray-300">
+                O dispositivo entra na rotina automática global do tenant. O horário diário é centralizado em
+                <strong>Agendamentos</strong>.
+            </p>
         </div>
 
         <div class="flex justify-end gap-3">
@@ -177,6 +165,8 @@
         const extraPanel = document.getElementById('extra-parameters-panel');
         const extraFields = document.getElementById('extra-parameters-fields');
         const typeMetadata = {{ type_metadata|tojson }};
+        const zabbixScriptName = "zabbix_backup.py";
+        const zabbixDefaultExclude = "history,history_uint,history_str,history_log,history_text,trends,trends_uint";
 
         function prettifyLabel(name) {
             return (name || '')
@@ -191,7 +181,12 @@
         function renderExtraParameters(typeId) {
             extraFields.innerHTML = '';
             const metadata = typeMetadata[typeId] || {};
+            const scriptName = String(metadata.script_name || '').toLowerCase();
+            const isZabbix = scriptName === zabbixScriptName;
             const params = (metadata.required_parameters || []).filter((item) => {
+                if (isZabbix && item === 'db_type') {
+                    return false;
+                }
                 return !['username', 'password', 'ip_address', 'host', 'hostname', 'port', 'use_telnet'].includes(item);
             });
 
@@ -218,6 +213,11 @@
                 input.placeholder = isSensitiveParameter(paramName)
                     ? `Informe ${prettifyLabel(paramName)}`
                     : `Valor de ${prettifyLabel(paramName)}`;
+                input.dataset.extraParamName = paramName;
+                wrapper.dataset.extraParamName = paramName;
+                if (paramName === 'exclude_tables' && !input.value) {
+                    input.value = zabbixDefaultExclude;
+                }
 
                 const help = document.createElement('p');
                 help.className = 'mt-1 text-xs text-gray-500 dark:text-gray-400';
@@ -231,7 +231,103 @@
                 extraFields.appendChild(wrapper);
             });
 
+            if (isZabbix) {
+                const modeBox = document.createElement('div');
+                modeBox.className = 'md:col-span-2 rounded-lg border border-indigo-200 bg-indigo-50/70 p-4 dark:border-indigo-500/30 dark:bg-indigo-500/10';
+                modeBox.innerHTML = `
+                    <div class="flex flex-col gap-3">
+                        <div>
+                            <p class="text-sm font-semibold text-indigo-900 dark:text-indigo-200">Credenciais do Banco Zabbix</p>
+                            <p class="text-xs text-indigo-700 dark:text-indigo-300">No modo automático, DBName/DBUser/DBPassword serão obtidos no momento do backup via zabbix_server.conf.</p>
+                        </div>
+                        <div class="flex flex-col gap-2">
+                            <p class="text-xs font-semibold uppercase tracking-wide text-indigo-800 dark:text-indigo-200">Banco de dados</p>
+                            <div class="inline-flex w-fit overflow-hidden rounded-lg border border-indigo-300 dark:border-indigo-500/40">
+                                <label class="cursor-pointer">
+                                    <input type="radio" name="extra__db_type" value="postgres" checked class="peer sr-only">
+                                    <span class="block px-4 py-2 text-sm font-semibold text-indigo-900 peer-checked:bg-indigo-600 peer-checked:text-white dark:text-indigo-100">
+                                        PostgreSQL
+                                    </span>
+                                </label>
+                                <label class="cursor-pointer border-l border-indigo-300 dark:border-indigo-500/40">
+                                    <input type="radio" name="extra__db_type" value="mariadb" class="peer sr-only">
+                                    <span class="block px-4 py-2 text-sm font-semibold text-indigo-900 peer-checked:bg-indigo-600 peer-checked:text-white dark:text-indigo-100">
+                                        MariaDB
+                                    </span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-4 text-sm">
+                            <label class="inline-flex items-center gap-2 text-indigo-900 dark:text-indigo-200">
+                                <input type="radio" name="extra__db_credentials_mode" value="automatic" checked
+                                    class="text-indigo-600 focus:ring-indigo-500">
+                                Automático
+                            </label>
+                            <label class="inline-flex items-center gap-2 text-indigo-900 dark:text-indigo-200">
+                                <input type="radio" name="extra__db_credentials_mode" value="manual"
+                                    class="text-indigo-600 focus:ring-indigo-500">
+                                Manual
+                            </label>
+                        </div>
+                        <p id="zabbix-autodiscovery-status" class="text-xs text-indigo-800 dark:text-indigo-200">
+                            Modo automático ativo: credenciais do banco ocultas e descoberta feita em tempo de execução.
+                        </p>
+                    </div>
+                `;
+                extraFields.prepend(modeBox);
+            }
+
             extraPanel.classList.remove('hidden');
+            if (window.lucide && window.lucide.createIcons) {
+                window.lucide.createIcons();
+            }
+
+            if (isZabbix) {
+                setupZabbixControls();
+            }
+        }
+
+        function zabbixField(paramName) {
+            return document.querySelector(`#extra-parameters-fields input[name="extra__${paramName}"]`);
+        }
+
+        function setupZabbixControls() {
+            const statusEl = document.getElementById('zabbix-autodiscovery-status');
+            const modeInputs = document.querySelectorAll('input[name="extra__db_credentials_mode"]');
+            const dbFieldNames = ['db_name', 'db_user', 'db_password'];
+
+            function currentMode() {
+                const checked = document.querySelector('input[name="extra__db_credentials_mode"]:checked');
+                return checked ? checked.value : 'automatic';
+            }
+
+            function updateModeUi() {
+                const automatic = currentMode() === 'automatic';
+                dbFieldNames.forEach((name) => {
+                    const input = zabbixField(name);
+                    if (!input) return;
+                    const wrapper = input.closest('.form-control');
+                    if (wrapper) {
+                        wrapper.classList.toggle('hidden', automatic);
+                    }
+                    input.disabled = automatic;
+                    if (automatic) {
+                        input.placeholder = '';
+                    } else {
+                        input.placeholder = name === 'db_password'
+                            ? 'Informe Db Password'
+                            : `Valor de ${prettifyLabel(name)}`;
+                    }
+                });
+                if (statusEl) {
+                    statusEl.textContent = automatic
+                        ? 'Modo automático ativo: credenciais do banco ocultas e descoberta feita em tempo de execução.'
+                        : 'Modo manual ativo: informe DBName/DBUser/DBPassword para usar no backup.';
+                }
+            }
+
+            modeInputs.forEach((el) => el.addEventListener('change', updateModeUi));
+            updateModeUi();
         }
 
         function applyTypeDefaults() {

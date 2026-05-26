@@ -24,6 +24,37 @@ from app.models.device import Device
 from app.models.device_group import DeviceGroup
 from app.models.backup import Backup, BackupStatus
 
+from typing import List, Optional
+from pydantic import BaseModel
+
+class GroupResponseItem(BaseModel):
+    id: str
+    name: str
+    device_count: int
+    last_backup_at: Optional[str] = None
+
+class GroupsResponse(BaseModel):
+    total: int
+    groups: List[GroupResponseItem]
+
+class BackupResponseItem(BaseModel):
+    id: str
+    device_id: Optional[str] = None
+    device_name: Optional[str] = None
+    status: str
+    file_size_bytes: Optional[int] = None
+    hash_sha256: Optional[str] = None
+    created_at: Optional[str] = None
+    download_url: str
+
+class BackupsResponse(BaseModel):
+    group: str
+    page: int
+    per_page: int
+    total: int
+    pages: int
+    items: List[BackupResponseItem]
+
 router = APIRouter()
 
 
@@ -31,7 +62,17 @@ router = APIRouter()
 # 1. GET /groups — Listar Grupos (Provedores/Clientes)
 # ---------------------------------------------------------------------------
 
-@router.get("/groups", summary="Listar grupos (provedores/clientes)")
+@router.get(
+    "/groups", 
+    summary="1. Listar seus Grupos (Clientes/Marcas)", 
+    response_model=GroupsResponse,
+    description="""
+**Objetivo:** Retornar a lista de todas as pastas/grupos de dispositivos que o seu token possui permissão de leitura.
+    
+**Onde encontrar o ID do Grupo?**
+Ao executar esta rota, observe a chave `"id"` na resposta. É este código UUID que você precisará usar no Passo 2.
+    """
+)
 def list_groups(
     tenant: Tenant = Depends(get_current_api_tenant),
     db: Session = Depends(get_db),
@@ -76,7 +117,17 @@ def list_groups(
 # 2. GET /groups/{group_id}/backups — Listar Backups de um Grupo
 # ---------------------------------------------------------------------------
 
-@router.get("/groups/{group_id}/backups", summary="Listar backups de um grupo")
+@router.get(
+    "/groups/{group_id}/backups", 
+    summary="2. Listar Backups de um Grupo Específico", 
+    response_model=BackupsResponse,
+    description="""
+**Objetivo:** Retornar o histórico de backups que pertencem ao Grupo (group_id) que você selecionou.
+
+**Onde os dados do Dispositivo ficam?**
+A resposta traz os campos `"device_id"` e `"device_name"`. O utilizador de API só tem acesso à associação do backup à identidade do dispositivo. Detalhes confidenciais de rede são bloqueados de forma sistêmica.
+    """
+)
 def list_group_backups(
     group_id: str,
     page: int = Query(1, ge=1),
@@ -90,6 +141,7 @@ def list_group_backups(
 
     Por padrão retorna apenas backups com `status=success`.
     Não expõe IPs, credenciais ou dados sensíveis dos dispositivos.
+    A resposta inclui o `id` do backup (usado para download), `device_name`, `device_id`, status e outros metadados.
     """
     try:
         gid = uuid.UUID(group_id)
@@ -133,6 +185,7 @@ def list_group_backups(
         "items": [
             {
                 "id": str(b.id),
+                "device_id": str(b.device.id) if b.device else None,
                 "device_name": b.device.name if b.device else None,
                 "status": b.status_value,
                 "file_size_bytes": b.file_size_bytes,
@@ -149,7 +202,17 @@ def list_group_backups(
 # 3. GET /backups/{backup_id}/download — Download do Arquivo de Backup
 # ---------------------------------------------------------------------------
 
-@router.get("/backups/{backup_id}/download", summary="Download do arquivo de backup")
+@router.get(
+    "/backups/{backup_id}/download", 
+    summary="3. Fazer o Download do Arquivo ",
+    description="""
+**Objetivo:** Baixar diretamente o arquivo binário do seu backup recém-extraído.
+    
+**Regras:**
+* Apenas IDs de backups marcados com a propriedade `"status": "success"` gerarão o arquivo completo.
+* Insira o `"id"` do backup da etapa anterior no parâmetro `backup_id`.
+    """
+)
 def download_backup(
     backup_id: str,
     tenant: Tenant = Depends(get_current_api_tenant),

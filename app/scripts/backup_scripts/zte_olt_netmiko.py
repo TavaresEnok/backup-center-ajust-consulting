@@ -4,19 +4,56 @@ import time
 
 import pexpect
 
-from script_helpers import BackupLogger, prepare_backup_path, open_pexpect_session, close_pexpect_session
+from script_helpers import (
+    BackupLogger,
+    friendly_failure_message,
+    friendly_unexpected_error,
+    prepare_backup_path,
+    open_pexpect_session,
+    close_pexpect_session,
+)
 
-PROMPT_ANY_LINE = r"(?m)^(?:<[^>\r\n]+>|\S+[>#\]])\s*$"
+PROMPT_HOST_RE = r"[A-Za-z0-9][A-Za-z0-9_.:/-]*"
+PROMPT_ANY_LINE = rf"(?m)^(?:<{PROMPT_HOST_RE}>|{PROMPT_HOST_RE}(?:\([^\r\n)]*\))?[>#])\s*$"
 PAGER_RE = r"--More--|---- More ----|\[More\]|<--- More --->|Press any key|\s+More\s*\( Press 'Q' to break \)"
+STANDALONE_COLON_PROMPT_RE = r"(?mi)^(?:[A-Za-z0-9 _/\-]{1,40}:)\s*$"
 
 ERROR_MARKERS = (
     "unknown command",
+    "invalid command",
     "invalid input",
     "incomplete command",
     "parameter error",
     "unrecognized",
     "error 20200",
 )
+
+CONFIG_MARKERS = (
+    "interface ",
+    "pon-onu-mng",
+    "pon-onu",
+    "gpon-olt",
+    "epon-olt",
+    "vlan ",
+    "service-port",
+    "hostname ",
+    "username ",
+    "ip route",
+    "interface vport",
+    "config-version",
+    "timestamp_write:",
+    "operator-mode",
+    "tacacs-server",
+    "alarm enable",
+    "crtv disable",
+    "load-balance enable",
+    "\nend",
+)
+WEAK_CONFIG_MARKERS = (
+    "hostname ",
+    "login authentication",
+)
+MIN_MEANINGFUL_CONFIG_LEN = 500
 
 
 def _ssh_command(ip: str, usuario: str, porta: int) -> str:
@@ -41,9 +78,74 @@ def _clean(text: str) -> str:
     return text
 
 
+def _coerce_text(value) -> str:
+    if isinstance(value, str):
+        return value
+    if value is None:
+        return ""
+    try:
+        return str(value)
+    except Exception:
+        return ""
+
+
+def _drain_pending(child, max_reads: int = 8) -> None:
+    """Remove prompt/eco atrasado antes de enviar o próximo comando."""
+    for _ in range(max_reads):
+        try:
+            pending = child.read_nonblocking(size=65535, timeout=0)
+        except (pexpect.TIMEOUT, EOFError, OSError):
+            break
+        except Exception:
+            break
+        if not pending:
+            break
+
+
 def _looks_invalid(output: str) -> bool:
     low = (output or "").lower()
     return any(marker in low for marker in ERROR_MARKERS)
+
+
+def _diagnostic_preview(output: str, limit: int = 180) -> str:
+    text = _clean(output or "")
+    text = re.sub(r"(?i)(password|passwd|community|secret)\s+\S+", r"\1 ***", text)
+    text = re.sub(r"\s+", " ", text).strip()
+    if len(text) > limit:
+        return text[:limit].rstrip() + "..."
+    return text
+
+
+def _looks_meaningful_config(output: str) -> bool:
+    txt = _clean(output or "").strip()
+    if not txt:
+        return False
+    low = txt.lower()
+
+    if _looks_invalid(low):
+        return False
+
+    strong_markers = [marker for marker in CONFIG_MARKERS if marker not in WEAK_CONFIG_MARKERS]
+    strong_count = sum(1 for marker in strong_markers if marker in low)
+    weak_count = sum(1 for marker in WEAK_CONFIG_MARKERS if marker in low)
+
+    if strong_count >= 3 and len(txt) >= 80:
+        return True
+    if strong_count >= 2 and len(txt) >= MIN_MEANINGFUL_CONFIG_LEN:
+        return True
+    if re.search(r"(?m)^\s*end\s*$", low) and strong_count >= 1:
+        return True
+    if len(txt) >= 2000 and strong_count >= 1:
+        return True
+
+    lines = [line.strip() for line in txt.splitlines() if line.strip()]
+    if len(lines) >= 20 and strong_count >= 1:
+        return True
+
+    # Hostname/login isolados aparecem em retorno parcial do "show config" em alguns ZTE.
+    if weak_count and not strong_count:
+        return False
+    return False
 
 
 def _login(child, usuario: str, password: str, timeout: int = 25) -> bool:
@@ -100,6 +202,7 @@ def _try_enable(child, secrets: List[str], timeout: int = 10) -> bool:
 
 
 def _send_collect(child, command: str, timeout_seconds: int = 420):
+    _drain_pending(child)
     child.sendline(command)
     deadline = time.time() + timeout_seconds
     chunks = []
@@ -113,13 +216,13 @@ def _send_collect(child, command: str, timeout_seconds: int = 420):
             [
                 PROMPT_ANY_LINE,
                 PAGER_RE,
-                r":",
+                STANDALONE_COLON_PROMPT_RE,
                 pexpect.TIMEOUT,
                 pexpect.EOF,
             ],
             timeout=max(5, min(25, rem)),
         )
-        chunks.append(child.before or "")
+        chunks.append(_coerce_text(child.before))
 
         if idx == 0:
             return True, _clean("".join(chunks))
@@ -130,8 +233,11 @@ def _send_collect(child, command: str, timeout_seconds: int = 420):
             child.sendline("")
             continue
         if idx == 3:
+            if int(deadline - time.time()) > 0:
+                continue
             return False, _clean("".join(chunks))
         if idx == 4:
+            chunks.append(_coerce_text(child.after))
             return True, _clean("".join(chunks))
 
 
@@ -178,14 +284,15 @@ def realizar_backup(
         )
 
         if not _login(child, usuario, password, timeout=28):
-            msg = "A conexao foi fechada ou as credenciais estao incorretas."
+            msg = friendly_failure_message("AUTENTICACAO")
             logger.emit(msg, "error")
             return (False, msg, None, "AUTENTICACAO")
 
         logger.emit("Login concluido.", "success")
 
         logger.emit("Etapa 2/3: Preparando sessao...")
-        _try_enable(child, secrets, timeout=10)
+        if not _try_enable(child, secrets, timeout=10):
+            logger.emit("Modo privilegiado nao confirmado; seguindo no modo atual.", "warning")
 
         # Melhora compatibilidade em firmwares ZTE diferentes
         for cmd in ("terminal length 0", "screen-length 0 temporary", "no page"):
@@ -195,8 +302,9 @@ def realizar_backup(
 
         logger.emit("Etapa 3/3: Coletando configuracao...")
         commands = [
-            "show startup-config",
             "show running-config",
+            "show startup-config",
+            "show running-config all",
             "show configuration",
             "display current-configuration",
             "show config",
@@ -204,22 +312,35 @@ def realizar_backup(
 
         best = ""
         used = None
+        best_valid = False
         for cmd in commands:
             ok, out = _send_collect(child, cmd, timeout_seconds=600)
             txt = (out or "").strip()
+            txt = re.sub(r"^.*?" + re.escape(cmd).replace("\\ ", r"\\s+") + r"\s*", "", txt, flags=re.S).strip()
+
+            invalid = _looks_invalid(txt)
+            meaningful = _looks_meaningful_config(txt)
+            preview = _diagnostic_preview(txt) if not meaningful and len(txt) <= 300 else ""
+            preview_suffix = f" preview={preview!r}" if preview else ""
+            logger.emit(
+                f"Diagnostico comando '{cmd}': ok={ok} len={len(txt)} "
+                f"invalid={invalid} meaningful={meaningful}{preview_suffix}"
+            )
+
             if not txt:
                 continue
 
-            txt = re.sub(r"^.*?" + re.escape(cmd).replace("\\ ", r"\\s+") + r"\s*", "", txt, flags=re.S).strip()
-
-            if not _looks_invalid(txt) and len(txt) > len(best):
+            if not invalid and len(txt) > len(best):
                 best = txt
                 used = cmd
-            if not _looks_invalid(txt) and len(txt) >= 200:
+                best_valid = meaningful
+            if not invalid and meaningful:
                 break
 
-        if len(best) < 120:
+        if not best_valid:
             msg = "Configuracao retornada muito curta/vazia."
+            if used:
+                msg = f"{msg} Ultimo comando util: {used}."
             logger.emit(msg, "error")
             return (False, msg, None, "SCRIPT")
 
@@ -232,11 +353,11 @@ def realizar_backup(
         logger.emit(msg, "success")
         return (True, msg, backup_path)
     except pexpect.TIMEOUT:
-        msg = "Timeout durante execucao do backup na OLT ZTE."
+        msg = friendly_failure_message("TIMEOUT")
         logger.emit(msg, "error")
         return (False, msg, None, "TIMEOUT")
     except Exception as exc:
-        msg = f"Falha inesperada durante o backup: {exc}"
+        msg = friendly_unexpected_error(exc)
         logger.emit(msg, "error")
         return (False, msg, None, "SCRIPT")
     finally:

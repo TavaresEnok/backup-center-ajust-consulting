@@ -8,7 +8,7 @@ from app.services.realtime_backup_logs import get_redis_client
 
 
 METRIC_PREFIX = "backup_center:metrics"
-QUEUE_NAMES = ("celery", "vpn_queue")
+QUEUE_NAMES = ("celery", "jump_queue", "vpn_queue")
 
 HISTOGRAM_BUCKETS: Dict[str, Tuple[float, ...]] = {
     "backup_task_duration_seconds": (1, 2, 5, 10, 20, 30, 60, 120, 300, 600, 1200),

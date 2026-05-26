@@ -29,7 +29,7 @@
 
     .dark .backup-table th,
     .dark .backup-table td {
-        border-bottom: 1px solid #1e293b;
+        border-bottom: 1px solid var(--card-bg);
     }
 
     .backup-table tr:hover td {
@@ -155,6 +155,15 @@
                     <option value="success" {{ 'selected' if current_status == 'success' else '' }}>Sucesso</option>
                     <option value="failed" {{ 'selected' if current_status == 'failed' else '' }}>Falha</option>
                     <option value="pending" {{ 'selected' if current_status == 'pending' else '' }}>Pendente</option>
+                </select>
+            </div>
+            <div class="flex flex-col gap-1.5 min-w-[130px]">
+                <label class="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wide">Por pagina</label>
+                <select name="per_page"
+                    class="rounded-lg border border-[var(--card-border)] bg-[var(--card-bg)] px-3 py-2 text-sm text-[var(--text-main)]">
+                    <option value="25" {{ 'selected' if per_page == 25 else '' }}>25</option>
+                    <option value="50" {{ 'selected' if per_page == 50 else '' }}>50</option>
+                    <option value="100" {{ 'selected' if per_page == 100 else '' }}>100</option>
                 </select>
             </div>
             <button type="submit"
@@ -304,16 +313,36 @@
     </div>
 
     {% if total_pages > 1 %}
-    <div class="flex items-center justify-between text-sm text-[var(--text-muted)]">
-        <span>Pagina {{ page }} de {{ total_pages }}</span>
-        <div class="flex items-center gap-2">
+    <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between text-sm text-[var(--text-muted)]">
+        <span>
+            Pagina {{ page }} de {{ total_pages }} · {{ total }} backup(s) · {{ per_page }} por pagina
+        </span>
+        <div class="flex flex-wrap items-center gap-2">
             {% if page > 1 %}
-            <a href="{{ url_for('tenant_backups.list_backups', tenant_slug=tenant.slug, page=page-1, device_id=current_device_id, status=current_status) }}"
+            <a href="{{ url_for('tenant_backups.list_backups', tenant_slug=tenant.slug, page=1, per_page=per_page, device_id=current_device_id, status=current_status) }}"
+                class="px-3 py-1 rounded bg-[var(--card-bg)] hover:bg-slate-100 dark:hover:bg-slate-700 transition">Primeira</a>
+            {% endif %}
+            {% if page > 1 %}
+            <a href="{{ url_for('tenant_backups.list_backups', tenant_slug=tenant.slug, page=page-1, per_page=per_page, device_id=current_device_id, status=current_status) }}"
                 class="px-3 py-1 rounded bg-[var(--card-bg)] hover:bg-slate-100 dark:hover:bg-slate-700 transition">Anterior</a>
             {% endif %}
+            {% set p_start = [1, page - 2]|max %}
+            {% set p_end = [total_pages, page + 2]|min %}
+            {% for p in range(p_start, p_end + 1) %}
+                {% if p == page %}
+                <span class="px-3 py-1 rounded bg-blue-500/20 text-blue-400 font-semibold">{{ p }}</span>
+                {% else %}
+                <a href="{{ url_for('tenant_backups.list_backups', tenant_slug=tenant.slug, page=p, per_page=per_page, device_id=current_device_id, status=current_status) }}"
+                    class="px-3 py-1 rounded bg-[var(--card-bg)] hover:bg-slate-100 dark:hover:bg-slate-700 transition">{{ p }}</a>
+                {% endif %}
+            {% endfor %}
             {% if page < total_pages %}
-            <a href="{{ url_for('tenant_backups.list_backups', tenant_slug=tenant.slug, page=page+1, device_id=current_device_id, status=current_status) }}"
+            <a href="{{ url_for('tenant_backups.list_backups', tenant_slug=tenant.slug, page=page+1, per_page=per_page, device_id=current_device_id, status=current_status) }}"
                 class="px-3 py-1 rounded bg-[var(--card-bg)] hover:bg-slate-100 dark:hover:bg-slate-700 transition">Proxima</a>
+            {% endif %}
+            {% if page < total_pages %}
+            <a href="{{ url_for('tenant_backups.list_backups', tenant_slug=tenant.slug, page=total_pages, per_page=per_page, device_id=current_device_id, status=current_status) }}"
+                class="px-3 py-1 rounded bg-[var(--card-bg)] hover:bg-slate-100 dark:hover:bg-slate-700 transition">Ultima</a>
             {% endif %}
         </div>
     </div>

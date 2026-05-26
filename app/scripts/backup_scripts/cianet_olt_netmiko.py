@@ -1,6 +1,37 @@
 from typing import Tuple
 
-from generic_netmiko_profiles import run_profile_backup
+from olt_cli_backup import DEFAULT_PAGING_COMMANDS, OltCliProfile, run_olt_cli_backup
+
+
+CIANET_PROFILE = OltCliProfile(
+    vendor_name="OLT Cianet",
+    paging_commands=DEFAULT_PAGING_COMMANDS,
+    backup_commands=(
+        "show running-config",
+        "show startup-config",
+        "show configuration",
+        "show config",
+        "show running",
+        "display current-configuration",
+    ),
+    config_markers=(
+        "hostname ",
+        "interface ",
+        "vlan ",
+        "ip address",
+        "gpon",
+        "epon",
+        "pon ",
+        "onu ",
+        "ont ",
+        "service-port",
+        "traffic-profile",
+        "line-profile",
+        "profile ",
+        "snmp-server",
+        "end",
+    ),
+)
 
 
 def realizar_backup(
@@ -15,8 +46,8 @@ def realizar_backup(
     backup_base_path: str = None,
     **kwargs,
 ) -> Tuple:
-    return run_profile_backup(
-        profile='olt_generic',
+    return run_olt_cli_backup(
+        profile=CIANET_PROFILE,
         ip=ip,
         usuario=usuario,
         porta=porta,

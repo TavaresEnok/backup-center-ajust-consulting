@@ -4,12 +4,27 @@ import time
 
 import pexpect
 
-from script_helpers import BackupLogger, prepare_backup_path, open_pexpect_session, close_pexpect_session
+from script_helpers import (
+    BackupLogger,
+    friendly_failure_message,
+    friendly_unexpected_error,
+    prepare_backup_path,
+    open_pexpect_session,
+    close_pexpect_session,
+)
 
-PROMPT_ANY_LINE = r"(?m)^(?:<[^>\r\n]+>|\(config\)#|\S+[>#\]])\s*$"
-PROMPT_PRIV_LINE = r"(?m)^(?:\(config\)#|\S+#)\s*$"
-PROMPT_CONFIG_LINE = r"(?m)^\(config\)#\s*$"
+PROMPT_HOST_RE = r"[A-Za-z0-9][A-Za-z0-9_.:/-]*"
+CONFIG_TAG_NAMES_RE = (
+    r"(?:pre|global|device|public|vlan|emu|bbs|sysmode|config|aaa|mcu|meth|null|loopback|"
+    r"post-system|prevlanif|preloopback|vlanif|gpon)(?:-[^>\r\n]+)?"
+)
+PROMPT_ANGLE_LINE = rf"<(?!/?{CONFIG_TAG_NAMES_RE}>)[^>\r\n]+>"
+PROMPT_ANY_LINE = rf"(?m)^(?:{PROMPT_ANGLE_LINE}|{PROMPT_HOST_RE}(?:\(config[^\r\n)]*\))?[>#]|\(config[^\r\n)]*\)#)\s*$"
+PROMPT_PRIV_LINE = rf"(?m)^(?:{PROMPT_HOST_RE}(?:\(config[^\r\n)]*\))?#|\(config[^\r\n)]*\)#)\s*$"
+PROMPT_CONFIG_LINE = rf"(?m)^(?:{PROMPT_HOST_RE})?\(config[^\r\n)]*\)#\s*$"
+PROMPT_COMMAND_LINE = rf"(?m)^(?:{PROMPT_ANGLE_LINE}|{PROMPT_HOST_RE}(?:\(config[^\r\n)]*\))?[>#])\s*$"
 PAGER_RE = r"--More--|---- More ----|\[More\]|<--- More --->|Press any key|\s+More\s*\( Press 'Q' to break \)"
+INTERACTIVE_CONFIRM_RE = r"(?m)^\s*\{[^\r\n}]*(?:<cr>|<K>)[^\r\n}]*\}\s*:?\s*$"
 
 ERROR_MARKERS = (
     "unknown command",
@@ -20,6 +35,20 @@ ERROR_MARKERS = (
     "error locates at '^'",
 )
 
+CONFIG_MARKERS = (
+    "sysname",
+    "interface",
+    "vlan",
+    "service-port",
+    "ont-lineprofile",
+    "ont-srvprofile",
+    "gpon",
+    "return",
+)
+
+MIN_FULL_CONFIG_LEN = 800
+FULL_CONFIG_TIMEOUT_SECONDS = 1200
+
 CONNECTION_MARKERS = (
     "timeout",
     "timed out",
@@ -28,6 +57,8 @@ CONNECTION_MARKERS = (
     "no route to host",
     "network is unreachable",
     "error reading ssh protocol banner",
+    "eof",
+    "connection closed",
     "timeout opening channel",
     "sessao com jump host encerrada",
     "sessão com jump host encerrada",
@@ -74,6 +105,43 @@ def _looks_invalid(output: str) -> bool:
     return any(marker in low for marker in ERROR_MARKERS)
 
 
+def _looks_like_config(output: str) -> bool:
+    low = (output or "").lower()
+    if _looks_invalid(low):
+        return False
+    if "<pre-config>" in low and "sysname" not in low:
+        return False
+
+    marker_count = sum(1 for marker in CONFIG_MARKERS if marker in low)
+    if len(low) >= MIN_FULL_CONFIG_LEN and marker_count >= 1:
+        return True
+    if "sysname" in low and any(marker in low for marker in ("interface", "vlan", "service-port", "gpon", "return")):
+        return True
+    if "service-port" in low and any(marker in low for marker in ("gpon", "vlan", "ont-lineprofile", "ont-srvprofile")):
+        return True
+    if any(marker in low for marker in ("ont-lineprofile", "ont-srvprofile")) and "gpon" in low:
+        return True
+    return False
+
+
+def _has_config_terminator(output: str) -> bool:
+    return bool(re.search(r"(?im)^\s*return\s*$", output or ""))
+
+
+def _is_complete_config_output(command_ok: bool, output: str) -> bool:
+    return bool(output and (command_ok or _has_config_terminator(output)))
+
+
+def _strip_command_noise(output: str, command: str) -> str:
+    text = _clean_terminal_text(output or "").strip()
+    if command and text.startswith(command):
+        text = text[len(command) :].lstrip()
+    if command:
+        text = re.sub(rf"(?is)^Command:\s*\n\s*{re.escape(command)}\s*\n", "", text, count=1).lstrip()
+    text = re.sub(PROMPT_COMMAND_LINE, "", text).strip()
+    return text
+
+
 def _coerce_pexpect_text(value) -> str:
     if isinstance(value, str):
         return value
@@ -94,6 +162,14 @@ def _failure_category_from_reason(reason: str | None) -> str:
     if any(marker in text for marker in AUTH_MARKERS):
         return "AUTENTICACAO"
     return "SCRIPT"
+
+
+def _login_failure_text(child, fallback: str) -> str:
+    text = _clean_terminal_text(_coerce_pexpect_text(getattr(child, "before", "")))
+    text = re.sub(r"\s+", " ", text).strip()
+    if text:
+        return text
+    return fallback
 
 
 def _login(
@@ -122,6 +198,7 @@ def _login(
                 refused_prompt,
                 r"(?i)(press\s+enter|pressione\s+enter|any key to continue)",
                 PROMPT_ANY_LINE,
+                r"(?m)^%\s*$",
                 pexpect.TIMEOUT,
                 pexpect.EOF,
             ],
@@ -138,17 +215,39 @@ def _login(
             continue
         if idx == 3:
             last_reason = _clean_terminal_text(_coerce_pexpect_text(child.after) + _coerce_pexpect_text(child.before))
+            try:
+                child.sendline("")
+                continue
+            except Exception:
+                pass
             return False, last_reason or "Conexao recusada pelo destino."
         if idx == 4:
             child.sendline("")
             continue
         if idx == 5:
             return True, ""
-        if idx in (6, 7):
-            last_reason = _clean_terminal_text(_coerce_pexpect_text(child.before) + _coerce_pexpect_text(child.after))
+        if idx == 6:
             child.sendline("")
             continue
+        if idx == 7:
+            last_reason = _login_failure_text(child, "Timeout aguardando banner/login do equipamento.")
+            child.sendline("")
+            continue
+        if idx == 8:
+            last_reason = _login_failure_text(child, "Conexao encerrada antes do equipamento apresentar login/banner.")
+            return False, last_reason
     return False, (last_reason or "Nao foi possivel completar autenticacao dentro do tempo limite.")
+
+
+def _is_pre_login_close(reason: str) -> bool:
+    low = (reason or "").lower()
+    return (
+        "conexao encerrada antes" in low
+        or "connection closed" in low
+        or "closed by remote host" in low
+        or "eof" in low
+        or "error reading ssh protocol banner" in low
+    )
 
 
 def _try_enable(child, secrets: List[str], timeout: int = 12) -> bool:
@@ -185,26 +284,27 @@ def _send_and_collect(child, command: str, timeout_seconds: int = 420):
 
         idx = child.expect(
             [
-                PROMPT_ANY_LINE,
+                PROMPT_COMMAND_LINE,
                 PAGER_RE,
-                r":",
+                INTERACTIVE_CONFIRM_RE,
                 pexpect.TIMEOUT,
                 pexpect.EOF,
             ],
-            timeout=max(5, min(25, remaining)),
+            timeout=max(10, min(45, remaining)),
         )
-        chunks.append(child.before or "")
+        chunks.append(_coerce_pexpect_text(child.before))
 
         if idx == 0:
             return True, _clean_terminal_text("".join(chunks))
         if idx == 1:
             child.send(" ")
+            time.sleep(0.05)
             continue
         if idx == 2:
             child.sendline("")
             continue
         if idx == 3:
-            return False, _clean_terminal_text("".join(chunks))
+            continue
         if idx == 4:
             return True, _clean_terminal_text("".join(chunks))
 
@@ -252,16 +352,37 @@ def realizar_backup(
             codec_errors="ignore",
             logger=logger,
         )
+        try:
+            child.maxread = max(int(getattr(child, "maxread", 0) or 0), 65536)
+        except Exception:
+            pass
 
         ok_login, login_reason = _login(child, usuario, password, timeout=28)
+        if not ok_login and use_telnet and _is_pre_login_close(login_reason):
+            close_pexpect_session(child)
+            child = None
+            logger.emit(
+                "TELNET abriu mas encerrou antes do login; tentando SSH na mesma porta.",
+                "warning",
+            )
+            child = open_pexpect_session(
+                _ssh_command(ip, usuario, porta),
+                jump_host=jump_host,
+                timeout=35,
+                encoding="utf-8",
+                codec_errors="ignore",
+                logger=logger,
+            )
+            try:
+                child.maxread = max(int(getattr(child, "maxread", 0) or 0), 65536)
+            except Exception:
+                pass
+            ok_login, ssh_reason = _login(child, usuario, password, timeout=28)
+            if not ok_login:
+                login_reason = f"TELNET: {login_reason}; SSH mesma porta: {ssh_reason}"
         if not ok_login:
             category = _failure_category_from_reason(login_reason)
-            if category == "CONEXAO":
-                msg = "Falha de conectividade com o dispositivo."
-            else:
-                msg = "A conexao foi fechada, recusada ou as credenciais estao incorretas."
-            if login_reason:
-                msg = f"{msg} Detalhe: {login_reason}"
+            msg = friendly_failure_message(category, login_reason)
             logger.emit(msg, "error")
             return (False, msg, None, category)
 
@@ -274,65 +395,86 @@ def realizar_backup(
         else:
             logger.emit("Enable nao confirmado; seguindo no modo atual.", "warning")
 
-        # tenta entrar em config quando possivel (nao bloqueia se nao der)
-        in_config = False
+        # Alguns firmwares Huawei entregam a configuracao completa e sem formatacao quebrada no modo config.
         child.sendline("config")
         idx = child.expect([PROMPT_CONFIG_LINE, PROMPT_PRIV_LINE, PROMPT_ANY_LINE, pexpect.TIMEOUT, pexpect.EOF], timeout=12)
         if idx == 0:
-            in_config = True
+            logger.emit("Modo config confirmado.")
 
         # desativa paginacao sem travar se comando nao existir
-        for cmd in ("screen-length 0 temporary", "terminal length 0", "scroll"):
+        for cmd in ("screen-length 0 temporary", "terminal length 0", "scroll", "scroll 0"):
             ok, out = _send_and_collect(child, cmd, timeout_seconds=25)
-            if ok and ":" not in out:
-                if not _looks_invalid(out):
-                    break
+            if ok and not _looks_invalid(out):
+                logger.emit(f"Paginacao preparada com: {cmd}")
+                break
+
+        # Usado nos scripts antigos para preservar a saida original em alguns MA56xx/MA58xx.
+        ok_mmi, out_mmi = _send_and_collect(child, "mmi-mode original-output", timeout_seconds=25)
+        if ok_mmi and not _looks_invalid(out_mmi):
+            logger.emit("Modo de saida original habilitado para esta sessao.")
 
         logger.emit("Etapa 3/3: Coletando configuracao...")
         commands = [
             "display current-configuration",
-            "display current-configuration simple",
-            "display current-configuration all",
             "display saved-configuration",
+            "display current-configuration simple",
             "display startup",
+            "display current-configuration all",
             "show running-config",
             "show startup-config",
         ]
 
-        best_valid = ""
-        used_valid = None
+        best_usable = ""
+        used_usable = None
         best_any = ""
         used_any = None
+        incomplete_candidates = []
         for cmd in commands:
-            ok, out = _send_and_collect(child, cmd, timeout_seconds=480)
-            txt = (out or "").strip()
+            ok, out = _send_and_collect(child, cmd, timeout_seconds=FULL_CONFIG_TIMEOUT_SECONDS)
+            txt = _strip_command_noise(out, cmd)
             if not txt:
                 continue
 
             invalid = _looks_invalid(txt)
-            logger.emit(f"Diagnostico comando '{cmd}': ok={ok} len={len(txt)} invalid={invalid}")
+            complete = _is_complete_config_output(ok, txt)
+            has_return = _has_config_terminator(txt)
+            logger.emit(
+                f"Diagnostico comando '{cmd}': ok={ok} len={len(txt)} "
+                f"invalid={invalid} complete={complete} return={has_return}"
+            )
 
             if len(txt) > len(best_any):
                 best_any = txt
                 used_any = cmd
 
-            if not invalid and len(txt) > len(best_valid):
-                best_valid = txt
-                used_valid = cmd
+            if not invalid and _looks_like_config(txt) and not complete:
+                incomplete_candidates.append((cmd, len(txt)))
+                logger.emit(
+                    f"Ignorando retorno incompleto de '{cmd}' ({len(txt)} caracteres).",
+                    "warning",
+                )
+                continue
 
-            if not invalid and len(txt) >= 200:
+            if complete and not invalid and _looks_like_config(txt) and len(txt) > len(best_usable):
+                best_usable = txt
+                used_usable = cmd
+
+            if complete and not invalid and _looks_like_config(txt):
                 break
 
-        selected = best_valid
-        used = used_valid
+        selected = best_usable
+        used = used_usable
         # fallback para firmwares que misturam mensagens de erro e config no mesmo bloco
-        if len(selected) < 80 and len(best_any) >= 300:
+        if len(selected) < 80 and len(best_any) >= 300 and _looks_like_config(best_any) and _has_config_terminator(best_any):
             selected = best_any
             used = used_any
             logger.emit("Usando fallback do maior retorno bruto por firmware legado.", "warning")
 
-        if len(selected) < 80:
-            msg = "Falha critica durante o backup: Configuracao retornada muito curta/vazia."
+        if not _looks_like_config(selected):
+            msg = "Falha durante a coleta do backup: configuracao retornada muito curta/vazia."
+            if incomplete_candidates:
+                detail = ", ".join(f"{cmd}={size}" for cmd, size in incomplete_candidates[-3:])
+                msg = f"{msg} Retornos incompletos ignorados: {detail}."
             logger.emit(msg, "error")
             return (False, msg, None, "SCRIPT")
 
@@ -351,9 +493,9 @@ def realizar_backup(
     except Exception as exc:
         category = _failure_category_from_reason(str(exc))
         if category == "CONEXAO":
-            msg = f"Falha de conectividade com o dispositivo. Detalhe: {exc}"
+            msg = friendly_failure_message(category, str(exc))
         else:
-            msg = f"Falha critica durante o backup: {exc}"
+            msg = friendly_unexpected_error(exc)
         logger.emit(msg, "error")
         return (False, msg, None, category)
     finally:

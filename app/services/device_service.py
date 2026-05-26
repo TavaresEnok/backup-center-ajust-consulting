@@ -1,3 +1,5 @@
+from collections import Counter
+
 from sqlalchemy import asc, desc, nullslast, or_
 from sqlalchemy.orm import Session, joinedload
 from app.models.device import Device
@@ -7,12 +9,50 @@ from app.models.schedule import Schedule
 from app.models.tenant import Tenant
 from app.core.security import encrypt_password, decrypt_password
 from app.services.plan_limits_service import PlanLimitsService
+from app.services.schedule_utils import compute_next_daily_run_at, sanitize_daily_time
 from datetime import datetime
 import uuid
 from typing import List, Optional, Dict, Any
 
 
 class DeviceService:
+    @staticmethod
+    def _infer_tenant_daily_schedule_time(db: Session, tenant_id: uuid.UUID) -> str:
+        rows = (
+            db.query(Schedule.time)
+            .join(Device, Device.id == Schedule.device_id)
+            .filter(
+                Device.tenant_id == tenant_id,
+                Device.is_active.isnot(False),
+                Device.backup_scheduled == True,
+                Schedule.is_active == True,
+                Schedule.time.isnot(None),
+            )
+            .all()
+        )
+        times = [sanitize_daily_time(row[0]) for row in rows if row and row[0]]
+        if times:
+            return Counter(times).most_common(1)[0][0]
+        return "02:00"
+
+    @staticmethod
+    def _ensure_global_daily_schedule(db: Session, device: Device) -> None:
+        from app.models.schedule import Schedule, ScheduleFrequency
+
+        schedule = db.query(Schedule).filter(Schedule.device_id == device.id).first()
+        inferred_time = DeviceService._infer_tenant_daily_schedule_time(db, device.tenant_id)
+
+        if not schedule:
+            schedule = Schedule(device_id=device.id)
+            db.add(schedule)
+
+        schedule.frequency = ScheduleFrequency.DAILY
+        schedule.time = inferred_time
+        schedule.day_of_week = None
+        schedule.day_of_month = None
+        schedule.is_active = True
+        schedule.next_run_at = compute_next_daily_run_at(inferred_time)
+
     @staticmethod
     def create_device(db: Session, tenant_id: uuid.UUID, data: dict) -> Device:
         PlanLimitsService.ensure_schema()
@@ -68,16 +108,8 @@ class DeviceService:
         db.commit()
         db.refresh(device)
 
-        # Criar Schedule se solicitado
         if device.backup_scheduled:
-            from app.models.schedule import Schedule, ScheduleFrequency
-            new_schedule = Schedule(
-                device_id=device.id,
-                frequency=data.get('schedule_frequency', 'daily'),
-                time=data.get('schedule_time', '00:00'),
-                is_active=True
-            )
-            db.add(new_schedule)
+            DeviceService._ensure_global_daily_schedule(db, device)
             db.commit()
 
         return device
@@ -256,25 +288,13 @@ class DeviceService:
         db.commit()
         db.refresh(device)
 
-        # Atualizar ou Criar Schedule
-        from app.models.schedule import Schedule
-        schedule = db.query(Schedule).filter(Schedule.device_id == device.id).first()
-
         if device.backup_scheduled:
-            if not schedule:
-                schedule = Schedule(device_id=device.id)
-                db.add(schedule)
-            
-            # Atualizar parametros se vierem no data
-            if 'schedule_frequency' in data:
-                schedule.frequency = data['schedule_frequency']
-            if 'schedule_time' in data:
-                schedule.time = data['schedule_time']
-            
-            schedule.is_active = True
+            DeviceService._ensure_global_daily_schedule(db, device)
         else:
+            from app.models.schedule import Schedule
+            schedule = db.query(Schedule).filter(Schedule.device_id == device.id).first()
             if schedule:
-                schedule.is_active = False # Ou deletar? Melhor manter histórico/inativo
+                schedule.is_active = False
 
         db.commit()
         return device

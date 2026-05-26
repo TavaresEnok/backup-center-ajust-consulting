@@ -1,0 +1,13 @@
+#!/usr/bin/expect -f
+set timeout 5
+spawn su - root
+expect {
+    "Senha:" { send "asdSD@91582685\r" }
+    "Password:" { send "asdSD@91582685\r" }
+}
+expect {
+    "falha" { exit 1 }
+    "failure" { exit 1 }
+    "#" { exit 0 }
+    timeout { exit 1 }
+}

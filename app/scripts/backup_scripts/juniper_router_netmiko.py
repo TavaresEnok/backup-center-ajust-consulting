@@ -1,7 +1,7 @@
 import os
 from typing import Tuple
 from netmiko import ConnectHandler
-from script_helpers import BackupLogger, prepare_backup_path
+from script_helpers import BackupLogger, friendly_unexpected_error, prepare_backup_path
 
 def realizar_backup(ip: str, usuario: str, porta: int, nome_provedor: str, nome_tipo_equip: str,
                       nome_dispositivo: str, parametros: dict = None, task_id: str = None, 
@@ -53,6 +53,6 @@ def realizar_backup(ip: str, usuario: str, porta: int, nome_provedor: str, nome_
             return (True, msg, caminho_local)
             
     except Exception as e:
-        msg = f"Erro iteragindo com o equipamento: {e}"
+        msg = friendly_unexpected_error(e)
         logger.emit(msg, 'error')
         return (False, msg, None, "AUTENTICACAO" if "auth" in str(e).lower() else "SCRIPT")

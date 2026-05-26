@@ -19,7 +19,11 @@
             --shell-border: rgba(148, 163, 184, 0.24);
             --panel: rgba(10, 24, 42, 0.7);
             --line: rgba(148, 163, 184, 0.2);
-            --text-main: #e2e8f0;
+            /* Auth pages always have a dark background — override theme vars */
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            --bg-app: #06111f;
+            --card-border: rgba(148, 163, 184, 0.25);
         }
 
         body {
@@ -51,8 +55,8 @@
         <div class="auth-shell w-full max-w-2xl rounded-3xl overflow-hidden p-7 sm:p-9 lg:p-10">
             <header>
                 <p class="text-xs uppercase tracking-[0.2em] text-cyan-300/90">Seguranca adicional</p>
-                <h1 class="mt-2 text-2xl sm:text-3xl font-bold text-slate-100">Configurar autenticacao em 2 fatores</h1>
-                <p class="mt-2 text-sm text-slate-300/90">Conta: <span class="font-semibold">{{ email }}</span></p>
+                <h1 class="mt-2 text-2xl sm:text-3xl font-bold text-[var(--text-main)]">Configurar autenticacao em 2 fatores</h1>
+                <p class="mt-2 text-sm text-[var(--text-main)]/90">Conta: <span class="font-semibold">{{ email }}</span></p>
             </header>
 
             {% with messages = get_flashed_messages(with_categories=true) %}
@@ -68,8 +72,8 @@
             {% endwith %}
 
             <section class="panel rounded-2xl p-5 mt-6 space-y-4">
-                <p class="text-sm text-slate-300">1. Adicione uma conta no app autenticador (Google Authenticator, Microsoft Authenticator, Authy).</p>
-                <p class="text-sm text-slate-300">2. Escaneie o QR Code (ou use a chave manual abaixo) e informe o codigo de 6 digitos.</p>
+                <p class="text-sm text-[var(--text-main)]">1. Adicione uma conta no app autenticador (Google Authenticator, Microsoft Authenticator, Authy).</p>
+                <p class="text-sm text-[var(--text-main)]">2. Escaneie o QR Code (ou use a chave manual abaixo) e informe o codigo de 6 digitos.</p>
 
                 <div class="flex justify-center">
                     <div class="bg-white p-3 rounded-2xl border border-slate-300/30">
@@ -78,10 +82,10 @@
                 </div>
 
                 <div>
-                    <label class="text-xs uppercase tracking-wide text-slate-400">Chave secreta</label>
+                    <label class="text-xs uppercase tracking-wide text-[var(--text-muted)]">Chave secreta</label>
                     <div class="mt-1 flex items-center gap-2">
                         <input id="secret" type="text" readonly value="{{ secret }}"
-                            class="w-full h-11 px-3 rounded-xl bg-slate-950/55 border border-slate-700 text-slate-100" />
+                            class="w-full h-11 px-3 rounded-xl bg-[var(--bg-app)]/55 border border-[var(--card-border)] text-[var(--text-main)]" />
                         <button type="button"
                             @click="navigator.clipboard.writeText(document.getElementById('secret').value); copied=true; setTimeout(() => copied=false, 1800)"
                             class="h-11 px-4 rounded-xl border border-cyan-300/30 text-cyan-200 hover:bg-cyan-400/10 transition">Copiar</button>
@@ -89,19 +93,19 @@
                     <p x-show="copied" x-transition class="text-xs text-emerald-300 mt-1">Chave copiada.</p>
                 </div>
 
-                <details class="text-xs text-slate-400">
-                    <summary class="cursor-pointer select-none text-slate-300">URI manual (otpauth)</summary>
+                <details class="text-xs text-[var(--text-muted)]">
+                    <summary class="cursor-pointer select-none text-[var(--text-main)]">URI manual (otpauth)</summary>
                     <textarea readonly rows="3"
-                        class="mt-2 w-full rounded-xl bg-slate-950/55 border border-slate-700 text-slate-200 p-2">{{ otp_uri }}</textarea>
+                        class="mt-2 w-full rounded-xl bg-[var(--bg-app)]/55 border border-[var(--card-border)] text-[var(--text-main)] p-2">{{ otp_uri }}</textarea>
                 </details>
             </section>
 
             <form action="{{ url_for('auth.two_factor_setup') }}" method="POST" class="mt-6 space-y-4">
                 {% include 'partials/csrf.html' %}
                 <div class="space-y-1.5">
-                    <label for="code" class="text-sm font-medium text-slate-200">Codigo de verificacao (6 digitos)</label>
+                    <label for="code" class="text-sm font-medium text-[var(--text-main)]">Codigo de verificacao (6 digitos)</label>
                     <input id="code" name="code" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" required
-                        class="w-full h-12 px-4 rounded-xl bg-slate-950/55 border border-slate-700 text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-400/40 focus:border-cyan-300 transition"
+                        class="w-full h-12 px-4 rounded-xl border border-slate-600/60 bg-slate-800/80 text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-400/40 focus:border-cyan-300 transition"
                         placeholder="000000" />
                 </div>
 
@@ -116,7 +120,7 @@
             <form action="{{ url_for('auth.two_factor_cancel') }}" method="POST" class="mt-3">
                 {% include 'partials/csrf.html' %}
                 <button type="submit"
-                    class="h-11 px-4 rounded-xl border border-slate-600 text-slate-300 hover:bg-slate-800/60 transition">Cancelar e voltar ao login</button>
+                    class="h-11 px-4 rounded-xl border border-slate-600 text-[var(--text-main)] hover:bg-[var(--card-bg)]/60 transition">Cancelar e voltar ao login</button>
             </form>
         </div>
     </main>

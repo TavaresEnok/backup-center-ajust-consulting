@@ -315,13 +315,13 @@
            SIDEBAR V2 (Tenant)
            ------------------------------------------------------------------ */
         .bc-sidebar {
-            background: #0a0f18;
-            border-color: rgba(51, 65, 85, 0.55);
+            background: var(--card-bg);
+            border-color: var(--card-border);
             box-shadow: 4px 0 24px rgba(0, 0, 0, 0.2);
         }
 
         .bc-sidebar-header {
-            border-bottom: 1px solid rgba(51, 65, 85, 0.55);
+            border-bottom: 1px solid var(--card-border);
         }
 
         .bc-brand-icon {
@@ -336,7 +336,7 @@
         }
 
         .bc-brand-title {
-            color: #ffffff;
+            color: var(--text-main);
             font-size: 1.1rem;
             font-weight: 700;
             letter-spacing: -0.01em;
@@ -345,7 +345,7 @@
         .bc-section-title {
             padding: 0 0.75rem;
             margin-bottom: 0.7rem;
-            color: #64748b;
+            color: var(--text-muted);
             font-size: 10px;
             font-weight: 700;
             letter-spacing: 0.12em;
@@ -366,7 +366,7 @@
             border-radius: 0.6rem;
             border: 1px solid transparent;
             padding: 0.62rem 0.75rem;
-            color: #94a3b8;
+            color: var(--text-muted);
             font-size: 0.835rem;
             line-height: 1.2rem;
             transition: all 0.18s ease;
@@ -375,7 +375,7 @@
         .bc-nav-link:hover {
             background: rgba(30, 41, 59, 0.5);
             border-color: rgba(71, 85, 105, 0.5);
-            color: #e2e8f0;
+            color: var(--text-main);
         }
 
         .bc-nav-link.is-active {
@@ -388,12 +388,12 @@
             width: 18px;
             height: 18px;
             flex-shrink: 0;
-            color: #64748b;
+            color: var(--text-muted);
             transition: color 0.18s ease;
         }
 
         .bc-nav-link:hover .bc-nav-icon {
-            color: #cbd5e1;
+            color: var(--text-main);
         }
 
         .bc-nav-link.is-active .bc-nav-icon {
@@ -419,7 +419,7 @@
             display: block;
             border-radius: 0.5rem;
             padding: 0.45rem 0.65rem;
-            color: #64748b;
+            color: var(--text-muted);
             font-size: 0.75rem;
             font-weight: 500;
             transition: all 0.18s ease;
@@ -427,7 +427,7 @@
 
         .bc-sub-link:hover {
             background: rgba(30, 41, 59, 0.45);
-            color: #e2e8f0;
+            color: var(--text-main);
         }
 
         .bc-sub-link.is-active {
@@ -458,8 +458,8 @@
         }
 
         .bc-sidebar-footer {
-            border-top: 1px solid rgba(51, 65, 85, 0.55);
-            background: #0a0f18;
+            border-top: 1px solid var(--card-border);
+            background: var(--card-bg);
         }
 
         .bc-sidebar-toggle {
@@ -469,16 +469,16 @@
             gap: 0.6rem;
             border-radius: 0.6rem;
             border: 1px solid rgba(51, 65, 85, 0.7);
-            background: #111113;
+            background: var(--card-bg);
             padding: 0.62rem 0.8rem;
-            color: #94a3b8;
+            color: var(--text-muted);
             transition: all 0.18s ease;
         }
 
         .bc-sidebar-toggle:hover {
             color: #ffffff;
             border-color: rgba(71, 85, 105, 0.9);
-            background: #1e293b;
+            background: var(--card-bg);
         }
 
         .bc-table-scroll {
@@ -557,7 +557,7 @@
         {% if request.endpoint and ('tenant' in request.endpoint or 'superadmin' in request.endpoint or 'billing' in
         request.endpoint) %}
         <div x-cloak x-show="mobileSidebarOpen" x-transition.opacity
-            class="fixed inset-0 z-40 bg-slate-950/60 lg:hidden"
+            class="fixed inset-0 z-40 bg-[var(--bg-app)]/60 lg:hidden"
             @click="mobileSidebarOpen = false"></div>
         {% endif %}
 

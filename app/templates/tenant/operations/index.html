@@ -11,8 +11,8 @@
   .ops-page {
     margin: -1rem;
     min-height: 100vh;
-    background: #020617;
-    color: #e2e8f0;
+    background: var(--bg-app);
+    color: var(--text-main);
     padding: 1rem;
   }
   @media (min-width: 768px) {
@@ -38,14 +38,14 @@
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: .06em;
-    color: #64748b;
+    color: var(--text-muted);
     margin-bottom: .4rem;
   }
   .ops-breadcrumb span:first-child:hover { color: #818cf8; cursor: pointer; }
 
   .ops-title-row { display: flex; align-items: center; gap: .75rem; }
-  .ops-title { margin: 0; font-size: 1.6rem; font-weight: 800; color: #fff; letter-spacing: -0.02em; }
-  .ops-subtitle { margin: .4rem 0 0; font-size: .92rem; color: #94a3b8; }
+  .ops-title { margin: 0; font-size: 1.6rem; font-weight: 800; color: var(--text-main); letter-spacing: -0.02em; }
+  .ops-subtitle { margin: .4rem 0 0; font-size: .92rem; color: var(--text-muted); }
   .ops-top {
     display: flex;
     flex-direction: column;
@@ -76,8 +76,8 @@
   }
 
   .ops-controls {
-    background: #0f172a;
-    border: 1px solid #1e293b;
+    background: var(--card-bg);
+    border: 1px solid var(--card-bg);
     border-radius: .7rem;
     padding: 1rem;
     display: flex;
@@ -93,19 +93,19 @@
   @media (min-width: 1024px) {
     .ops-search-wrap { width: 24rem; }
   }
-  .ops-search-icon { position: absolute; left: .75rem; top: 50%; transform: translateY(-50%); color: #64748b; width: 1rem; height: 1rem; }
+  .ops-search-icon { position: absolute; left: .75rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); width: 1rem; height: 1rem; }
   .ops-search {
     width: 100%;
-    background: #0a0f18;
-    border: 1px solid #1e293b;
-    color: #e2e8f0;
+    background: var(--card-bg);
+    border: 1px solid var(--card-bg);
+    color: var(--text-main);
     font-size: .875rem;
     border-radius: .45rem;
     padding: .58rem .75rem .58rem 2.2rem;
     outline: none;
     transition: all .15s ease;
   }
-  .ops-search::placeholder { color: #64748b; }
+  .ops-search::placeholder { color: var(--text-muted); }
   .ops-search:focus { border-color: #6366f1; box-shadow: 0 0 0 1px #6366f1; }
 
   .ops-filters {
@@ -115,30 +115,30 @@
     overflow-x: auto;
     padding-bottom: .15rem;
   }
-  .ops-filter-icon { color: #64748b; width: 1rem; height: 1rem; margin-right: .1rem; flex: none; }
-  .ops-filter-divider { width: 1px; height: 1.15rem; background: #1e293b; margin: 0 .25rem; }
+  .ops-filter-icon { color: var(--text-muted); width: 1rem; height: 1rem; margin-right: .1rem; flex: none; }
+  .ops-filter-divider { width: 1px; height: 1.15rem; background: var(--card-bg); margin: 0 .25rem; }
 
   .ops-filter-btn {
     white-space: nowrap;
     border-radius: .38rem;
     border: 1px solid transparent;
     background: transparent;
-    color: #94a3b8;
+    color: var(--text-muted);
     font-size: .75rem;
     font-weight: 700;
     padding: .37rem .72rem;
     cursor: pointer;
     transition: all .15s ease;
   }
-  .ops-filter-btn:hover { background: #1e293b; color: #e2e8f0; }
+  .ops-filter-btn:hover { background: var(--card-bg); color: var(--text-main); }
   .ops-filter-btn.is-active.ops-filter-all,
-  .ops-filter-btn.is-active.ops-filter-no-vpn { background: #334155; border-color: #334155; color: #fff; }
+  .ops-filter-btn.is-active.ops-filter-no-vpn { background: var(--card-border); border-color: var(--card-border); color: var(--text-main); }
   .ops-filter-btn.is-active.ops-filter-active { background: rgba(16,185,129,.2); border-color: rgba(16,185,129,.35); color: #34d399; }
   .ops-filter-btn.is-active.ops-filter-inactive { background: rgba(244,63,94,.2); border-color: rgba(244,63,94,.35); color: #fb7185; }
   .ops-filter-btn.is-active.ops-filter-vpn { background: rgba(99,102,241,.2); border-color: rgba(99,102,241,.35); color: #818cf8; }
   .ops-filter-btn.is-active.ops-filter-jump { background: rgba(14,165,233,.2); border-color: rgba(14,165,233,.35); color: #38bdf8; }
 
-  .ops-visible-count { margin-left: .5rem; white-space: nowrap; font-size: .75rem; font-weight: 600; color: #94a3b8; }
+  .ops-visible-count { margin-left: .5rem; white-space: nowrap; font-size: .75rem; font-weight: 600; color: var(--text-muted); }
 
   .ops-grid {
     display: grid;
@@ -154,16 +154,16 @@
 
   .ops-conn-info {
     margin-top: .8rem;
-    border: 1px solid #1e293b;
+    border: 1px solid var(--card-bg);
     border-radius: .6rem;
-    background: #0a0f18;
+    background: var(--card-bg);
     padding: .85rem;
     display: flex;
     flex: 1;
     align-items: center;
     justify-content: center;
     gap: .55rem;
-    color: #475569;
+    color: var(--card-border);
     font-size: .72rem;
     font-weight: 600;
     text-align: center;
@@ -173,8 +173,8 @@
   .ops-conn-info.vpn { border-color: rgba(99,102,241,.2); border-style: dashed; color: rgba(129,140,248,.6); }
 
   .ops-card {
-    background: #0f172a;
-    border: 1px solid #1e293b;
+    background: var(--card-bg);
+    border: 1px solid var(--card-bg);
     border-radius: .85rem;
     display: flex;
     flex-direction: column;
@@ -188,10 +188,10 @@
   .ops-card-head {
     padding: 1rem 1.25rem;
     border-bottom: 1px solid rgba(30,41,59,.7);
-    background: rgba(15,23,42,.55);
+    background: var(--card-bg);
   }
   .ops-card-title-row { display: flex; align-items: center; gap: .45rem; margin-bottom: .25rem; }
-  .ops-card-title { margin: 0; font-size: 1.05rem; font-weight: 700; color: #fff; letter-spacing: -0.01em; }
+  .ops-card-title { margin: 0; font-size: 1.05rem; font-weight: 700; color: var(--text-main); letter-spacing: -0.01em; }
   .ops-pill-inactive {
     border: 1px solid rgba(244,63,94,.25);
     background: rgba(244,63,94,.12);
@@ -212,9 +212,9 @@
     font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
     letter-spacing: .02em;
     padding: .2rem .5rem;
-    border: 1px solid #334155;
-    background: #1e293b;
-    color: #94a3b8;
+    border: 1px solid var(--card-border);
+    background: var(--card-bg);
+    color: var(--text-muted);
   }
   .ops-type-pill.vpn { border-color: rgba(99,102,241,.28); background: rgba(99,102,241,.12); color: #818cf8; }
   .ops-type-pill.jump { border-color: rgba(14,165,233,.28); background: rgba(14,165,233,.12); color: #38bdf8; }
@@ -224,24 +224,24 @@
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 1px;
-    border: 1px solid #1e293b;
-    background: #1e293b;
+    border: 1px solid var(--card-bg);
+    background: var(--card-bg);
     border-radius: .55rem;
     overflow: hidden;
   }
-  .ops-metric { background: #0a0f18; padding: .62rem; display: flex; flex-direction: column; }
-  .ops-metric-label { font-size: .62rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; margin-bottom: .23rem; color: #64748b; }
-  .ops-metric-value { font-size: 1.25rem; line-height: 1.1; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; color: #fff; }
+  .ops-metric { background: var(--card-bg); padding: .62rem; display: flex; flex-direction: column; }
+  .ops-metric-label { font-size: .62rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; margin-bottom: .23rem; color: var(--text-muted); }
+  .ops-metric-value { font-size: 1.25rem; line-height: 1.1; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; color: var(--text-main); }
   .ops-metric.ok { border-bottom: 2px solid rgba(16,185,129,.55); }
   .ops-metric.ok .ops-metric-label { color: rgba(16,185,129,.75); }
   .ops-metric.ok .ops-metric-value { color: #34d399; }
-  .ops-metric.fail { border-bottom: 2px solid #1e293b; }
+  .ops-metric.fail { border-bottom: 2px solid var(--card-bg); }
   .ops-metric.fail.ops-has-fail { border-bottom-color: rgba(244,63,94,.85); background: rgba(244,63,94,.06); }
-  .ops-metric.fail .ops-metric-label { color: #475569; }
+  .ops-metric.fail .ops-metric-label { color: var(--card-border); }
   .ops-metric.fail.ops-has-fail .ops-metric-label { color: #fb7185; }
-  .ops-metric.fail .ops-metric-value { color: #64748b; }
+  .ops-metric.fail .ops-metric-value { color: var(--text-muted); }
   .ops-metric.fail.ops-has-fail .ops-metric-value { color: #fb7185; font-weight: 700; }
-  .ops-metric.unknown .ops-metric-value { color: #94a3b8; }
+  .ops-metric.unknown .ops-metric-value { color: var(--text-muted); }
 
   .ops-card-note {
     margin-top: .7rem;
@@ -249,7 +249,7 @@
     align-items: center;
     gap: .35rem;
     font-size: .62rem;
-    color: #64748b;
+    color: var(--text-muted);
   }
   .ops-card-note i { width: .9rem; height: .9rem; }
 
@@ -268,9 +268,9 @@
 
   .ops-jump-strip {
     margin-top: .8rem;
-    border: 1px solid #1e293b;
+    border: 1px solid var(--card-bg);
     border-radius: .6rem;
-    background: #0a0f18;
+    background: var(--card-bg);
     padding: .7rem;
     display: grid;
     gap: .55rem;
@@ -290,14 +290,14 @@
     align-items: center;
     gap: .3rem;
     border-radius: 9999px;
-    border: 1px solid #334155;
+    border: 1px solid var(--card-border);
     padding: .22rem .48rem;
     font-size: .62rem;
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: .05em;
-    color: #cbd5e1;
-    background: #0f172a;
+    color: var(--text-main);
+    background: var(--card-bg);
   }
   .ops-jump-chip.good { border-color: rgba(16,185,129,.35); background: rgba(16,185,129,.12); color: #34d399; }
   .ops-jump-chip.warn { border-color: rgba(245,158,11,.35); background: rgba(245,158,11,.12); color: #fbbf24; }
@@ -310,15 +310,15 @@
   }
 
   .ops-jump-stat {
-    border: 1px solid #1e293b;
+    border: 1px solid var(--card-bg);
     border-radius: .55rem;
     padding: .42rem .48rem;
-    background: #020617;
+    background: var(--bg-app);
   }
 
   .ops-jump-stat-label {
     display: block;
-    color: #64748b;
+    color: var(--text-muted);
     font-size: .55rem;
     font-weight: 700;
     text-transform: uppercase;
@@ -328,15 +328,15 @@
   .ops-jump-stat-value {
     display: block;
     margin-top: .18rem;
-    color: #f8fafc;
+    color: var(--text-main);
     font-size: .9rem;
     font-weight: 800;
   }
 
   .ops-card-foot {
     padding: .75rem 1.25rem;
-    border-top: 1px solid #1e293b;
-    background: rgba(15,23,42,.8);
+    border-top: 1px solid var(--card-bg);
+    background: var(--card-bg);
     display: flex;
     flex-wrap: wrap;
     align-items: center;
@@ -348,8 +348,8 @@
     align-items: center;
     gap: .35rem;
     border-radius: .36rem;
-    border: 1px solid #334155;
-    color: #cbd5e1;
+    border: 1px solid var(--card-border);
+    color: var(--text-main);
     background: transparent;
     font-size: .74rem;
     font-weight: 700;
@@ -358,7 +358,7 @@
     transition: all .15s ease;
   }
   .ops-btn i { width: .88rem; height: .88rem; }
-  .ops-btn:hover { background: #1e293b; color: #fff; }
+  .ops-btn:hover { background: var(--card-bg); color: var(--text-main); }
   .ops-btn-indigo { border-color: rgba(99,102,241,.35); background: rgba(99,102,241,.12); color: #818cf8; }
   .ops-btn-indigo:hover { background: rgba(99,102,241,.22); }
   .ops-btn-emerald { border-color: rgba(16,185,129,.35); background: rgba(16,185,129,.12); color: #34d399; }
@@ -374,97 +374,37 @@
     padding: .35rem;
     background: transparent;
     border: 1px solid transparent;
-    color: #94a3b8;
+    color: var(--text-muted);
     transition: all .15s ease;
   }
-  .ops-icon-btn:hover { background: #1e293b; color: #fff; }
+  .ops-icon-btn:hover { background: var(--card-bg); color: var(--text-main); }
   .ops-icon-btn i { width: 1rem; height: 1rem; }
   .ops-icon-btn .amber { color: rgba(245,158,11,.8); }
   .ops-icon-btn .emerald { color: rgba(16,185,129,.85); }
 
   .ops-empty {
-    border: 1px dashed #1e293b;
+    border: 1px dashed var(--card-bg);
     border-radius: .85rem;
-    background: rgba(15,23,42,.55);
+    background: var(--card-bg);
     text-align: center;
     padding: 3rem 1rem;
   }
-  .ops-empty i { width: 2rem; height: 2rem; color: #475569; margin-bottom: .75rem; }
-  .ops-empty p { margin: 0; color: #94a3b8; font-weight: 600; }
+  .ops-empty i { width: 2rem; height: 2rem; color: var(--card-border); margin-bottom: .75rem; }
+  .ops-empty p { margin: 0; color: var(--text-muted); font-weight: 600; }
   .ops-empty .ops-clear {
     margin-top: 1rem;
     border: 0;
     border-radius: .38rem;
-    background: #1e293b;
-    color: #cbd5e1;
+    background: var(--card-bg);
+    color: var(--text-main);
     font-size: .74rem;
     font-weight: 700;
     padding: .48rem .88rem;
     cursor: pointer;
   }
-  .ops-empty .ops-clear:hover { background: #334155; color: #fff; }
+  .ops-empty .ops-clear:hover { background: var(--card-border); color: var(--text-main); }
 
   .ops-hidden { display: none !important; }
-
-  .ops-console {
-    position: fixed;
-    inset: 0;
-    z-index: 10000;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    padding: 1rem;
-    background: rgba(2, 6, 23, .82);
-    backdrop-filter: blur(6px);
-  }
-  .ops-console.is-open { display: flex; }
-  .ops-console-panel {
-    width: min(1020px, 100%);
-    height: min(88vh, 720px);
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    border-radius: .95rem;
-    border: 1px solid #1e293b;
-    background: #050816;
-    box-shadow: 0 24px 80px rgba(2, 6, 23, .7);
-  }
-  .ops-console-head {
-    padding: .75rem 1rem;
-    border-bottom: 1px solid #1e293b;
-    background: #0b1120;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: .8rem;
-    flex-shrink: 0;
-  }
-  .ops-console-presets {
-    padding: .45rem .85rem;
-    background: #0b1120;
-    border-bottom: 1px solid rgba(30,41,59,.7);
-    display: flex;
-    align-items: center;
-    gap: .35rem;
-    flex-wrap: wrap;
-    flex-shrink: 0;
-  }
-  .ops-console-preset-label {
-    font-size: .6rem;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: .07em;
-    color: #334155;
-    margin-right: .2rem;
-  }
-  .ops-term-wrap {
-    flex: 1;
-    min-height: 0;
-    background: #050816;
-    padding: .5rem .5rem .25rem;
-    overflow: hidden;
-  }
-  #opsTerminalContainer { width: 100%; height: 100%; }
 </style>
 
 <div class="ops-page">
@@ -474,7 +414,7 @@
         <div class="ops-breadcrumb">
           <span>Home</span>
           <i data-lucide="chevron-right"></i>
-          <span style="color:#cbd5e1;">Grupos</span>
+          <span style="color:var(--text-main);">Grupos</span>
         </div>
         <div class="ops-title-row">
           <i data-lucide="folder-tree" style="width:1.5rem;height:1.5rem;color:#6366f1;"></i>
@@ -573,40 +513,7 @@
             Baseado no ultimo backup por dispositivo.
           </p>
 
-          {% if row.uses_jump_host %}
-          {% set jump_state = row.jump_host_state or {} %}
-          {% set jump_status = jump_state.get('status', 'unknown') %}
-          <div class="ops-jump-strip">
-            <div class="ops-jump-row">
-              <div style="display:flex;align-items:center;gap:.45rem;flex-wrap:wrap;">
-                <span class="ops-jump-chip {% if jump_status == 'healthy' %}good{% elif jump_status == 'degraded' %}warn{% else %}bad{% endif %}">
-                  <i data-lucide="network"></i>
-                  Jump {{ jump_status|replace('_', ' ') }}
-                </span>
-                <span class="ops-jump-chip">{{ jump_state.get('jump_host') or '-' }}</span>
-              </div>
-              <span style="font-size:.64rem;color:#64748b;">Ultimo teste: {{ jump_state.get('last_checked_at') or 'nunca' }}</span>
-            </div>
-            <div class="ops-jump-stats">
-              <div class="ops-jump-stat">
-                <span class="ops-jump-stat-label">Auth final</span>
-                <span class="ops-jump-stat-value">{{ row.device_auth_failed }}</span>
-              </div>
-              <div class="ops-jump-stat">
-                <span class="ops-jump-stat-label">Acesso Jump</span>
-                <span class="ops-jump-stat-value">{{ row.jump_host_access_failed }}</span>
-              </div>
-              <div class="ops-jump-stat">
-                <span class="ops-jump-stat-label">Sem rota</span>
-                <span class="ops-jump-stat-value">{{ row.jump_host_no_route }}</span>
-              </div>
-              <div class="ops-jump-stat">
-                <span class="ops-jump-stat-label">Timeout</span>
-                <span class="ops-jump-stat-value">{{ row.timeout }}</span>
-              </div>
-            </div>
-          </div>
-          {% elif row.uses_vpn %}
+          {% if row.uses_vpn %}
           <div class="ops-conn-info vpn">
             <i data-lucide="shield"></i>
             Acesso via VPN — monitoramento direto pelo tunel
@@ -626,17 +533,6 @@
             Dispositivos
           </a>
 
-          {% if can_manage_admin and row.is_active %}
-          <form id="form-run-connection-audit-group-{{ row.id }}" action="{{ url_for('tenant_devices.run_connection_audit_all', tenant_slug=tenant.slug) }}" method="POST" style="display:inline;">
-            {% include 'partials/csrf.html' %}
-            <input type="hidden" name="group_id" value="{{ row.id }}">
-            <button type="button" data-run-backup-live data-form-id="form-run-connection-audit-group-{{ row.id }}" class="ops-btn ops-btn-indigo">
-              <i data-lucide="activity"></i>
-              Testar Conexao
-            </button>
-          </form>
-          {% endif %}
-
           {% if can_manage_admin and row.uses_vpn and row.is_active %}
           <form id="form-test-vpn-group-{{ row.id }}" action="{{ url_for('tenant_groups.test_group_vpn', tenant_slug=tenant.slug, group_id=row.id) }}" method="POST" style="display:inline;">
             {% include 'partials/csrf.html' %}
@@ -647,42 +543,9 @@
           </form>
           {% endif %}
 
-          {% if can_operator and row.uses_jump_host and row.is_active %}
-          <form id="form-diagnose-jump-group-{{ row.id }}" action="{{ url_for('tenant_groups.diagnose_group_jump', tenant_slug=tenant.slug, group_id=row.id) }}" method="POST" style="display:inline;">
-            {% include 'partials/csrf.html' %}
-            <button type="button" data-run-backup-live data-form-id="form-diagnose-jump-group-{{ row.id }}" class="ops-btn ops-btn-emerald">
-              <i data-lucide="stethoscope"></i>
-              Diagnosticar
-            </button>
-          </form>
-          <button type="button"
-                  class="ops-btn ops-open-console"
-                  data-group-name="{{ row.name }}"
-                  data-ws-token-url="/tenant/{{ tenant.slug }}/groups/{{ row.id }}/jump-console/ws-token"
-                  data-collect-url="{{ url_for('tenant_groups.collect_jump_diagnostics', tenant_slug=tenant.slug, group_id=row.id) }}"
-                  title="Abrir terminal interativo SSH no Jump Host">
-            <i data-lucide="terminal"></i>
-            Terminal Jump Host
-          </button>
-          {% endif %}
-
           <div class="ops-spacer"></div>
 
           {% if can_manage_admin %}
-          <form action="{{ url_for('tenant_groups.toggle_group_active', tenant_slug=tenant.slug, group_id=row.id) }}" method="POST" style="display:inline;"
-                onsubmit="return confirm('{% if row.is_active %}Desativar{% else %}Reativar{% endif %} o grupo {{ row.name }}?')">
-            {% include 'partials/csrf.html' %}
-            <input type="hidden" name="return_to" value="operations">
-            <input type="hidden" name="action" value="{{ 'deactivate' if row.is_active else 'activate' }}">
-            <button type="submit" class="ops-icon-btn" title="{{ 'Desativar' if row.is_active else 'Reativar' }}">
-              {% if row.is_active %}
-              <i data-lucide="power-off" class="amber"></i>
-              {% else %}
-              <i data-lucide="power" class="emerald"></i>
-              {% endif %}
-            </button>
-          </form>
-
           <a href="{{ url_for('tenant_groups.edit_group', tenant_slug=tenant.slug, group_id=row.id) }}" class="ops-icon-btn" title="Editar Grupo">
             <i data-lucide="edit"></i>
           </a>
@@ -719,201 +582,14 @@
   </div>
 </div>
 
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.3.0/css/xterm.css">
-<script src="https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit@0.8.0/lib/xterm-addon-fit.js"></script>
-
-<div id="opsJumpConsoleModal" class="ops-console">
-  <div class="ops-console-panel">
-
-    <div class="ops-console-head">
-      <div style="display:flex;align-items:center;gap:.7rem;">
-        <div style="display:flex;align-items:center;justify-content:center;width:2.1rem;height:2.1rem;border-radius:.45rem;background:rgba(14,165,233,.15);border:1px solid rgba(14,165,233,.3);flex-shrink:0;">
-          <i data-lucide="terminal" style="width:1.1rem;height:1.1rem;color:#38bdf8;"></i>
-        </div>
-        <div>
-          <h3 id="opsJumpConsoleTitle" style="margin:0;color:#f8fafc;font-size:.95rem;font-weight:800;font-family:ui-monospace,monospace;">Terminal Jump Host</h3>
-          <p id="opsJumpConsoleSubtitle" style="margin:.1rem 0 0;color:#475569;font-size:11px;">Sessao operacional auditada — servidor Linux do Jump Host</p>
-        </div>
-      </div>
-      <div style="display:flex;align-items:center;gap:.4rem;">
-        <button type="button" id="opsClearTerminalBtn" class="ops-btn" title="Limpar tela (Ctrl+L)">
-          <i data-lucide="trash-2"></i> Limpar
-        </button>
-        <button type="button" id="opsCollectDiagnosticsBtn" class="ops-btn ops-btn-indigo" title="Coletar diagnostico automatico">
-          <i data-lucide="clipboard-list"></i> Diagnostico
-        </button>
-        <button type="button" id="opsJumpConsoleClose" class="ops-btn">Fechar</button>
-      </div>
-    </div>
-
-    <div class="ops-console-presets">
-      <span class="ops-console-preset-label">Atalhos:</span>
-      <button type="button" class="ops-btn ops-console-preset" data-command="hostname" style="padding:.2rem .5rem;font-size:.69rem;font-family:ui-monospace,monospace;">hostname</button>
-      <button type="button" class="ops-btn ops-console-preset" data-command="uptime" style="padding:.2rem .5rem;font-size:.69rem;font-family:ui-monospace,monospace;">uptime</button>
-      <button type="button" class="ops-btn ops-console-preset" data-command="ip route" style="padding:.2rem .5rem;font-size:.69rem;font-family:ui-monospace,monospace;">ip route</button>
-      <button type="button" class="ops-btn ops-console-preset" data-command="ss -tunap" style="padding:.2rem .5rem;font-size:.69rem;font-family:ui-monospace,monospace;">ss -tunap</button>
-      <button type="button" class="ops-btn ops-console-preset" data-command="df -h" style="padding:.2rem .5rem;font-size:.69rem;font-family:ui-monospace,monospace;">df -h</button>
-      <button type="button" class="ops-btn ops-console-preset" data-command="free -h" style="padding:.2rem .5rem;font-size:.69rem;font-family:ui-monospace,monospace;">free -h</button>
-      <button type="button" class="ops-btn ops-console-preset" data-command="help" style="padding:.2rem .5rem;font-size:.69rem;font-family:ui-monospace,monospace;">help</button>
-    </div>
-
-    <div class="ops-term-wrap">
-      <div id="opsTerminalContainer"></div>
-    </div>
-
-  </div>
-</div>
-
 <script>
   document.addEventListener('DOMContentLoaded', function () {
     const searchInput = document.getElementById('groupSearchInput');
     const visibleCount = document.getElementById('groupVisibleCount');
     const emptyState = document.getElementById('groupFilterEmptyState');
     const clearFiltersBtn = document.getElementById('clearGroupFiltersBtn');
-    const csrfInput = document.querySelector('input[name="_csrf_token"]');
-    const csrfToken = csrfInput ? csrfInput.value : '';
     const items = Array.from(document.querySelectorAll('.ops-card[data-group-name]'));
     const filterButtons = Array.from(document.querySelectorAll('.ops-filter-btn'));
-    const consoleButtons = Array.from(document.querySelectorAll('.ops-open-console'));
-    const consoleModal = document.getElementById('opsJumpConsoleModal');
-    const consoleClose = document.getElementById('opsJumpConsoleClose');
-    const consoleTitle = document.getElementById('opsJumpConsoleTitle');
-    const clearBtn = document.getElementById('opsClearTerminalBtn');
-    const collectBtn = document.getElementById('opsCollectDiagnosticsBtn');
-
-    // ── Terminal WebSocket interativo ───────────────────────────────────────────
-    let _term = null, _fit = null, _ws = null;
-    let _grpName = '', _collectUrl = '';
-
-    async function _openTerm(groupName, wsTokenUrl, collectUrl) {
-      _grpName = groupName || 'jump';
-      _collectUrl = collectUrl || '';
-
-      // Fecha WS e terminal anteriores
-      if (_ws) { try { _ws.close(); } catch(e){} _ws = null; }
-      if (_term) { _term.dispose(); _term = null; }
-
-      _term = new Terminal({
-        cursorBlink: true, cursorStyle: 'block',
-        theme: {
-          background: '#050816', foreground: '#cbd5e1',
-          cursor: '#38bdf8', cursorAccent: '#050816',
-          selectionBackground: 'rgba(56,189,248,.25)',
-          red: '#fb7185', green: '#34d399', yellow: '#fbbf24',
-          blue: '#60a5fa', magenta: '#a78bfa', cyan: '#38bdf8',
-          white: '#e2e8f0', brightWhite: '#f8fafc',
-          black: '#020617', brightBlack: '#475569',
-        },
-        fontFamily: "'JetBrains Mono','Fira Code',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace",
-        fontSize: 13, lineHeight: 1.45, scrollback: 5000,
-      });
-      _fit = new FitAddon.FitAddon();
-      _term.loadAddon(_fit);
-      const c = document.getElementById('opsTerminalContainer');
-      c.innerHTML = '';
-      _term.open(c);
-      _fit.fit();
-
-      _term.writeln('\x1b[36m\u250c' + '\u2500'.repeat(55) + '\u2510\x1b[0m');
-      _term.writeln('\x1b[36m\u2502\x1b[0m  \x1b[1m\x1b[97mTerminal Jump Host\x1b[0m \u2014 Backup Center              \x1b[36m\u2502\x1b[0m');
-      _term.writeln('\x1b[36m\u2502\x1b[0m  Grupo: \x1b[32m' + _grpName + '\x1b[0m' + ' '.repeat(Math.max(0, 49 - _grpName.length)) + '\x1b[36m\u2502\x1b[0m');
-      _term.writeln('\x1b[36m\u2514' + '\u2500'.repeat(55) + '\u2518\x1b[0m');
-      _term.write('\x1b[33mConectando ao Jump Host...\x1b[0m');
-
-      // 1. Pegar token one-time
-      let token;
-      try {
-        const r = await fetch(wsTokenUrl, {
-          method: 'POST',
-          headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json', 'X-CSRF-Token': csrfToken, 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
-          body: '',
-        });
-        const d = await r.json();
-        if (!d.ok) throw new Error(d.error || 'Erro ao obter token');
-        token = d.token;
-      } catch(e) {
-        _term.writeln('\r\n\x1b[31mErro: ' + e.message + '\x1b[0m');
-        return;
-      }
-
-      // 2. Abrir WebSocket
-      const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
-      _ws = new WebSocket(proto + '//' + location.host + '/ws/jump-console/' + token);
-      _ws.binaryType = 'arraybuffer';
-
-      _ws.onopen = function() {
-        _term.writeln('\r\n\x1b[32m\u2714 Conectado! Sessao SSH interativa ativa.\x1b[0m');
-        _term.writeln('\x1b[33m\u26a0  Sessao auditada \u2014 use \'exit\' para encerrar\x1b[0m\r\n');
-        // Envia tamanho inicial
-        _ws.send(JSON.stringify({ type: 'resize', cols: _term.cols, rows: _term.rows }));
-      };
-
-      _ws.onmessage = function(ev) {
-        if (ev.data instanceof ArrayBuffer) {
-          _term.write(new Uint8Array(ev.data));
-        } else {
-          _term.write(ev.data);
-        }
-      };
-
-      _ws.onerror = function() {
-        _term.writeln('\r\n\x1b[31mErro na conexao WebSocket.\x1b[0m');
-      };
-
-      _ws.onclose = function(ev) {
-        _term.writeln('\r\n\x1b[33mSessao encerrada.\x1b[0m');
-        _ws = null;
-      };
-
-      // 3. Encaminha teclas digitadas para SSH
-      _term.onData(function(data) {
-        if (_ws && _ws.readyState === WebSocket.OPEN) _ws.send(data);
-      });
-
-      // 4. Envia resize quando terminal redimensiona
-      _term.onResize(function(sz) {
-        if (_ws && _ws.readyState === WebSocket.OPEN)
-          _ws.send(JSON.stringify({ type: 'resize', cols: sz.cols, rows: sz.rows }));
-      });
-
-      window.addEventListener('resize', function() { if (_fit) _fit.fit(); });
-    }
-
-    async function _collect() {
-      if (!_collectUrl || !_term) return;
-      _term.writeln('\r\n\x1b[33mColetando diagnostico remoto...\x1b[0m');
-      try {
-        const body = new URLSearchParams();
-        const resp = await fetch(_collectUrl, {
-          method: 'POST',
-          headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json', 'X-CSRF-Token': csrfToken, 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
-          body: body.toString(),
-        });
-        const data = await resp.json();
-        const out = (data.summary || data.error || JSON.stringify(data, null, 2)).replace(/\r?\n/g, '\r\n');
-        _term.writeln('\x1b[36m' + out + '\x1b[0m');
-      } catch(e) { _term.writeln('\x1b[31mErro: ' + e.message + '\x1b[0m'); }
-    }
-
-    // (funções legadas de terminal HTTP removidas — terminal agora usa WebSocket interativo)
-
-    async function _collect() {
-      if (!_collectUrl || !_term) return;
-      _term.writeln('\r\n\x1b[33mColetando diagnostico remoto...\x1b[0m');
-      try {
-        const body = new URLSearchParams();
-        const resp = await fetch(_collectUrl, {
-          method: 'POST',
-          headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json', 'X-CSRF-Token': csrfToken, 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
-          body: body.toString(),
-        });
-        const data = await resp.json();
-        const out = (data.summary || data.error || JSON.stringify(data, null, 2)).replace(/\r?\n/g, '\r\n');
-        _term.writeln('\x1b[36m' + out + '\x1b[0m');
-      } catch(e) { _term.writeln('\x1b[31mErro: ' + e.message + '\x1b[0m'); }
-      _term.write(_prompt());
-    }
 
     if (!searchInput || items.length === 0 || filterButtons.length === 0) {
       if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
@@ -1002,40 +678,6 @@
     }
 
     applyFilters();
-
-    // ── abrir/fechar modal ────────────────────────────────────────────
-    consoleButtons.forEach(function(btn) {
-      btn.addEventListener('click', function() {
-        if (consoleTitle) consoleTitle.textContent = 'Terminal Jump Host \u2014 ' + (btn.dataset.groupName || 'Grupo');
-        if (consoleModal) { consoleModal.classList.add('is-open'); }
-        _openTerm(btn.dataset.groupName || 'jump', btn.dataset.wsTokenUrl || '', btn.dataset.collectUrl || '');
-        if (window.lucide) lucide.createIcons();
-      });
-    });
-
-    function _closeModal() {
-      if (consoleModal) { consoleModal.classList.remove('is-open'); }
-      if (_ws) { try { _ws.close(); } catch(e){} _ws = null; }
-      if (_term) { _term.dispose(); _term = null; }
-    }
-
-    if (consoleClose && consoleModal) {
-      consoleClose.addEventListener('click', _closeModal);
-      consoleModal.addEventListener('click', function(ev) { if (ev.target === consoleModal) _closeModal(); });
-    }
-
-    if (clearBtn) { clearBtn.addEventListener('click', function() { if (_term) _term.clear(); }); }
-    if (collectBtn) { collectBtn.addEventListener('click', _collect); }
-
-    document.querySelectorAll('.ops-console-preset').forEach(function(btn) {
-      btn.addEventListener('click', function() {
-        const cmd = (btn.dataset.command || '').trim();
-        if (!cmd) return;
-        if (_ws && _ws.readyState === WebSocket.OPEN) {
-          _ws.send(cmd + '\r');
-        }
-      });
-    });
   });
 </script>
 

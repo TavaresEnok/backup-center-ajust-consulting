@@ -13,6 +13,10 @@ class VpnError(RuntimeError):
     pass
 
 
+def _truthy_env(name: str, default: str = "0") -> bool:
+    return str(os.getenv(name, default) or "").strip().lower() in {"1", "true", "on", "yes"}
+
+
 class VpnService:
     LOCK_FILE = os.getenv("VPN_LOCK_FILE", "/app/storage/vpn_global.lock")
     SETTLE_SECONDS = int(os.getenv("VPN_SETTLE_SECONDS", "8"))
@@ -43,6 +47,36 @@ class VpnService:
     def _connection_name(self, group_id) -> str:
         key = str(group_id).replace("-", "")[:12]
         return f"group_vpn_{key}"
+
+    @staticmethod
+    def _is_source_connection_error(message: str) -> bool:
+        normalized = str(message or "").strip().lower()
+        return "could not find source connection" in normalized
+
+    @classmethod
+    def _should_retry_activation_with_eth0(cls, message: str) -> bool:
+        normalized = str(message or "").strip().lower()
+        if cls._is_source_connection_error(normalized):
+            return True
+        if "connection activation failed" not in normalized:
+            return False
+        return (
+            "unknown reason" in normalized
+            or "nm_device=eth0" in normalized
+            or "device=eth0" in normalized
+        )
+
+    def _retry_connection_up_on_eth0(self, conn_name: str, logger=None):
+        self._log(
+            logger,
+            "warning",
+            (
+                "Falha ao subir VPN pela origem escolhida pelo NetworkManager; "
+                "reativando 'container-eth0' e tentando novamente com ifname=eth0."
+            ),
+        )
+        self._run_nmcli(["connection", "up", "container-eth0"], check=False)
+        self._run_nmcli(["connection", "up", conn_name, "ifname", "eth0"], timeout=90)
 
     def _group_has_vpn_credentials(self, group) -> bool:
         if not group:
@@ -173,27 +207,68 @@ class VpnService:
         if vpn_ipsec:
             vpn_data += ",ipsec-enabled=yes"
             secrets += f",ipsec-psk-flags=0,ipsec-psk={vpn_ipsec}"
+        def _emit_nm_diagnostics():
+            try:
+                dev_status = self._run_nmcli(["device", "status"], check=False)
+                self._log(
+                    logger,
+                    "warning",
+                    "Diagnostico NM (device status): "
+                    + ((dev_status.stdout or dev_status.stderr or "").strip() or "sem saida"),
+                )
+            except Exception:
+                pass
+            try:
+                active_conns = self._run_nmcli(
+                    ["--terse", "--fields", "NAME,TYPE,DEVICE,STATE", "con", "show", "--active"],
+                    check=False,
+                )
+                self._log(
+                    logger,
+                    "warning",
+                    "Diagnostico NM (active conns): "
+                    + ((active_conns.stdout or active_conns.stderr or "").strip() or "sem saida"),
+                )
+            except Exception:
+                pass
 
+        last_exc = None
         try:
-            self._run_nmcli(
-                [
-                    "connection",
-                    "add",
-                    "type",
-                    "vpn",
-                    "con-name",
-                    conn_name,
-                    "vpn-type",
-                    "l2tp",
-                    "vpn.data",
-                    vpn_data,
-                    "vpn.secrets",
-                    secrets,
-                ]
-            )
-            self._run_nmcli(["connection", "up", conn_name], timeout=90)
+            for attempt_vpn_data in [vpn_data]:
+                self._run_nmcli(["connection", "down", conn_name], check=False)
+                self._run_nmcli(["connection", "delete", conn_name], check=False)
+                self._run_nmcli(
+                    [
+                        "connection",
+                        "add",
+                        "type",
+                        "vpn",
+                        "con-name",
+                        conn_name,
+                        "vpn-type",
+                        "l2tp",
+                        "vpn.data",
+                        attempt_vpn_data,
+                        "vpn.secrets",
+                        secrets,
+                    ]
+                )
+                try:
+                    self._run_nmcli(["connection", "up", conn_name], timeout=90)
+                    last_exc = None
+                    break
+                except VpnError as first_exc:
+                    if self._should_retry_activation_with_eth0(str(first_exc)):
+                        _emit_nm_diagnostics()
+                        self._retry_connection_up_on_eth0(conn_name, logger=logger)
+                        last_exc = None
+                        break
+                    last_exc = first_exc
+            if last_exc:
+                raise last_exc
         except Exception:
             # Em falhas de conexão, forçamos limpeza para evitar contaminar o próximo grupo.
+            _emit_nm_diagnostics()
             self._cleanup_vpn_profiles(None, logger=logger)
             self._wait_for_vpn_quiescent(timeout_seconds=20)
             raise
@@ -245,7 +320,8 @@ class VpnService:
     def vpn_session(self, group, logger=None, timeout_seconds: int | None = None):
         lock_handle = None
         try:
-            lock_handle = self.acquire_lock(timeout_seconds=timeout_seconds)
+            if not _truthy_env("VPN_ISOLATED_WORKER", "0"):
+                lock_handle = self.acquire_lock(timeout_seconds=timeout_seconds)
             self.connect_group_vpn(group, logger=logger)
             yield
         finally:

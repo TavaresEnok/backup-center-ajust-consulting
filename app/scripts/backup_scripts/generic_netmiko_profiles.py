@@ -3,7 +3,7 @@ from typing import Dict, List, Tuple
 
 from netmiko import ConnectHandler
 
-from script_helpers import BackupLogger, prepare_backup_path
+from script_helpers import BackupLogger, friendly_failure_message, friendly_unexpected_error, prepare_backup_path
 
 ERROR_MARKERS = (
     "invalid",
@@ -228,12 +228,7 @@ def run_profile_backup(
     if not selected_type:
         detail = "; ".join(connection_errors[:3]).strip()
         category = _classify_connection_failure(detail)
-        if category == "CONEXAO":
-            msg = "Falha de conectividade com o dispositivo."
-        else:
-            msg = "A conexao foi fechada, recusada ou as credenciais estao incorretas."
-        if detail:
-            msg = f"{msg} Detalhes: {detail}"
+        msg = friendly_failure_message(category, detail)
         logger.emit(msg, "error")
         return False, msg, None, category
 
@@ -307,6 +302,6 @@ def run_profile_backup(
         logger.emit(msg, "success")
         return True, msg, backup_path
     except Exception as exc:
-        msg = f"Falha inesperada durante o backup: {exc}"
+        msg = friendly_unexpected_error(exc)
         logger.emit(msg, "error")
         return False, msg, None, "SCRIPT"

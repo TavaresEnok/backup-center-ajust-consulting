@@ -1,0 +1,8 @@
+#!/usr/bin/expect -f
+set timeout -1
+spawn su - root -c "systemctl set-default multi-user.target; apt-get purge 'task-*desktop' 'xserver-xorg*' 'gnome*' -y; apt-get autoremove --purge -y"
+expect {
+    "Senha:" { send "asdSD@91582685\r" }
+    "Password:" { send "asdSD@91582685\r" }
+}
+expect eof

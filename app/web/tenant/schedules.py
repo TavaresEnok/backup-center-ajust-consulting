@@ -1,7 +1,6 @@
 ﻿from datetime import datetime
 import re
 from collections import Counter
-import uuid
 import json
 
 from flask import Blueprint, render_template, request, session, abort, redirect, url_for, flash, jsonify
@@ -15,8 +14,8 @@ from app.models.user import UserRole
 from sqlalchemy.orm import joinedload
 from app.services.activity_service import ActivityService
 from app.celery_app import celery_app
-from app.services.realtime_backup_logs import get_redis_client
-from app.services.schedule_utils import compute_next_run_at
+from app.services.realtime_backup_logs import get_redis_client, release_tenant_bulk_lock
+from app.services.schedule_utils import compute_next_daily_run_at, sanitize_daily_time
 
 bp = Blueprint('tenant_schedules', __name__, url_prefix='/tenant/<tenant_slug>/schedules')
 
@@ -25,11 +24,13 @@ def get_db_and_tenant(tenant_slug):
         abort(403)
     db = SessionLocal()
     tenant = db.query(Tenant).filter(Tenant.slug == tenant_slug).first()
+    if not tenant:
+        db.close()
     return db, tenant
 
 
 def _next_daily_run(time_str: str, now: datetime | None = None) -> datetime:
-    return compute_next_run_at(time_str=time_str, frequency="daily", reference_utc=now)
+    return compute_next_daily_run_at(time_str=time_str, reference_utc=now)
 
 
 def _is_valid_time(value: str) -> bool:
@@ -73,7 +74,7 @@ def _apply_daily_to_devices(db, devices, time_str: str, apply_scope: str) -> int
             db.add(schedule)
 
         schedule.frequency = ScheduleFrequency.DAILY
-        schedule.time = time_str
+        schedule.time = sanitize_daily_time(time_str)
         schedule.day_of_week = None
         schedule.day_of_month = None
         schedule.is_active = True
@@ -100,34 +101,10 @@ def list_schedules(tenant_slug):
     missing_page = max(missing_page, 1)
     missing_per_page = max(10, min(missing_per_page, 100))
 
-    schedules_base_query = (
-        db.query(Schedule)
-        .join(Device)
-        .filter(Device.tenant_id == tenant.id)
-    )
-
-    schedule_total = schedules_base_query.count()
-    schedule_active = schedules_base_query.filter(Schedule.is_active == True).count()
-    schedule_paused = schedule_total - schedule_active
-
     schedules = []
     total_pages = 1
     start_idx = 0
     end_idx = 0
-    if show_details:
-        total_pages = (schedule_total + per_page - 1) // per_page if schedule_total > 0 else 1
-        if page > total_pages:
-            page = total_pages
-        schedules = (
-            schedules_base_query
-            .options(joinedload(Schedule.device))
-            .order_by(Device.name.asc())
-            .offset((page - 1) * per_page)
-            .limit(per_page)
-            .all()
-        )
-        start_idx = ((page - 1) * per_page) + 1 if schedule_total > 0 else 0
-        end_idx = min(page * per_page, schedule_total)
 
     active_devices = db.query(Device).filter(
         Device.tenant_id == tenant.id,
@@ -161,6 +138,8 @@ def list_schedules(tenant_slug):
             "group_id": str(group.id),
             "name": group.name,
             "connection_type": group.connection_type or "direct",
+            "uses_jump_host": bool(getattr(group, "uses_jump_host", False)),
+            "is_active": bool(getattr(group, "is_active", True)),
             "total": 0,
             "with_schedule": 0,
             "without_schedule": 0,
@@ -172,6 +151,8 @@ def list_schedules(tenant_slug):
         "group_id": None,
         "name": "Sem grupo",
         "connection_type": "direct",
+        "uses_jump_host": False,
+        "is_active": True,
         "total": 0,
         "with_schedule": 0,
         "without_schedule": 0,
@@ -180,9 +161,8 @@ def list_schedules(tenant_slug):
     }
 
     for device in active_devices:
-        has_active_schedule = device.id in active_schedule_device_ids
-        fully_configured = device.backup_scheduled and has_active_schedule
-        if fully_configured:
+        in_global_routine = bool(device.backup_scheduled)
+        if in_global_routine:
             with_schedule += 1
         else:
             without_schedule += 1
@@ -194,6 +174,8 @@ def list_schedules(tenant_slug):
                     "group_id": str(device.group_id),
                     "name": (device.group.name if device.group else "Grupo removido"),
                     "connection_type": (device.group.connection_type if device.group else "direct"),
+                    "uses_jump_host": bool(getattr(device.group, "uses_jump_host", False)),
+                    "is_active": bool(getattr(device.group, "is_active", True)),
                     "total": 0,
                     "with_schedule": 0,
                     "without_schedule": 0,
@@ -205,7 +187,7 @@ def list_schedules(tenant_slug):
 
         bucket = group_overview_map[group_key]
         bucket["total"] += 1
-        if fully_configured:
+        if in_global_routine:
             bucket["with_schedule"] += 1
         else:
             bucket["without_schedule"] += 1
@@ -216,11 +198,9 @@ def list_schedules(tenant_slug):
     for row in active_schedule_rows:
         frequency_val = row.frequency.value if hasattr(row.frequency, "value") else str(row.frequency)
         if frequency_val == "daily" and row.time:
-            daily_times.append(row.time)
+            daily_times.append(sanitize_daily_time(row.time))
 
-    default_daily_time = "02:00"
-    if daily_times:
-        default_daily_time = Counter(daily_times).most_common(1)[0][0]
+    default_daily_time = Counter(daily_times).most_common(1)[0][0] if daily_times else "02:00"
 
     schedule_overview = {
         "total_active_devices": len(active_devices),
@@ -228,12 +208,6 @@ def list_schedules(tenant_slug):
         "without_schedule": without_schedule,
         "queue_disabled": 0,
         "default_daily_time": default_daily_time,
-    }
-
-    schedule_stats = {
-        "total": schedule_total,
-        "active": schedule_active,
-        "paused": schedule_paused,
     }
 
     group_overview = []
@@ -269,7 +243,6 @@ def list_schedules(tenant_slug):
         tenant=tenant,
         schedules=schedules,
         schedule_overview=schedule_overview,
-        schedule_stats=schedule_stats,
         show_details=show_details,
         page=page,
         per_page=per_page,
@@ -387,89 +360,6 @@ def enable_backup_queue_all(tenant_slug):
     return redirect(_resolve_return_url(tenant_slug, return_to))
 
 
-@bp.route('/apply-daily-group', methods=['POST'])
-@login_required
-@tenant_admin_required
-def apply_daily_schedule_for_group(tenant_slug):
-    db, tenant = get_db_and_tenant(tenant_slug)
-    if not tenant:
-        db.close()
-        return "Tenant not found", 404
-
-    group_id_raw = (request.form.get('group_id') or '').strip()
-    time_str = (request.form.get('daily_time') or '').strip()
-    apply_scope = (request.form.get('apply_scope') or 'missing').strip()
-    return_to = (request.form.get('return_to') or '').strip()
-    if apply_scope not in {'missing', 'all'}:
-        apply_scope = 'missing'
-
-    if not _is_valid_time(time_str):
-        flash('Horario invalido. Use o formato HH:MM.', 'error')
-        db.close()
-        return redirect(_resolve_return_url(tenant_slug, return_to))
-
-    if not group_id_raw:
-        flash('Grupo invalido para aplicar agendamento.', 'error')
-        db.close()
-        return redirect(_resolve_return_url(tenant_slug, return_to))
-
-    try:
-        group_uuid = uuid.UUID(group_id_raw)
-    except ValueError:
-        flash('ID de grupo invalido.', 'error')
-        db.close()
-        return redirect(_resolve_return_url(tenant_slug, return_to))
-
-    group = db.query(DeviceGroup).filter(
-        DeviceGroup.id == group_uuid,
-        DeviceGroup.tenant_id == tenant.id,
-        DeviceGroup.is_active == True
-    ).first()
-
-    if not group:
-        flash('Grupo nao encontrado para este tenant.', 'error')
-        db.close()
-        return redirect(_resolve_return_url(tenant_slug, return_to))
-
-    devices = db.query(Device).filter(
-        Device.tenant_id == tenant.id,
-        Device.group_id == group.id,
-        Device.is_active == True
-    ).all()
-
-    if not devices:
-        flash(f'Grupo {group.name} nao possui dispositivos ativos.', 'warning')
-        db.close()
-        return redirect(_resolve_return_url(tenant_slug, return_to))
-
-    affected = _apply_daily_to_devices(db, devices, time_str, apply_scope)
-
-    if affected == 0:
-        flash(f'Nenhum dispositivo do grupo {group.name} precisa de ajuste.', 'info')
-        db.close()
-        return redirect(_resolve_return_url(tenant_slug, return_to))
-
-    user_id = session.get('user_id')
-    ActivityService.log_action(
-        db,
-        tenant.id,
-        user_id,
-        "GROUP_SCHEDULE_UPDATE",
-        f"Aplicado agendamento diario {time_str} no grupo {group.name} para {affected} dispositivos (modo={apply_scope}).",
-        request.remote_addr,
-    )
-
-    db.commit()
-    db.close()
-
-    if apply_scope == 'missing':
-        flash(f'Grupo {group.name}: agendamento {time_str} aplicado para {affected} dispositivos pendentes.', 'success')
-    else:
-        flash(f'Grupo {group.name}: agendamento {time_str} aplicado para {affected} dispositivos.', 'success')
-    return redirect(_resolve_return_url(tenant_slug, return_to))
-
-
-
 def _is_backup_task_name(task_name: str) -> bool:
     name = str(task_name or '')
     if name.startswith('app.tasks.backups.'):
@@ -557,6 +447,7 @@ def _stop_backup_tasks_globally() -> dict:
                     meta['progress'] = 100
                     meta['message'] = 'Lote interrompido manualmente pela central de agendamentos.'
                     r.setex(key, 60 * 60 * 48, json.dumps(meta, ensure_ascii=False))
+                    release_tenant_bulk_lock(meta.get('tenant_id'), meta.get('task_id'))
                     bulk_marked += 1
         except Exception:
             pass

@@ -35,6 +35,7 @@ from app.services.backup_diagnostics import (
 from app.services.backup_observability import inc_counter, observe_histogram
 from app.services.network_precheck import run_network_precheck
 from app.services.tracing import traced_span
+from sqlalchemy.exc import DBAPIError, OperationalError
 
 try:
     import paramiko
@@ -359,7 +360,12 @@ class BackupLogger:
             except Exception:
                 pairs = " ".join(f"{k}={v}" for k, v in kwargs.items())
                 text = f"{text} {pairs}".strip()
-        return text
+        try:
+            from app.utils.log_sanitizer import sanitize_operational_message
+
+            return sanitize_operational_message(text)
+        except Exception:
+            return text
 
     def log(self, message: Any, level: str = 'info', *args, **kwargs):
         message = self._normalize_message(message, args, kwargs)
@@ -408,64 +414,6 @@ def _is_mikrotik_device(device_type: DeviceType | None) -> bool:
     )
 
 
-def _is_connection_like_failure(message: str | None) -> bool:
-    text = str(message or "").strip().lower()
-    if not text:
-        return False
-    return any(
-        marker in text
-        for marker in (
-            "timeout",
-            "timed out",
-            "connection refused",
-            "unable to connect",
-            "error reading ssh protocol banner",
-            "timeout opening channel",
-            "a conexao foi fechada",
-            "a conexão foi fechada",
-        )
-    )
-
-
-def _is_jump_host_shell_failure(message: str | None) -> bool:
-    text = str(message or "").strip().lower()
-    if not text:
-        return False
-    return any(
-        marker in text
-        for marker in (
-            "sessao com jump host encerrada",
-            "sessão com jump host encerrada",
-            "falha ao abrir shell no jump host",
-            "jump host encerrada antes do shell",
-            "jump_session_closed",
-        )
-    )
-
-
-def _is_likely_auth_failure(message: str | None) -> bool:
-    text = str(message or "").strip().lower()
-    if not text:
-        return False
-    return any(
-        marker in text
-        for marker in (
-            "authentication failed",
-            "netmikoauthenticationexception",
-            "credenciais",
-            "senha",
-            "password",
-            "usuario",
-            "usuário",
-        )
-    )
-
-
-def _supports_protocol_fallback(script_name: str) -> bool:
-    normalized = str(script_name or "").strip().lower()
-    return normalized in {"huawei_olt.py", "vsol_olt_netmiko.py"}
-
-
 def _emit_backup_event(event_name: str, **payload):
     data = {"event": str(event_name or "unknown"), "ts": datetime.utcnow().isoformat() + "Z"}
     for key, value in (payload or {}).items():
@@ -491,23 +439,27 @@ class BackupExecutor:
     
     def __init__(self):
         self._script_cache = {}
+        self._script_cache_mtime = {}
         self._script_load_errors = {}
     
     def _load_script(self, script_name: str) -> Optional[Any]:
         """
         Carrega dinamicamente um script de backup.
         """
-        if script_name in self._script_cache:
+        script_path = os.path.join(self.SCRIPTS_DIR, script_name)
+        script_mtime = os.path.getmtime(script_path) if os.path.exists(script_path) else None
+
+        if script_name in self._script_cache and self._script_cache_mtime.get(script_name) == script_mtime:
             return self._script_cache[script_name]
         
         # Garantir que imports absolutos (ex: import script_helpers) funcionem
         if self.SCRIPTS_DIR not in sys.path:
             sys.path.append(self.SCRIPTS_DIR)
         
-        script_path = os.path.join(self.SCRIPTS_DIR, script_name)
-        
         if not os.path.exists(script_path):
             self._script_load_errors[script_name] = "Arquivo nao encontrado."
+            self._script_cache.pop(script_name, None)
+            self._script_cache_mtime.pop(script_name, None)
             return None
         
         try:
@@ -517,10 +469,13 @@ class BackupExecutor:
             sys.modules[module_name] = module
             spec.loader.exec_module(module)
             self._script_cache[script_name] = module
+            self._script_cache_mtime[script_name] = script_mtime
             self._script_load_errors.pop(script_name, None)
             return module
         except Exception as exc:
             sys.modules.pop(script_name.replace('.py', ''), None)
+            self._script_cache.pop(script_name, None)
+            self._script_cache_mtime.pop(script_name, None)
             self._script_load_errors[script_name] = str(exc)
             logging.getLogger(__name__).exception("failed to load script %s", script_name)
             return None
@@ -757,8 +712,6 @@ class BackupExecutor:
                                 candidate_ports = [22, 2222, 22022]
                             elif bool(device.use_telnet):
                                 candidate_ports = [23, 2323]
-                            elif _supports_protocol_fallback(getattr(device_type, "script_name", "")):
-                                candidate_ports = [22, 23]
                             candidate_ports = [
                                 int(p)
                                 for p in candidate_ports
@@ -835,15 +788,20 @@ class BackupExecutor:
                             script_span.set_attribute("backup.precheck_tcp_ok", bool(precheck.tcp_ok))
                             script_span.set_attribute("backup.precheck_ping_method", str(precheck.ping_method or "none"))
                             script_span.set_attribute("backup.precheck_tcp_method", str(precheck.tcp_method or "none"))
+                        allow_ignore_jump_tcp_fail = _truthy_env(
+                            "BACKUP_NETWORK_PRECHECK_IGNORE_JUMP_TCP_FAIL",
+                            "0",
+                        )
                         ignore_fail_fast_for_jump_telnet = bool(
                             jump_host_cfg
                             and bool(device.use_telnet)
                             and not precheck.tcp_ok
+                            and allow_ignore_jump_tcp_fail
                         )
                         ignore_fail_fast_for_jump = bool(
                             jump_host_cfg
                             and not precheck.tcp_ok
-                            and _truthy_env("BACKUP_NETWORK_PRECHECK_IGNORE_JUMP_TCP_FAIL", "1")
+                            and allow_ignore_jump_tcp_fail
                         )
                         if ignore_fail_fast_for_jump_telnet:
                             logger.warning(
@@ -893,41 +851,6 @@ class BackupExecutor:
                     with _NetmikoJumpHostPatcher(self.SCRIPTS_DIR, jump_host_cfg, logger):
                         result = script.realizar_backup(**kwargs)
 
-                        # Fallback de protocolo para scripts que suportam SSH/TELNET.
-                        if isinstance(result, (tuple, list)):
-                            first_ok = bool(result[0]) if len(result) > 0 else False
-                            first_msg = str(result[1] or "") if len(result) > 1 else ""
-                        else:
-                            first_ok = bool(result)
-                            first_msg = ""
-                        if (
-                            not first_ok
-                            and _supports_protocol_fallback(getattr(device_type, "script_name", ""))
-                            and _is_connection_like_failure(first_msg)
-                            and not _is_jump_host_shell_failure(first_msg)
-                            and not _is_likely_auth_failure(first_msg)
-                        ):
-                            toggled_telnet = not bool(kwargs.get("use_telnet") or kwargs.get("usar_telnet") or device.use_telnet)
-                            fallback_kwargs = dict(kwargs)
-                            fallback_kwargs["use_telnet"] = bool(toggled_telnet)
-                            fallback_kwargs["usar_telnet"] = bool(toggled_telnet)
-                            fallback_params = dict(parametros or {})
-                            fallback_params["use_telnet"] = bool(toggled_telnet)
-                            fallback_kwargs["parametros"] = fallback_params
-                            logger.warning(
-                                "Falha inicial de conectividade. Tentando fallback de protocolo (%s -> %s).",
-                                "TELNET" if not toggled_telnet else "SSH",
-                                "TELNET" if toggled_telnet else "SSH",
-                            )
-                            second_result = script.realizar_backup(**fallback_kwargs)
-                            if isinstance(second_result, (tuple, list)):
-                                second_ok = bool(second_result[0]) if len(second_result) > 0 else False
-                            else:
-                                second_ok = bool(second_result)
-                            if second_ok:
-                                logger.success("Fallback de protocolo recuperou o backup com sucesso.")
-                                result = second_result
-
                     success = None
                     message = None
                     explicit_path = None
@@ -942,6 +865,13 @@ class BackupExecutor:
                         success = result
                     else:
                         success = bool(result)
+                    if message:
+                        try:
+                            from app.utils.log_sanitizer import sanitize_operational_message
+
+                            message = sanitize_operational_message(message)
+                        except Exception:
+                            message = str(message)
 
                     if success:
                         # Busca o arquivo mais recente no diretorio
@@ -955,15 +885,22 @@ class BackupExecutor:
                             file_path = files[0] if files else None
 
                         if file_path:
-                            logger.success("Backup realizado com sucesso!")
+                            logger.info("Arquivo de backup gerado; validando integridade...")
                             return True, message or "Backup realizado com sucesso", file_path
                         msg = "Comando executado, mas nenhum arquivo gerado/encontrado."
                         logger.error(msg)
                         return False, msg, None
-                    logger.error(message or "Falha no backup")
+                    # O script especializado normalmente ja emite o erro detalhado no log
+                    # do dispositivo. Evita repetir a mesma mensagem logo em seguida.
                     return False, message or "Falha ao realizar backup", None
                 except Exception as e:
                     error_msg = str(e)
+                    try:
+                        from app.utils.log_sanitizer import sanitize_operational_message
+
+                        error_msg = sanitize_operational_message(error_msg)
+                    except Exception:
+                        pass
                     logger.error(f"Erro: {error_msg}")
                     return False, f"Erro durante backup: {error_msg}", None
                 finally:
@@ -1021,6 +958,7 @@ class BackupExecutor:
             device_type = db.query(DeviceType).filter_by(id=device.device_type_id).first()
             group = db.query(DeviceGroup).filter_by(id=device.group_id).first() if device.group_id else None
             tenant_slug = device.tenant.slug if device.tenant else "default"
+            db.commit()
             
             with traced_span(
                 "backup.device.execute",
@@ -1089,6 +1027,9 @@ class BackupExecutor:
                     file_size = None
                     file_hash = None
 
+            if success:
+                BackupLogger(device.name, task_id=task_id).success("Arquivo de backup salvo e validado.")
+
             failure_category = None
             failure_category_label = None
             if not success:
@@ -1120,63 +1061,98 @@ class BackupExecutor:
                 }
             }
 
-            # Cria registro de backup
-            backup = Backup(
-                device_id=device.id,
-                status=BackupStatus.SUCCESS if success else BackupStatus.FAILED,
-                error_message=None if success else message,
-                config_data=backup_meta,
-                file_path=file_path,
-                file_size_bytes=file_size,
-                hash_sha256=file_hash,
-                started_at=started_at,
-                completed_at=completed_at,
-                duration_seconds=max(0, int((completed_at - started_at).total_seconds())),
-            )
-            db.add(backup)
+            def _persist_backup_result(db_session):
+                device_row = db_session.query(Device).filter_by(id=device_id).first()
+                if not device_row:
+                    raise RuntimeError("Dispositivo nao encontrado ao persistir resultado do backup.")
 
-            # Atualiza device
-            device.last_backup_at = datetime.utcnow()
-            device.last_backup_status = 'success' if success else 'failure'
-            extra = dict(device.extra_parameters or {})
-            extra["last_backup_integrity_ok"] = bool(integrity.get("ok")) if integrity else bool(success)
-            if integrity:
-                extra["last_backup_integrity_reason"] = str(integrity.get("reason") or "")
-            if success:
-                extra.pop("last_backup_failure_category", None)
-                extra.pop("last_backup_failure_label", None)
-                extra.pop("last_backup_failure_message", None)
-                extra.pop("last_backup_failure_at", None)
-            else:
-                extra["last_backup_failure_category"] = failure_category or "unknown"
-                extra["last_backup_failure_label"] = failure_category_label or "Outros"
-                extra["last_backup_failure_message"] = str(message or "")
-                extra["last_backup_failure_at"] = completed_at.isoformat() + "Z"
-            device.extra_parameters = extra
-            
-            db.commit()
+                backup = Backup(
+                    device_id=device_row.id,
+                    status=BackupStatus.SUCCESS if success else BackupStatus.FAILED,
+                    error_message=None if success else message,
+                    config_data=backup_meta,
+                    file_path=file_path,
+                    file_size_bytes=file_size,
+                    hash_sha256=file_hash,
+                    started_at=started_at,
+                    completed_at=completed_at,
+                    duration_seconds=max(0, int((completed_at - started_at).total_seconds())),
+                )
+                db_session.add(backup)
 
-            # Notificações não podem impedir o registro do backup.
-            if not success and device.tenant_id:
+                device_row.last_backup_at = datetime.utcnow()
+                device_row.last_backup_status = 'success' if success else 'failure'
+                extra = dict(device_row.extra_parameters or {})
+                extra["last_backup_integrity_ok"] = bool(integrity.get("ok")) if integrity else bool(success)
+                if integrity:
+                    extra["last_backup_integrity_reason"] = str(integrity.get("reason") or "")
+                if success:
+                    extra.pop("last_backup_failure_category", None)
+                    extra.pop("last_backup_failure_label", None)
+                    extra.pop("last_backup_failure_message", None)
+                    extra.pop("last_backup_failure_at", None)
+                else:
+                    extra["last_backup_failure_category"] = failure_category or "unknown"
+                    extra["last_backup_failure_label"] = failure_category_label or "Outros"
+                    extra["last_backup_failure_message"] = str(message or "")
+                    extra["last_backup_failure_at"] = completed_at.isoformat() + "Z"
+                device_row.extra_parameters = extra
+                db_session.commit()
+
+                # Notificações não podem impedir o registro do backup.
+                if not success and device_row.tenant_id:
+                    try:
+                        recipients = db_session.query(User).filter(
+                            User.tenant_id == device_row.tenant_id,
+                            User.role.in_([UserRole.TENANT_OWNER, UserRole.TENANT_ADMIN])
+                        ).all()
+                        for recipient in recipients:
+                            db_session.add(Notification(
+                                user_id=recipient.id,
+                                type=NotificationType.BACKUP_FAILED,
+                                title="Backup falhou",
+                                message=f"Dispositivo {device_row.name}: {message}",
+                            ))
+                        db_session.commit()
+                    except Exception:
+                        db_session.rollback()
+                        logging.getLogger(__name__).exception(
+                            "Falha ao registrar notificacao de backup para o dispositivo %s",
+                            device_row.id
+                        )
+
+            def _is_connection_drop_error(exc: Exception) -> bool:
+                if isinstance(exc, (OperationalError, DBAPIError)) and bool(
+                    getattr(exc, "connection_invalidated", False)
+                ):
+                    return True
+                text = str(exc or "").lower()
+                markers = (
+                    "server closed the connection unexpectedly",
+                    "connection not open",
+                    "connection refused",
+                    "could not connect to server",
+                    "ssl connection has been closed unexpectedly",
+                )
+                return any(marker in text for marker in markers)
+
+            try:
+                _persist_backup_result(db)
+            except Exception as persist_exc:
+                db.rollback()
+                if not _is_connection_drop_error(persist_exc):
+                    raise
+                logging.getLogger(__name__).warning(
+                    "Conexao DB caiu ao persistir backup do dispositivo %s. Tentando nova sessao...",
+                    device_id,
+                    exc_info=True,
+                )
                 try:
-                    recipients = db.query(User).filter(
-                        User.tenant_id == device.tenant_id,
-                        User.role.in_([UserRole.TENANT_OWNER, UserRole.TENANT_ADMIN])
-                    ).all()
-                    for recipient in recipients:
-                        db.add(Notification(
-                            user_id=recipient.id,
-                            type=NotificationType.BACKUP_FAILED,
-                            title="Backup falhou",
-                            message=f"Dispositivo {device.name}: {message}",
-                        ))
-                    db.commit()
+                    db.close()
                 except Exception:
-                    db.rollback()
-                    logging.getLogger(__name__).exception(
-                        "Falha ao registrar notificacao de backup para o dispositivo %s",
-                        device.id
-                    )
+                    pass
+                db = SessionLocal()
+                _persist_backup_result(db)
             
             return success, message
             

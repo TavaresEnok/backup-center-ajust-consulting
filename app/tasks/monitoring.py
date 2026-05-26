@@ -8,7 +8,6 @@ from datetime import datetime
 import time
 from app.celery_app import celery_app
 from app.core.database import SessionLocal
-from app.models.tenant import Tenant
 from app.services.connection_mode import uses_jump_host, uses_vpn_tunnel
 from app.services.monitor_service import MonitorService
 from app.services.jump_host_service import jump_host_service, recommendation_for_category
@@ -128,69 +127,6 @@ def _persist_connection_audit_state(
     if last_exc:
         raise last_exc
     return False
-
-
-@celery_app.task(bind=True, max_retries=3)
-def ping_device_task(self, device_id: str):
-    """
-    Task para verificar status de um dispositivo específico.
-    
-    Args:
-        device_id: UUID do dispositivo a ser verificado
-    """
-    try:
-        result = MonitorService.update_device_status(device_id)
-        return {'device_id': device_id, 'status': result}
-    except Exception as e:
-        logger.error(f"Erro ao verificar dispositivo {device_id}: {e}")
-        raise self.retry(exc=e, countdown=60)
-
-
-@celery_app.task(bind=True)
-def ping_tenant_devices_task(self, tenant_id: str):
-    """
-    Task para verificar status de todos os dispositivos de um tenant.
-    
-    Args:
-        tenant_id: UUID do tenant
-    """
-    try:
-        db = SessionLocal()
-        result = MonitorService.check_all_tenant_devices(db, tenant_id)
-        db.close()
-        logger.info(f"Tenant {tenant_id}: {result['online']} online, {result['offline']} offline")
-        return result
-    except Exception as e:
-        logger.error(f"Erro ao verificar dispositivos do tenant {tenant_id}: {e}")
-        return {'error': str(e)}
-
-
-@celery_app.task
-def ping_all_devices_periodic():
-    """
-    Task periódica para verificar todos os dispositivos de todos os tenants ativos.
-    
-    Esta task é executada pelo Celery Beat a cada 5 minutos.
-    """
-    db = SessionLocal()
-    
-    try:
-        # Busca todos os tenants ativos
-        tenants = db.query(Tenant).filter(Tenant.is_active == True).all()
-        
-        results = {}
-        for tenant in tenants:
-            try:
-                result = MonitorService.check_all_tenant_devices(db, str(tenant.id))
-                results[str(tenant.id)] = result
-                logger.info(f"Tenant {tenant.slug}: {result['online']} online, {result['offline']} offline")
-            except Exception as e:
-                logger.error(f"Erro no tenant {tenant.slug}: {e}")
-                results[str(tenant.id)] = {'error': str(e)}
-        
-        return results
-    finally:
-        db.close()
 
 
 @celery_app.task(bind=True, queue='vpn_queue')
@@ -466,36 +402,6 @@ def run_group_jump_host_diagnostic_task(self, group_id: str, device_id: str | No
         )
         append_task_log(task_id, "Diagnostico Jump Host", message, "error")
         return {"ok": False, "group_id": str(group_id), "message": message}
-    finally:
-        db.close()
-
-
-@celery_app.task
-def run_jump_host_health_checks_periodic():
-    from app.models.device_group import DeviceGroup
-
-    db = SessionLocal()
-    try:
-        groups = (
-            db.query(DeviceGroup)
-            .filter(
-                DeviceGroup.is_active == True,
-                DeviceGroup.uses_jump_host == True,
-            )
-            .all()
-        )
-        results = {}
-        for group in groups:
-            try:
-                state = jump_host_service.run_health_check(str(group.tenant_id), group)
-                results[str(group.id)] = {
-                    "status": state.get("status"),
-                    "last_failure_category": state.get("last_failure_category"),
-                }
-            except Exception as exc:
-                logger.exception("Falha no health check do Jump Host do grupo %s", group.id)
-                results[str(group.id)] = {"status": "error", "error": str(exc)}
-        return results
     finally:
         db.close()
 

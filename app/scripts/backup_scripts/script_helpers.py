@@ -49,7 +49,12 @@ class BackupLogger:
             except Exception:
                 pairs = " ".join(f"{k}={v}" for k, v in kwargs.items())
                 text = f"{text} {pairs}".strip()
-        return text
+        try:
+            from app.utils.log_sanitizer import sanitize_operational_message
+
+            return sanitize_operational_message(text)
+        except Exception:
+            return text
 
     def emit(self, message, level='info', *args, **kwargs):
         message = self._normalize_message(message, args, kwargs)
@@ -101,6 +106,46 @@ def prepare_backup_path(base_dir, prov_name, type_name, dev_name, extension):
     
     filename = f"backup_{time.strftime('%Y-%m-%d_%H-%M-%S')}.{extension}"
     return os.path.join(final_path, filename)
+
+
+def friendly_failure_message(category: str, detail: str = None, *, operation: str = "backup") -> str:
+    """Build operator-friendly failure text without leaking Python/Netmiko internals."""
+    cat = str(category or "").strip().upper()
+    clean_detail = str(detail or "").strip()
+    try:
+        from app.utils.log_sanitizer import sanitize_operational_message
+
+        clean_detail = sanitize_operational_message(clean_detail)
+    except Exception:
+        pass
+
+    if cat == "CONEXAO":
+        base = "Falha de conectividade com o dispositivo."
+    elif cat == "AUTENTICACAO":
+        base = "Comunicacao com o dispositivo estabelecida, mas as credenciais foram recusadas."
+    elif cat == "TIMEOUT":
+        base = "Tempo esgotado aguardando resposta do equipamento."
+    elif cat == "CONFIGURACAO":
+        base = "Configuracao do cadastro incompleta ou invalida para executar o backup."
+    else:
+        base = f"Falha durante a {operation}."
+
+    if clean_detail:
+        return f"{base} Detalhe: {clean_detail}"
+    return base
+
+
+def friendly_unexpected_error(exc, *, operation: str = "coleta do backup") -> str:
+    detail = str(exc or "").strip()
+    try:
+        from app.utils.log_sanitizer import sanitize_operational_message
+
+        detail = sanitize_operational_message(detail)
+    except Exception:
+        pass
+    if detail:
+        return f"Falha durante a {operation}. Detalhe: {detail}"
+    return f"Falha durante a {operation}."
 
 
 def _wrap_pem(header: str, body: str) -> str:

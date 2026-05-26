@@ -25,6 +25,8 @@ db_backup_*/
 ci_local_test.db
 ci_test.db
 test_system.db
+*.db
+*.db-journal
 
 *.log
 validation.log

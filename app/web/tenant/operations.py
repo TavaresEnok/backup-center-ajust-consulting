@@ -14,7 +14,6 @@ from app.models.tenant import Tenant
 from app.models.user import UserRole
 from app.web.auth.decorators import login_required
 from app.services.backup_diagnostics import classify_failure
-from app.services.jump_host_service import jump_host_service
 from app.services.mass_backup_scope import resolve_mass_backup_excluded_type_ids
 
 bp = Blueprint("tenant_operations", __name__, url_prefix="/tenant/<tenant_slug>/operations")
@@ -278,9 +277,9 @@ def index(tenant_slug):
             bucket["failed_24h"] += failed_24h
             bucket["success_24h"] += success_24h
             last_status = str(device.last_backup_status or "").strip().lower()
-            if last_status == BackupStatus.SUCCESS.value:
+            if last_status == 'success':
                 bucket["devices_success"] += 1
-            elif last_status == BackupStatus.FAILED.value:
+            elif last_status in ('failure', 'failed'):
                 bucket["devices_failed"] += 1
             else:
                 bucket["devices_unknown"] += 1
@@ -353,10 +352,6 @@ def index(tenant_slug):
                 + bucket["timeout"]
                 + bucket["connectivity_failed"]
             )
-            if bucket["id"] and bucket["uses_jump_host"]:
-                group = group_lookup.get(str(bucket["id"]))
-                if group:
-                    bucket["jump_host_state"] = jump_host_service.get_group_state(str(tenant.id), group)
             group_rows.append(bucket)
 
         group_rows.sort(key=lambda row: (-row["attention_score"], row["name"].lower()))

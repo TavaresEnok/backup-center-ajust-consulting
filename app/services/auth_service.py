@@ -1,5 +1,7 @@
+from threading import Lock
+
 from sqlalchemy.orm import Session
-from sqlalchemy import text
+from sqlalchemy import inspect, text
 from app.core.database import is_sqlite_engine
 from app.models.user import User, UserRole
 from app.models.tenant import Tenant
@@ -12,13 +14,29 @@ import re
 import uuid
 
 class AuthService:
+    _schema_lock = Lock()
+    _schema_ready = False
+
     @staticmethod
     def ensure_schema(db: Session) -> None:
-        if is_sqlite_engine():
+        if AuthService._schema_ready:
             return
-        db.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS must_change_password BOOLEAN NOT NULL DEFAULT FALSE"))
-        db.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS password_changed_at TIMESTAMP NULL"))
-        db.commit()
+        with AuthService._schema_lock:
+            if AuthService._schema_ready:
+                return
+            if is_sqlite_engine():
+                AuthService._schema_ready = True
+                return
+            inspector = inspect(db.bind)
+            user_columns = {col["name"] for col in inspector.get_columns("users")}
+            if {"must_change_password", "password_changed_at"}.issubset(user_columns):
+                AuthService._schema_ready = True
+                return
+            db.execute(text("SET LOCAL lock_timeout = '3s'"))
+            db.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS must_change_password BOOLEAN NOT NULL DEFAULT FALSE"))
+            db.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS password_changed_at TIMESTAMP NULL"))
+            db.commit()
+            AuthService._schema_ready = True
 
     @staticmethod
     def _build_unique_slug(db: Session, company_name: str) -> str:

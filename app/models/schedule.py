@@ -9,6 +9,7 @@ from app.models.base import TimestampMixin
 
 class ScheduleFrequency(str, enum.Enum):
     DAILY = 'daily'
+    # Legado: mantidos apenas para compatibilidade com dados antigos.
     WEEKLY = 'weekly'
     MONTHLY = 'monthly'
 
@@ -18,7 +19,9 @@ class Schedule(Base, TimestampMixin):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     device_id = Column(UUID(as_uuid=True), ForeignKey('devices.id'), nullable=False)
     
-    # Schedule Config
+    # Runtime atual: rotina diaria global por tenant. Os campos abaixo
+    # permanecem por compatibilidade de banco, mas o fluxo operacional
+    # normaliza tudo para DAILY.
     frequency = Column(
         Enum(
             ScheduleFrequency,
@@ -27,8 +30,8 @@ class Schedule(Base, TimestampMixin):
         nullable=False,
     )
     time = Column(String(5), nullable=False)  # HH:MM 24h format
-    day_of_week = Column(Integer, nullable=True)  # 0-6 (Mon-Sun)
-    day_of_month = Column(Integer, nullable=True)  # 1-31
+    day_of_week = Column(Integer, nullable=True)  # legado
+    day_of_month = Column(Integer, nullable=True)  # legado
     
     # Status
     is_active = Column(Boolean, default=True)

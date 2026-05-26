@@ -6,10 +6,10 @@
 <div id="live-backup-modal" class="fixed inset-0 z-[9999] hidden items-center justify-center bg-black/70 backdrop-blur-sm p-4">
 
     <!-- Container principal -->
-    <div class="w-full max-w-5xl bg-slate-900 border border-slate-800 rounded-xl shadow-2xl flex flex-col overflow-hidden" style="max-height: 95vh;">
+    <div class="w-full max-w-5xl bg-[var(--card-bg)] border border-[var(--card-border)] rounded-xl shadow-2xl flex flex-col overflow-hidden" style="max-height: 95vh;">
 
         <!-- ═══ CABEÇALHO ═══ -->
-        <div class="px-6 py-4 border-b border-slate-800 flex flex-col md:flex-row md:items-start justify-between gap-4 flex-shrink-0">
+        <div class="px-6 py-4 border-b border-[var(--card-border)] flex flex-col md:flex-row md:items-start justify-between gap-4 flex-shrink-0">
             <div class="flex-1 min-w-0">
                 <!-- Badge de status + ID da task -->
                 <div class="flex items-center gap-3 mb-1.5 flex-wrap">
@@ -19,22 +19,22 @@
                         <i data-lucide="clock" class="w-3.5 h-3.5"></i>
                         Em fila
                     </span>
-                    <span class="text-slate-500 text-[11px] font-mono tracking-wide min-w-0">
-                        ID: <span id="live-backup-task-id" class="text-slate-300 font-medium select-all break-all">--</span>
+                    <span class="text-[var(--text-muted)] text-[11px] font-mono tracking-wide min-w-0">
+                        ID: <span id="live-backup-task-id" class="text-[var(--text-main)] font-medium select-all break-all">--</span>
                     </span>
                 </div>
                 <!-- Título da operação -->
                 <h3 id="live-backup-title" class="text-xl font-semibold text-white truncate">Backup ao vivo</h3>
                 <!-- Tempo decorrido + última atualização -->
                 <div class="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1.5">
-                    <p class="text-xs text-slate-400 flex items-center gap-1.5">
-                        <i data-lucide="clock" class="w-3.5 h-3.5 text-slate-500"></i>
-                        Decorrido: <span id="live-elapsed-time" class="text-slate-200 ml-1">00:00:00</span>
+                    <p class="text-xs text-[var(--text-muted)] flex items-center gap-1.5">
+                        <i data-lucide="clock" class="w-3.5 h-3.5 text-[var(--text-muted)]"></i>
+                        Decorrido: <span id="live-elapsed-time" class="text-[var(--text-main)] ml-1">00:00:00</span>
                     </p>
                     <div class="w-1 h-1 rounded-full bg-slate-700 hidden sm:block"></div>
-                    <p class="text-xs text-slate-400 flex items-center gap-1.5">
-                        <i data-lucide="activity" class="w-3.5 h-3.5 text-slate-500"></i>
-                        Atualização: <span id="live-last-update" class="text-slate-200 ml-1">--</span>
+                    <p class="text-xs text-[var(--text-muted)] flex items-center gap-1.5">
+                        <i data-lucide="activity" class="w-3.5 h-3.5 text-[var(--text-muted)]"></i>
+                        Atualização: <span id="live-last-update" class="text-[var(--text-main)] ml-1">--</span>
                     </p>
                 </div>
             </div>
@@ -46,7 +46,7 @@
                     Parar lote
                 </button>
                 <button id="live-backup-close" type="button"
-                    class="inline-flex items-center gap-1.5 rounded-lg border border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white transition-colors">
+                    class="inline-flex items-center gap-1.5 rounded-lg border border-[var(--card-border)] px-3 py-1.5 text-sm font-medium text-[var(--text-main)] hover:bg-[var(--card-bg)] hover:text-white transition-colors">
                     <i data-lucide="x" class="h-4 w-4"></i>
                     Fechar
                 </button>
@@ -60,33 +60,33 @@
             <div class="p-5 space-y-4 flex-shrink-0">
 
                 <!-- Grid de métricas (apenas para operações em massa) -->
-                <div id="live-backup-bulk-panel" class="hidden grid-cols-3 md:grid-cols-6 gap-px bg-slate-800 border border-slate-800 rounded-lg overflow-hidden">
-                    <div class="bg-slate-900 p-3 flex flex-col">
-                        <span class="text-[10px] text-slate-400 uppercase tracking-wider mb-1 font-semibold">Planejados</span>
+                <div id="live-backup-bulk-panel" class="hidden grid-cols-3 md:grid-cols-6 gap-px bg-[var(--card-bg)] border border-[var(--card-border)] rounded-lg overflow-hidden">
+                    <div class="bg-[var(--card-bg)] p-3 flex flex-col">
+                        <span class="text-[10px] text-[var(--text-muted)] uppercase tracking-wider mb-1 font-semibold">Planejados</span>
                         <span id="live-metric-total" class="text-2xl font-semibold text-white">0</span>
                     </div>
-                    <div class="bg-slate-900 p-3 flex flex-col border-b-2 border-emerald-500/50">
+                    <div class="bg-[var(--card-bg)] p-3 flex flex-col border-b-2 border-emerald-500/50">
                         <span class="text-[10px] text-emerald-400 uppercase tracking-wider mb-1 font-semibold">Sucesso</span>
                         <span id="live-metric-success" class="text-2xl font-semibold text-emerald-400">0</span>
                     </div>
-                    <div class="bg-slate-900 p-3 flex flex-col border-b-2 border-rose-500/50">
+                    <div class="bg-[var(--card-bg)] p-3 flex flex-col border-b-2 border-rose-500/50">
                         <span class="text-[10px] text-rose-400 uppercase tracking-wider mb-1 font-semibold">Falha</span>
                         <span id="live-metric-failed" class="text-2xl font-semibold text-rose-400">0</span>
                     </div>
-                    <div id="live-metric-running-cell" class="bg-slate-900 p-3 flex flex-col transition-colors">
-                        <span class="text-[10px] text-slate-400 uppercase tracking-wider mb-1 font-semibold flex items-center gap-1.5">
+                    <div id="live-metric-running-cell" class="bg-[var(--card-bg)] p-3 flex flex-col transition-colors">
+                        <span class="text-[10px] text-[var(--text-muted)] uppercase tracking-wider mb-1 font-semibold flex items-center gap-1.5">
                             Rodando
                             <span id="live-stuck-badge" class="hidden text-amber-500 bg-amber-500/10 px-1 rounded font-bold uppercase tracking-tight text-[9px] animate-pulse">Travado</span>
                         </span>
                         <span id="live-metric-running" class="text-2xl font-semibold text-indigo-400">0</span>
                     </div>
-                    <div class="bg-slate-900 p-3 flex flex-col">
-                        <span class="text-[10px] text-slate-400 uppercase tracking-wider mb-1 font-semibold">Na Fila</span>
-                        <span id="live-metric-queued" class="text-2xl font-semibold text-slate-300">0</span>
+                    <div class="bg-[var(--card-bg)] p-3 flex flex-col">
+                        <span class="text-[10px] text-[var(--text-muted)] uppercase tracking-wider mb-1 font-semibold">Na Fila</span>
+                        <span id="live-metric-queued" class="text-2xl font-semibold text-[var(--text-main)]">0</span>
                     </div>
-                    <div class="bg-slate-900 p-3 flex flex-col">
-                        <span class="text-[10px] text-slate-400 uppercase tracking-wider mb-1 font-semibold">ETA</span>
-                        <span id="live-metric-eta" class="text-2xl font-semibold text-slate-500">--:--</span>
+                    <div class="bg-[var(--card-bg)] p-3 flex flex-col">
+                        <span class="text-[10px] text-[var(--text-muted)] uppercase tracking-wider mb-1 font-semibold">ETA</span>
+                        <span id="live-metric-eta" class="text-2xl font-semibold text-[var(--text-muted)]">--:--</span>
                     </div>
                 </div>
 
@@ -110,55 +110,55 @@
 
                 <!-- Barra de progresso segmentada (sucesso / falha) -->
                 <div class="flex items-center gap-4">
-                    <div class="flex-1 h-1.5 bg-slate-800 rounded-full overflow-hidden flex">
+                    <div class="flex-1 h-1.5 bg-[var(--card-bg)] rounded-full overflow-hidden flex">
                         <div id="live-backup-progress-bar" class="h-full bg-emerald-500 transition-all duration-500" style="width: 0%"></div>
                         <div id="live-backup-progress-failed-bar" class="h-full bg-rose-500 transition-all duration-500" style="width: 0%"></div>
                     </div>
-                    <span id="live-backup-progress-label" class="text-[11px] font-mono font-medium text-slate-400 uppercase whitespace-nowrap">0% Concluído</span>
+                    <span id="live-backup-progress-label" class="text-[11px] font-mono font-medium text-[var(--text-muted)] uppercase whitespace-nowrap">0% Concluído</span>
                 </div>
-                <p id="live-backup-status-message" class="text-xs text-slate-500 -mt-1">Aguardando inicio no worker...</p>
+                <p id="live-backup-status-message" class="text-xs text-[var(--text-muted)] -mt-1">Aguardando inicio no worker...</p>
             </div>
 
             <!-- ═══ TERMINAL DE LOGS ═══ -->
-            <div class="flex flex-col flex-1 min-h-0 bg-[#0a0f18] border-t border-slate-800">
+            <div class="flex flex-col flex-1 min-h-0 bg-[var(--card-bg)] border-t border-[var(--card-border)]">
 
                 <!-- Barra de controles dos logs -->
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between px-4 py-2.5 border-b border-slate-800 bg-slate-900 gap-3 flex-shrink-0">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between px-4 py-2.5 border-b border-[var(--card-border)] bg-[var(--card-bg)] gap-3 flex-shrink-0">
                     <!-- Filtros por nível -->
                     <div class="flex items-center gap-1.5 overflow-x-auto pb-0.5">
-                        <i data-lucide="filter" class="w-3.5 h-3.5 text-slate-500 mr-1 shrink-0"></i>
+                        <i data-lucide="filter" class="w-3.5 h-3.5 text-[var(--text-muted)] mr-1 shrink-0"></i>
                         <button data-log-filter="ALL"
                             class="log-filter-btn px-2.5 py-1 text-[11px] font-semibold rounded transition-colors whitespace-nowrap bg-slate-700 text-white">
                             Todos (<span id="log-count-all">0</span>)
                         </button>
                         <button data-log-filter="INFO"
-                            class="log-filter-btn px-2.5 py-1 text-[11px] font-semibold rounded transition-colors whitespace-nowrap text-slate-400 hover:bg-slate-800">
+                            class="log-filter-btn px-2.5 py-1 text-[11px] font-semibold rounded transition-colors whitespace-nowrap text-[var(--text-muted)] hover:bg-[var(--card-bg)]">
                             Info (<span id="log-count-info">0</span>)
                         </button>
                         <button data-log-filter="WARNING"
-                            class="log-filter-btn px-2.5 py-1 text-[11px] font-semibold rounded transition-colors whitespace-nowrap text-slate-400 hover:bg-slate-800">
+                            class="log-filter-btn px-2.5 py-1 text-[11px] font-semibold rounded transition-colors whitespace-nowrap text-[var(--text-muted)] hover:bg-[var(--card-bg)]">
                             Warn (<span id="log-count-warn">0</span>)
                         </button>
                         <button data-log-filter="ERROR"
-                            class="log-filter-btn px-2.5 py-1 text-[11px] font-semibold rounded transition-colors whitespace-nowrap text-slate-400 hover:bg-slate-800">
+                            class="log-filter-btn px-2.5 py-1 text-[11px] font-semibold rounded transition-colors whitespace-nowrap text-[var(--text-muted)] hover:bg-[var(--card-bg)]">
                             Error (<span id="log-count-err">0</span>)
                         </button>
                     </div>
                     <!-- Ações de log -->
                     <div class="flex items-center gap-2 self-start sm:self-auto flex-shrink-0">
                         <button id="live-log-copy-errors" type="button"
-                            class="flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-semibold rounded transition-colors border text-slate-300 hover:text-white hover:bg-slate-800 border-slate-700">
+                            class="flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-semibold rounded transition-colors border text-[var(--text-main)] hover:text-white hover:bg-[var(--card-bg)] border-[var(--card-border)]">
                             <i data-lucide="alert-triangle" class="w-3 h-3"></i>
                             Copiar Erros
                         </button>
                         <button id="live-log-copy-all" type="button"
-                            class="flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-semibold rounded transition-colors border text-slate-300 hover:text-white hover:bg-slate-800 border-slate-700">
+                            class="flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-semibold rounded transition-colors border text-[var(--text-main)] hover:text-white hover:bg-[var(--card-bg)] border-[var(--card-border)]">
                             <i data-lucide="copy" class="w-3 h-3"></i>
                             Copiar Todos
                         </button>
                         <div class="w-px h-4 bg-slate-700 mx-1 hidden sm:block"></div>
                         <button id="live-backup-clear" type="button"
-                            class="flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-semibold text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 rounded transition-colors">
+                            class="flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-semibold text-[var(--text-muted)] hover:text-rose-400 hover:bg-rose-500/10 rounded transition-colors">
                             <i data-lucide="trash-2" class="w-3 h-3"></i>
                             Limpar
                         </button>
@@ -169,7 +169,7 @@
                 <div id="live-backup-log-scroll-area" class="flex-1 overflow-y-auto overflow-x-auto px-4 py-2 font-mono text-[12px] leading-relaxed">
                     <div class="min-w-[600px] pb-4">
                         <!-- Cabeçalho das colunas (sticky) -->
-                        <div class="grid grid-cols-[75px_75px_155px_1fr] gap-3 px-2 py-1.5 text-slate-500 font-semibold text-[10px] uppercase tracking-widest border-b border-slate-800/80 sticky top-0 bg-[#0a0f18] z-10">
+                        <div class="grid grid-cols-[75px_75px_155px_1fr] gap-3 px-2 py-1.5 text-[var(--text-muted)] font-semibold text-[10px] uppercase tracking-widest border-b border-[var(--card-border)]/80 sticky top-0 bg-[var(--card-bg)] z-10">
                             <div>Tempo</div>
                             <div>Nível</div>
                             <div>Contexto</div>
@@ -195,12 +195,12 @@
 
 <!-- Widget flutuante (backup em massa minimizado) -->
 <div id="live-bulk-control" class="fixed bottom-4 right-4 z-[9998] hidden">
-    <div class="rounded-xl border border-slate-700 bg-slate-900/95 p-3 shadow-xl backdrop-blur">
-        <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">Backup em massa</p>
-        <p id="live-bulk-control-task" class="mt-1 max-w-[280px] truncate font-mono text-[11px] text-slate-300">-</p>
+    <div class="rounded-xl border border-[var(--card-border)] bg-[var(--card-bg)]/95 p-3 shadow-xl backdrop-blur">
+        <p class="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">Backup em massa</p>
+        <p id="live-bulk-control-task" class="mt-1 max-w-[280px] truncate font-mono text-[11px] text-[var(--text-main)]">-</p>
         <div class="mt-2 flex items-center gap-2">
             <button id="live-bulk-control-open" type="button"
-                class="inline-flex items-center gap-1 rounded-md border border-slate-700 px-2.5 py-1.5 text-xs text-slate-300 hover:bg-slate-800 transition-colors">
+                class="inline-flex items-center gap-1 rounded-md border border-[var(--card-border)] px-2.5 py-1.5 text-xs text-[var(--text-main)] hover:bg-[var(--card-bg)] transition-colors">
                 <i data-lucide="activity" class="h-3.5 w-3.5"></i>
                 Monitorar
             </button>
@@ -260,9 +260,11 @@
         const logCountInfo      = document.getElementById('log-count-info');
         const logCountWarn      = document.getElementById('log-count-warn');
         const logCountErr       = document.getElementById('log-count-err');
+        const csrfTokenInput    = document.querySelector('input[name="_csrf_token"]');
 
         // ── Estado ───────────────────────────────────────────────
         let pollTimer         = null;
+        let visibilityPollHandler = null;
         let elapsedTimer      = null;
         let lastUpdateTimer   = null;
         let currentTaskId     = null;
@@ -275,6 +277,7 @@
         let lastLogSeq        = 0;
         let lastProgressValue = 0;
         let pollInFlight      = false;
+        let shouldRefreshOnClose = false;
         let startTimestamp    = null;
         let lastPollTimestamp = null;
         let elapsedSecs       = 0;
@@ -303,7 +306,7 @@
             failed:   { cls: 'bg-rose-500/20 text-rose-400 border border-rose-500/30',       icon: 'x-circle',    label: 'Falhou'        },
             retry:    { cls: 'bg-orange-500/20 text-orange-400 border border-orange-500/30', icon: 'rotate-ccw',  label: 'Retry'         },
             stopping: { cls: 'bg-orange-500/20 text-orange-400 border border-orange-500/30', icon: 'loader-2',    label: 'Parando'       },
-            stopped:  { cls: 'bg-slate-700 text-slate-300 border border-slate-600',          icon: 'pause-circle',label: 'Interrompido'  },
+            stopped:  { cls: 'bg-slate-700 text-[var(--text-main)] border border-slate-600',          icon: 'pause-circle',label: 'Interrompido'  },
         };
 
         function setChipStatus(status, text) {
@@ -374,12 +377,12 @@
                     .replace('bg-slate-700 text-white', '')
                     .replace('bg-amber-500/20 text-amber-400', '')
                     .replace('bg-rose-500/20 text-rose-400', '')
-                    .replace('text-slate-400 hover:bg-slate-800', '')
+                    .replace('text-[var(--text-muted)] hover:bg-[var(--card-bg)]', '')
                     .trim();
                 if (bf === filter) {
                     btn.className += ` ${filterBtnActiveClass[filter] || 'bg-slate-700 text-white'}`;
                 } else {
-                    btn.className += ' text-slate-400 hover:bg-slate-800';
+                    btn.className += ' text-[var(--text-muted)] hover:bg-[var(--card-bg)]';
                 }
             });
             // Mostrar/ocultar linhas
@@ -422,7 +425,7 @@
             }
 
             // Cor da mensagem
-            let msgColor = 'text-slate-300';
+            let msgColor = 'text-[var(--text-main)]';
             if (level === 'WARNING') msgColor = 'text-amber-200/90';
             if (level === 'ERROR')   msgColor = 'text-rose-200/90';
 
@@ -437,7 +440,7 @@
             const ctxSafe = context.replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
             const row = document.createElement('div');
-            row.className = `grid grid-cols-[75px_75px_155px_1fr] gap-3 px-2 py-1 hover:bg-slate-800/30 rounded items-start ${rowBg}`;
+            row.className = `grid grid-cols-[75px_75px_155px_1fr] gap-3 px-2 py-1 hover:bg-[var(--card-bg)]/30 rounded items-start ${rowBg}`;
             row.setAttribute('data-log-level', level);
 
             // Ocultar se não bate com filtro atual
@@ -445,7 +448,7 @@
                 row.classList.add('hidden');
             }
 
-            row.innerHTML = `<div class="text-slate-500 select-none pt-0.5 text-[11px]">${time}</div><div class="select-none pt-0.5">${levelBadge}</div><div class="text-indigo-400/80 truncate pt-0.5 text-[11px]" title="${ctxSafe}">[${ctxSafe}]</div><div class="pt-0.5 ${msgColor} break-words">${message}</div>`;
+            row.innerHTML = `<div class="text-[var(--text-muted)] select-none pt-0.5 text-[11px]">${time}</div><div class="select-none pt-0.5">${levelBadge}</div><div class="text-indigo-400/80 truncate pt-0.5 text-[11px]" title="${ctxSafe}">[${ctxSafe}]</div><div class="pt-0.5 ${msgColor} break-words">${message}</div>`;
 
             logStream.appendChild(row);
             if (logEmpty) logEmpty.classList.add('hidden');
@@ -552,6 +555,7 @@
             if (logEmpty) logEmpty.classList.add('hidden');
             resetBulkPanel(payload);
             currentCompleted = false;
+            shouldRefreshOnClose = false;
             lastProgressValue = 0;
             elapsedSecs = 0;
             if (elapsedTimeEl) elapsedTimeEl.textContent = '00:00:00';
@@ -614,6 +618,10 @@
             currentTaskId = null;
             modal.classList.add('hidden');
             modal.classList.remove('flex');
+            if (shouldRefreshOnClose && document.querySelector('[data-backup-auto-refresh]')) {
+                shouldRefreshOnClose = false;
+                window.location.reload();
+            }
         }
 
         // ── Cópia de logs ─────────────────────────────────────────
@@ -628,12 +636,12 @@
             if (!btn) return;
             btn.innerHTML = '<i data-lucide="check" class="w-3 h-3"></i> Copiado!';
             btn.classList.add('bg-emerald-500/20', 'text-emerald-400', 'border-emerald-500/30');
-            btn.classList.remove('text-slate-300', 'hover:text-white', 'hover:bg-slate-800', 'border-slate-700');
+            btn.classList.remove('text-[var(--text-main)]', 'hover:text-white', 'hover:bg-[var(--card-bg)]', 'border-[var(--card-border)]');
             if (window.lucide && window.lucide.createIcons) window.lucide.createIcons({ nodes: [btn] });
             setTimeout(() => {
                 btn.innerHTML = originalHtml;
                 btn.classList.remove('bg-emerald-500/20', 'text-emerald-400', 'border-emerald-500/30');
-                btn.classList.add('text-slate-300', 'hover:text-white', 'hover:bg-slate-800', 'border-slate-700');
+                btn.classList.add('text-[var(--text-main)]', 'hover:text-white', 'hover:bg-[var(--card-bg)]', 'border-[var(--card-border)]');
                 if (window.lucide && window.lucide.createIcons) window.lucide.createIcons({ nodes: [btn] });
             }, 2000);
         }
@@ -737,7 +745,7 @@
             currentTaskId = taskId; currentCompleted = false; lastLogSeq = 0; lastProgressValue = 0; pollInFlight = false;
 
             const tick = async () => {
-                if (!currentTaskId || pollInFlight) return;
+                if (!currentTaskId || pollInFlight || document.hidden) return;
                 pollInFlight = true;
                 try {
                     const [statusData, logsData] = await Promise.all([
@@ -790,6 +798,16 @@
 
                         if (statusData.completed || ['success','failed','stopped'].includes(normalized)) {
                             currentCompleted = true;
+                            shouldRefreshOnClose = true;
+                            window.dispatchEvent(new CustomEvent('backup-live-completed', {
+                                detail: {
+                                    task_id: taskId,
+                                    status: normalized,
+                                    success_devices: success,
+                                    failed_devices: failed,
+                                    is_bulk: currentIsBulk,
+                                },
+                            }));
                             if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
                             stopElapsedTimer();
                             if (['success','failed','stopped'].includes(normalized) || statusData.completed) {
@@ -802,7 +820,17 @@
             };
 
             await tick();
-            pollTimer = setInterval(tick, 1200);
+            const pollIntervalMs = currentIsBulk ? 5000 : 3000;
+            pollTimer = setInterval(tick, pollIntervalMs);
+            if (visibilityPollHandler) {
+                document.removeEventListener('visibilitychange', visibilityPollHandler);
+            }
+            visibilityPollHandler = () => {
+                if (!document.hidden && currentTaskId && !pollInFlight && pollTimer) {
+                    tick();
+                }
+            };
+            document.addEventListener('visibilitychange', visibilityPollHandler);
         }
 
         // ── Disparar backup a partir de um form ───────────────────
@@ -836,11 +864,25 @@
             stopBtn.innerHTML = '<i data-lucide="loader-2" class="h-4 w-4 animate-spin"></i> Parando...';
             if (window.lucide && window.lucide.createIcons) window.lucide.createIcons({ nodes: [stopBtn] });
             try {
+                const csrfTokenValue = csrfTokenInput?.value || '';
+                const body = new URLSearchParams();
+                if (csrfTokenValue) {
+                    body.append('_csrf_token', csrfTokenValue);
+                }
                 const r = await fetch(currentCancelUrl, {
                     method: 'POST',
-                    headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' },
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json',
+                        'X-CSRF-Token': csrfTokenValue,
+                        'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+                    },
+                    body: body.toString(),
                 });
-                const data = await r.json();
+                const contentType = String(r.headers.get('content-type') || '').toLowerCase();
+                const data = contentType.includes('application/json')
+                    ? await r.json()
+                    : { ok: false, error: `HTTP ${r.status}` };
                 if (!r.ok || !data.ok) throw new Error(data.error || 'Falha ao solicitar parada.');
                 appendLog({
                     level: 'warning',
@@ -869,8 +911,6 @@
         document.querySelectorAll('[data-run-backup-live]').forEach(trigger => {
             trigger.addEventListener('click', async event => {
                 event.preventDefault();
-                const resumed = await tryResumeExistingBulkOperation();
-                if (resumed) return;
                 const formId = trigger.getAttribute('data-form-id');
                 let form = formId ? document.getElementById(formId) : null;
                 if (!form) form = trigger.closest('form');

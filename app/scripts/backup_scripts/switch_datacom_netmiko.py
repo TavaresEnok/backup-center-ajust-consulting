@@ -3,7 +3,7 @@ from typing import Tuple
 
 from netmiko import ConnectHandler
 
-from script_helpers import BackupLogger, prepare_backup_path
+from script_helpers import BackupLogger, friendly_failure_message, friendly_unexpected_error, prepare_backup_path
 
 
 ERROR_MARKERS = (
@@ -92,10 +92,7 @@ def realizar_backup(
     except Exception as exc:
         detail = f"{type(exc).__name__}: {exc}"
         category = _classify_connection_failure(detail)
-        if category == "CONEXAO":
-            msg = f"Falha de conectividade com o dispositivo. Detalhe: {detail}"
-        else:
-            msg = f"A conexao foi fechada, recusada ou as credenciais estao incorretas. Detalhe: {detail}"
+        msg = friendly_failure_message(category, detail)
         logger.emit(msg, "error")
         return (False, msg, None, category)
 
@@ -153,6 +150,6 @@ def realizar_backup(
         logger.emit(msg, "success")
         return (True, msg, caminho_local)
     except Exception as exc:
-        error_msg = f"Falha inesperada durante o backup: {exc}"
+        error_msg = friendly_unexpected_error(exc)
         logger.emit(error_msg, "error")
         return (False, error_msg, None, "SCRIPT")

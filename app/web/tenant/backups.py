@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, redirect, url_for, request, flash, session, abort, send_file, jsonify, Response, stream_with_context
-from app.web.auth.decorators import login_required
+from app.web.auth.decorators import login_required, tenant_admin_required
 from app.core.database import SessionLocal
 from app.models.backup import Backup, BackupStatus
 from app.models.device import Device
@@ -33,16 +33,18 @@ def get_db_and_tenant(tenant_slug):
         abort(403)
     db = SessionLocal()
     tenant = db.query(Tenant).filter(Tenant.slug == tenant_slug).first()
+    if not tenant:
+        db.close()
     return db, tenant
 
 
 def _bulk_status_refresh_min_interval_seconds() -> float:
-    raw = str(os.getenv("BULK_STATUS_REFRESH_MIN_INTERVAL_SECONDS", "2.5")).strip()
+    raw = str(os.getenv("BULK_STATUS_REFRESH_MIN_INTERVAL_SECONDS", "5")).strip()
     try:
         value = float(raw)
     except Exception:
         value = 2.5
-    return max(0.5, min(value, 10.0))
+    return max(1.0, min(value, 15.0))
 
 
 def _refresh_bulk_task_meta(task_id: str, task_meta: dict) -> dict:
@@ -398,8 +400,12 @@ def list_backups(tenant_slug):
     # Parâmetros de filtro
     device_id = request.args.get('device_id')
     status_filter = request.args.get('status')
-    page = request.args.get('page', 1, type=int)
-    per_page = 25
+    page = request.args.get('page', 1, type=int) or 1
+    if page < 1:
+        page = 1
+    per_page = request.args.get('per_page', 25, type=int) or 25
+    if per_page not in {25, 50, 100}:
+        per_page = 25
     
     # Query base
     query = db.query(Backup).join(Device).filter(
@@ -421,7 +427,9 @@ def list_backups(tenant_slug):
     
     # Contagem total antes de paginar
     total = query.count()
-    total_pages = (total + per_page - 1) // per_page
+    total_pages = max(1, (total + per_page - 1) // per_page)
+    if page > total_pages:
+        page = total_pages
     
     # Paginação
     backups = query.order_by(desc(Backup.created_at)).offset((page - 1) * per_page).limit(per_page).all()
@@ -498,6 +506,8 @@ def list_backups(tenant_slug):
         timeline_days=timeline_days,
         recommended_backup_ids=[str(i) for i in sorted(recommended_backup_ids)],
         page=page,
+        per_page=per_page,
+        total=total,
         total_pages=total_pages,
         current_device_id=device_id,
         current_status=status_filter
@@ -713,7 +723,7 @@ def task_logs(tenant_slug, task_id):
     except (TypeError, ValueError):
         after_seq = 0
 
-    logs = get_task_logs(task_id, after_seq=after_seq, limit=300)
+    logs = get_task_logs(task_id, after_seq=after_seq, limit=150)
     return jsonify({
         "ok": True,
         "task_id": task_id,
@@ -885,7 +895,7 @@ def bulk_task_logs(tenant_slug, task_id):
     allowed_task_ids = set(child_task_ids + [str(task_id)])
 
     # Keep payloads bounded; large responses under frequent polling can saturate uvicorn.
-    global_logs = get_global_logs(after_seq=after_seq, limit=300, tenant_id=str(tenant.id))
+    global_logs = get_global_logs(after_seq=after_seq, limit=100, tenant_id=str(tenant.id))
     entries = [
         entry
         for entry in (global_logs.get("entries") or [])
@@ -914,7 +924,7 @@ def global_backup_logs(tenant_slug):
     except (TypeError, ValueError):
         after_seq = 0
 
-    logs = get_global_logs(after_seq=after_seq, limit=300, tenant_id=str(tenant.id))
+    logs = get_global_logs(after_seq=after_seq, limit=120, tenant_id=str(tenant.id))
     return jsonify({
         "ok": True,
         "entries": logs["entries"],
@@ -929,6 +939,72 @@ def _classify_backup_error(message: str) -> str:
     if category in {"timeout", "port_refused", "vpn", "no_ping", "connection"}:
         return "conn"
     return "other"
+
+
+@bp.route('/failed/clear', methods=['POST'])
+@login_required
+@tenant_admin_required
+def clear_failed_backups(tenant_slug):
+    db, tenant = get_db_and_tenant(tenant_slug)
+    if not tenant:
+        db.close()
+        return "Tenant not found", 404
+
+    return_to = (request.form.get('return_to') or 'backups').strip().lower()
+    STORAGE_BASE = '/app/storage/backups'
+    deleted = 0
+    files_removed = 0
+
+    try:
+        failed_backups = (
+            db.query(Backup)
+            .join(Device)
+            .filter(
+                Device.tenant_id == tenant.id,
+                Backup.status == BackupStatus.FAILED,
+            )
+            .all()
+        )
+
+        for backup in failed_backups:
+            file_path = (backup.file_path or "").strip()
+            absolute_path = None
+            if file_path:
+                absolute_path = file_path if os.path.isabs(file_path) else os.path.join(STORAGE_BASE, file_path)
+            if absolute_path and os.path.exists(absolute_path):
+                try:
+                    os.remove(absolute_path)
+                    files_removed += 1
+                except OSError:
+                    logging.getLogger(__name__).warning("Falha ao remover arquivo de backup failed: %s", absolute_path)
+            db.delete(backup)
+            deleted += 1
+
+        user_id = session.get('user_id')
+        details = f"Limpeza manual de backups failed: removidos={deleted}, arquivos={files_removed}."
+        from app.services.activity_service import ActivityService
+        ActivityService.log_action(
+            db,
+            tenant.id,
+            user_id,
+            "CLEAR_FAILED_BACKUPS",
+            details,
+            request.remote_addr,
+        )
+    finally:
+        db.close()
+
+    is_ajax = (
+        request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+        or 'application/json' in (request.headers.get('Accept') or '')
+    )
+    if is_ajax:
+        return jsonify({"ok": True, "deleted": deleted, "files_removed": files_removed})
+
+    flash(f"Backups com status failed removidos: {deleted} (arquivos removidos: {files_removed}).", 'success')
+    if return_to == 'schedules':
+        return redirect(url_for('tenant_schedules.list_schedules', tenant_slug=tenant_slug))
+    return redirect(url_for('tenant_backups.list_backups', tenant_slug=tenant_slug, status='failed'))
 
 
 @bp.route('/issues')

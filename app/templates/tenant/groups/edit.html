@@ -5,7 +5,6 @@
 {% block content %}
 {% set role = session.get('user_role') %}
 {% set can_manage_admin = role in ['super_admin', 'tenant_owner', 'tenant_admin'] %}
-{% set can_operator = role in ['super_admin', 'tenant_owner', 'tenant_admin', 'tenant_technician'] %}
 
 <style>
   .ge-page {
@@ -14,14 +13,14 @@
     display: flex;
     flex-direction: column;
     gap: 1rem;
-    color: #cbd5e1;
+    color: var(--text-main);
   }
 
   .ge-back {
     display: inline-flex;
     align-items: center;
     gap: .4rem;
-    color: #64748b;
+    color: var(--text-muted);
     font-size: 11px;
     font-weight: 800;
     letter-spacing: .08em;
@@ -32,7 +31,7 @@
   .ge-back:hover { color: #818cf8; }
 
   .ge-head {
-    border-bottom: 1px solid #1f2937;
+    border-bottom: 1px solid var(--card-border);
     padding-bottom: .95rem;
     display: flex;
     flex-direction: column;
@@ -57,8 +56,8 @@
     width: 36px;
     height: 36px;
     border-radius: .58rem;
-    background: #0f172a;
-    border: 1px solid #1f2937;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
     color: #818cf8;
     display: inline-flex;
     align-items: center;
@@ -68,7 +67,7 @@
 
   .ge-title {
     margin: 0;
-    color: #f8fafc;
+    color: var(--text-main);
     font-size: clamp(1.45rem, 2.8vw, 2.12rem);
     font-weight: 800;
     letter-spacing: -.02em;
@@ -78,7 +77,7 @@
   .ge-subtitle {
     margin: .24rem 0 0;
     font-size: 13px;
-    color: #94a3b8;
+    color: var(--text-muted);
   }
 
   .ge-status {
@@ -86,14 +85,14 @@
     align-items: center;
     gap: .35rem;
     border-radius: 9999px;
-    border: 1px solid #334155;
+    border: 1px solid var(--card-border);
     padding: .28rem .65rem;
     font-size: 10px;
     font-weight: 800;
     letter-spacing: .08em;
     text-transform: uppercase;
-    background: #0f172a;
-    color: #cbd5e1;
+    background: var(--card-bg);
+    color: var(--text-main);
   }
 
   .ge-status.active {
@@ -115,9 +114,9 @@
     justify-content: center;
     gap: .4rem;
     border-radius: .58rem;
-    border: 1px solid #334155;
-    background: #0f172a;
-    color: #cbd5e1;
+    border: 1px solid var(--card-border);
+    background: var(--card-bg);
+    color: var(--text-main);
     min-height: 34px;
     font-size: 11px;
     font-weight: 700;
@@ -127,7 +126,7 @@
     transition: all .16s ease;
   }
 
-  .ge-btn:hover { background: #1e293b; color: #fff; border-color: #475569; }
+  .ge-btn:hover { background: var(--card-bg); color: #fff; border-color: var(--card-border); }
   .ge-btn:focus-visible { outline: 2px solid #6366f1; outline-offset: 2px; }
 
   .ge-btn.indigo {
@@ -171,18 +170,18 @@
   .ge-btn.danger:hover { background: #be123c; border-color: #be123c; }
 
   .ge-form-card {
-    border: 1px solid #1f2937;
+    border: 1px solid var(--card-border);
     border-radius: .95rem;
-    background: #111113;
-    box-shadow: 0 14px 34px rgba(2, 6, 23, 0.34);
+    background: var(--card-bg);
+    box-shadow: 0 14px 34px var(--card-shadow);
     overflow: hidden;
   }
 
   .ge-ops-card {
-    border: 1px solid #1f2937;
+    border: 1px solid var(--card-border);
     border-radius: .95rem;
-    background: #111113;
-    box-shadow: 0 14px 34px rgba(2, 6, 23, 0.34);
+    background: var(--card-bg);
+    box-shadow: 0 14px 34px var(--card-shadow);
     overflow: hidden;
   }
 
@@ -206,9 +205,9 @@
   }
 
   .ge-mini-stat {
-    border: 1px solid #1f2937;
+    border: 1px solid var(--card-border);
     border-radius: .72rem;
-    background: #0a0a0b;
+    background: var(--bg-app);
     padding: .78rem;
   }
 
@@ -218,20 +217,20 @@
     font-weight: 800;
     letter-spacing: .08em;
     text-transform: uppercase;
-    color: #64748b;
+    color: var(--text-muted);
     margin-bottom: .3rem;
   }
 
   .ge-mini-value {
     font-size: 1rem;
     font-weight: 800;
-    color: #f8fafc;
+    color: var(--text-main);
   }
 
   .ge-mini-help {
     margin-top: .28rem;
     font-size: 11px;
-    color: #94a3b8;
+    color: var(--text-muted);
     line-height: 1.4;
   }
 
@@ -247,14 +246,14 @@
     align-items: center;
     gap: .35rem;
     border-radius: 9999px;
-    border: 1px solid #334155;
+    border: 1px solid var(--card-border);
     padding: .32rem .62rem;
     font-size: 10px;
     font-weight: 800;
     letter-spacing: .08em;
     text-transform: uppercase;
-    background: #0f172a;
-    color: #cbd5e1;
+    background: var(--card-bg);
+    color: var(--text-main);
   }
 
   .ge-chip.good { border-color: rgba(16, 185, 129, 0.32); background: rgba(16, 185, 129, 0.12); color: #34d399; }
@@ -271,19 +270,19 @@
     align-items: center;
     justify-content: space-between;
     gap: .8rem;
-    border: 1px solid #1f2937;
+    border: 1px solid var(--card-border);
     border-radius: .65rem;
-    background: #0a0a0b;
+    background: var(--bg-app);
     padding: .62rem .72rem;
   }
 
   .ge-failure-item strong {
-    color: #e2e8f0;
+    color: var(--text-main);
     font-size: 12px;
   }
 
   .ge-failure-item span {
-    color: #94a3b8;
+    color: var(--text-muted);
     font-size: 11px;
   }
 
@@ -294,76 +293,11 @@
     align-items: center;
     justify-content: center;
     border-radius: .55rem;
-    background: #0f172a;
-    color: #f8fafc;
+    background: var(--card-bg);
+    color: var(--text-main);
     font-weight: 800;
     font-size: 12px;
-    border: 1px solid #334155;
-  }
-
-  .ge-console {
-    position: fixed;
-    inset: 0;
-    background: rgba(2, 6, 23, 0.72);
-    backdrop-filter: blur(4px);
-    display: none;
-    align-items: center;
-    justify-content: center;
-    padding: 1rem;
-    z-index: 10000;
-  }
-
-  .ge-console.is-open { display: flex; }
-
-  .ge-console-panel {
-    width: min(920px, 100%);
-    max-height: 88vh;
-    border: 1px solid #1f2937;
-    border-radius: 1rem;
-    background: #0b1120;
-    box-shadow: 0 24px 60px rgba(2, 6, 23, 0.55);
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-  }
-
-  .ge-console-head {
-    padding: .95rem 1rem;
-    border-bottom: 1px solid #1f2937;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: .8rem;
-    background: #111827;
-  }
-
-  .ge-console-body {
-    padding: 1rem;
-    display: flex;
-    flex-direction: column;
-    gap: .85rem;
-    min-height: 0;
-  }
-
-  .ge-console-actions {
-    display: flex;
-    gap: .5rem;
-    flex-wrap: wrap;
-  }
-
-  .ge-console-output {
-    min-height: 220px;
-    max-height: 46vh;
-    overflow: auto;
-    border: 1px solid #1f2937;
-    border-radius: .8rem;
-    background: #050816;
-    color: #cbd5e1;
-    padding: .95rem;
-    font-size: 12px;
-    line-height: 1.5;
-    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-    white-space: pre-wrap;
+    border: 1px solid var(--card-border);
   }
 
   .ge-form-body {
@@ -375,13 +309,13 @@
 
   .ge-section-title {
     margin: 0;
-    border-bottom: 1px solid #1f2937;
+    border-bottom: 1px solid var(--card-border);
     padding-bottom: .45rem;
     font-size: 10px;
     font-weight: 800;
     letter-spacing: .09em;
     text-transform: uppercase;
-    color: #64748b;
+    color: var(--text-muted);
   }
 
   .ge-field { display: flex; flex-direction: column; gap: .32rem; }
@@ -389,22 +323,22 @@
   .ge-label {
     font-size: 12px;
     font-weight: 700;
-    color: #e2e8f0;
+    color: var(--text-main);
   }
 
   .ge-help {
     margin: 0;
     font-size: 11px;
-    color: #64748b;
+    color: var(--text-muted);
   }
 
   .ge-input, .ge-textarea, .ge-select {
     width: 100%;
     min-height: 38px;
-    border: 1px solid #1f2937;
+    border: 1px solid var(--card-border);
     border-radius: .56rem;
-    background: #0a0a0b;
-    color: #f8fafc;
+    background: var(--bg-app);
+    color: var(--text-main);
     font-size: 13px;
     padding: .58rem .7rem;
     transition: all .15s ease;
@@ -433,15 +367,15 @@
     display: flex;
     align-items: flex-start;
     gap: .75rem;
-    border: 2px solid #1f2937;
+    border: 2px solid var(--card-border);
     border-radius: .82rem;
-    background: #0a0a0b;
+    background: var(--bg-app);
     padding: .72rem .76rem;
     cursor: pointer;
     transition: all .15s ease;
   }
 
-  .ge-conn-card:hover { border-color: #334155; background: #0f172a; }
+  .ge-conn-card:hover { border-color: var(--card-border); background: var(--card-bg); }
 
   .ge-conn-card.selected {
     border-color: rgba(99, 102, 241, 0.68);
@@ -461,9 +395,9 @@
     width: 34px;
     height: 34px;
     border-radius: .55rem;
-    border: 1px solid #334155;
+    border: 1px solid var(--card-border);
     background: #111827;
-    color: #94a3b8;
+    color: var(--text-muted);
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -478,7 +412,7 @@
 
   .ge-conn-title {
     margin: 0;
-    color: #f8fafc;
+    color: var(--text-main);
     font-size: 13px;
     font-weight: 800;
     letter-spacing: -.01em;
@@ -486,15 +420,15 @@
 
   .ge-conn-desc {
     margin: .25rem 0 0;
-    color: #94a3b8;
+    color: var(--text-muted);
     font-size: 12px;
     line-height: 1.4;
   }
 
   .ge-subbox {
-    border: 1px solid #334155;
+    border: 1px solid var(--card-border);
     border-radius: .72rem;
-    background: #0f172a;
+    background: var(--card-bg);
     padding: .78rem;
     display: grid;
     gap: .72rem;
@@ -511,8 +445,8 @@
   }
 
   .ge-form-foot {
-    border-top: 1px solid #1f2937;
-    background: #161618;
+    border-top: 1px solid var(--card-border);
+    background: var(--card-bg);
     padding: .8rem 1.1rem;
     display: flex;
     align-items: center;
@@ -525,7 +459,7 @@
     border: 1px solid rgba(190, 24, 93, 0.45);
     border-radius: .95rem;
     background: rgba(76, 5, 25, 0.38);
-    box-shadow: 0 14px 34px rgba(2, 6, 23, 0.34);
+    box-shadow: 0 14px 34px var(--card-shadow);
   }
 
   .ge-danger-body {
@@ -575,7 +509,7 @@
           <span class="ge-title-icon"><i data-lucide="folder-tree" class="w-5 h-5"></i></span>
           <div>
             <h1 class="ge-title">Editar Grupo</h1>
-            <p class="ge-subtitle">Atualize as informacoes operacionais e o metodo de conectividade de <strong style="color:#e2e8f0;">{{ group.name }}</strong>.</p>
+            <p class="ge-subtitle">Atualize as informacoes operacionais e o metodo de conectividade de <strong style="color:var(--text-main);">{{ group.name }}</strong>.</p>
           </div>
         </div>
       </div>
@@ -593,15 +527,6 @@
       </a>
 
       {% if can_manage_admin %}
-      <form id="form-run-connection-audit-edit-group" action="{{ url_for('tenant_devices.run_connection_audit_all', tenant_slug=tenant.slug) }}" method="POST" class="inline">
-        {% include 'partials/csrf.html' %}
-        <input type="hidden" name="group_id" value="{{ group.id }}">
-        <button type="button" data-run-backup-live data-form-id="form-run-connection-audit-edit-group" class="ge-btn indigo">
-          <i data-lucide="activity" class="w-3.5 h-3.5"></i>
-          Testar conexao do grupo
-        </button>
-      </form>
-
       {% if group.uses_vpn %}
       <form id="form-test-vpn-edit-group" action="{{ url_for('tenant_groups.test_group_vpn', tenant_slug=tenant.slug, group_id=group.id) }}" method="POST" class="inline">
         {% include 'partials/csrf.html' %}
@@ -612,128 +537,90 @@
       </form>
       {% endif %}
 
-      {% if can_operator and group.uses_jump_host %}
-      <form id="form-diagnose-jump-edit-group" action="{{ url_for('tenant_groups.diagnose_group_jump', tenant_slug=tenant.slug, group_id=group.id) }}" method="POST" class="inline">
-        {% include 'partials/csrf.html' %}
-        {% if sample_device %}
-        <input type="hidden" name="device_id" value="{{ sample_device.id }}">
-        {% endif %}
-        <button type="button" data-run-backup-live data-form-id="form-diagnose-jump-edit-group" class="ge-btn success">
-          <i data-lucide="stethoscope" class="w-3.5 h-3.5"></i>
-          Diagnosticar acesso
-        </button>
-      </form>
-
-      <button type="button" id="collectJumpDiagnosticsBtn" class="ge-btn">
-        <i data-lucide="clipboard-list" class="w-3.5 h-3.5"></i>
-        Coletar diagnostico
-      </button>
-
-      <button type="button" id="openJumpConsoleBtn" class="ge-btn indigo">
-        <i data-lucide="terminal-square" class="w-3.5 h-3.5"></i>
-        Console Jump
-      </button>
-      {% endif %}
       {% endif %}
     </div>
   </div>
-
-  {% if can_operator and group.uses_jump_host %}
-  <section class="ge-ops-card">
-    <div class="ge-ops-body">
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:.8rem;flex-wrap:wrap;">
-        <div>
-          <p class="ge-section-title" style="border:0;padding:0;margin:0 0 .35rem;">Painel de Falhas de Credencial</p>
-          <div class="ge-status-row">
-            {% set jump_status = jump_state.status or 'unknown' %}
-            <span class="ge-chip {% if jump_status in ['healthy'] %}good{% elif jump_status in ['degraded'] %}warn{% else %}bad{% endif %}">
-              <i data-lucide="{% if jump_status in ['healthy'] %}check-circle-2{% elif jump_status in ['degraded'] %}triangle-alert{% else %}x-circle{% endif %}" class="w-3.5 h-3.5"></i>
-              Jump Host {{ jump_status|replace('_', ' ') }}
-            </span>
-            <span class="ge-chip">
-              <i data-lucide="server" class="w-3.5 h-3.5"></i>
-              {{ jump_state.jump_host or group.jump_host or 'Nao configurado' }}
-            </span>
-            <span class="ge-chip">
-              <i data-lucide="user" class="w-3.5 h-3.5"></i>
-              {{ jump_state.jump_username or group.jump_username or 'Sem usuario' }}
-            </span>
-          </div>
-        </div>
-        <div class="ge-mini-help" style="max-width:340px;text-align:right;">
-          Ultimo teste: <strong style="color:#e2e8f0;">{{ jump_state.last_checked_at or 'nunca' }}</strong><br>
-          Ultima troca de senha/chave: <strong style="color:#e2e8f0;">{{ jump_state.last_password_change_at or 'nao registrada' }}</strong>
-        </div>
-      </div>
-
-      <div class="ge-ops-grid">
-        <div class="ge-mini-grid">
-          <div class="ge-mini-stat">
-            <span class="ge-mini-label">Jump Host vinculado</span>
-            <div class="ge-mini-value">{{ group.jump_host or 'Nao definido' }}</div>
-            <div class="ge-mini-help">Porta {{ group.jump_port or 22 }} • Usuario {{ group.jump_username or '-' }}</div>
-          </div>
-          <div class="ge-mini-stat">
-            <span class="ge-mini-label">Ultima falha</span>
-            <div class="ge-mini-value">{{ jump_state.last_failure_category or 'Nenhuma' }}</div>
-            <div class="ge-mini-help">{{ jump_state.last_failure_message or 'Sem falhas registradas no monitoramento.' }}</div>
-          </div>
-          <div class="ge-mini-stat">
-            <span class="ge-mini-label">Status do ultimo teste</span>
-            <div class="ge-mini-value">{{ jump_state.status or 'unknown' }}</div>
-            <div class="ge-mini-help">
-              {% if jump_state.tcp_ok %}TCP OK{% else %}TCP pendente{% endif %} •
-              {% if jump_state.ssh_ok %}SSH OK{% else %}SSH pendente{% endif %} •
-              {% if jump_state.shell_ok %}Shell OK{% else %}Shell pendente{% endif %}
-            </div>
-          </div>
-          <div class="ge-mini-stat">
-            <span class="ge-mini-label">Recomendacao atual</span>
-            <div class="ge-mini-value" style="font-size:.9rem;">{{ jump_summary.recommendation or recommendation_for_category(jump_state.last_failure_category or '') }}</div>
-            <div class="ge-mini-help">Ajuda o operador a agir sem precisar descobrir o proximo passo manualmente.</div>
-          </div>
-        </div>
-
-        <div class="ge-failure-list">
-          <div class="ge-failure-item">
-            <div>
-              <strong>Auth failed no dispositivo final</strong>
-              <span>Dispositivo respondeu, mas rejeitou usuario/senha.</span>
-            </div>
-            <span class="ge-failure-count">{{ jump_summary.device_auth_failed }}</span>
-          </div>
-          <div class="ge-failure-item">
-            <div>
-              <strong>Falha de acesso ao Jump Host</strong>
-              <span>SSH no Linux bastion falhou antes de chegar ao alvo.</span>
-            </div>
-            <span class="ge-failure-count">{{ jump_summary.jump_host_access_failed }}</span>
-          </div>
-          <div class="ge-failure-item">
-            <div>
-              <strong>Jump Host online, mas sem rota</strong>
-              <span>Linux acessivel, sem canal ate a porta de gerencia do dispositivo.</span>
-            </div>
-            <span class="ge-failure-count">{{ jump_summary.jump_host_no_route }}</span>
-          </div>
-          <div class="ge-failure-item">
-            <div>
-              <strong>Timeout</strong>
-              <span>Latencia, sobrecarga ou dispositivo sem resposta no tempo esperado.</span>
-            </div>
-            <span class="ge-failure-count">{{ jump_summary.timeout }}</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-  {% endif %}
 
   <div class="ge-form-card">
     <form action="{{ url_for('tenant_groups.edit_group', tenant_slug=tenant.slug, group_id=group.id) }}" method="POST" x-data="{ connectionType: '{{ group.connection_type or ('vpn' if group.uses_vpn else ('jump_host' if group.uses_jump_host else 'direct')) }}' }">
       {% include 'partials/csrf.html' %}
 
       <div class="ge-form-body">
+        {% set has_saved_credentials = can_view_saved_credentials and (group_current_vpn_password or group_current_vpn_ipsec_secret or group_current_jump_password or group_current_jump_key) %}
+        {% if has_saved_credentials %}
+        <div>
+          <p class="ge-section-title">Credenciais Atuais Salvas</p>
+          <div class="ge-subbox" style="margin-top:.72rem;border-color:rgba(56,189,248,.35);">
+            {% if group_current_vpn_password %}
+            <div class="ge-field">
+              <label class="ge-label">Senha VPN atual</label>
+              <div style="position:relative;">
+                <input type="password" id="group_saved_vpn_password" readonly class="ge-input" style="padding-right:2.6rem;"
+                  value="{{ group_current_vpn_password }}">
+                <button type="button"
+                  onclick="toggleSensitiveField('group_saved_vpn_password', this)"
+                  class="ge-btn"
+                  style="position:absolute;right:.35rem;top:50%;transform:translateY(-50%);min-height:28px;padding:.25rem .4rem;"
+                  aria-label="Mostrar ou ocultar senha VPN atual">
+                  <i data-lucide="eye" class="w-4 h-4"></i>
+                </button>
+              </div>
+            </div>
+            {% endif %}
+
+            {% if group_current_vpn_ipsec_secret %}
+            <div class="ge-field">
+              <label class="ge-label">IPSec Secret atual</label>
+              <div style="position:relative;">
+                <input type="password" id="group_saved_vpn_ipsec_secret" readonly class="ge-input" style="padding-right:2.6rem;"
+                  value="{{ group_current_vpn_ipsec_secret }}">
+                <button type="button"
+                  onclick="toggleSensitiveField('group_saved_vpn_ipsec_secret', this)"
+                  class="ge-btn"
+                  style="position:absolute;right:.35rem;top:50%;transform:translateY(-50%);min-height:28px;padding:.25rem .4rem;"
+                  aria-label="Mostrar ou ocultar IPSec Secret atual">
+                  <i data-lucide="eye" class="w-4 h-4"></i>
+                </button>
+              </div>
+            </div>
+            {% endif %}
+
+            {% if group_current_jump_password %}
+            <div class="ge-field">
+              <label class="ge-label">Senha SSH atual (Jump Host)</label>
+              <div style="position:relative;">
+                <input type="password" id="group_saved_jump_password" readonly class="ge-input" style="padding-right:2.6rem;"
+                  value="{{ group_current_jump_password }}">
+                <button type="button"
+                  onclick="toggleSensitiveField('group_saved_jump_password', this)"
+                  class="ge-btn"
+                  style="position:absolute;right:.35rem;top:50%;transform:translateY(-50%);min-height:28px;padding:.25rem .4rem;"
+                  aria-label="Mostrar ou ocultar senha SSH atual">
+                  <i data-lucide="eye" class="w-4 h-4"></i>
+                </button>
+              </div>
+            </div>
+            {% endif %}
+
+            {% if group_current_jump_key %}
+            <div class="ge-field">
+              <label class="ge-label">Chave privada SSH atual</label>
+              <button
+                type="button"
+                class="ge-btn"
+                style="margin-bottom:.45rem;"
+                onclick="toggleSensitiveBlock('group_saved_jump_key_block', this, 'Mostrar chave', 'Ocultar chave')"
+                aria-expanded="false"
+              >Mostrar chave</button>
+              <div id="group_saved_jump_key_block" style="display:none;">
+                <textarea readonly class="ge-textarea">{{ group_current_jump_key }}</textarea>
+              </div>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+        {% endif %}
+
         <div>
           <p class="ge-section-title">Informacoes Gerais</p>
           <div style="display:grid;gap:.72rem;margin-top:.72rem;">
@@ -765,8 +652,8 @@
               <input type="radio" name="connection_type" value="vpn" class="ge-conn-radio" x-model="connectionType">
               <span class="ge-conn-icon"><i data-lucide="shield-check" class="w-4 h-4"></i></span>
               <span>
-                <span class="ge-conn-title">VPN (L2TP / PPTP / WireGuard)</span>
-                <span class="ge-conn-desc">Estabelece tunel VPN seguro antes de acessar os IPs internos.</span>
+                <span class="ge-conn-title">VPN (L2TP/IPSec)</span>
+                <span class="ge-conn-desc">Estabelece tunel L2TP/IPSec seguro antes de acessar os IPs internos.</span>
               </span>
             </label>
 
@@ -788,9 +675,6 @@
               <label class="ge-label">Tipo de VPN</label>
               <select name="vpn_type" class="ge-select">
                 <option value="l2tp" {{ 'selected' if group.vpn_type == 'l2tp' else '' }}>L2TP/IPSec</option>
-                <option value="pptp" {{ 'selected' if group.vpn_type == 'pptp' else '' }}>PPTP</option>
-                <option value="openvpn" {{ 'selected' if group.vpn_type == 'openvpn' else '' }}>OpenVPN</option>
-                <option value="wireguard" {{ 'selected' if group.vpn_type == 'wireguard' else '' }}>WireGuard</option>
               </select>
             </div>
             <div class="ge-field">
@@ -805,13 +689,63 @@
             </div>
             <div class="ge-field">
               <label class="ge-label">Senha VPN</label>
-              <input type="password" name="vpn_password" class="ge-input" placeholder="********">
+              {% if can_view_saved_credentials and group_current_vpn_password %}
+              <label class="ge-label" style="margin-top:.3rem;">Senha VPN atual</label>
+              <div style="position:relative;margin-bottom:.45rem;">
+                <input type="password" id="group_vpn_password_current" readonly class="ge-input" style="padding-right:2.6rem;"
+                  value="{{ group_current_vpn_password }}">
+                <button type="button"
+                  onclick="toggleSensitiveField('group_vpn_password_current', this)"
+                  class="ge-btn"
+                  style="position:absolute;right:.35rem;top:50%;transform:translateY(-50%);min-height:28px;padding:.25rem .4rem;"
+                  aria-label="Mostrar ou ocultar senha VPN atual">
+                  <i data-lucide="eye" class="w-4 h-4"></i>
+                </button>
+              </div>
+              {% endif %}
+              <label class="ge-label" style="margin-top:.2rem;">Nova senha VPN</label>
+              <div style="position:relative;">
+                <input type="password" id="group_vpn_password" name="vpn_password" class="ge-input" style="padding-right:2.6rem;" placeholder="********"
+                  value="">
+                <button type="button"
+                  onclick="toggleSensitiveField('group_vpn_password', this)"
+                  class="ge-btn"
+                  style="position:absolute;right:.35rem;top:50%;transform:translateY(-50%);min-height:28px;padding:.25rem .4rem;"
+                  aria-label="Mostrar ou ocultar senha VPN">
+                  <i data-lucide="eye" class="w-4 h-4"></i>
+                </button>
+              </div>
               <p class="ge-help">Deixe em branco para manter a senha atual.</p>
             </div>
           </div>
           <div class="ge-field">
             <label class="ge-label">IPSec Secret (PSK)</label>
-            <input type="password" name="vpn_ipsec_secret" class="ge-input" placeholder="********">
+            {% if can_view_saved_credentials and group_current_vpn_ipsec_secret %}
+            <label class="ge-label" style="margin-top:.3rem;">IPSec Secret atual</label>
+            <div style="position:relative;margin-bottom:.45rem;">
+              <input type="password" id="group_vpn_ipsec_secret_current" readonly class="ge-input" style="padding-right:2.6rem;"
+                value="{{ group_current_vpn_ipsec_secret }}">
+              <button type="button"
+                onclick="toggleSensitiveField('group_vpn_ipsec_secret_current', this)"
+                class="ge-btn"
+                style="position:absolute;right:.35rem;top:50%;transform:translateY(-50%);min-height:28px;padding:.25rem .4rem;"
+                aria-label="Mostrar ou ocultar IPSec atual">
+                <i data-lucide="eye" class="w-4 h-4"></i>
+              </button>
+            </div>
+            {% endif %}
+            <label class="ge-label" style="margin-top:.2rem;">Novo IPSec Secret (PSK)</label>
+            <div style="position:relative;">
+              <input type="password" id="group_vpn_ipsec_secret" name="vpn_ipsec_secret" class="ge-input" style="padding-right:2.6rem;" placeholder="********"
+                value="">
+              <button type="button"
+                onclick="toggleSensitiveField('group_vpn_ipsec_secret', this)"
+                class="ge-btn"
+                style="position:absolute;right:.35rem;top:50%;transform:translateY(-50%);min-height:28px;padding:.25rem .4rem;"
+                aria-label="Mostrar ou ocultar IPSec Secret">
+                <i data-lucide="eye" class="w-4 h-4"></i>
+              </button>
+            </div>
             <p class="ge-help">Deixe em branco para manter o segredo atual.</p>
           </div>
         </div>
@@ -835,12 +769,51 @@
             </div>
             <div class="ge-field">
               <label class="ge-label">Senha SSH</label>
-              <input type="password" name="jump_password" class="ge-input" placeholder="********">
+              {% if can_view_saved_credentials and group_current_jump_password %}
+              <label class="ge-label" style="margin-top:.3rem;">Senha SSH atual</label>
+              <div style="position:relative;margin-bottom:.45rem;">
+                <input type="password" id="group_jump_password_current" readonly class="ge-input" style="padding-right:2.6rem;"
+                  value="{{ group_current_jump_password }}">
+                <button type="button"
+                  onclick="toggleSensitiveField('group_jump_password_current', this)"
+                  class="ge-btn"
+                  style="position:absolute;right:.35rem;top:50%;transform:translateY(-50%);min-height:28px;padding:.25rem .4rem;"
+                  aria-label="Mostrar ou ocultar senha SSH atual">
+                  <i data-lucide="eye" class="w-4 h-4"></i>
+                </button>
+              </div>
+              {% endif %}
+              <label class="ge-label" style="margin-top:.2rem;">Nova senha SSH</label>
+              <div style="position:relative;">
+                <input type="password" id="group_jump_password" name="jump_password" class="ge-input" style="padding-right:2.6rem;" placeholder="********"
+                  value="">
+                <button type="button"
+                  onclick="toggleSensitiveField('group_jump_password', this)"
+                  class="ge-btn"
+                  style="position:absolute;right:.35rem;top:50%;transform:translateY(-50%);min-height:28px;padding:.25rem .4rem;"
+                  aria-label="Mostrar ou ocultar senha SSH">
+                  <i data-lucide="eye" class="w-4 h-4"></i>
+                </button>
+              </div>
               <p class="ge-help">Deixe em branco para manter a senha atual.</p>
             </div>
           </div>
           <div class="ge-field">
             <label class="ge-label">Chave Privada SSH (opcional)</label>
+            {% if can_view_saved_credentials and group_current_jump_key %}
+            <label class="ge-label" style="margin-top:.3rem;">Chave privada SSH atual</label>
+            <button
+              type="button"
+              class="ge-btn"
+              style="margin-bottom:.45rem;"
+              onclick="toggleSensitiveBlock('group_jump_key_current_block', this, 'Mostrar chave', 'Ocultar chave')"
+              aria-expanded="false"
+            >Mostrar chave</button>
+            <div id="group_jump_key_current_block" style="display:none;margin-bottom:.45rem;">
+              <textarea readonly class="ge-textarea">{{ group_current_jump_key }}</textarea>
+            </div>
+            {% endif %}
+            <label class="ge-label" style="margin-top:.2rem;">Nova chave privada SSH</label>
             <textarea name="jump_key" class="ge-textarea" placeholder="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----"></textarea>
             <p class="ge-help">Cole a chave privada para autenticacao por chave.</p>
           </div>
@@ -890,44 +863,6 @@
   </div>
 </div>
 
-{% if can_operator and group.uses_jump_host %}
-<div id="jumpConsoleModal" class="ge-console" aria-hidden="true">
-  <div class="ge-console-panel">
-    <div class="ge-console-head">
-      <div>
-        <h3 style="margin:0;color:#f8fafc;font-size:1rem;font-weight:800;">Console Operacional do Jump Host</h3>
-        <p style="margin:.25rem 0 0;color:#94a3b8;font-size:12px;">Sessao controlada, auditada e sem expor credenciais. Use apenas comandos operacionais permitidos.</p>
-      </div>
-      <button type="button" id="closeJumpConsoleBtn" class="ge-btn">Fechar</button>
-    </div>
-    <div class="ge-console-body">
-      <div class="ge-console-actions">
-        <button type="button" class="ge-btn jump-preset-btn" data-command="hostname">hostname</button>
-        <button type="button" class="ge-btn jump-preset-btn" data-command="uptime">uptime</button>
-        <button type="button" class="ge-btn jump-preset-btn" data-command="ip route">ip route</button>
-        <button type="button" class="ge-btn jump-preset-btn" data-command="ss -tunap">ss -tunap</button>
-        {% if sample_device %}
-        <button type="button" class="ge-btn jump-preset-btn" data-command="ping -c 2 -W 2 {{ sample_device.ip_address }}">ping alvo</button>
-        <button type="button" class="ge-btn jump-preset-btn" data-command="nc -vz -w 3 {{ sample_device.ip_address }} {{ sample_device.port or 22 }}">porta alvo</button>
-        {% endif %}
-      </div>
-
-      <form id="jumpConsoleForm" style="display:flex;gap:.55rem;flex-wrap:wrap;">
-        <input type="text" id="jumpConsoleCommand" class="ge-input" style="flex:1;min-width:240px;" placeholder="Ex: ping -c 2 -W 2 {{ sample_device.ip_address if sample_device else '10.0.0.1' }}">
-        <button type="submit" class="ge-btn primary">Executar</button>
-      </form>
-
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:.8rem;flex-wrap:wrap;">
-        <div class="ge-help">Comandos permitidos: hostname, uptime, ip, ss, route, ping, nc, traceroute, telnet.</div>
-        <button type="button" id="copyJumpConsoleBtn" class="ge-btn">Copiar saida</button>
-      </div>
-
-      <pre id="jumpConsoleOutput" class="ge-console-output">Aguardando comando...</pre>
-    </div>
-  </div>
-</div>
-{% endif %}
-
 {% include 'partials/backup_live_modal.html' %}
 <script>
 document.addEventListener('DOMContentLoaded', function () {
@@ -935,110 +870,32 @@ document.addEventListener('DOMContentLoaded', function () {
     window.lucide.createIcons();
   }
 
-  const csrfInput = document.querySelector('input[name="_csrf_token"]');
-  const csrfToken = csrfInput ? csrfInput.value : '';
-  const collectBtn = document.getElementById('collectJumpDiagnosticsBtn');
-  const openConsoleBtn = document.getElementById('openJumpConsoleBtn');
-  const consoleModal = document.getElementById('jumpConsoleModal');
-  const closeConsoleBtn = document.getElementById('closeJumpConsoleBtn');
-  const consoleForm = document.getElementById('jumpConsoleForm');
-  const consoleInput = document.getElementById('jumpConsoleCommand');
-  const consoleOutput = document.getElementById('jumpConsoleOutput');
-  const copyConsoleBtn = document.getElementById('copyJumpConsoleBtn');
-  const presetButtons = Array.from(document.querySelectorAll('.jump-preset-btn'));
-
-  async function postForm(url, data) {
-    const body = new URLSearchParams();
-    Object.entries(data || {}).forEach(([key, value]) => {
-      if (value !== undefined && value !== null) body.append(key, value);
-    });
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'X-Requested-With': 'XMLHttpRequest',
-        'Accept': 'application/json',
-        'X-CSRF-Token': csrfToken,
-        'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
-      },
-      body: body.toString()
-    });
-    return response.json();
-  }
-
-  if (collectBtn && consoleOutput) {
-    collectBtn.addEventListener('click', async function () {
-      collectBtn.disabled = true;
-      collectBtn.textContent = 'Coletando...';
-      try {
-        const payload = await postForm('{{ url_for("tenant_groups.collect_jump_diagnostics", tenant_slug=tenant.slug, group_id=group.id) }}', {
-          {% if sample_device %}device_id: '{{ sample_device.id }}'{% endif %}
-        });
-        consoleOutput.textContent = payload.summary || payload.error || 'Nenhum retorno.';
-        if (consoleModal) consoleModal.classList.add('is-open');
-      } catch (error) {
-        consoleOutput.textContent = 'Falha ao coletar diagnostico remoto.';
-        if (consoleModal) consoleModal.classList.add('is-open');
-      } finally {
-        collectBtn.disabled = false;
-        collectBtn.innerHTML = '<i data-lucide="clipboard-list" class="w-3.5 h-3.5"></i> Coletar diagnostico';
-        if (window.lucide && window.lucide.createIcons) window.lucide.createIcons();
+  window.toggleSensitiveField = function (inputId, button) {
+    const input = document.getElementById(inputId);
+    if (!input) {
+      return;
+    }
+    input.type = input.type === 'password' ? 'text' : 'password';
+    const icon = button ? button.querySelector('i[data-lucide]') : null;
+    if (icon) {
+      icon.setAttribute('data-lucide', input.type === 'password' ? 'eye' : 'eye-off');
+      if (window.lucide && window.lucide.createIcons) {
+        window.lucide.createIcons();
       }
-    });
-  }
+    }
+  };
 
-  if (openConsoleBtn && consoleModal) {
-    openConsoleBtn.addEventListener('click', function () {
-      consoleModal.classList.add('is-open');
-      if (consoleInput) consoleInput.focus();
-    });
-  }
-  if (closeConsoleBtn && consoleModal) {
-    closeConsoleBtn.addEventListener('click', function () {
-      consoleModal.classList.remove('is-open');
-    });
-  }
-  if (consoleModal) {
-    consoleModal.addEventListener('click', function (event) {
-      if (event.target === consoleModal) {
-        consoleModal.classList.remove('is-open');
-      }
-    });
-  }
+  window.toggleSensitiveBlock = function (blockId, button, showLabel, hideLabel) {
+    const block = document.getElementById(blockId);
+    if (!block || !button) {
+      return;
+    }
+    const isHidden = block.style.display === 'none' || block.style.display === '';
+    block.style.display = isHidden ? 'block' : 'none';
+    button.textContent = isHidden ? hideLabel : showLabel;
+    button.setAttribute('aria-expanded', isHidden ? 'true' : 'false');
+  };
 
-  async function runConsoleCommand(command) {
-    if (!consoleOutput) return;
-    consoleOutput.textContent = '$ ' + command + '\n\nExecutando...';
-    const payload = await postForm('{{ url_for("tenant_groups.exec_jump_console", tenant_slug=tenant.slug, group_id=group.id) }}', {
-      command: command
-    });
-    consoleOutput.textContent = '$ ' + command + '\n\n' + (payload.output || payload.error || 'Sem saida.');
-  }
-
-  presetButtons.forEach(function (button) {
-    button.addEventListener('click', function () {
-      const command = button.dataset.command || '';
-      if (consoleInput) consoleInput.value = command;
-      runConsoleCommand(command);
-    });
-  });
-
-  if (consoleForm) {
-    consoleForm.addEventListener('submit', function (event) {
-      event.preventDefault();
-      const command = (consoleInput && consoleInput.value ? consoleInput.value : '').trim();
-      if (!command) return;
-      runConsoleCommand(command);
-    });
-  }
-
-  if (copyConsoleBtn && consoleOutput) {
-    copyConsoleBtn.addEventListener('click', async function () {
-      try {
-        await navigator.clipboard.writeText(consoleOutput.textContent || '');
-      } catch (error) {
-      }
-    });
-  }
 });
 </script>
 {% endblock %}

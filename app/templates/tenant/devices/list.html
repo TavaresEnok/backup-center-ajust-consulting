@@ -23,8 +23,8 @@
   .dev-page {
     margin: -1rem;
     min-height: 100vh;
-    background: #020617;
-    color: #e2e8f0;
+    background: var(--bg-app);
+    color: var(--text-main);
     padding: 1rem;
   }
   @media (min-width: 768px) {
@@ -51,9 +51,9 @@
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: .08em;
-    color: #64748b;
+    color: var(--text-muted);
   }
-  .dev-breadcrumb a { color: #64748b; text-decoration: none; }
+  .dev-breadcrumb a { color: var(--text-muted); text-decoration: none; }
   .dev-breadcrumb a:hover { color: #818cf8; }
 
   .dev-head-main {
@@ -79,8 +79,8 @@
     display: none;
     padding: .62rem;
     border-radius: .5rem;
-    border: 1px solid #1e293b;
-    background: #0f172a;
+    border: 1px solid var(--card-bg);
+    background: var(--card-bg);
   }
   .dev-head-icon i { width: 1.25rem; height: 1.25rem; color: #818cf8; }
   @media (min-width: 640px) { .dev-head-icon { display: inline-flex; } }
@@ -89,14 +89,14 @@
     margin: 0;
     font-size: 1.6rem;
     font-weight: 800;
-    color: #fff;
+    color: var(--text-main);
     letter-spacing: -0.02em;
   }
 
   .dev-subtitle {
     margin: .5rem 0 0;
     font-size: .92rem;
-    color: #94a3b8;
+    color: var(--text-muted);
     max-width: 50rem;
   }
 
@@ -110,7 +110,7 @@
   .dev-top-sep {
     width: 1px;
     height: 1.5rem;
-    background: #1e293b;
+    background: var(--card-bg);
     margin: 0 .2rem;
     display: none;
   }
@@ -121,16 +121,16 @@
     align-items: center;
     gap: .35rem;
     border-radius: .5rem;
-    border: 1px solid #334155;
-    background: rgba(15, 23, 42, .5);
-    color: #cbd5e1;
+    border: 1px solid var(--card-border);
+    background: var(--card-bg);
+    color: var(--text-main);
     font-size: .75rem;
     font-weight: 700;
     padding: .5rem .9rem;
     text-decoration: none;
     transition: all .15s ease;
   }
-  .dev-btn:hover { background: #1e293b; color: #fff; }
+  .dev-btn:hover { background: var(--card-bg); color: var(--text-main); }
   .dev-btn i { width: .9rem; height: .9rem; }
 
   .dev-btn-indigo {
@@ -151,8 +151,8 @@
   .dev-btn-primary:hover { background: #6366f1; border-color: #6366f1; }
 
   .dev-filters {
-    background: rgba(15, 23, 42, .65);
-    border: 1px solid #1e293b;
+    background: var(--card-bg);
+    border: 1px solid var(--card-bg);
     border-radius: .85rem;
     padding: 1.15rem;
     box-shadow: 0 8px 20px rgba(0,0,0,.2);
@@ -181,16 +181,16 @@
     transform: translateY(-50%);
     width: 1rem;
     height: 1rem;
-    color: #64748b;
+    color: var(--text-muted);
   }
 
   .dev-input,
   .dev-select {
     width: 100%;
-    background: #020617;
-    border: 1px solid #1e293b;
+    background: var(--bg-app);
+    border: 1px solid var(--card-bg);
     border-radius: .55rem;
-    color: #e2e8f0;
+    color: var(--text-main);
     font-size: .8rem;
     outline: none;
     transition: border-color .15s ease, box-shadow .15s ease;
@@ -199,7 +199,7 @@
   .dev-input { padding: .58rem .8rem .58rem 2.35rem; }
   .dev-select { padding: .58rem .65rem; }
 
-  .dev-input::placeholder { color: #64748b; }
+  .dev-input::placeholder { color: var(--text-muted); }
   .dev-input:focus,
   .dev-select:focus {
     border-color: rgba(99, 102, 241, .7);
@@ -241,7 +241,7 @@
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: .08em;
-    color: #64748b;
+    color: var(--text-muted);
     margin-right: .45rem;
     white-space: nowrap;
   }
@@ -254,18 +254,18 @@
     padding: .4rem .9rem;
     font-size: .74rem;
     font-weight: 600;
-    color: #94a3b8;
+    color: var(--text-muted);
     text-decoration: none;
     transition: all .15s ease;
   }
-  .dev-tab:hover { background: rgba(30,41,59,.65); color: #e2e8f0; }
+  .dev-tab:hover { background: rgba(30,41,59,.65); color: var(--text-main); }
   .dev-tab.is-active,
-  .dev-tab.active-gray { background: #1e293b; border-color: #334155; color: #fff; }
+  .dev-tab.active-gray { background: var(--card-bg); border-color: var(--card-border); color: var(--text-main); }
   .dev-tab.active-indigo { background: rgba(99,102,241,.12); border-color: rgba(99,102,241,.35); color: #818cf8; }
   .dev-tab.active-sky { background: rgba(14,165,233,.12); border-color: rgba(14,165,233,.35); color: #38bdf8; }
 
   .dev-bulk {
-    border: 1px solid #1e293b;
+    border: 1px solid var(--card-bg);
     border-radius: .85rem;
     background: rgba(15,23,42,.7);
     padding: .9rem 1.1rem;
@@ -290,7 +290,7 @@
     color: #818cf8;
     border: 1px solid rgba(99,102,241,.28);
   }
-  .dev-bulk-text { font-size: .8rem; color: #94a3b8; }
+  .dev-bulk-text { font-size: .8rem; color: var(--text-muted); }
 
   .dev-bulk-actions {
     display: flex;
@@ -318,14 +318,14 @@
     backdrop-filter: blur(8px);
   }
   .dev-floating-bulk.is-visible { display: flex; }
-  .dev-floating-bulk-label { font-size: .84rem; color: #cbd5e1; }
+  .dev-floating-bulk-label { font-size: .84rem; color: var(--text-main); }
   .dev-floating-bulk-label strong { color: #818cf8; }
 
   .dev-table-card {
-    border: 1px solid #1e293b;
+    border: 1px solid var(--card-bg);
     border-radius: .85rem;
     overflow: hidden;
-    background: rgba(15,23,42,.65);
+    background: var(--card-bg);
     box-shadow: 0 10px 22px rgba(0,0,0,.24);
     backdrop-filter: blur(6px);
   }
@@ -335,8 +335,8 @@
 
   .dev-table thead th {
     background: rgba(15,23,42,.72);
-    border-bottom: 1px solid #1e293b;
-    color: #64748b;
+    border-bottom: 1px solid var(--card-bg);
+    color: var(--text-muted);
     font-size: 10px;
     font-weight: 800;
     text-transform: uppercase;
@@ -353,14 +353,12 @@
   }
 
   .dev-row { border-left: 2px solid transparent; transition: background .15s ease; }
-  .dev-row.is-online { border-left-color: rgba(16,185,129,.88); }
-  .dev-row.is-offline { border-left-color: rgba(244,63,94,.9); }
   .dev-row:hover { background: rgba(30,41,59,.55); }
   .dev-row.is-failure { background: rgba(244,63,94,.04); }
   .dev-row.is-selected { border-left-color: #6366f1; background: rgba(99,102,241,.08); }
 
   .dev-name { font-weight: 700; color: #f1f5f9; }
-  .dev-meta { margin-top: .25rem; font-size: 11px; color: #64748b; display: flex; align-items: center; gap: .3rem; flex-wrap: wrap; }
+  .dev-meta { margin-top: .25rem; font-size: 11px; color: var(--text-muted); display: flex; align-items: center; gap: .3rem; flex-wrap: wrap; }
   .dev-meta-subgroup {
     display: inline-flex;
     align-items: center;
@@ -372,9 +370,9 @@
     display: inline-flex;
     align-items: center;
     border-radius: .4rem;
-    border: 1px solid #334155;
+    border: 1px solid var(--card-border);
     background: rgba(30,41,59,.7);
-    color: #94a3b8;
+    color: var(--text-muted);
     font-size: 10px;
     font-weight: 700;
     text-transform: uppercase;
@@ -389,41 +387,26 @@
     display: inline-flex;
     align-items: center;
     gap: .38rem;
-    border: 1px solid #1e293b;
+    border: 1px solid var(--card-bg);
     border-radius: .42rem;
-    background: #020617;
-    color: #cbd5e1;
+    background: var(--bg-app);
+    color: var(--text-main);
     padding: .28rem .45rem;
     font-size: 11px;
     cursor: pointer;
     transition: all .15s ease;
     font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   }
-  .dev-ip-copy:hover { border-color: #334155; background: #0f172a; }
+  .dev-ip-copy:hover { border-color: var(--card-border); background: var(--card-bg); }
   .dev-ip-copy .ip-main { color: #a5b4fc; }
-  .dev-ip-copy .ip-port { color: #64748b; }
+  .dev-ip-copy .ip-port { color: var(--text-muted); }
   .dev-ip-copy i,
-  .dev-ip-copy svg { width: .75rem; height: .75rem; color: #475569; flex-shrink: 0; }
+  .dev-ip-copy svg { width: .75rem; height: .75rem; color: var(--card-border); flex-shrink: 0; }
   .dev-ip-copy.copied i { color: #34d399; }
 
-  .dev-conn {
-    display: inline-flex;
-    align-items: center;
-    gap: .32rem;
-    font-size: 10px;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: .06em;
-  }
-  .dev-conn-dot { width: .38rem; height: .38rem; border-radius: 999px; display: inline-block; }
-  .dev-conn.online { color: #94a3b8; }
-  .dev-conn.online .dev-conn-dot { background: #10b981; box-shadow: 0 0 6px rgba(16,185,129,.6); }
-  .dev-conn.offline { color: #fb7185; }
-  .dev-conn.offline .dev-conn-dot { background: #f43f5e; box-shadow: 0 0 6px rgba(244,63,94,.6); }
-
-  .dev-lastbackup { display: inline-flex; align-items: center; gap: .4rem; font-size: 12px; color: #cbd5e1; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+  .dev-lastbackup { display: inline-flex; align-items: center; gap: .4rem; font-size: 12px; color: var(--text-main); font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
   .dev-lastbackup i,
-  .dev-lastbackup svg { width: .85rem; height: .85rem; color: #475569; flex-shrink: 0; }
+  .dev-lastbackup svg { width: .85rem; height: .85rem; color: var(--card-border); flex-shrink: 0; }
 
   .dev-status {
     display: inline-flex;
@@ -432,7 +415,7 @@
     border-radius: .38rem;
     border: 1px solid rgba(100,116,139,.35);
     background: rgba(30,41,59,.7);
-    color: #94a3b8;
+    color: var(--text-muted);
     font-size: 10px;
     font-weight: 800;
     text-transform: uppercase;
@@ -459,7 +442,7 @@
     gap: .8rem;
     font-size: 10px;
     font-weight: 700;
-    color: #64748b;
+    color: var(--text-muted);
   }
   .dev-status-meta span {
     display: inline-flex;
@@ -488,21 +471,22 @@
     width: 2rem;
     height: 2rem;
     border-radius: .5rem;
-    color: #94a3b8;
+    color: var(--text-muted);
     transition: all .15s ease;
   }
   .dev-icon-btn i { width: 1rem; height: 1rem; }
-  .dev-icon-btn:hover { background: #1e293b; color: #fff; }
+  .dev-icon-btn:hover { background: var(--card-bg); color: var(--text-main); }
   .dev-icon-btn.play:hover { color: #34d399; background: rgba(16,185,129,.12); }
   .dev-icon-btn.terminal:hover { color: #38bdf8; background: rgba(14,165,233,.12); }
   .dev-icon-btn.logs:hover { color: #818cf8; background: rgba(99,102,241,.12); }
+  .dev-icon-btn.danger:hover { color: #f87171; background: rgba(248,113,113,.12); }
   .dev-icon-btn.diagnose:hover { color: #34d399; background: rgba(16,185,129,.12); }
   .dev-icon-btn.collect:hover { color: #38bdf8; background: rgba(14,165,233,.12); }
-  .dev-icon-sep { width: 1px; height: 1.2rem; background: #1e293b; margin: 0 .2rem; }
+  .dev-icon-sep { width: 1px; height: 1.2rem; background: var(--card-bg); margin: 0 .2rem; }
 
   .dev-pagination {
     border-top: 1px solid rgba(30,41,59,.75);
-    background: rgba(15,23,42,.5);
+    background: var(--card-bg);
     padding: .9rem 1.1rem;
     display: flex;
     flex-direction: column;
@@ -514,8 +498,8 @@
     .dev-pagination { flex-direction: row; }
   }
 
-  .dev-page-text { font-size: 12px; color: #94a3b8; }
-  .dev-page-text strong { color: #e2e8f0; font-weight: 600; }
+  .dev-page-text { font-size: 12px; color: var(--text-muted); }
+  .dev-page-text strong { color: var(--text-main); font-weight: 600; }
 
   .dev-page-links {
     display: flex;
@@ -525,35 +509,35 @@
   }
 
   .dev-page-btn {
-    border: 1px solid #334155;
+    border: 1px solid var(--card-border);
     border-radius: .48rem;
-    background: #1e293b;
-    color: #94a3b8;
+    background: var(--card-bg);
+    color: var(--text-muted);
     font-size: 11px;
     font-weight: 600;
     padding: .38rem .7rem;
     text-decoration: none;
     transition: all .15s ease;
   }
-  .dev-page-btn:hover { background: #334155; color: #e2e8f0; }
+  .dev-page-btn:hover { background: var(--card-border); color: var(--text-main); }
   .dev-page-btn.active {
     border-color: #4f46e5;
     background: #4f46e5;
-    color: #fff;
+    color: var(--text-main);
   }
 
   .dev-empty {
     text-align: center;
     padding: 3rem 1rem;
-    color: #94a3b8;
+    color: var(--text-muted);
   }
-  .dev-empty i { width: 2.5rem; height: 2.5rem; color: #475569; margin: 0 auto .8rem; display: block; }
+  .dev-empty i { width: 2.5rem; height: 2.5rem; color: var(--card-border); margin: 0 auto .8rem; display: block; }
 
   .dev-row-check {
     width: 1rem;
     height: 1rem;
     border-radius: .2rem;
-    border: 1px solid #475569;
+    border: 1px solid var(--card-border);
     accent-color: #6366f1;
   }
 
@@ -573,7 +557,7 @@
     width: min(900px, 100%);
     max-height: 88vh;
     border-radius: .95rem;
-    border: 1px solid #1e293b;
+    border: 1px solid var(--card-bg);
     background: #0b1120;
     box-shadow: 0 24px 60px rgba(2, 6, 23, .55);
     overflow: hidden;
@@ -582,7 +566,7 @@
   }
   .dev-diag-head {
     padding: .95rem 1rem;
-    border-bottom: 1px solid #1e293b;
+    border-bottom: 1px solid var(--card-bg);
     background: #111827;
     display: flex;
     justify-content: space-between;
@@ -600,74 +584,14 @@
     min-height: 220px;
     max-height: 52vh;
     overflow: auto;
-    border: 1px solid #1e293b;
+    border: 1px solid var(--card-bg);
     border-radius: .75rem;
     background: #050816;
-    color: #cbd5e1;
+    color: var(--text-main);
     font-size: 12px;
     line-height: 1.45;
     padding: .9rem;
     white-space: pre-wrap;
-    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-  }
-
-  .dev-jump-modal {
-    position: fixed;
-    inset: 0;
-    z-index: 130;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    background: rgba(2, 6, 23, .78);
-    backdrop-filter: blur(6px);
-    padding: 1rem;
-  }
-  .dev-jump-modal.is-open { display: flex; }
-  .dev-jump-panel {
-    width: min(920px, 100%);
-    max-height: 88vh;
-    border-radius: .95rem;
-    border: 1px solid #1e293b;
-    background: #0b1120;
-    box-shadow: 0 24px 60px rgba(2, 6, 23, .55);
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-  }
-  .dev-jump-head {
-    padding: .95rem 1rem;
-    border-bottom: 1px solid #1e293b;
-    background: #111827;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: .8rem;
-  }
-  .dev-jump-body {
-    padding: 1rem;
-    display: flex;
-    flex-direction: column;
-    gap: .8rem;
-    min-height: 0;
-  }
-  .dev-jump-actions {
-    display: flex;
-    align-items: center;
-    gap: .5rem;
-    flex-wrap: wrap;
-  }
-  .dev-jump-output {
-    min-height: 220px;
-    max-height: 48vh;
-    overflow: auto;
-    border: 1px solid #1e293b;
-    border-radius: .75rem;
-    background: #050816;
-    color: #cbd5e1;
-    font-size: 12px;
-    line-height: 1.5;
-    white-space: pre-wrap;
-    padding: .9rem;
     font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   }
 
@@ -719,7 +643,7 @@
         <a href="{{ url_for('tenant_groups.list_groups', tenant_slug=tenant.slug) }}">Grupos</a>
         {% if current_group %}
         <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
-        <span style="color:#cbd5e1;">{{ current_group.name }}</span>
+        <span style="color:var(--text-main);">{{ current_group.name }}</span>
         {% endif %}
       </div>
 
@@ -744,58 +668,6 @@
           <a href="{{ url_for('tenant_groups.list_groups', tenant_slug=tenant.slug) }}" class="dev-btn">
             <i data-lucide="arrow-left"></i>
             Voltar
-          </a>
-          {% endif %}
-
-          {% if current_group and can_manage_admin %}
-          <form id="form-run-connection-audit-current-group-header"
-                action="{{ url_for('tenant_devices.run_connection_audit_all', tenant_slug=tenant.slug) }}"
-                method="POST" class="inline">
-            {% include 'partials/csrf.html' %}
-            <input type="hidden" name="group_id" value="{{ current_group.id }}">
-            <button type="button" data-run-backup-live data-form-id="form-run-connection-audit-current-group-header" class="dev-btn dev-btn-indigo">
-              <i data-lucide="activity"></i>
-              Testar Conexao
-            </button>
-          </form>
-          {% endif %}
-
-          {% if current_group and current_group.uses_jump_host and can_operator %}
-          <form id="form-diagnose-jump-current-group-header"
-                action="{{ url_for('tenant_groups.diagnose_group_jump', tenant_slug=tenant.slug, group_id=current_group.id) }}"
-                method="POST" class="inline">
-            {% include 'partials/csrf.html' %}
-            <button type="button" data-run-backup-live data-form-id="form-diagnose-jump-current-group-header" class="dev-btn" style="border-color:rgba(16,185,129,.35);background:rgba(16,185,129,.12);color:#34d399;">
-              <i data-lucide="stethoscope"></i>
-              Diagnosticar Jump
-            </button>
-          </form>
-          <button type="button"
-                  class="dev-btn"
-                  id="openJumpConsoleHeaderBtn"
-                  data-open-jump-console
-                  data-group-name="{{ current_group.name }}"
-                  data-console-url="{{ url_for('tenant_groups.exec_jump_console', tenant_slug=tenant.slug, group_id=current_group.id) }}"
-                  data-collect-url="{{ url_for('tenant_groups.collect_jump_diagnostics', tenant_slug=tenant.slug, group_id=current_group.id) }}"
-                  style="border-color:rgba(14,165,233,.35);background:rgba(14,165,233,.12);color:#38bdf8;">
-            <i data-lucide="terminal-square"></i>
-            Acessar Linux Jump
-          </button>
-          {% elif current_group and can_operator %}
-          <button type="button"
-                  class="dev-btn"
-                  disabled
-                  title="Este grupo nao usa Jump Host"
-                  style="opacity:.6;cursor:not-allowed;border-color:#334155;background:rgba(15,23,42,.35);color:#94a3b8;">
-            <i data-lucide="terminal-square"></i>
-            Sem Jump Host
-          </button>
-          {% elif can_operator %}
-          <a href="{{ url_for('tenant_groups.list_groups', tenant_slug=tenant.slug) }}"
-             class="dev-btn"
-             title="Selecione um grupo com tipo Jump Host para liberar o acesso Linux">
-            <i data-lucide="terminal-square"></i>
-            Acessar Linux Jump
           </a>
           {% endif %}
 
@@ -853,8 +725,6 @@
         <div class="dev-selects">
           <select name="connection" class="dev-select">
             <option value="">Conexao: Todos</option>
-            <option value="online" {% if arg_connection == 'online' %}selected{% endif %}>Online</option>
-            <option value="offline" {% if arg_connection == 'offline' %}selected{% endif %}>Offline</option>
             <option value="unknown" {% if arg_connection == 'unknown' %}selected{% endif %}>Nao monitorado</option>
           </select>
 
@@ -950,7 +820,7 @@
                 <th style="width:48px;text-align:center;"><button type="button" id="toggleAllBtn" class="dev-icon-btn" style="margin:0 auto;"><i data-lucide="square"></i></button></th>
                 <th>Dispositivo e Organizacao</th>
                 <th>Tipo de Equipamento</th>
-                <th>Endereco IP e Status</th>
+                <th>Endereco IP e Porta</th>
                 <th>Ultimo Backup</th>
                 <th>Estado Operacional</th>
                 <th style="text-align:right;">Acoes</th>
@@ -961,10 +831,9 @@
               {% for device in devices %}
               {% set row_state = 'critical' if device.last_backup_status == 'failure' else ('attention' if (device.last_connection_status in ['offline', 'error'] or not device.backup_scheduled) else 'normal') %}
               {% set is_failed = device.last_backup_status == 'failure' %}
-              {% set conn_offline = device.last_connection_status in ['offline', 'error'] %}
               {% set type_name = device.type.name if device.type else 'Nao definido' %}
               {% set type_name_lc = type_name|lower %}
-              <tr class="dev-row {% if conn_offline %}is-offline{% else %}is-online{% endif %} {% if is_failed %}is-failure{% endif %}" data-row-device-id="{{ device.id }}">
+              <tr class="dev-row {% if is_failed %}is-failure{% endif %}" data-row-device-id="{{ device.id }}">
                 <td style="text-align:center;">
                   <input type="checkbox" name="device_ids" value="{{ device.id }}" form="bulkForm" data-device-type-id="{{ device.device_type_id or '' }}" class="dev-row-check row-checkbox">
                 </td>
@@ -994,10 +863,6 @@
                       <span class="ip-port">:{{ device.port }}</span>
                       <i data-lucide="copy" class="copy-icon"></i>
                     </button>
-                    <span class="dev-conn {% if conn_offline %}offline{% else %}online{% endif %}">
-                      <span class="dev-conn-dot"></span>
-                      {{ 'Offline' if conn_offline else 'Online' }}
-                    </span>
                   </div>
                 </td>
 
@@ -1008,7 +873,7 @@
                     {{ (device.last_backup_at|localtime).strftime('%Y-%m-%d %H:%M') }}
                   </span>
                   {% else %}
-                  <span class="dev-lastbackup" style="color:#64748b;">Nunca</span>
+                  <span class="dev-lastbackup" style="color:var(--text-muted);">Nunca</span>
                   {% endif %}
                 </td>
 
@@ -1049,44 +914,21 @@
                       <i data-lucide="git-compare"></i>
                     </a>
 
-                    {% if can_operator and device.group and device.group.uses_jump_host and device.group.is_active and device.is_active %}
-                    <button type="button"
-                            data-run-backup-live
-                            data-form-id="form-diagnose-jump-device-{{ device.id }}"
-                            class="dev-icon-btn diagnose"
-                            title="Diagnosticar acesso via Jump Host">
-                      <i data-lucide="stethoscope"></i>
-                    </button>
-                    <button type="button"
-                            class="dev-icon-btn collect"
-                            title="Coletar diagnostico remoto via Jump Host"
-                            data-collect-diagnostics
-                            data-device-name="{{ device.name }}"
-                            data-device-ip="{{ device.ip_address }}"
-                            data-device-id="{{ device.id }}"
-                            data-group-id="{{ device.group.id }}"
-                            data-collect-url="{{ url_for('tenant_groups.collect_jump_diagnostics', tenant_slug=tenant.slug, group_id=device.group.id) }}">
-                      <i data-lucide="clipboard-list"></i>
-                    </button>
-                    <button type="button"
-                            class="dev-icon-btn terminal"
-                            title="Abrir Terminal Jump Host"
-                            data-open-jump-console
-                            data-group-name="{{ device.group.name }}"
-                            data-device-name="{{ device.name }}"
-                            data-device-ip="{{ device.ip_address }}"
-                            data-device-id="{{ device.id }}"
-                            data-console-url="{{ url_for('tenant_groups.exec_jump_console', tenant_slug=tenant.slug, group_id=device.group.id) }}"
-                            data-collect-url="{{ url_for('tenant_groups.collect_jump_diagnostics', tenant_slug=tenant.slug, group_id=device.group.id) }}">
-                      <i data-lucide="terminal"></i>
-                    </button>
-                    {% endif %}
-
                     <span class="dev-icon-sep"></span>
 
                     <a href="{{ url_for('tenant_devices.edit_device', tenant_slug=tenant.slug, device_id=device.id, group_id=current_group.id if current_group else None) }}" class="dev-icon-btn" title="Editar">
                       <i data-lucide="settings"></i>
                     </a>
+
+                    {% if can_manage_admin %}
+                    <button type="submit"
+                            form="form-delete-{{ device.id }}"
+                            class="dev-icon-btn danger"
+                            title="Apagar dispositivo"
+                            onclick="return confirm('Apagar o dispositivo {{ device.name }}? Ele sera removido da lista, mas o historico permanece preservado.');">
+                      <i data-lucide="trash-2"></i>
+                    </button>
+                    {% endif %}
                   </div>
                 </td>
               </tr>
@@ -1141,15 +983,13 @@
       {% if current_group %}<input type="hidden" name="group_id" value="{{ current_group.id }}">{% endif %}
     </form>
 
-    {% if can_operator and device.group and device.group.uses_jump_host and device.group.is_active and device.is_active %}
-    <form id="form-diagnose-jump-device-{{ device.id }}"
-          action="{{ url_for('tenant_groups.diagnose_group_jump', tenant_slug=tenant.slug, group_id=device.group.id) }}"
-          method="POST"
-          class="hidden">
+    {% if can_manage_admin %}
+    <form id="form-delete-{{ device.id }}" action="{{ url_for('tenant_devices.delete_device', tenant_slug=tenant.slug, device_id=device.id, group_id=current_group.id if current_group else None) }}" method="POST" class="hidden">
       {% include 'partials/csrf.html' %}
-      <input type="hidden" name="device_id" value="{{ device.id }}">
+      {% if current_group %}<input type="hidden" name="return_group_id" value="{{ current_group.id }}">{% endif %}
     </form>
     {% endif %}
+
     {% endfor %}
 
     <form id="form-backup-all" action="{{ url_for('tenant_devices.run_backup_all', tenant_slug=tenant.slug) }}" method="POST" class="hidden"
@@ -1182,7 +1022,7 @@
     {% if current_group %}
     <div id="subgroupModal" aria-hidden="true"
         onclick="if(event.target===this){this.classList.add('hidden');this.classList.remove('flex');this.setAttribute('aria-hidden','true');}"
-        class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+        class="fixed inset-0 z-50 hidden items-center justify-center bg-[var(--card-bg)]/60 backdrop-blur-sm p-4">
         <div class="w-full max-w-4xl h-[90vh] max-h-[90vh] overflow-hidden rounded-2xl bg-white shadow-2xl flex flex-col">
             <div class="px-6 py-4 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
                 <div>
@@ -1307,8 +1147,8 @@
   <div class="dev-diag-panel">
     <div class="dev-diag-head">
       <div>
-        <h3 id="deviceDiagnosticTitle" style="margin:0;color:#f8fafc;font-size:1rem;font-weight:800;">Diagnostico remoto</h3>
-        <p id="deviceDiagnosticSubtitle" style="margin:.28rem 0 0;color:#94a3b8;font-size:12px;">Coleta operacional via Jump Host sem expor credenciais.</p>
+        <h3 id="deviceDiagnosticTitle" style="margin:0;color:var(--text-main);font-size:1rem;font-weight:800;">Diagnostico remoto</h3>
+        <p id="deviceDiagnosticSubtitle" style="margin:.28rem 0 0;color:var(--text-muted);font-size:12px;">Coleta operacional via Jump Host sem expor credenciais.</p>
       </div>
       <button type="button" id="deviceDiagnosticClose" class="dev-btn">Fechar</button>
     </div>
@@ -1324,41 +1164,6 @@
         </button>
       </div>
       <pre id="deviceDiagnosticOutput" class="dev-diag-output">Aguardando coleta...</pre>
-    </div>
-  </div>
-</div>
-
-<div id="jumpConsoleModalDevices" class="dev-jump-modal" aria-hidden="true">
-  <div class="dev-jump-panel">
-    <div class="dev-jump-head">
-      <div>
-        <h3 id="jumpConsoleDevicesTitle" style="margin:0;color:#f8fafc;font-size:1rem;font-weight:800;">Acesso Linux Jump Host</h3>
-        <p id="jumpConsoleDevicesSubtitle" style="margin:.28rem 0 0;color:#94a3b8;font-size:12px;">Console operacional auditado, sem expor credenciais.</p>
-      </div>
-      <button type="button" id="jumpConsoleDevicesClose" class="dev-btn">Fechar</button>
-    </div>
-    <div class="dev-jump-body">
-      <div class="dev-jump-actions">
-        <button type="button" class="dev-btn jump-console-preset-btn" data-command="hostname">hostname</button>
-        <button type="button" class="dev-btn jump-console-preset-btn" data-command="uptime">uptime</button>
-        <button type="button" class="dev-btn jump-console-preset-btn" data-command="ip route">ip route</button>
-        <button type="button" class="dev-btn jump-console-preset-btn" data-command="ss -tunap">ss -tunap</button>
-        <button type="button" id="jumpConsoleDevicesCollect" class="dev-btn dev-btn-indigo">
-          <i data-lucide="clipboard-list"></i>
-          Coletar diagnostico
-        </button>
-      </div>
-      <form id="jumpConsoleDevicesForm" style="display:flex;gap:.5rem;flex-wrap:wrap;">
-        <input id="jumpConsoleDevicesInput" type="text" class="dev-input" style="padding-left:.8rem;flex:1;min-width:260px;" placeholder="Ex: ping -c 2 -W 2 172.31.0.1">
-        <button type="submit" class="dev-btn dev-btn-primary">Executar</button>
-      </form>
-      <div class="dev-jump-actions">
-        <button type="button" id="jumpConsoleDevicesCopy" class="dev-btn">
-          <i data-lucide="copy"></i>
-          Copiar saida
-        </button>
-      </div>
-      <pre id="jumpConsoleDevicesOutput" class="dev-jump-output">Aguardando comando...</pre>
     </div>
   </div>
 </div>
@@ -1412,45 +1217,10 @@
         const deviceDiagnosticOutput = document.getElementById('deviceDiagnosticOutput');
         const deviceDiagnosticTitle = document.getElementById('deviceDiagnosticTitle');
         const deviceDiagnosticSubtitle = document.getElementById('deviceDiagnosticSubtitle');
-        const openJumpConsoleButtons = document.querySelectorAll('[data-open-jump-console]');
-        const jumpConsoleModalDevices = document.getElementById('jumpConsoleModalDevices');
-        const jumpConsoleDevicesClose = document.getElementById('jumpConsoleDevicesClose');
-        const jumpConsoleDevicesTitle = document.getElementById('jumpConsoleDevicesTitle');
-        const jumpConsoleDevicesSubtitle = document.getElementById('jumpConsoleDevicesSubtitle');
-        const jumpConsoleDevicesOutput = document.getElementById('jumpConsoleDevicesOutput');
-        const jumpConsoleDevicesInput = document.getElementById('jumpConsoleDevicesInput');
-        const jumpConsoleDevicesForm = document.getElementById('jumpConsoleDevicesForm');
-        const jumpConsoleDevicesCopy = document.getElementById('jumpConsoleDevicesCopy');
-        const jumpConsoleDevicesCollect = document.getElementById('jumpConsoleDevicesCollect');
-        const jumpConsolePresetButtons = document.querySelectorAll('.jump-console-preset-btn');
         let lastCollectContext = null;
-        let jumpConsoleContext = null;
         let subgroupModalMode = 'create';
 
         async function postCollectDiagnostics(url, payload) {
-            const body = new URLSearchParams();
-            Object.entries(payload || {}).forEach(([key, value]) => {
-                if (value !== undefined && value !== null) {
-                    body.append(key, value);
-                }
-            });
-            if (csrfTokenInput && csrfTokenInput.value) {
-                body.append('_csrf_token', csrfTokenInput.value);
-            }
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Accept': 'application/json',
-                    'X-CSRF-Token': csrfTokenInput?.value || '',
-                    'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
-                },
-                body: body.toString()
-            });
-            return response.json();
-        }
-
-        async function postJumpConsole(url, payload) {
             const body = new URLSearchParams();
             Object.entries(payload || {}).forEach(([key, value]) => {
                 if (value !== undefined && value !== null) {
@@ -1539,110 +1309,6 @@
                     await navigator.clipboard.writeText(deviceDiagnosticOutput.textContent || '');
                 } catch (error) {
                     console.error('Falha ao copiar diagnostico', error);
-                }
-            });
-        }
-
-        function openJumpConsoleDevicesModal() {
-            if (!jumpConsoleModalDevices) return;
-            jumpConsoleModalDevices.classList.add('is-open');
-            jumpConsoleModalDevices.setAttribute('aria-hidden', 'false');
-            if (window.lucide && typeof window.lucide.createIcons === 'function') {
-                window.lucide.createIcons();
-            }
-        }
-
-        function closeJumpConsoleDevicesModal() {
-            if (!jumpConsoleModalDevices) return;
-            jumpConsoleModalDevices.classList.remove('is-open');
-            jumpConsoleModalDevices.setAttribute('aria-hidden', 'true');
-        }
-
-        async function runJumpConsoleCommand(command) {
-            if (!jumpConsoleContext || !jumpConsoleContext.consoleUrl || !jumpConsoleDevicesOutput) return;
-            jumpConsoleDevicesOutput.textContent = `$ ${command}\n\nExecutando...`;
-            try {
-                const payload = await postJumpConsole(jumpConsoleContext.consoleUrl, { command });
-                jumpConsoleDevicesOutput.textContent = `$ ${command}\n\n` + (payload.output || payload.error || 'Sem retorno.');
-            } catch (error) {
-                jumpConsoleDevicesOutput.textContent = `$ ${command}\n\nFalha ao executar comando no Jump Host.`;
-            }
-        }
-
-        openJumpConsoleButtons.forEach((button) => {
-            button.addEventListener('click', () => {
-                jumpConsoleContext = {
-                    consoleUrl: button.dataset.consoleUrl || '',
-                    collectUrl: button.dataset.collectUrl || '',
-                    groupName: button.dataset.groupName || '',
-                    deviceId: button.dataset.deviceId || '',
-                    deviceName: button.dataset.deviceName || '',
-                    deviceIp: button.dataset.deviceIp || '',
-                };
-                if (jumpConsoleDevicesTitle) {
-                    jumpConsoleDevicesTitle.textContent = `Acesso Linux Jump Host • ${jumpConsoleContext.groupName || 'Grupo'}`;
-                }
-                if (jumpConsoleDevicesSubtitle) {
-                    const deviceChunk = jumpConsoleContext.deviceName ? `Dispositivo: ${jumpConsoleContext.deviceName}` : 'Sem dispositivo especifico';
-                    const ipChunk = jumpConsoleContext.deviceIp ? ` (${jumpConsoleContext.deviceIp})` : '';
-                    jumpConsoleDevicesSubtitle.textContent = `${deviceChunk}${ipChunk}`;
-                }
-                if (jumpConsoleDevicesInput) jumpConsoleDevicesInput.value = '';
-                if (jumpConsoleDevicesOutput) jumpConsoleDevicesOutput.textContent = 'Aguardando comando...';
-                openJumpConsoleDevicesModal();
-            });
-        });
-
-        if (jumpConsoleDevicesClose) {
-            jumpConsoleDevicesClose.addEventListener('click', closeJumpConsoleDevicesModal);
-        }
-        if (jumpConsoleModalDevices) {
-            jumpConsoleModalDevices.addEventListener('click', (event) => {
-                if (event.target === jumpConsoleModalDevices) {
-                    closeJumpConsoleDevicesModal();
-                }
-            });
-        }
-
-        if (jumpConsoleDevicesForm) {
-            jumpConsoleDevicesForm.addEventListener('submit', (event) => {
-                event.preventDefault();
-                const command = (jumpConsoleDevicesInput && jumpConsoleDevicesInput.value ? jumpConsoleDevicesInput.value : '').trim();
-                if (!command) return;
-                runJumpConsoleCommand(command);
-            });
-        }
-
-        jumpConsolePresetButtons.forEach((button) => {
-            button.addEventListener('click', () => {
-                const command = (button.dataset.command || '').trim();
-                if (!command) return;
-                if (jumpConsoleDevicesInput) jumpConsoleDevicesInput.value = command;
-                runJumpConsoleCommand(command);
-            });
-        });
-
-        if (jumpConsoleDevicesCollect) {
-            jumpConsoleDevicesCollect.addEventListener('click', async () => {
-                if (!jumpConsoleContext || !jumpConsoleContext.collectUrl || !jumpConsoleDevicesOutput) return;
-                jumpConsoleDevicesOutput.textContent = 'Coletando diagnostico remoto...';
-                try {
-                    const payload = await postCollectDiagnostics(jumpConsoleContext.collectUrl, {
-                        device_id: jumpConsoleContext.deviceId || '',
-                    });
-                    jumpConsoleDevicesOutput.textContent = payload.summary || payload.error || 'Sem retorno da coleta.';
-                } catch (error) {
-                    jumpConsoleDevicesOutput.textContent = 'Falha ao coletar diagnostico remoto.';
-                }
-            });
-        }
-
-        if (jumpConsoleDevicesCopy && jumpConsoleDevicesOutput) {
-            jumpConsoleDevicesCopy.addEventListener('click', async () => {
-                try {
-                    await navigator.clipboard.writeText(jumpConsoleDevicesOutput.textContent || '');
-                } catch (error) {
-                    console.error('Falha ao copiar saida do console jump', error);
                 }
             });
         }

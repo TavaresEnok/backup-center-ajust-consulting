@@ -24,6 +24,8 @@ def get_db_and_tenant(tenant_slug):
         
     db = SessionLocal()
     tenant = db.query(Tenant).filter(Tenant.slug == tenant_slug).first()
+    if not tenant:
+        db.close()
     return db, tenant
 
 @bp.route('/profile', methods=['GET', 'POST'])
@@ -192,6 +194,5 @@ def create_report(tenant_slug):
         db.close()
     
     return redirect(url_for('tenant_settings.reports', tenant_slug=tenant_slug))
-
 
 

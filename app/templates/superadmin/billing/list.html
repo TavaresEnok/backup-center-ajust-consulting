@@ -245,7 +245,7 @@
                             {% elif invoice.status.value == 'failed' %}
                             <span class="rounded-full bg-rose-500/15 px-2 py-0.5 text-xs font-semibold text-rose-300">Falhou</span>
                             {% else %}
-                            <span class="rounded-full bg-slate-500/20 px-2 py-0.5 text-xs font-semibold text-slate-300">{{ invoice.status.value|title }}</span>
+                            <span class="rounded-full bg-slate-500/20 px-2 py-0.5 text-xs font-semibold text-[var(--text-main)]">{{ invoice.status.value|title }}</span>
                             {% endif %}
                         </td>
                         <td>{{ format_datetime(invoice.due_date, "%d/%m/%Y", "-") }}</td>

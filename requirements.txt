@@ -24,3 +24,4 @@ pytest
 netmiko
 pexpect
 requests
+psutil

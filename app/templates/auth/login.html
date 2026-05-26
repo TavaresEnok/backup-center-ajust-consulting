@@ -23,8 +23,11 @@
             --panel: rgba(10, 24, 42, 0.7);
             --panel-soft: rgba(15, 30, 52, 0.58);
             --line: rgba(148, 163, 184, 0.2);
-            --text-main: #e2e8f0;
+            /* Auth pages always have a dark background — override theme vars */
+            --text-main: #f1f5f9;
             --text-muted: #94a3b8;
+            --bg-app: #06111f;
+            --card-border: rgba(148, 163, 184, 0.25);
         }
 
         body {
@@ -82,7 +85,7 @@
                         </div>
                         <div>
                             <p class="text-sm font-semibold text-slate-100">Backup Center</p>
-                            <p class="text-xs text-slate-400">Plataforma para operacao ISP</p>
+                            <p class="text-xs text-[var(--text-muted)]">Plataforma para operacao ISP</p>
                         </div>
                     </div>
 
@@ -90,22 +93,22 @@
                         <h1 class="text-3xl sm:text-4xl font-bold leading-tight text-slate-100">
                             Seu ambiente de backup, em um unico painel.
                         </h1>
-                        <p class="text-slate-300/90 leading-relaxed">
+                        <p class="text-[var(--text-main)]/90 leading-relaxed">
                             Monitore execucoes, valide historicos e mantenha a recuperacao pronta para incidentes.
                         </p>
                     </div>
 
                     <div class="mt-8 grid sm:grid-cols-3 lg:grid-cols-1 gap-3">
                         <div class="panel-soft rounded-xl p-4">
-                            <p class="text-xs uppercase tracking-wide text-slate-400">Disponibilidade</p>
+                            <p class="text-xs uppercase tracking-wide text-[var(--text-muted)]">Disponibilidade</p>
                             <p class="mt-1 text-xl font-semibold text-slate-100">99.95%</p>
                         </div>
                         <div class="panel-soft rounded-xl p-4">
-                            <p class="text-xs uppercase tracking-wide text-slate-400">Backups diarios</p>
+                            <p class="text-xs uppercase tracking-wide text-[var(--text-muted)]">Backups diarios</p>
                             <p class="mt-1 text-xl font-semibold text-slate-100">+12 mil</p>
                         </div>
                         <div class="panel-soft rounded-xl p-4">
-                            <p class="text-xs uppercase tracking-wide text-slate-400">Integridade</p>
+                            <p class="text-xs uppercase tracking-wide text-[var(--text-muted)]">Integridade</p>
                             <p class="mt-1 text-xl font-semibold text-slate-100">SHA-256</p>
                         </div>
                     </div>
@@ -114,7 +117,7 @@
                 <section class="p-7 sm:p-9 lg:p-10" x-data="{ showPassword: false }">
                     <header>
                         <h2 class="text-2xl sm:text-3xl font-bold text-slate-100">Entrar</h2>
-                        <p class="mt-2 text-sm text-slate-400">Informe suas credenciais para acessar o painel.</p>
+                        <p class="mt-2 text-sm text-[var(--text-muted)]">Informe suas credenciais para acessar o painel.</p>
                     </header>
 
                     {% with messages = get_flashed_messages(with_categories=true) %}
@@ -133,33 +136,33 @@
                         {% include 'partials/csrf.html' %}
 
                         <div class="space-y-1.5">
-                            <label for="email" class="text-sm font-medium text-slate-200">E-mail</label>
+                            <label for="email" class="text-sm font-medium text-[var(--text-main)]">E-mail</label>
                             <div class="relative">
                                 <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                                    <i data-lucide="mail" class="h-5 w-5 text-slate-500"></i>
+                                    <i data-lucide="mail" class="h-5 w-5 text-[var(--text-muted)]"></i>
                                 </div>
                                 <input id="email" name="email" type="email" required autocomplete="email"
-                                    class="w-full h-12 pl-11 pr-4 rounded-xl bg-slate-950/55 border border-slate-700 text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-400/40 focus:border-cyan-300 transition"
+                                    class="w-full h-12 pl-11 pr-4 rounded-xl bg-[var(--bg-app)]/55 border border-[var(--card-border)] text-slate-100 placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-cyan-400/40 focus:border-cyan-300 transition"
                                     placeholder="admin@suaempresa.com" />
                             </div>
                         </div>
 
                         <div class="space-y-1.5">
                             <div class="flex items-center justify-between">
-                                <label for="password" class="text-sm font-medium text-slate-200">Senha</label>
+                                <label for="password" class="text-sm font-medium text-[var(--text-main)]">Senha</label>
                                 <a href="{{ url_for('auth.forgot_password') }}"
                                     class="text-sm text-cyan-300 hover:text-cyan-200 transition-colors">Esqueci minha senha</a>
                             </div>
                             <div class="relative">
                                 <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                                    <i data-lucide="lock" class="h-5 w-5 text-slate-500"></i>
+                                    <i data-lucide="lock" class="h-5 w-5 text-[var(--text-muted)]"></i>
                                 </div>
                                 <input id="password" name="password" :type="showPassword ? 'text' : 'password'" required
                                     autocomplete="current-password"
-                                    class="w-full h-12 pl-11 pr-12 rounded-xl bg-slate-950/55 border border-slate-700 text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-400/40 focus:border-cyan-300 transition"
+                                    class="w-full h-12 pl-11 pr-12 rounded-xl bg-[var(--bg-app)]/55 border border-[var(--card-border)] text-slate-100 placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-cyan-400/40 focus:border-cyan-300 transition"
                                     placeholder="••••••••" />
                                 <button type="button" @click="showPassword = !showPassword"
-                                    class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-500 hover:text-slate-300 transition-colors"
+                                    class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-[var(--text-muted)] hover:text-[var(--text-main)] transition-colors"
                                     :aria-label="showPassword ? 'Ocultar senha' : 'Mostrar senha'">
                                     <i :data-lucide="showPassword ? 'eye-off' : 'eye'" class="h-5 w-5"></i>
                                 </button>
@@ -172,7 +175,7 @@
                         </button>
                     </form>
 
-                    <footer class="mt-6 pt-5 border-t border-slate-700/70 flex items-center justify-between text-xs text-slate-400">
+                    <footer class="mt-6 pt-5 border-t border-[var(--card-border)]/70 flex items-center justify-between text-xs text-[var(--text-muted)]">
                         <span>Acesso protegido</span>
                         <span class="inline-flex items-center gap-1.5 text-emerald-300">
                             <i data-lucide="check-circle-2" class="h-3.5 w-3.5"></i>
@@ -180,7 +183,7 @@
                         </span>
                     </footer>
 
-                    <div class="mt-4 text-center text-sm text-slate-400">
+                    <div class="mt-4 text-center text-sm text-[var(--text-muted)]">
                         Novo cliente?
                         <a href="{{ url_for('auth.register') }}" class="font-semibold text-cyan-300 hover:text-cyan-200">
                             Criar conta e escolher plano

@@ -8,7 +8,6 @@ from app.models.backup import Backup, BackupStatus
 from app.models.schedule import Schedule
 from app.models.tenant import Tenant
 from app.models.user import UserRole
-from app.services.monitor_service import MonitorService
 from app.services.plan_limits_service import PlanLimitsService
 from app.services.mass_backup_scope import resolve_mass_backup_excluded_type_ids
 from sqlalchemy import func, or_
@@ -16,8 +15,58 @@ from sqlalchemy.orm import joinedload
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 import json
+import psutil
+from flask import jsonify
 
 bp = Blueprint('tenant', __name__, url_prefix='/tenant')
+
+@bp.route('/<tenant_slug>/server-metrics')
+@login_required
+def server_metrics(tenant_slug):
+    # Cross-tenant check
+    if session.get('user_role') != UserRole.SUPER_ADMIN.value and session.get('tenant_slug') != tenant_slug:
+        abort(403)
+
+    import time as _time
+
+    # CPU: sample over 1 second using cpu_times_percent (same as top/htop)
+    cpu_times = psutil.cpu_times_percent(interval=1)
+    cpu_percent = round(cpu_times.user + cpu_times.system, 1)
+
+    # RAM
+    ram = psutil.virtual_memory()
+
+    # Disk usage (space)
+    disk = psutil.disk_usage('/')
+
+    # Disk I/O: two snapshots 1s apart for accurate per-second rates
+    io1 = psutil.disk_io_counters()
+    _time.sleep(1)
+    io2 = psutil.disk_io_counters()
+
+    elapsed = 1.0  # seconds between snapshots
+
+    read_bytes_per_sec  = max(0, io2.read_bytes  - io1.read_bytes)  / elapsed
+    write_bytes_per_sec = max(0, io2.write_bytes - io1.write_bytes) / elapsed
+    read_mbps  = round(read_bytes_per_sec  / (1024 * 1024), 2)
+    write_mbps = round(write_bytes_per_sec / (1024 * 1024), 2)
+
+    busy_diff_ms = max(0, getattr(io2, 'busy_time', 0) - getattr(io1, 'busy_time', 0))
+    io_busy_percent = round(min(100.0, (busy_diff_ms / (elapsed * 1000)) * 100), 1)
+
+    return jsonify({
+        'cpu_percent': cpu_percent,
+        'ram_percent': round(ram.percent, 1),
+        'ram_used_gb': round(ram.used  / (1024**3), 2),
+        'ram_total_gb': round(ram.total / (1024**3), 2),
+        'disk_percent': round(disk.percent, 1),
+        'disk_used_gb': round(disk.used  / (1024**3), 2),
+        'disk_total_gb': round(disk.total / (1024**3), 2),
+        'io_read_mbps':    read_mbps,
+        'io_write_mbps':   write_mbps,
+        'io_busy_percent': io_busy_percent,
+    })
+
 
 @bp.route('/<tenant_slug>/dashboard')
 @login_required
@@ -67,47 +116,6 @@ def dashboard(tenant_slug):
         active_device_filter = [Device.tenant_id == tenant.id, Device.is_active.isnot(False)]
 
         total_devices = db.query(Device).filter(*active_device_filter).count()
-        online_devices = db.query(Device).filter(
-            *active_device_filter,
-            Device.last_connection_status == 'online'
-        ).count()
-        unknown_devices = db.query(Device).filter(
-            *active_device_filter,
-            or_(Device.last_connection_status == 'unknown', Device.last_connection_status.is_(None))
-        ).count()
-        offline_devices = db.query(Device).filter(
-            *active_device_filter,
-            Device.last_connection_status.in_(['offline', 'error'])
-        ).count()
-
-        # Connection audit metrics (ultimo teste ping/login por dispositivo).
-        conn_no_ping = 0
-        conn_ping_ok_login_fail = 0
-        conn_ready = 0
-        conn_last_test_at = None
-        audited_devices = db.query(Device).filter(*active_device_filter).all()
-        for device in audited_devices:
-            extra = device.extra_parameters or {}
-            if not isinstance(extra, dict):
-                extra = {}
-            group = str(extra.get('connection_test_group') or '').strip().lower()
-            if group == 'no_ping':
-                conn_no_ping += 1
-            elif group == 'ping_ok_login_fail':
-                conn_ping_ok_login_fail += 1
-            elif group == 'ready':
-                conn_ready += 1
-            raw_last = extra.get('connection_test_last_at')
-            if raw_last:
-                try:
-                    dt = datetime.fromisoformat(str(raw_last).replace('Z', '+00:00'))
-                    if conn_last_test_at is None or dt > conn_last_test_at:
-                        conn_last_test_at = dt
-                except Exception:
-                    pass
-        conn_ping_ok = conn_ready + conn_ping_ok_login_fail
-        conn_tested_total = conn_no_ping + conn_ping_ok_login_fail + conn_ready
-
         usage_snapshot = PlanLimitsService.build_usage_snapshot(db, tenant)
         storage_bytes = int(usage_snapshot.get("storage_used_bytes") or 0)
         
@@ -123,9 +131,6 @@ def dashboard(tenant_slug):
 
         stats = {
             'total_devices': total_devices,
-            'online_devices': online_devices,
-            'offline_devices': offline_devices,
-            'unknown_devices': unknown_devices,
             'storage_used': usage_snapshot.get("storage_used_label") or _format_bytes(storage_bytes)
         }
 
@@ -147,10 +152,6 @@ def dashboard(tenant_slug):
         local_tz = ZoneInfo(settings.APP_TIMEZONE)
         now_utc = datetime.utcnow()
         now_local = datetime.now(local_tz)
-        conn_last_test_str = (
-            conn_last_test_at.astimezone(local_tz).strftime('%d/%m/%Y %H:%M')
-            if conn_last_test_at else '-'
-        )
         today = now_local.date()
         start_of_day_local = datetime.combine(today, datetime.min.time(), tzinfo=local_tz)
         end_of_day_local = datetime.combine(today, datetime.max.time(), tzinfo=local_tz)
@@ -214,36 +215,6 @@ def dashboard(tenant_slug):
                 Device.last_backup_status.in_(['never', 'unknown'])
             )
         ).count()
-        # Cruzamento entre status de backup e ultimo teste de conexao (somente agendados).
-        conn_group = Device.extra_parameters.op('->>')('connection_test_group')
-        conn_login_ok_scheduled = db.query(Device).filter(
-            *backup_eligible_filter,
-            conn_group == 'ready',
-        ).count()
-        conn_ping_ok_scheduled = db.query(Device).filter(
-            *backup_eligible_filter,
-            conn_group.in_(['ready', 'ping_ok_login_fail']),
-        ).count()
-        conn_ping_ok_login_fail_scheduled = db.query(Device).filter(
-            *backup_eligible_filter,
-            conn_group == 'ping_ok_login_fail',
-        ).count()
-        conn_no_ping_scheduled = db.query(Device).filter(
-            *backup_eligible_filter,
-            conn_group == 'no_ping',
-        ).count()
-        success_on_ready = db.query(Device).filter(
-            *backup_eligible_filter,
-            Device.last_backup_status == 'success',
-            conn_group == 'ready',
-        ).count()
-        failed_on_ready = db.query(Device).filter(
-            *backup_eligible_filter,
-            Device.last_backup_status == 'failure',
-            conn_group == 'ready',
-        ).count()
-        success_not_ready = max(success_count - success_on_ready, 0)
-        failed_not_ready = max(failed_count - failed_on_ready, 0)
         processed_backups = success_count + failed_count
         completed_backups = success_count
         # Círculo principal: sucesso entre os dispositivos já processados.
@@ -422,20 +393,6 @@ def dashboard(tenant_slug):
                              backup_target_rate=backup_target_rate,
                              success_rate_trend_points=success_rate_trend_points,
                              success_rate_series_7d=json.dumps(success_rate_series_7d),
-                             conn_ping_ok=conn_ping_ok,
-                             conn_login_ok=conn_ready,
-                             conn_ping_ok_scheduled=conn_ping_ok_scheduled,
-                             conn_login_ok_scheduled=conn_login_ok_scheduled,
-                             conn_ping_ok_login_fail_scheduled=conn_ping_ok_login_fail_scheduled,
-                             conn_no_ping_scheduled=conn_no_ping_scheduled,
-                             conn_no_ping=conn_no_ping,
-                             conn_ping_ok_login_fail=conn_ping_ok_login_fail,
-                             conn_tested_total=conn_tested_total,
-                             conn_last_test_at=conn_last_test_str,
-                             success_on_ready=success_on_ready,
-                             failed_on_ready=failed_on_ready,
-                             success_not_ready=success_not_ready,
-                             failed_not_ready=failed_not_ready,
                              pending_count=pending_backups,
                              mikrotik_count=type_counts['router'],
                              olt_count=type_counts['olt'],
@@ -454,23 +411,13 @@ def dashboard(tenant_slug):
 @bp.route('/<tenant_slug>/refresh-status', methods=['POST'])
 @login_required
 def refresh_status(tenant_slug):
-    # Cross-tenant check
+    # Endpoint mantido apenas para compatibilidade com navegadores que ainda
+    # estejam com HTML em cache. O monitoramento automatico por ping foi removido.
     if session.get('user_role') != UserRole.SUPER_ADMIN.value and session.get('tenant_slug') != tenant_slug:
         abort(403)
-        
-    db = SessionLocal()
-    tenant = db.query(Tenant).filter(Tenant.slug == tenant_slug).first()
-    if not tenant:
-        db.close()
-        return "Tenant not found", 404
-    
-    # Executa monitoramento via Celery (Assincrono)
-    from app.tasks.monitoring import ping_tenant_devices_task
-    
-    # Dispara a task e nao espera
-    ping_tenant_devices_task.delay(str(tenant.id))
-    
-    db.close()
-    
-    flash("Monitoramento iniciado em segundo plano. Os status serao atualizados em breve.", "info")
+
+    flash(
+        "A checagem automatica de ping foi removida. Use a validacao manual em Agendamentos quando precisar.",
+        "info",
+    )
     return redirect(url_for('tenant.dashboard', tenant_slug=tenant_slug))
