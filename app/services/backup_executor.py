@@ -10,6 +10,7 @@ import sys
 import base64
 import importlib.util
 import hashlib
+import inspect
 import logging
 import ipaddress
 import json
@@ -419,6 +420,31 @@ def _is_mikrotik_device(device_type: DeviceType | None) -> bool:
         or "mikrotik" in script_name
         or "routeros" in script_name
     )
+
+
+def _filter_script_kwargs(backup_fn, kwargs: Dict[str, Any]) -> Tuple[Dict[str, Any], list[str]]:
+    """Keep older backup scripts runnable when the executor adds parameters."""
+    try:
+        signature = inspect.signature(backup_fn)
+    except (TypeError, ValueError):
+        return kwargs, []
+
+    if any(
+        parameter.kind is inspect.Parameter.VAR_KEYWORD
+        for parameter in signature.parameters.values()
+    ):
+        return kwargs, []
+
+    allowed = {
+        name
+        for name, parameter in signature.parameters.items()
+        if parameter.kind in {
+            inspect.Parameter.POSITIONAL_OR_KEYWORD,
+            inspect.Parameter.KEYWORD_ONLY,
+        }
+    }
+    dropped = sorted(key for key in kwargs if key not in allowed)
+    return {key: value for key, value in kwargs.items() if key in allowed}, dropped
 
 
 def _emit_backup_event(event_name: str, **payload):
@@ -855,8 +881,14 @@ class BackupExecutor:
                             return False, msg, None
 
                     # Executa o backup
+                    script_kwargs, ignored_kwargs = _filter_script_kwargs(script.realizar_backup, kwargs)
+                    if ignored_kwargs:
+                        logger.warning(
+                            "Script legado sem suporte a parametros adicionais; ignorando: %s.",
+                            ", ".join(ignored_kwargs),
+                        )
                     with _NetmikoJumpHostPatcher(self.SCRIPTS_DIR, jump_host_cfg, logger):
-                        result = script.realizar_backup(**kwargs)
+                        result = script.realizar_backup(**script_kwargs)
 
                     success = None
                     message = None

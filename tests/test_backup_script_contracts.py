@@ -7,6 +7,8 @@ from pathlib import Path
 
 import pytest
 
+from app.services.backup_executor import _filter_script_kwargs
+
 
 SCRIPTS_DIR = Path(__file__).resolve().parents[1] / "app" / "scripts" / "backup_scripts"
 HELPER_SCRIPTS = {
@@ -99,3 +101,33 @@ def test_seed_and_migration_script_names_point_to_existing_files():
                 missing.append(f"{relative_path}: {script_name}")
 
     assert not missing, "Scripts referenciados em seeds/migrações não existem:\n" + "\n".join(missing)
+
+
+def test_executor_keeps_all_kwargs_for_current_script_contract():
+    def modern(ip, **kwargs):
+        return ip, kwargs
+
+    original = {"ip": "10.0.0.1", "logger": object(), "task_id": "task-1"}
+    filtered, ignored = _filter_script_kwargs(modern, original)
+
+    assert filtered is original
+    assert ignored == []
+
+
+def test_executor_filters_extra_kwargs_for_legacy_script():
+    def legacy(ip, usuario, porta):
+        return ip, usuario, porta
+
+    filtered, ignored = _filter_script_kwargs(
+        legacy,
+        {
+            "ip": "10.0.0.1",
+            "usuario": "admin",
+            "porta": 22,
+            "logger": "log",
+            "task_id": "task",
+        },
+    )
+
+    assert filtered == {"ip": "10.0.0.1", "usuario": "admin", "porta": 22}
+    assert ignored == ["logger", "task_id"]
