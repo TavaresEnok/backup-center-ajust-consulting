@@ -1,6 +1,7 @@
 from netmiko import ConnectHandler
 from app.models.device import Device
 from app.core.security import decrypt_password
+from app.scripts.backup_scripts.script_helpers import ssh_strict_host_key_checking_enabled
 import os
 import datetime
 
@@ -40,6 +41,9 @@ class BackupService:
             'port': device.port,
             'timeout': 30,
         }
+        if ssh_strict_host_key_checking_enabled():
+            device_params["ssh_strict"] = True
+            device_params["system_host_keys"] = True
 
         with ConnectHandler(**device_params) as net_connect:
             command = BackupService.get_backup_command(device.device_type)

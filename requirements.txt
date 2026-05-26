@@ -21,6 +21,9 @@ itsdangerous
 cryptography
 alembic
 pytest
+pytest-asyncio
+pytest-env
+httpx
 netmiko
 pexpect
 requests

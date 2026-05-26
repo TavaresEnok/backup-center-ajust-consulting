@@ -9,7 +9,7 @@ def populate():
         {
             "name": "MikroTik RouterOS",
             "slug": "mikrotik",
-            "script_name": "mikrotik_backup.py",
+            "script_name": "mikrotik_ros_netmiko.py",
             "description": "Roteadores MikroTik",
             "category": "router",
             "default_port": 22,
@@ -18,7 +18,7 @@ def populate():
         {
             "name": "Huawei OLT",
             "slug": "huawei-olt",
-            "script_name": "huawei_olt_backup.py",
+            "script_name": "huawei_olt.py",
             "description": "OLTs Huawei",
             "category": "olt",
             "default_port": 22,
@@ -27,7 +27,7 @@ def populate():
         {
             "name": "Datacom Switch",
             "slug": "switch",
-            "script_name": "datacom_backup.py",
+            "script_name": "switch_datacom_netmiko.py",
             "description": "Switches Datacom/Genericos",
             "category": "switch",
             "default_port": 22,

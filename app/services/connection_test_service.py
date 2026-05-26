@@ -16,6 +16,10 @@ from app.models.device_group import DeviceGroup
 from app.services.backup_executor import BackupLogger
 from app.services.connection_mode import uses_jump_host, uses_vpn_tunnel
 from app.services.vpn_service import VpnError, vpn_service
+from app.scripts.backup_scripts.script_helpers import (
+    configure_paramiko_host_key_policy,
+    ssh_strict_host_key_checking_enabled,
+)
 
 try:
     from netmiko import ConnectHandler
@@ -215,8 +219,7 @@ class ConnectionTestService:
 
     def _open_jump_client(self, jump_host: dict, timeout: int) -> paramiko.SSHClient:
         jump_pkey = self._load_private_key(jump_host.get("key"))
-        client = paramiko.SSHClient()
-        client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        client = configure_paramiko_host_key_policy(paramiko.SSHClient())
         client.connect(
             hostname=jump_host["host"],
             port=int(jump_host.get("port") or 22),
@@ -350,6 +353,9 @@ class ConnectionTestService:
                         "auth_timeout": max(timeout, 8),
                         "fast_cli": False,
                     }
+                    if ssh_strict_host_key_checking_enabled() and not driver.endswith("_telnet"):
+                        kwargs["ssh_strict"] = True
+                        kwargs["system_host_keys"] = True
                     if jump_client:
                         channel = self._open_jump_channel(
                             jump_client,
@@ -381,8 +387,7 @@ class ConnectionTestService:
         timeout: int,
         jump_host: Optional[dict] = None,
     ) -> None:
-        client = paramiko.SSHClient()
-        client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        client = configure_paramiko_host_key_policy(paramiko.SSHClient())
         jump_client = None
         channel = None
         try:

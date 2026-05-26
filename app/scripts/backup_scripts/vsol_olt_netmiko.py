@@ -1,15 +1,11 @@
 from typing import Tuple
-import importlib
 import json
 import os
 import re
 import secrets
 import time
 
-import olt_cli_backup as _olt_cli_backup
-
-importlib.reload(_olt_cli_backup)
-from olt_cli_backup import (  # noqa: E402
+from olt_cli_backup import (
     OltCliProfile,
     _diagnostic_preview,
     _failure_category,

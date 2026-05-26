@@ -12,6 +12,7 @@ from script_helpers import (
     friendly_unexpected_error,
     open_pexpect_session,
     prepare_backup_path,
+    ssh_host_key_options,
 )
 
 
@@ -62,8 +63,7 @@ def _classify_connection_failure(detail: str) -> str:
 def _ssh_command(ip: str, usuario: str, porta: int) -> str:
     return (
         "ssh "
-        "-o StrictHostKeyChecking=no "
-        "-o UserKnownHostsFile=/dev/null "
+        f"{ssh_host_key_options()} "
         "-o ConnectTimeout=25 "
         "-o HostKeyAlgorithms=+ssh-rsa,ssh-dss "
         "-o KexAlgorithms=+diffie-hellman-group1-sha1,diffie-hellman-group14-sha1 "

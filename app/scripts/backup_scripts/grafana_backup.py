@@ -11,12 +11,12 @@ from typing import Tuple
 from script_helpers import BackupLogger, friendly_failure_message, friendly_unexpected_error, sanitize_path_component
 
 def realizar_backup(ip: str, usuario: str, porta: int, nome_provedor: str, nome_tipo_equip: str,
-                      nome_dispositivo: str, parametros: dict = None, task_id: str = None, 
+                      nome_dispositivo: str, parametros: dict = None, task_id: str = None,
                       backup_base_path: str = None, **kwargs) -> Tuple[bool, str, str]:
-    
+
     logger = BackupLogger(nome_dispositivo, task_id)
     logger.emit("Iniciando backup do Grafana...")
-    
+
     parametros = parametros or {}
     grafana_url = parametros.get('grafana_url')
     api_key = parametros.get('api_key')
@@ -54,39 +54,39 @@ def realizar_backup(ip: str, usuario: str, porta: int, nome_provedor: str, nome_
         response = requests.get(f"{grafana_url}/api/search?query=", headers=headers, timeout=30)
         response.raise_for_status()
         dashboards = response.json()
-        
+
         if not dashboards:
             msg = "Nenhuma dashboard encontrada."
             logger.emit(msg, 'success')
             return (True, msg, dir_path) # Retorna o diretório como sucesso
-        
+
         with tempfile.TemporaryDirectory() as temp_dir:
             logger.emit(f"Encontradas {len(dashboards)} dashboards. Iniciando download...")
             for board in dashboards:
                 uid, title = board.get('uid'), board.get('title', 'sem_titulo')
                 if not uid: continue
-                
+
                 logger.emit(f"--> Baixando: {title}")
                 board_resp = requests.get(f"{grafana_url}/api/dashboards/uid/{uid}", headers=headers, timeout=30)
-                
+
                 if board_resp.status_code == 200:
                     json_filename = f"{sanitize_path_component(title)}.json"
                     with open(os.path.join(temp_dir, json_filename), 'w', encoding='utf-8') as f:
                         json.dump(board_resp.json().get('dashboard', {}), f, indent=4, ensure_ascii=False)
                 else:
                     logger.emit(f"Falha ao baixar '{title}'. Status: {board_resp.status_code}", 'warning')
-            
+
             logger.emit("Compactando dashboards em arquivo .zip...")
             shutil.make_archive(caminho_zip_base, 'zip', temp_dir)
             caminho_completo_zip = f"{caminho_zip_base}.zip"
-            
+
             if not os.path.exists(caminho_completo_zip):
                 raise IOError("Arquivo ZIP não foi criado.")
-            
+
             msg = f"Backup de {len(dashboards)} dashboards concluído!"
             logger.emit(msg, 'success')
             return (True, msg, caminho_completo_zip)
-            
+
     except Exception as e:
         msg = friendly_unexpected_error(e)
         logger.emit(msg, 'error')

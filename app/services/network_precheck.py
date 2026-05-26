@@ -10,6 +10,8 @@ from dataclasses import dataclass
 from io import StringIO
 from typing import Dict, Optional
 
+from app.scripts.backup_scripts.script_helpers import configure_paramiko_host_key_policy
+
 try:
     import paramiko
 except Exception:  # pragma: no cover
@@ -230,8 +232,7 @@ def _open_jump_client(jump_host: Dict[str, str], timeout_seconds: int):
     if paramiko is None:
         raise RuntimeError("paramiko indisponivel para precheck via jump host")
     pkey = _load_private_key(jump_host.get("key"))
-    client = paramiko.SSHClient()
-    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    client = configure_paramiko_host_key_policy(paramiko.SSHClient())
     client.connect(
         hostname=str(jump_host.get("host") or ""),
         port=int(jump_host.get("port") or 22),

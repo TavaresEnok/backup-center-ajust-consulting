@@ -1,9 +1,4 @@
 from typing import Tuple
-import importlib
-
-import olt_cli_backup as _olt_cli_backup
-
-importlib.reload(_olt_cli_backup)
 from olt_cli_backup import OltCliProfile, run_olt_cli_backup
 
 

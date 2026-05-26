@@ -108,6 +108,34 @@ def prepare_backup_path(base_dir, prov_name, type_name, dev_name, extension):
     return os.path.join(final_path, filename)
 
 
+def ssh_strict_host_key_checking_enabled() -> bool:
+    value = os.getenv("BACKUP_SSH_STRICT_HOST_KEY_CHECKING", "0").strip().lower()
+    return value in {"1", "true", "yes", "on", "strict"}
+
+
+def ssh_host_key_options() -> str:
+    if ssh_strict_host_key_checking_enabled():
+        return "-o StrictHostKeyChecking=yes"
+    return "-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+
+
+def ssh_host_key_option_list() -> list[str]:
+    if ssh_strict_host_key_checking_enabled():
+        return ["-o", "StrictHostKeyChecking=yes"]
+    return ["-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null"]
+
+
+def configure_paramiko_host_key_policy(client):
+    if not PARAMIKO_AVAILABLE:
+        return client
+    if ssh_strict_host_key_checking_enabled():
+        client.load_system_host_keys()
+        client.set_missing_host_key_policy(paramiko.RejectPolicy())
+    else:
+        client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    return client
+
+
 def friendly_failure_message(category: str, detail: str = None, *, operation: str = "backup") -> str:
     """Build operator-friendly failure text without leaking Python/Netmiko internals."""
     cat = str(category or "").strip().upper()
@@ -235,8 +263,7 @@ def _build_jump_spawn_command(jump_host: dict, timeout: int = 30, logger=None):
 
     cmd = (
         "ssh -tt "
-        "-o StrictHostKeyChecking=no "
-        "-o UserKnownHostsFile=/dev/null "
+        f"{ssh_host_key_options()} "
         "-o LogLevel=ERROR "
         "-o ConnectionAttempts=1 "
         "-o PreferredAuthentications=publickey,password,keyboard-interactive "
@@ -431,8 +458,7 @@ def create_ssh_client(
     if not PARAMIKO_AVAILABLE:
         raise ImportError("paramiko is not installed. Run: pip install paramiko")
     
-    client = paramiko.SSHClient()
-    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    client = configure_paramiko_host_key_policy(paramiko.SSHClient())
     
     # Prepare key if provided
     pkey = None
@@ -441,8 +467,7 @@ def create_ssh_client(
     
     if jump_host and jump_host.get('host'):
         # Connect via Jump Host
-        jump_client = paramiko.SSHClient()
-        jump_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        jump_client = configure_paramiko_host_key_policy(paramiko.SSHClient())
         
         # Prepare jump key
         jump_pkey = None

@@ -6,7 +6,12 @@ from typing import Tuple
 
 from netmiko import ConnectHandler
 
-from script_helpers import BackupLogger, friendly_failure_message, prepare_backup_path
+from script_helpers import (
+    BackupLogger,
+    configure_paramiko_host_key_policy,
+    friendly_failure_message,
+    prepare_backup_path,
+)
 
 
 ZABBIX_DB_CONF_PATH = "/etc/zabbix/zabbix_server.conf"
@@ -398,7 +403,7 @@ def realizar_backup(
     try:
         logger.emit("Etapa 3/4: Iniciando transferencia SFTP...")
         with paramiko.SSHClient() as ssh_client:
-            ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+            configure_paramiko_host_key_policy(ssh_client)
             ssh_client.connect(
                 hostname=ip,
                 port=int(porta),

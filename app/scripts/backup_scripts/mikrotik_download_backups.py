@@ -1,5 +1,6 @@
 import os
 import re
+import shlex
 import shutil
 import subprocess
 from typing import Tuple
@@ -8,17 +9,21 @@ from script_helpers import (
     close_ssh_client,
     create_ssh_client,
     sanitize_path_component,
+    ssh_host_key_option_list,
     ssh_execute,
 )
 
-def run_command(command, logger, timeout=120):
-    """Executa um comando no shell e loga o resultado."""
+def run_command(command: list[str], logger, timeout=120):
+    """Executa um comando nativo sem shell local e loga o resultado."""
     try:
-        # Esconde o comando real dos logs de processo para não expor a senha
-        log_command = re.sub(r"sshpass -p '.*?'", "sshpass -p '********'", command)
+        log_parts = list(command)
+        for idx, part in enumerate(log_parts[:-1]):
+            if part == "-p" and idx > 0 and log_parts[idx - 1] == "sshpass":
+                log_parts[idx + 1] = "********"
+        log_command = shlex.join(log_parts)
         logger.emit(f"Executando comando nativo: {log_command}")
-        
-        proc = subprocess.run(command, shell=True, check=True, capture_output=True, text=True, timeout=timeout)
+
+        proc = subprocess.run(command, shell=False, check=True, capture_output=True, text=True, timeout=timeout)
         return True, proc.stdout.strip()
     except subprocess.CalledProcessError as e:
         error_msg = f"Comando nativo falhou. Código: {e.returncode}\nStderr: {e.stderr.strip()}"
@@ -157,11 +162,11 @@ def _download_via_sshpass(
     dir_path: str,
     delete_after_download: bool,
 ) -> Tuple[bool, str, str | None]:
-    ssh_opts = "-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
-    sshpass_cmd_prefix = f"sshpass -p '{password}' ssh {ssh_opts} -p {porta} {usuario}@{ip}"
+    ssh_opts = ssh_host_key_option_list()
+    ssh_base = ["sshpass", "-p", password, "ssh", *ssh_opts, "-p", str(porta), f"{usuario}@{ip}"]
 
     logger.emit("Etapa 1/4: Listando ficheiros no dispositivo via SSH...")
-    list_command = f"{sshpass_cmd_prefix} /file print"
+    list_command = [*ssh_base, "/file print"]
     success, output = run_command(list_command, logger)
     if not success:
         raise RuntimeError("Não foi possível conectar e listar os ficheiros no dispositivo.")
@@ -180,7 +185,17 @@ def _download_via_sshpass(
     for file_name in backup_files:
         remote_path = f"{usuario}@{ip}:/{file_name}"
         local_path = os.path.join(dir_path, os.path.basename(file_name))
-        scp_command = f"sshpass -p '{password}' scp {ssh_opts} -P {porta} \"{remote_path}\" \"{local_path}\""
+        scp_command = [
+            "sshpass",
+            "-p",
+            password,
+            "scp",
+            *ssh_opts,
+            "-P",
+            str(porta),
+            remote_path,
+            local_path,
+        ]
         logger.emit(f"--> Baixando '{file_name}'...")
         success_scp, _ = run_command(scp_command, logger)
         if success_scp and os.path.exists(local_path):
@@ -199,7 +214,8 @@ def _download_via_sshpass(
         for file_name in backup_files:
             local_path_check = os.path.join(dir_path, os.path.basename(file_name))
             if os.path.exists(local_path_check):
-                delete_command = f"{sshpass_cmd_prefix} /file remove [find name=\\\"{file_name}\\\"]"
+                safe_name = str(file_name).replace("\\", "\\\\").replace('"', '\\"')
+                delete_command = [*ssh_base, f'/file remove [find name="{safe_name}"]']
                 logger.emit(f"--> Apagando '{file_name}'...")
                 run_command(delete_command, logger)
     else:

@@ -14,7 +14,11 @@ from app.core.database import SessionLocal
 from app.core.security import decrypt_password
 from app.models import Device, DeviceGroup
 from app.services.connection_mode import uses_jump_host
-from app.scripts.backup_scripts.script_helpers import open_pexpect_session, close_pexpect_session
+from app.scripts.backup_scripts.script_helpers import (
+    close_pexpect_session,
+    open_pexpect_session,
+    ssh_host_key_options,
+)
 from app.scripts.backup_scripts.olt_cli_backup import _login, _try_enable, _send_collect
 
 
@@ -50,7 +54,7 @@ def main():
             f"telnet {device.ip_address} {int(device.port)}"
             if device.use_telnet
             else (
-                "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "
+                f"ssh {ssh_host_key_options()} "
                 f"{device.username}@{device.ip_address} -p {int(device.port)}"
             )
         )

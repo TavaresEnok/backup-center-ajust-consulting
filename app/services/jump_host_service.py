@@ -1,5 +1,6 @@
 import json
 import logging
+import os
 import re
 import socket
 import time
@@ -64,6 +65,13 @@ SAFE_COMMAND_PREFIXES = (
     "telnet ",
     "ssh ",
 )
+
+
+def _ssh_host_key_safe_flags() -> str:
+    strict = os.getenv("BACKUP_SSH_STRICT_HOST_KEY_CHECKING", "0").strip().lower()
+    if strict in {"1", "true", "yes", "on", "strict"}:
+        return "-o StrictHostKeyChecking=yes "
+    return "-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "
 
 
 def _now_iso() -> str:
@@ -340,12 +348,12 @@ class JumpHostService:
         elif cmd_lower.startswith("ssh "):
             # SSH nao-interativo: injeta flags de seguranca obrigatorias
             # BatchMode=yes: sem prompts de senha (nao bloqueia)
-            # StrictHostKeyChecking=no: nao trava em host desconhecido
+            # Host key checking segue BACKUP_SSH_STRICT_HOST_KEY_CHECKING.
             # ConnectTimeout=8: timeout de conexao rapido
             # NumberOfPasswordPrompts=0: garante sem prompt de senha
             safe_flags = (
                 "-o BatchMode=yes "
-                "-o StrictHostKeyChecking=no "
+                f"{_ssh_host_key_safe_flags()}"
                 "-o ConnectTimeout=8 "
                 "-o NumberOfPasswordPrompts=0 "
             )

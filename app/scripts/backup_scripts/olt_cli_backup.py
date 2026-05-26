@@ -13,6 +13,7 @@ from script_helpers import (
     prepare_backup_path,
     open_pexpect_session,
     close_pexpect_session,
+    ssh_host_key_options,
 )
 
 
@@ -136,8 +137,7 @@ DEFAULT_BACKUP_COMMANDS = (
 def _ssh_command(ip: str, usuario: str, porta: int) -> str:
     return (
         "ssh "
-        "-o StrictHostKeyChecking=no "
-        "-o UserKnownHostsFile=/dev/null "
+        f"{ssh_host_key_options()} "
         "-o ConnectTimeout=25 "
         "-o HostKeyAlgorithms=+ssh-rsa,ssh-dss "
         "-o KexAlgorithms=+diffie-hellman-group1-sha1,diffie-hellman-group14-sha1 "

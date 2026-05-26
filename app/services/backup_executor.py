@@ -35,6 +35,10 @@ from app.services.backup_diagnostics import (
 from app.services.backup_observability import inc_counter, observe_histogram
 from app.services.network_precheck import run_network_precheck
 from app.services.tracing import traced_span
+from app.scripts.backup_scripts.script_helpers import (
+    configure_paramiko_host_key_policy,
+    ssh_strict_host_key_checking_enabled,
+)
 from sqlalchemy.exc import DBAPIError, OperationalError
 
 try:
@@ -185,8 +189,7 @@ class _NetmikoJumpHostPatcher(AbstractContextManager):
         retries = max(1, int(os.getenv("JUMP_HOST_CONNECT_RETRIES", "3") or 3))
         last_error = None
         for attempt in range(1, retries + 1):
-            client = paramiko.SSHClient()
-            client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+            client = configure_paramiko_host_key_policy(paramiko.SSHClient())
             try:
                 client.connect(
                     hostname=self.jump_host.get("host"),
@@ -255,6 +258,10 @@ class _NetmikoJumpHostPatcher(AbstractContextManager):
         # Aplica a injecao independente de usar Jump Host ou Conexao Direta.
         kwargs.setdefault("banner_timeout", 45)
         kwargs.setdefault("auth_timeout", 35)
+        device_type = str(kwargs.get("device_type") or "").lower()
+        if ssh_strict_host_key_checking_enabled() and not device_type.endswith("_telnet"):
+            kwargs.setdefault("ssh_strict", True)
+            kwargs.setdefault("system_host_keys", True)
         
         # Garante que conn_timeout seja generoso caso o hardware demore a aceitar chaves lentas.
         conn_timeout = kwargs.get("conn_timeout") or kwargs.get("timeout") or 0

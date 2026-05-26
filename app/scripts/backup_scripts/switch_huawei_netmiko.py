@@ -12,6 +12,7 @@ from script_helpers import (
     prepare_backup_path,
     open_pexpect_session,
     close_pexpect_session,
+    ssh_host_key_options,
 )
 
 PAGER_MARKERS = ("--More--", "---- More ----", "[More]", "<--- More --->", "Press any key")
@@ -103,8 +104,7 @@ def _is_ssh_algorithm_error(detail: str) -> bool:
 def _ssh_legacy_command(ip: str, usuario: str, porta: int) -> str:
     return (
         "ssh "
-        "-o StrictHostKeyChecking=no "
-        "-o UserKnownHostsFile=/dev/null "
+        f"{ssh_host_key_options()} "
         "-o ConnectTimeout=25 "
         "-o PreferredAuthentications=password,keyboard-interactive "
         "-o PubkeyAuthentication=no "
